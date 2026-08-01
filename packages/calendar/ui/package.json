@@ -1,6 +1,6 @@
 {
   "name": "@qingwu/calendar",
-  "version": "0.3.1",
+  "version": "0.5.0",
   "description": "Framework-agnostic calendar component with Chinese lunar calendar, holidays, and solar terms",
   "type": "module",
   "license": "MIT",
