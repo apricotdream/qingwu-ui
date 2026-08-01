@@ -1,9 +1,9 @@
 {
   "name": "@qingwu/skeleton",
-  "version": "0.5.0",
-  "description": "Qingwu UI Skeleton component — runtime DOM-measuring auto shimmer, SSR-aware, zero-dependency skeleton loader",
+  "version": "0.5.1",
+  "description": "Qingwu UI Skeleton — runtime DOM-measuring auto skeleton (in-place measurement, portal overlay, compositor-driven shimmer), snapshot-to-static-HTML renderer, zero-dependency",
   "type": "module",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "sideEffects": [
     "./dist/style.css"
   ],
@@ -37,13 +37,10 @@
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   },
-  "peerDependencies": {
-    "@qingwu/text-layout": "^0.5.0"
-  },
   "size-limit": [
     {
       "path": "dist/index.mjs",
-      "limit": "16 kB"
+      "limit": "8 kB"
     }
   ],
   "publishConfig": {

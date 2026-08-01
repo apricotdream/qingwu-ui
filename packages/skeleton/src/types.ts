@@ -26,69 +26,63 @@ export interface AutoSkeletonOptions {
   backgroundColor?: string;
   /** 闪光动画时长 (ms，默认 1500) */
   duration?: number;
+  /**
+   * 闪光动画时序函数（CSS animation-timing-function，默认 "ease-in-out"）
+   * 如 "linear" / "ease-out" / "cubic-bezier(0.4, 0, 0.2, 1)"
+   */
+  timingFunction?: string;
+  /**
+   * 错峰步进 (ms，默认 80)：动画块按文档序递增负 animation-delay，
+   * 首帧即处于不同相位，形成级联流水感；0 关闭错峰（全块同步）
+   */
+  staggerDelay?: number;
+  /**
+   * 覆盖层 z-index（默认 9999）。覆盖层 portal 挂载于 body，
+   * 默认压在页面上层（保证盖住容器内所有高 z-index 子元素）；
+   * 页面 chrome（sticky/fixed 头部、弹层）需要显示在骨架之上时调低，
+   * 如 sticky header z-index 100 → 传 90。
+   */
+  zIndex?: number;
   /** 默认圆角 (px)，用于 borderRadius 为 0 的元素 */
   fallbackBorderRadius?: number;
-  /**
-   * SSR 模式：使用文本排版引擎估算骨架几何
-   * 生成 CSS-only 骨架，无需 JavaScript 即可展示
-   * @default false
-   */
-  ssr?: boolean;
   /**
    * 禁用动画（遵循 prefers-reduced-motion）
    * 不传时自动检测系统偏好
    */
   reducedMotion?: boolean;
   /**
-   * 骨架每行最大元素数量（性能保护，默认 500）
+   * 骨架最大元素数量（性能保护，默认 500）
    */
   maxElements?: number;
 }
 
-/** SSR 骨架配置 */
-export interface SSRSkeletonConfig {
+/** 静态骨架渲染配置 */
+export interface RenderSkeletonSnapshotOptions {
   /** 容器宽度 (px) */
   width: number;
-  /** 容器高度 (px) — 未提供时自动计算 */
+  /** 容器高度 (px) — 未提供时按块几何自动计算 */
   height?: number;
-  /** 文字行骨架配置 */
-  textLines?: SSRSkeletonTextConfig[];
-  /** 矩形区域骨架配置 */
-  rects?: SSRSkeletonRectConfig[];
   /** 流光颜色 */
   shimmerColor?: string;
   /** 背景色 */
   backgroundColor?: string;
   /** 动画时长 (ms) */
   duration?: number;
+  /**
+   * 动画时序函数（CSS animation-timing-function，默认 "ease-in-out"）
+   */
+  timingFunction?: string;
+  /**
+   * 错峰步进 (ms，默认 80)：块按文档序递增负 animation-delay，
+   * 首帧即处于不同相位；0 关闭错峰（全块同步）
+   */
+  staggerDelay?: number;
   /** 禁用动画 */
   reducedMotion?: boolean;
-}
-
-/** 单条文字行骨架配置 */
-export interface SSRSkeletonTextConfig {
-  /** 文字内容（用于估算行数和行宽） */
-  text: string;
-  /** CSS font 字符串，如 "14px system-ui" */
-  font?: string;
-  /** 最大显示行数 */
-  maxLines?: number;
-  /** 行高 (px) */
-  lineHeight?: number;
-  /** 行间距 (px) */
-  gap?: number;
-}
-
-/** 矩形区域骨架配置 */
-export interface SSRSkeletonRectConfig {
-  /** 宽度（px 数字 或 CSS 百分比字符串） */
-  width: number | string;
-  /** 高度 (px) */
-  height: number;
-  /** 圆角 (px) */
-  borderRadius?: number;
-  /** 外边距下 (px) */
-  marginBottom?: number;
+  /**
+   * 最大骨架块数（性能保护，默认 200，超出截断）
+   */
+  maxBlocks?: number;
 }
 
 /** 叶子元素类型 */
