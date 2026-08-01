@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { AutoSkeleton, createSSRSkeleton } from "@qingwu/skeleton";
+import { AutoSkeleton, extractElementInfo, renderSkeletonSnapshot } from "@qingwu/skeleton";
 import DemoCard from "@/components/DemoCard";
 
 /* ── 产品卡片 HTML 模板 ── */
@@ -56,29 +56,24 @@ function buildFormHTML(): string {
   `;
 }
 
-/* ── SSR 骨架 HTML 模板 ── */
+/* ── 静态骨架 HTML 模板（快照渲染器） ── */
 function buildSSRSkeletonDemo(): string {
-  return createSSRSkeleton({
+  // 构建时对真实卡片 DOM 测量（extractElementInfo）得到的快照，
+  // 此处为演示手工构造等价数据
+  const snapshot = [
+    { x: 0, y: 0, width: 360, height: 200, borderRadius: "8px" }, // 图片区
+    { x: 0, y: 216, width: 340, height: 22, borderRadius: "4px" }, // 标题行 1
+    { x: 0, y: 244, width: 250, height: 22, borderRadius: "4px" }, // 标题行 2
+    { x: 0, y: 282, width: 120, height: 28, borderRadius: "4px" }, // 价格
+    { x: 0, y: 326, width: 90, height: 24, borderRadius: "12px" }, // 标签 1
+    { x: 102, y: 326, width: 60, height: 24, borderRadius: "12px" }, // 标签 2
+    { x: 0, y: 366, width: 360, height: 40, borderRadius: "8px" }, // 按钮
+  ];
+  return renderSkeletonSnapshot(snapshot, {
     width: 360,
-    textLines: [
-      {
-        text: "2025 春季新款女士连衣裙 优雅气质中长款法式收腰显瘦",
-        font: "16px system-ui",
-        maxLines: 2,
-        lineHeight: 22,
-        gap: 6,
-      },
-      {
-        text: "¥299.00",
-        font: "20px system-ui",
-        maxLines: 1,
-        lineHeight: 28,
-      },
-    ],
-    rects: [
-      { width: "100%", height: 200, borderRadius: 8, marginBottom: 0 },
-      { width: "100%", height: 40, borderRadius: 8, marginBottom: 0 },
-    ],
+    shimmerColor: "#f0f0f0",
+    backgroundColor: "#e0e0e0",
+    duration: 1500,
   });
 }
 
@@ -119,8 +114,8 @@ function ProductCardDemo() {
     // 首次渲染内容
     container.innerHTML = buildProductCardHTML();
 
-    // 创建骨架
-    skRef.current = new AutoSkeleton(container, { loading: true });
+    // 创建骨架（zIndex 低于站点 sticky 头部，滚动时骨架不遮挡头部）
+    skRef.current = new AutoSkeleton(container, { loading: true, zIndex: 90 });
 
     return () => {
       skRef.current?.destroy();
@@ -130,19 +125,19 @@ function ProductCardDemo() {
   useEffect(() => {
     // 如果是 false 且已有内容，切换骨架到真实内容
     if (!loading && hasContent && skRef.current) {
-      // 执行退出动画
-      const container = containerRef.current;
-      if (container) {
-        const wrapper = container.querySelector(".qs-skeleton-wrapper");
-        if (wrapper) {
-          wrapper.classList.add("is-exiting");
-          setTimeout(() => {
-            skRef.current?.update({ loading: false });
-          }, 300);
-          return;
-        }
+      // 执行退出动画：覆盖层淡出后移除骨架
+      const sk = skRef.current;
+      const overlay = sk.overlay;
+      if (overlay) {
+        overlay.classList.add("is-exiting");
+        // 捕获实例引用：定时器触发时 skRef.current 可能已被替换，
+        // 仍更新正确实例（已销毁实例的 update 为 no-op）
+        setTimeout(() => {
+          sk.update({ loading: false });
+        }, 300);
+        return;
       }
-      skRef.current.update({ loading: false });
+      sk.update({ loading: false });
     } else if (loading && hasContent && skRef.current) {
       // 重新进入加载态：先重置内容，再创建新骨架
       const container = containerRef.current;
@@ -151,7 +146,7 @@ function ProductCardDemo() {
       }
       skRef.current.destroy();
       if (containerRef.current) {
-        skRef.current = new AutoSkeleton(containerRef.current, { loading: true });
+        skRef.current = new AutoSkeleton(containerRef.current, { loading: true, zIndex: 90 });
       }
     }
   }, [loading, hasContent]);
@@ -209,7 +204,7 @@ function FormDemo() {
     const container = containerRef.current;
     if (!container) return;
     container.innerHTML = buildFormHTML();
-    skRef.current = new AutoSkeleton(container, { loading: true });
+    skRef.current = new AutoSkeleton(container, { loading: true, zIndex: 90 });
     return () => skRef.current?.destroy();
   }, []);
 
@@ -261,15 +256,14 @@ function TransitionDemo() {
   const toggleWithDelay = useCallback(() => {
     if (loading) {
       // 加载 -> 完成：先添加退出动画，再移除骨架
-      const container = containerRef.current;
-      if (container) {
-        const wrapper = container.querySelector(".qs-skeleton-wrapper");
-        if (wrapper) {
-          wrapper.classList.add("is-exiting");
-        }
+      const sk = skRef.current;
+      const overlay = sk?.overlay;
+      if (overlay) {
+        overlay.classList.add("is-exiting");
       }
+      // 捕获实例引用：350ms 后 skRef.current 可能已被重建
       setTimeout(() => {
-        skRef.current?.update({ loading: false });
+        sk?.update({ loading: false });
       }, 350);
       setLoading(false);
     } else {
@@ -288,6 +282,7 @@ function TransitionDemo() {
       backgroundColor: "#d4d4e0",
       duration: 1800,
       fallbackBorderRadius: 6,
+      zIndex: 90,
     });
     return () => skRef.current?.destroy();
   }, []);
@@ -297,10 +292,14 @@ function TransitionDemo() {
     if (loading && containerRef.current && skRef.current) {
       const container = containerRef.current;
       container.innerHTML = buildProductCardHTML();
+      // 覆盖前先销毁旧实例：否则旧覆盖层永远留在 body 上
+      // （每次访问本页累计一个孤儿覆盖层 + 一组监听器）
+      skRef.current.destroy();
       skRef.current = new AutoSkeleton(container, {
         loading: true,
         shimmerColor: "#e8e8f0",
         backgroundColor: "#d4d4e0",
+        zIndex: 90,
       });
     }
   }, [debouncedLoading]);
@@ -310,9 +309,9 @@ function TransitionDemo() {
       title="过渡动画"
       desc="骨架与真实内容之间的平滑切换。退出时骨架覆盖层逐渐透明，内容文字同步恢复可见，300ms 过渡动画。"
       snippets={{
-        html: `<div class="qs-skeleton-wrapper is-exiting">\n  <div class="qs-skeleton-overlay">...</div>\n</div>`,
-        react: "// 退出时添加 .is-exiting 类触发 CSS 过渡\nconst wrapper = container.querySelector(\".qs-skeleton-wrapper\");\nwrapper?.classList.add(\"is-exiting\");\nsetTimeout(() => sk.update({ loading: false }), 250);",
-        vue: "// 退出时添加 .is-exiting 类触发 CSS 过渡\nconst wrapper = formRef.value!.querySelector(\".qs-skeleton-wrapper\");\nwrapper?.classList.add(\"is-exiting\");\nsetTimeout(() => sk.value?.update({ loading: false }), 250);",
+        html: `<div class="qs-skeleton-overlays is-exiting">...</div>`,
+        react: "// 退出时给覆盖层添加 .is-exiting 类触发 CSS 过渡\nconst overlay = sk.overlay;\noverlay?.classList.add(\"is-exiting\");\nsetTimeout(() => sk.update({ loading: false }), 250);",
+        vue: "// 退出时给覆盖层添加 .is-exiting 类触发 CSS 过渡\nconst overlay = sk.value?.overlay;\noverlay?.classList.add(\"is-exiting\");\nsetTimeout(() => sk.value?.update({ loading: false }), 250);",
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
@@ -339,30 +338,155 @@ function TransitionDemo() {
 }
 
 /* ════════════════════════════════════════════════
- * Demo 4：SSR 骨架（无 JavaScript）
+ * Demo 4：SSR 骨架（构建时测量管线）
  * ════════════════════════════════════════════════ */
 function SSRDemo() {
-  const [ssrHTML, setSSRHTML] = useState("");
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [html, setHtml] = useState("");
+
+  // 模拟构建时测量管线：渲染真实卡片 → extractElementInfo 测量 → 静态骨架
+  const buildSkeleton = useCallback(() => {
+    const stage = stageRef.current;
+    if (!stage) return "";
+    stage.innerHTML = buildProductCardHTML();
+    const snapshot = extractElementInfo(stage);
+    // 容器宽度取内容实际宽度（构建时快照的真实语义）
+    const width = Math.max(...snapshot.map((b) => b.x + b.width));
+    return renderSkeletonSnapshot(snapshot, { width });
+  }, []);
 
   useEffect(() => {
-    setSSRHTML(buildSSRSkeletonDemo());
-  }, []);
+    setHtml(buildSkeleton());
+  }, [buildSkeleton]);
+
+  const toggle = useCallback(() => {
+    // 数据就绪：真实内容替换静态骨架；重新加载：重建骨架
+    setHtml((prev) =>
+      prev.includes("qs-skel-container") ? buildProductCardHTML() : buildSkeleton(),
+    );
+  }, [buildSkeleton]);
 
   return (
     <DemoCard
       title="SSR 骨架（无 JS 预览）"
-      desc="使用 createSSRSkeleton() 生成纯 CSS 骨架 HTML。无需 JavaScript 即可展示，SSR 环境开箱即用。传入文本内容 + 矩形区域配置即可。"
+      desc="完整管线演示：渲染真实卡片 → extractElementInfo 测量 → renderSkeletonSnapshot 生成纯 CSS 骨架。骨架几何来自真实测量，与内容像素级对齐（同一测量引擎，按构造相等）。"
       snippets={{
-        html: `<div style="position:relative;width:360px;height:328px">\n  <!-- 骨架块由 createSSRSkeleton() 生成 -->\n  <div class="qs-ssr-skel-block" style="...流光动画..."></div>\n</div>`,
-        react: "import { createSSRSkeleton } from \"@qingwu/skeleton\";\n\nconst html = createSSRSkeleton({\n  width: 360,\n  textLines: [\n    { text: \"商品标题文案\", font: \"16px\", maxLines: 2 },\n    { text: \"¥299.00\", font: \"20px\", maxLines: 1 },\n  ],\n  rects: [\n    { width: \"100%\", height: 200, borderRadius: 8 },\n  ],\n});\n// 返回完整 CSS 骨架 HTML 字符串",
-        vue: "<!-- Nuxt / Vue SSR 中使用 -->\n<script setup lang=\"ts\">\nimport { createSSRSkeleton } from \"@qingwu/skeleton\";\n\nconst skeletonHTML = createSSRSkeleton({\n  width: 360,\n  textLines: [\n    { text: \"商品标题文案\", font: \"16px\", maxLines: 2 },\n    { text: \"¥299.00\", font: \"20px\", maxLines: 1 },\n  ],\n  rects: [\n    { width: \"100%\", height: 200, borderRadius: 8 },\n  ],\n});\n</script>\n\n<template>\n  <div v-html=\"skeletonHTML\" />\n</template>",
+        html: `<div class="qs-skel-container" style="...">\n  <!-- 骨架块由 renderSkeletonSnapshot() 生成 -->\n  <div class="qs-skel-block" style="..."></div>\n</div>`,
+        react: "import { extractElementInfo, renderSkeletonSnapshot } from \"@qingwu/skeleton\";\n\n// 构建时：渲染真实页面后测量\nconst snapshot = extractElementInfo(document.querySelector(\".card\")!);\n\nconst html = renderSkeletonSnapshot(snapshot, {\n  width: snapshot[0].x + snapshot[0].width,\n  shimmerColor: \"#f0f0f0\",\n  backgroundColor: \"#e0e0e0\",\n  duration: 1500,\n});\n// 返回完整 CSS 骨架 HTML 字符串",
+        vue: "<!-- Nuxt / Vue SSR 中使用 -->\n<script setup lang=\"ts\">\nimport { renderSkeletonSnapshot } from \"@qingwu/skeleton\";\n\nconst skeletonHTML = renderSkeletonSnapshot(snapshot, {\n  width: 360,\n});\n</script>\n\n<template>\n  <div v-html=\"skeletonHTML\" />\n</template>",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+        <button
+          type="button"
+          onClick={toggle}
+          style={{
+            padding: "6px 20px",
+            background: html.includes("qs-skel-container") ? "#e8453c" : "#22c55e",
+            color: "#fff",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+            fontSize: 13,
+          }}
+        >
+          {html.includes("qs-skel-container") ? "▼ 数据就绪" : "▲ 重新加载"}
+        </button>
         <div
+          id="ssr-demo-stage"
+          ref={stageRef}
           // biome-ignore lint/security/noDangerouslySetInnerHTML: SSR skeleton demo
-          dangerouslySetInnerHTML={{ __html: ssrHTML }}
+          dangerouslySetInnerHTML={{ __html: html }}
+          style={{ minWidth: 360 }}
         />
+      </div>
+    </DemoCard>
+  );
+}
+
+/* ── 迷你卡片 HTML 模板（多容器动画演示用） ── */
+function buildMiniCardHTML(tint: string): string {
+  return `
+    <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:${tint};border-radius:10px;font-family:system-ui">
+      <div style="height:80px;background:rgba(255,255,255,0.75);border-radius:8px"></div>
+      <div style="height:14px;background:rgba(255,255,255,0.75);border-radius:4px"></div>
+      <div style="height:14px;width:70%;background:rgba(255,255,255,0.75);border-radius:4px"></div>
+      <div style="height:28px;background:rgba(255,255,255,0.75);border-radius:6px"></div>
+    </div>
+  `;
+}
+
+/* ════════════════════════════════════════════════
+ * Demo 5：动画样式按容器
+ * ════════════════════════════════════════════════ */
+function PerContainerDemo() {
+  const refs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)];
+  const skRefs = useRef<(AutoSkeleton | null)[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // 每个容器独立的动画配置：颜色 / 时长 / 时序函数
+  const containerConfigs = [
+    { tint: "#fdecec", shimmerColor: "#ffb3b3", backgroundColor: "#f5a3a3", duration: 600, timingFunction: "linear" },
+    { tint: "#e9f1fd", shimmerColor: "#b3d1ff", backgroundColor: "#9dbcf5", duration: 2600, timingFunction: "ease-out" },
+    { tint: "#f3ecfd", shimmerColor: "#e3c8ff", backgroundColor: "#cfa6f5", duration: 1500 },
+  ];
+
+  useEffect(() => {
+    refs.forEach((ref, i) => {
+      const el = ref.current;
+      if (!el) return;
+      const { tint, ...skOptions } = containerConfigs[i]!;
+      el.innerHTML = buildMiniCardHTML(tint);
+      skRefs.current[i] = new AutoSkeleton(el, { loading: true, zIndex: 90, ...skOptions });
+    });
+    return () => skRefs.current.forEach((sk) => sk?.destroy());
+  }, [refs]);
+
+  useEffect(() => {
+    skRefs.current.forEach((sk) => sk?.update({ loading }));
+  }, [loading]);
+
+  return (
+    <DemoCard
+      title="动画样式按容器"
+      desc="每个容器独立的流光颜色、时长、时序函数，互不覆盖。红色 600ms linear 快扫、蓝色 2600ms ease-out 缓扫、紫色默认配置。"
+      snippets={{
+        react: "import { AutoSkeleton } from \"@qingwu/skeleton\";\n\nconst sk = new AutoSkeleton(el, {\n  loading: true,\n  shimmerColor: \"#ffb3b3\",\n  backgroundColor: \"#f5a3a3\",\n  duration: 600,\n  timingFunction: \"linear\",\n});\n// 多个容器并存：各自动画样式独立生效",
+        vue: "<script setup>\nimport { onMounted, onUnmounted } from \"vue\";\nimport { AutoSkeleton } from \"@qingwu/skeleton\";\n\nonMounted(() => {\n  sk.value = new AutoSkeleton(el.value!, {\n    loading: true,\n    shimmerColor: \"#ffb3b3\",\n    duration: 600,\n    timingFunction: \"linear\",\n  });\n});\nonUnmounted(() => sk.value?.destroy());\n</script>",
+      }}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+        <button
+          type="button"
+          onClick={() => setLoading((s) => !s)}
+          style={{
+            padding: "6px 20px",
+            background: loading ? "#e8453c" : "#22c55e",
+            color: "#fff",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+            fontSize: 13,
+          }}
+        >
+          {loading ? "▼ 加载完成" : "▲ 重新加载"}
+        </button>
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center" }}>
+          {refs.map((ref, i) => (
+            <div key={i} style={{ width: 180 }}>
+              <div
+                ref={ref}
+                style={{
+                  outline: `2px solid ${containerConfigs[i]!.backgroundColor}`,
+                  borderRadius: 12,
+                }}
+              />
+              <div style={{ fontSize: 11, color: "#888", marginTop: 6, textAlign: "center" }}>
+                {containerConfigs[i]!.duration}ms · {containerConfigs[i]!.timingFunction ?? "ease-in-out"}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </DemoCard>
   );
@@ -386,6 +510,7 @@ export default function SkeletonDemoPage() {
         <ProductCardDemo />
         <FormDemo />
         <TransitionDemo />
+        <PerContainerDemo />
         <SSRDemo />
       </div>
     </div>
