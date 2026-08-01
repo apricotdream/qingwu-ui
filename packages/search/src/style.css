@@ -1,0 +1,836 @@
+/* ============================================================
+   青梧UI · 搜索框样式（SearchBox）
+   零依赖 · CSS 自定义属性驱动 · 明暗双主题 · reduced-motion 友好
+
+   使用方式：
+     <link rel="stylesheet" href="@qingwu/search/style.css">
+     或 import "@qingwu/search/style.css"
+
+   令牌覆盖：修改 :root 中 --qs-* 或复用宿主已定义的
+   --paper / --card / --ink / --teal / --vermilion / --amber / --line
+   若宿主未提供则使用本文件默认值。
+   ============================================================ */
+
+/* ============================================================
+   ① 设计令牌（可在宿主层覆盖）
+   ============================================================ */
+:root {
+  --qs-paper: var(--paper, #f5f6f2);
+  --qs-card: var(--card, #fdfdfb);
+  --qs-ink: var(--ink, #1d2b2c);
+  --qs-ink-2: var(--ink-2, #47585a);
+  --qs-ink-3: var(--ink-3, #84928f);
+  --qs-line: var(--line, #dcdfd6);
+  --qs-teal: var(--teal, #1e605a);
+  --qs-teal-deep: var(--teal-deep, #123c39);
+  --qs-vermilion: var(--vermilion, #c8402f);
+  --qs-amber: var(--amber, #a86e23);
+  --qs-hover: var(--hover, rgba(30, 96, 90, 0.07));
+  --qs-shadow: var(--shadow, 0 1px 2px rgba(29, 43, 44, 0.05));
+  --qs-shadow-pop: var(--shadow-pop, 0 24px 60px -28px rgba(29, 43, 44, 0.42));
+  --qs-font-ui: var(--font-ui, "Microsoft YaHei", "PingFang SC", system-ui, sans-serif);
+  --qs-font-mono: var(--font-mono, "Cascadia Code", Consolas, "Courier New", monospace);
+  --qs-font-kai: var(--font-kai, KaiTi, "STKaiti", "Kaiti SC", serif);
+}
+
+/* 暗色主题：兼容两种宿主约定
+   - <html data-theme="dark">（headless 组件默认）
+   - .dark 类（Tailwind / Next.js 常见约定，加在 <html> 或 <body> 均可） */
+.dark,
+[data-theme="dark"] {
+  --qs-paper: #121617;
+  --qs-card: #1a2022;
+  --qs-ink: #e6ebe7;
+  --qs-ink-2: #a8b4b2;
+  --qs-ink-3: #6f7f7d;
+  --qs-line: #2a3234;
+  --qs-teal: #57a89e;
+  --qs-teal-deep: #2c5a54;
+  --qs-vermilion: #e2695a;
+  --qs-amber: #d29a4d;
+  --qs-hover: rgba(255, 255, 255, 0.06);
+  --qs-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --qs-shadow-pop: 0 24px 60px -28px rgba(0, 0, 0, 0.7);
+}
+
+/* ============================================================
+   ② 基础复位（限定在搜索组件范围内，不污染宿主）
+   ============================================================ */
+.qs-trigger,
+.qs-overlay,
+.qs-toasts,
+.qs-trigger *,
+.qs-overlay *,
+.qs-toasts * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.qs-trigger button,
+.qs-overlay button {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* 通用焦点环：按钮 / 结果项用 outline 表达；
+   输入框除外——它的焦点态由外层 .qs-input-wrap 的流光描边统一表达，
+   否则两者叠加会在输入区形成重影双框。 */
+.qs-overlay :focus-visible:not(.qs-input) {
+  outline: 2px solid var(--qs-teal);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.qs-input:focus,
+.qs-input:focus-visible {
+  outline: none;
+}
+
+.qs-trigger kbd,
+.qs-overlay kbd {
+  font-family: var(--qs-font-mono);
+  font-size: 10.5px;
+  padding: 2px 6px;
+  border: 1px solid var(--qs-line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--qs-card);
+  color: var(--qs-ink-2);
+  line-height: 1.4;
+}
+
+/* ============================================================
+   ③ 触发条
+   ============================================================ */
+.qs-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--qs-card);
+  border: 1px solid var(--qs-line);
+  border-radius: 14px;
+  padding: 0 14px 0 16px;
+  height: 54px;
+  cursor: text;
+  text-align: left;
+  box-shadow: var(--qs-shadow);
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s,
+    transform 0.12s;
+  color: var(--qs-ink);
+}
+.qs-trigger:hover {
+  border-color: color-mix(in srgb, var(--qs-teal) 55%, var(--qs-line));
+  box-shadow: var(--qs-shadow-pop);
+  transform: translateY(-1px);
+}
+.qs-trigger .qs-ico {
+  color: var(--qs-ink-3);
+  flex: none;
+  transition: color 0.18s;
+}
+.qs-trigger:hover .qs-ico {
+  color: var(--qs-teal);
+}
+.qs-tw {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--qs-ink-3);
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  display: inline-flex;
+  align-items: center;
+}
+.qs-tw::after {
+  content: "";
+  width: 1.5px;
+  height: 1.05em;
+  margin-left: 2px;
+  flex: none;
+  background: var(--qs-teal);
+  animation: qs-blink 1.05s steps(1, end) infinite;
+}
+.qs-trigger-keys {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex: none;
+}
+.qs-trigger-keys .or {
+  font-size: 10px;
+  color: var(--qs-ink-3);
+}
+
+/* ============================================================
+   ④ 遮罩 + 面板
+   ============================================================ */
+.qs-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: min(12vh, 96px) 16px 16px;
+  background: color-mix(in srgb, var(--qs-ink) 32%, transparent);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.qs-overlay[hidden] {
+  display: none;
+}
+.qs-overlay:not([hidden]) {
+  display: flex;
+}
+.qs-overlay.is-open {
+  opacity: 1;
+}
+
+.qs-panel {
+  width: 100%;
+  max-width: 640px;
+  background: var(--qs-card);
+  border: 1px solid var(--qs-line);
+  border-radius: 18px;
+  box-shadow: var(--qs-shadow-pop);
+  overflow: hidden;
+  transform: translateY(-18px) scale(0.985);
+  opacity: 0;
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease;
+}
+.qs-overlay.is-open .qs-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  box-shadow:
+    var(--qs-shadow-pop),
+    0 0 0 1px color-mix(in srgb, var(--qs-teal) 10%, transparent),
+    0 0 60px -20px color-mix(in srgb, var(--qs-teal) 22%, transparent);
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease,
+    box-shadow 0.35s ease;
+}
+/* 搜索焦态：光晕由黛青渐暖为朱砂 */
+.qs-overlay.is-open .qs-panel:focus-within {
+  box-shadow:
+    var(--qs-shadow-pop),
+    0 0 0 1px color-mix(in srgb, var(--qs-teal) 16%, transparent),
+    0 0 80px -24px color-mix(in srgb, var(--qs-vermilion) 18%, transparent);
+}
+
+/* ============================================================
+   ⑤ 搜索栏（含流光输入框）
+   ============================================================ */
+.qs-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 12px 0 18px;
+  border-bottom: 1px solid var(--qs-line);
+}
+.qs-bar > .qs-ico {
+  color: var(--qs-ink-3);
+  flex: none;
+  transition: color 0.25s;
+}
+.qs-bar:focus-within > .qs-ico {
+  color: color-mix(in srgb, var(--qs-teal) 70%, var(--qs-amber));
+}
+
+/* 聚焦下划线：三色渐变从中心展开 —— 朱砂点墨·黛青运笔·赭黄收锋 */
+.qs-bar::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--qs-teal) 20%,
+    var(--qs-vermilion) 50%,
+    var(--qs-amber) 80%,
+    transparent 100%
+  );
+  transform: translateX(-50%);
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.qs-bar:focus-within::after {
+  width: 100%;
+}
+
+/* ---- 流光边框动画（适配自 qw-input） ---- */
+@property --qs-glow-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes qs-glow-flow {
+  to {
+    --qs-glow-angle: 1turn;
+  }
+}
+
+.qs-input-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 11px;
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(var(--qs-card), var(--qs-card)) padding-box,
+    conic-gradient(
+      from var(--qs-glow-angle),
+      transparent 0deg 70deg,
+      color-mix(in srgb, var(--qs-teal) 38%, transparent) 115deg,
+      transparent 170deg 360deg
+    )
+    border-box,
+    linear-gradient(var(--qs-line), var(--qs-line)) border-box;
+  animation: qs-glow-flow 3.2s linear infinite;
+  transition: border-color 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.qs-input-wrap:focus-within {
+  border-width: 2px;
+  background:
+    linear-gradient(var(--qs-card), var(--qs-card)) padding-box,
+    conic-gradient(
+      from var(--qs-glow-angle),
+      transparent 0deg,
+      var(--qs-teal) 55deg,
+      var(--qs-vermilion) 135deg,
+      var(--qs-amber) 205deg,
+      transparent 285deg 360deg
+    )
+    border-box,
+    linear-gradient(var(--qs-line), var(--qs-line)) border-box;
+  box-shadow: 0 0 20px -12px color-mix(in srgb, var(--qs-teal) 45%, transparent);
+}
+
+.qs-input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font: 500 15.5px / 1.2 var(--qs-font-ui);
+  color: var(--qs-ink);
+  padding: 0;
+  caret-color: var(--qs-teal);
+}
+.qs-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+/* 动态占位层（打字机轮播，叠在输入文本起点之上） */
+.qs-ph {
+  position: absolute;
+  left: 14px;
+  top: 0;
+  height: 100%;
+  max-width: calc(100% - 28px);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  color: var(--qs-ink-3);
+  font: 400 15.5px / 1.2 var(--qs-font-ui);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.qs-ph::after {
+  content: "";
+  width: 1.5px;
+  height: 1.05em;
+  margin-left: 2px;
+  flex: none;
+  background: var(--qs-teal);
+  animation: qs-blink 1.05s steps(1, end) infinite;
+}
+.qs-bar.has-value .qs-ph {
+  display: none;
+}
+
+/* ---- 工具栏按钮 ---- */
+.qs-iconbtn {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  border-radius: 9px;
+  color: var(--qs-ink-3);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    transform 0.12s;
+}
+.qs-iconbtn:hover {
+  background: var(--qs-hover);
+  color: var(--qs-teal);
+}
+.qs-iconbtn:active {
+  transform: scale(0.92);
+}
+.qs-iconbtn[aria-pressed="true"] {
+  color: var(--qs-teal);
+  background: color-mix(in srgb, var(--qs-teal) 12%, transparent);
+}
+
+/* 清除键（kbd 方框风格） */
+.qs-clear {
+  flex: none;
+  min-width: 30px;
+  height: 28px;
+  padding: 0 8px;
+  display: grid;
+  place-items: center;
+  font-family: var(--qs-font-mono);
+  font-size: 12px;
+  color: var(--qs-ink-2);
+  border: 1px solid var(--qs-line);
+  border-bottom-width: 2px;
+  border-radius: 7px;
+  background: var(--qs-card);
+  cursor: pointer;
+  transition:
+    opacity 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.qs-clear:hover:not(:disabled) {
+  border-color: var(--qs-vermilion);
+  color: var(--qs-vermilion);
+}
+.qs-clear:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ============================================================
+   ⑥ 筛选条
+   ============================================================ */
+.qs-filterbar {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--qs-line);
+  font-size: 11.5px;
+  color: var(--qs-ink-3);
+}
+.qs-filterbar.show {
+  display: flex;
+}
+.qs-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--qs-font-mono);
+  font-size: 11px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--qs-teal) 12%, transparent);
+  color: var(--qs-teal);
+  border: 0;
+  cursor: pointer;
+}
+.qs-filter-chip i {
+  font-style: normal;
+  opacity: 0.6;
+  font-weight: 700;
+}
+.qs-filter-chip:hover i {
+  opacity: 1;
+}
+
+/* ============================================================
+   ⑦ 内容区
+   ============================================================ */
+.qs-body {
+  position: relative;
+  min-height: 268px;
+  max-height: 52vh;
+  overflow-y: auto;
+}
+
+/* ---- 空状态 ---- */
+.qs-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+}
+.qs-empty[hidden] {
+  display: none;
+}
+.qs-empty svg {
+  width: 132px;
+  height: auto;
+}
+.qs-empty-text {
+  font-size: 14.5px;
+  color: var(--qs-ink-2);
+  letter-spacing: 0.02em;
+}
+.qs-empty-text b {
+  color: var(--qs-vermilion);
+  font-family: var(--qs-font-kai);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+}
+.qs-empty-sub {
+  font-size: 11.5px;
+  color: var(--qs-ink-3);
+  font-family: var(--qs-font-mono);
+}
+.qs-empty.is-enter {
+  animation: qs-pop-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.qs-empty.is-enter svg {
+  animation: qs-pop-in 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 空状态插画配色 */
+.qs-art-shadow {
+  fill: color-mix(in srgb, var(--qs-ink) 6%, transparent);
+}
+.qs-art-paper {
+  fill: color-mix(in srgb, var(--qs-teal) 5%, var(--qs-card));
+  stroke: var(--qs-line);
+  stroke-width: 2;
+}
+.qs-art-row {
+  stroke: var(--qs-line);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.qs-art-row-accent {
+  stroke: color-mix(in srgb, var(--qs-teal) 45%, var(--qs-line));
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.qs-art-glass {
+  fill: color-mix(in srgb, var(--qs-teal) 12%, transparent);
+  stroke: var(--qs-teal);
+  stroke-width: 3.4;
+}
+.qs-art-handle {
+  stroke: var(--qs-ink-3);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+.qs-art-seal {
+  fill: var(--qs-vermilion);
+  font-family: var(--qs-font-kai);
+}
+.qs-art-dot-a {
+  fill: var(--qs-amber);
+}
+.qs-art-dot-b {
+  fill: var(--qs-teal);
+}
+.qs-art-dot-c {
+  fill: var(--qs-vermilion);
+}
+.qs-art-float {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: qs-float 5.5s ease-in-out infinite;
+}
+.qs-art-twinkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: qs-twinkle 3.2s ease-in-out infinite;
+}
+
+/* ---- 结果列表 ---- */
+.qs-list {
+  list-style: none;
+  padding: 8px;
+}
+.qs-list[hidden] {
+  display: none;
+}
+.qs-opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  border-radius: 11px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--qs-ink);
+  transition: background-color 0.12s;
+}
+.qs-opt + .qs-opt {
+  margin-top: 2px;
+}
+.qs-opt::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 3px;
+  height: 60%;
+  border-radius: 3px;
+  background: var(--qs-teal);
+  transition: transform 0.14s ease;
+}
+.qs-opt:hover,
+.qs-opt.is-active {
+  background: var(--qs-hover);
+}
+.qs-opt.is-active::before {
+  transform: translateY(-50%) scaleY(1);
+}
+.qs-opt.is-enter {
+  animation: qs-rise 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.qs-opt-ico {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  font-family: var(--qs-font-kai);
+  font-size: 15px;
+  background: color-mix(in srgb, var(--qs-ink) 5%, transparent);
+  color: var(--qs-ink-2);
+}
+.qs-opt-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.qs-opt-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--qs-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qs-opt-sub {
+  font-size: 11px;
+  color: var(--qs-ink-3);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qs-opt-kind {
+  flex: none;
+  font-family: var(--qs-font-mono);
+  font-size: 9.5px;
+  padding: 2.5px 7px;
+  border-radius: 999px;
+}
+.qs-opt mark {
+  background: color-mix(in srgb, var(--qs-amber) 26%, transparent);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+/* 类别标签色 */
+.kind-节日 {
+  background: color-mix(in srgb, var(--qs-vermilion) 13%, transparent);
+  color: var(--qs-vermilion);
+}
+.kind-节气 {
+  background: color-mix(in srgb, var(--qs-teal) 13%, transparent);
+  color: var(--qs-teal);
+}
+.kind-功能 {
+  background: color-mix(in srgb, var(--qs-ink) 8%, transparent);
+  color: var(--qs-ink-2);
+}
+.kind-日期 {
+  background: color-mix(in srgb, var(--qs-amber) 15%, transparent);
+  color: var(--qs-amber);
+}
+.kind-农历 {
+  background: color-mix(in srgb, var(--qs-amber) 14%, var(--qs-vermilion) 5%, transparent);
+  color: color-mix(in srgb, var(--qs-amber) 55%, var(--qs-vermilion));
+}
+.kind-干支 {
+  background: color-mix(in srgb, var(--qs-teal) 13%, var(--qs-ink) 5%, transparent);
+  color: color-mix(in srgb, var(--qs-teal) 55%, var(--qs-ink));
+}
+
+/* ============================================================
+   ⑧ 底部快捷键栏
+   ============================================================ */
+.qs-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 11px 18px;
+  border-top: 1px solid var(--qs-line);
+  font-size: 11px;
+  color: var(--qs-ink-3);
+  background: color-mix(in srgb, var(--qs-ink) 2%, transparent);
+}
+.qs-foot .grp {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.qs-foot .grp kbd + kbd {
+  margin-left: 2px;
+}
+
+/* ============================================================
+   ⑨ Toast 反馈
+   ============================================================ */
+.qs-toasts {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+.qs-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--qs-ink);
+  color: var(--qs-card);
+  font-size: 12.5px;
+  padding: 10px 15px;
+  border-radius: 11px;
+  box-shadow: var(--qs-shadow-pop);
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.22s,
+    transform 0.22s;
+}
+.qs-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.qs-toast .tick {
+  color: var(--qs-teal);
+  font-weight: 700;
+}
+.dark .qs-toast .tick,
+[data-theme="dark"] .qs-toast .tick {
+  color: #7fd4c8;
+}
+
+/* ============================================================
+   ⑩ 关键帧
+   ============================================================ */
+@keyframes qs-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes qs-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes qs-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes qs-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+@keyframes qs-twinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+/* 打字机关闭 / 减弱动效：隐藏闪烁光标 */
+.qs-is-static .qs-tw::after,
+.qs-is-static .qs-ph::after {
+  display: none;
+}
+
+/* ============================================================
+   ⑪ prefers-reduced-motion：全部动画熔断
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .qs-overlay *,
+  .qs-overlay *::before,
+  .qs-overlay *::after,
+  .qs-trigger *,
+  .qs-trigger *::before,
+  .qs-trigger *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .qs-tw::after,
+  .qs-ph::after {
+    display: none;
+  }
+}

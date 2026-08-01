@@ -1,0 +1,47 @@
+{
+  "name": "qingwu-web-clipper",
+  "version": "0.1.0",
+  "description": "青梧 Web Clipper - 面向青梧 AI 编辑器的现代化浏览器剪藏插件（Chrome / Edge / Firefox）",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "icons": "node scripts/build.mjs icons",
+    "prebuild": "node scripts/build.mjs icons",
+    "build": "tsc --noEmit && vite build && node scripts/build.mjs",
+    "build:chrome": "cross-env TARGET=chrome vite build && node scripts/build.mjs chrome",
+    "build:firefox": "cross-env TARGET=firefox vite build && node scripts/build.mjs firefox",
+    "build:edge": "cross-env TARGET=edge vite build && node scripts/build.mjs edge",
+    "typecheck": "tsc --noEmit",
+    "package": "node scripts/build.mjs package",
+    "package:chrome": "node scripts/build.mjs package chrome",
+    "package:firefox": "node scripts/build.mjs package firefox",
+    "package:edge": "node scripts/build.mjs package edge",
+    "release": "npm run build && node scripts/build.mjs package",
+    "release:chrome": "npm run build:chrome && node scripts/build.mjs package chrome",
+    "release:firefox": "npm run build:firefox && node scripts/build.mjs package firefox",
+    "release:edge": "npm run build:edge && node scripts/build.mjs package edge"
+  },
+  "dependencies": {
+    "framer-motion": "^11.15.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "@types/node": "^26.1.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "cross-env": "^7.0.3",
+    "postcss": "^8.5.1",
+    "sharp": "^0.33.5",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  },
+  "optionalDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

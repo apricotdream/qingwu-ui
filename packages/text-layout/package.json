@@ -1,0 +1,66 @@
+{
+  "name": "@qingwu/text-layout",
+  "version": "0.4.0",
+  "description": "Pretext-inspired text layout engine — two-phase prepare/layout, Canvas measurement, Unicode-aware line breaking, virtual scroll heights, multi-line truncation, chip flow, and table column sizing",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "size": "size-limit"
+  },
+  "devDependencies": {
+    "@qingwu/tsconfig": "workspace:*",
+    "@size-limit/preset-small-lib": "^13.0.1",
+    "size-limit": "^13.0.1",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.mjs",
+      "limit": "8 kB"
+    }
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qingwu-team/qingwu-ui.git",
+    "directory": "packages/text-layout"
+  },
+  "homepage": "https://github.com/qingwu-team/qingwu-ui#readme",
+  "bugs": "https://github.com/qingwu-team/qingwu-ui/issues",
+  "keywords": [
+    "text-layout",
+    "line-breaking",
+    "text-measurement",
+    "canvas",
+    "typesetting",
+    "virtual-scroll",
+    "truncation",
+    "qingwu"
+  ],
+  "author": "Qingwu Team",
+  "engines": {
+    "node": ">=20"
+  }
+}

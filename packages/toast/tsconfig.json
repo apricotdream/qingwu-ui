@@ -1,0 +1,6 @@
+{
+  "extends": "@qingwu/tsconfig/base.json",
+  "include": [
+    "src"
+  ]
+}

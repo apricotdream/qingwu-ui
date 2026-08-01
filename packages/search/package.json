@@ -1,0 +1,73 @@
+{
+  "name": "@qingwu/search",
+  "version": "0.4.0",
+  "description": "Framework-agnostic headless search / command-palette component for Qingwu UI — typewriter placeholder, keyboard-first, zero dependencies",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": [
+    "./dist/style.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./style.css": "./dist/style.css",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown && node -e \"require('fs').cpSync('src/style.css','dist/style.css')\"",
+    "build:browser": "bun build src/demo-entry.ts --outdir=dist/browser --format=iife",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "size": "size-limit"
+  },
+  "devDependencies": {
+    "@qingwu/tsconfig": "workspace:*",
+    "@size-limit/preset-small-lib": "^13.0.1",
+    "happy-dom": "^20.11.1",
+    "size-limit": "^13.0.1",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.mjs",
+      "limit": "12 kB"
+    }
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qingwu-team/qingwu-ui.git",
+    "directory": "packages/search"
+  },
+  "homepage": "https://github.com/qingwu-team/qingwu-ui#readme",
+  "bugs": "https://github.com/qingwu-team/qingwu-ui/issues",
+  "keywords": [
+    "search",
+    "search-box",
+    "command-palette",
+    "typewriter",
+    "headless",
+    "framework-agnostic",
+    "keyboard-navigation",
+    "ui-component",
+    "qingwu"
+  ],
+  "author": "Qingwu Team",
+  "engines": {
+    "node": ">=20"
+  }
+}

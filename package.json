@@ -1,0 +1,56 @@
+{
+  "name": "qingwu-ui",
+  "description": "青梧UI —— 以中国历法为核心差异化的无障碍开源日历/日期组件库",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "bun@1.3.13",
+  "workspaces": [
+    "packages/*",
+    "packages/*/*",
+    "tooling/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "size": "turbo size",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "ci": "biome check . && turbo build typecheck test size",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "publish-check": "bun tooling/publish-check/index.mjs",
+    "publish-check:fix": "bun tooling/publish-check/index.mjs --fix",
+    "release": "turbo build --filter='./packages/*' && bun run publish-check",
+    "serve": "bun run serve.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.5",
+    "@changesets/cli": "^2.31.1",
+    "turbo": "^2.10.6",
+    "typescript": "^7.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qingwu-team/qingwu-ui.git"
+  },
+  "homepage": "https://github.com/qingwu-team/qingwu-ui#readme",
+  "bugs": "https://github.com/qingwu-team/qingwu-ui/issues",
+  "keywords": [
+    "calendar",
+    "date-picker",
+    "lunar-calendar",
+    "chinese-calendar",
+    "solar-terms",
+    "headless",
+    "framework-agnostic",
+    "ui-component",
+    "accessibility",
+    "qingwu"
+  ],
+  "author": "Qingwu Team",
+  "engines": {
+    "node": ">=20"
+  }
+}

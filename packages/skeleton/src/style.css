@@ -1,0 +1,94 @@
+/* 青梧 UI —— 骨架屏组件
+ * Skeleton / Shimmer Loading Components
+ */
+
+/* ── CSS 自定义属性 ── */
+
+.qs-skeleton-wrapper {
+  --qs-sk-bg: #e0e0e0;
+  --qs-sk-shimmer: #f0f0f0;
+  --qs-sk-radius: 4px;
+  --qs-sk-duration: 1500ms;
+}
+
+/* ── 流光关键帧 ── */
+
+@keyframes qs-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── 骨架包装器 ── */
+.qs-skeleton-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── 骨架块默认样式 ── */
+.qs-skeleton-block {
+  background: linear-gradient(
+    90deg,
+    var(--qs-sk-bg) 0%,
+    var(--qs-sk-shimmer) 40%,
+    var(--qs-sk-shimmer) 60%,
+    var(--qs-sk-bg) 100%
+  );
+  background-size: 200% 100%;
+  animation: qs-shimmer var(--qs-sk-duration) ease-in-out infinite;
+  border-radius: var(--qs-sk-radius);
+}
+
+/* ── 尊重用户动效偏好 ── */
+@media (prefers-reduced-motion: reduce) {
+  .qs-skeleton-block {
+    animation: none;
+  }
+  .qs-skeleton-overlay {
+    animation: none !important;
+  }
+}
+
+/* ── 测量容器 ── */
+.qs-skeleton-measure {
+  pointer-events: none;
+}
+
+/* ── 覆盖层 ── */
+.qs-skeleton-overlays {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+/* ── 覆盖层单个块 ── */
+.qs-skeleton-overlay {
+  position: absolute;
+  background-size: 200% 100%;
+  animation: qs-shimmer var(--qs-sk-duration) ease-in-out infinite;
+}
+
+/* 非动画模式 */
+.qs-skeleton-overlay.is-static {
+  animation: none;
+}
+
+/* ── SSR 骨架块 ── */
+.qs-ssr-skel-block {
+  position: absolute;
+  background-size: 200% 100%;
+  animation: qs-shimmer 1500ms ease-in-out infinite;
+}
+
+/* ── 骨架包裹原内容时的淡出过渡 ── */
+.qs-skeleton-wrapper.is-exiting .qs-skeleton-overlay {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+
+.qs-skeleton-wrapper.is-exiting .qs-skeleton-measure {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}

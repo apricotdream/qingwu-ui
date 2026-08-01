@@ -1,0 +1,81 @@
+/* ============================================================
+   青梧UI · Button 组件样式
+   Design: Uiverse.io by suda-code
+   @layer qingwu.button
+   ============================================================ */
+
+.qw-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12.5px 30px;
+  border: 0;
+  border-radius: 100px;
+  background-color: #e0e4e8;
+  color: #2c3e50;
+  font-weight: Bold;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.5s;
+  -webkit-transition: all 0.5s;
+  line-height: 1;
+}
+
+.qw-btn:hover {
+  background-color: #d0d4d8;
+  transform: scale(1.1);
+}
+
+.qw-btn:active {
+  transition: all 0.25s;
+  -webkit-transition: all 0.25s;
+  transform: scale(0.98);
+}
+
+.qw-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---- 变体 ---- */
+
+.qw-btn-primary {
+  background-color: #2ba8fb;
+  color: #ffffff;
+}
+
+.qw-btn-primary:hover {
+  background-color: #6fc5ff;
+  box-shadow: 0 0 20px #6fc5ff50;
+}
+
+.qw-btn-primary:active {
+  background-color: #3d94cf;
+  box-shadow: none;
+}
+
+.qw-btn-amber {
+  background-color: #f0a030;
+  color: #ffffff;
+}
+
+.qw-btn-amber:hover {
+  background-color: #f5b850;
+  box-shadow: 0 0 20px #f5b85050;
+}
+
+.qw-btn-amber:active {
+  background-color: #d08a20;
+  box-shadow: none;
+}
+
+.qw-btn-icon {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  justify-content: center;
+  font-size: 20px;
+  border-radius: 100px;
+}

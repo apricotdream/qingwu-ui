@@ -1,0 +1,74 @@
+{
+  "name": "@qingwu/upload",
+  "version": "0.4.0",
+  "description": "Qingwu UI Image Upload component — drag & drop, per-format progress bar, client-side compression to original / webp / avif, zero dependencies",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": [
+    "./dist/style.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./style.css": "./dist/style.css",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown && node -e \"const fs=require('fs');fs.writeFileSync('dist/style.css',fs.readFileSync('../button/src/style.css','utf8')+'\\n'+fs.readFileSync('src/style.css','utf8'))\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "size": "size-limit"
+  },
+  "dependencies": {
+    "@qingwu/button": "^0.4.0"
+  },
+  "devDependencies": {
+    "@qingwu/tsconfig": "workspace:*",
+    "@size-limit/preset-small-lib": "^13.0.1",
+    "happy-dom": "^20.11.1",
+    "size-limit": "^13.0.1",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.mjs",
+      "limit": "14 kB"
+    }
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qingwu-team/qingwu-ui.git",
+    "directory": "packages/upload"
+  },
+  "homepage": "https://github.com/qingwu-team/qingwu-ui#readme",
+  "bugs": "https://github.com/qingwu-team/qingwu-ui/issues",
+  "keywords": [
+    "upload",
+    "image",
+    "drag-and-drop",
+    "compress",
+    "webp",
+    "avif",
+    "ui-component",
+    "framework-agnostic",
+    "qingwu"
+  ],
+  "author": "Qingwu Team",
+  "engines": {
+    "node": ">=20"
+  }
+}

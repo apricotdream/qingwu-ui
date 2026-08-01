@@ -1,0 +1,97 @@
+/* 青梧 Web Clipper content-script 样式 - 浮动按钮（不影响页面） */
+
+.qingwu-clipper-fab {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%) translateX(80px) scale(0.9);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: #ffffff;
+  cursor: pointer;
+  z-index: 2147483646;
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px -4px rgba(13, 148, 136, 0.45), 0 0 0 1px rgba(13, 148, 136, 0.18) inset;
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+}
+
+.qingwu-clipper-fab--visible {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0) scale(1);
+}
+
+.qingwu-clipper-fab:hover {
+  transform: translateY(-50%) translateX(0) scale(1.08);
+  box-shadow: 0 8px 28px -4px rgba(13, 148, 136, 0.55), 0 0 0 1px rgba(13, 148, 136, 0.3) inset;
+}
+
+.qingwu-clipper-fab:active {
+  transform: translateY(-50%) translateX(0) scale(0.96);
+}
+
+.qingwu-clipper-fab img {
+  width: 42px;
+  height: 42px;
+  pointer-events: none;
+  display: block;
+}
+
+/* 悬浮球点击反馈 toast（页面内轻量浮层） */
+.qingwu-clipper-toast {
+  position: fixed;
+  right: 20px;
+  bottom: 28px;
+  max-width: 320px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #fff;
+  background: rgba(30, 41, 59, 0.95);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  z-index: 2147483647;
+  opacity: 0;
+  transform: translateY(12px) scale(0.96);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.qingwu-clipper-toast--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.qingwu-clipper-toast--success {
+  background: rgba(13, 148, 136, 0.95);
+}
+
+.qingwu-clipper-toast--error {
+  background: rgba(190, 18, 60, 0.95);
+}
+
+.qingwu-clipper-toast-action {
+  margin-left: 10px;
+  padding: 2px 10px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+.qingwu-clipper-toast-action:hover {
+  background: rgba(255, 255, 255, 0.32);
+}

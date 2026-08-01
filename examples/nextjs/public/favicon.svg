@@ -1,0 +1,205 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <!-- 徽章底色渐变 -->
+    <radialGradient id="badgeBg" cx="40%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#F0FDF9"/>
+      <stop offset="100%" stop-color="#DDF4EE"/>
+    </radialGradient>
+    <!-- 青梧主色渐变（青绿） -->
+    <linearGradient id="qingwu" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2DD4BF"/>
+      <stop offset="50%" stop-color="#14B8A6"/>
+      <stop offset="100%" stop-color="#0D9488"/>
+    </linearGradient>
+    <!-- 深青绿渐变 -->
+    <linearGradient id="qingwuDeep" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#115E59"/>
+    </linearGradient>
+    <!-- 金色羽翼渐变 -->
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0.8">
+      <stop offset="0%" stop-color="#FCD34D"/>
+      <stop offset="30%" stop-color="#EAB308"/>
+      <stop offset="70%" stop-color="#D4A574"/>
+      <stop offset="100%" stop-color="#B88A5C"/>
+    </linearGradient>
+    <!-- 暖金/橙羽翼渐变 -->
+    <linearGradient id="goldWarm" x1="0.2" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <!-- 徽章边框 -->
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#14B8A6" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#0D9488" stop-opacity="0.6"/>
+    </linearGradient>
+    <!-- 中心光芒 -->
+    <radialGradient id="glow" cx="50%" cy="45%" r="35%">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#F0FDF9" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#F0FDF9" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 外圆边框 -->
+  <circle cx="128" cy="128" r="124" fill="#F0FDF9" stroke="url(#ring)" stroke-width="3"/>
+
+  <!-- 内圆描边 -->
+  <circle cx="128" cy="128" r="118" fill="none" stroke="#14B8A6" stroke-width="0.5" stroke-opacity="0.15"/>
+
+  <!-- 中心和光晕 -->
+  <circle cx="128" cy="128" r="115" fill="none"/>
+  <ellipse cx="128" cy="115" rx="80" ry="70" fill="url(#glow)"/>
+
+  <!-- ===== 凤凰主体 ===== -->
+
+  <!-- 凤凰身体：S 型曲线，从左上延至右下 -->
+  <path d="
+    M 128 80
+    C 118 82, 108 90, 105 100
+    C 102 110, 108 118, 115 122
+    C 122 126, 128 130, 130 140
+    C 132 150, 126 158, 118 162
+    C 110 166, 100 164, 95 160
+  " fill="none" stroke="url(#qingwu)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- 凤凰身体加粗区域（躯干） -->
+  <ellipse cx="120" cy="118" rx="18" ry="26" fill="url(#qingwu)" transform="rotate(-15 120 118)"/>
+
+  <!-- 头部 -->
+  <circle cx="106" cy="96" r="9" fill="url(#qingwuDeep)"/>
+  <!-- 凤冠 -->
+  <path d="M 98 90 Q 92 80, 88 82 M 100 88 Q 95 78, 92 78 M 102 86 Q 99 76, 96 75"
+        fill="none" stroke="url(#goldWarm)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- 眼睛 -->
+  <circle cx="104" cy="94" r="2" fill="#fff"/>
+  <circle cx="103" cy="93.5" r="1" fill="#042F2E"/>
+
+  <!-- 喙 -->
+  <path d="M 97 96 Q 90 95, 88 97" fill="none" stroke="#FCD34D" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- ===== 左翼（上扬展开）===== -->
+  <path d="
+    M 118 108
+    C 110 98, 96 82, 78 68
+    C 72 62, 66 58, 60 56
+  "
+  fill="none" stroke="url(#goldWarm)" stroke-width="3" stroke-linecap="round"/>
+  <!-- 左翼羽毛 -->
+  <path d="M 110 105 C 98 92, 84 80, 72 72"
+        fill="none" stroke="url(#gold)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 105 102 C 97 94, 86 86, 76 80"
+        fill="none" stroke="url(#goldWarm)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 100 100 C 96 96, 88 92, 82 90"
+        fill="none" stroke="#FCD34D" stroke-width="2" stroke-linecap="round" stroke-opacity="0.8"/>
+
+  <!-- 左翼飘羽 -->
+  <path d="M 62 58 Q 75 54, 78 64 Q 74 62, 62 58"
+        fill="url(#goldWarm)" stroke="none" opacity="0.7"/>
+  <path d="M 68 62 Q 80 58, 84 68 Q 80 65, 68 62"
+        fill="url(#gold)" stroke="none" opacity="0.6"/>
+
+  <!-- ===== 右翼（展开向后）===== -->
+  <path d="
+    M 130 112
+    C 142 100, 160 84, 180 72
+    C 186 68, 192 64, 198 62
+  "
+  fill="none" stroke="url(#qingwu)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 135 108 C 148 96, 164 82, 182 72"
+        fill="none" stroke="#14B8A6" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.7"/>
+  <path d="M 140 104 C 150 96, 162 86, 174 78"
+        fill="none" stroke="#2DD4BF" stroke-width="2" stroke-linecap="round" stroke-opacity="0.6"/>
+  <path d="M 145 100 C 152 94, 160 88, 168 84"
+        fill="none" stroke="#5EEAD4" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.5"/>
+
+  <!-- ===== 尾羽（飘逸长尾）===== -->
+  <!-- 主尾羽 1 -->
+  <path d="
+    M 95 160
+    C 88 175, 78 195, 72 210
+    C 68 220, 70 228, 76 232
+  "
+  fill="none" stroke="url(#goldWarm)" stroke-width="3" stroke-linecap="round"/>
+  <!-- 尾羽 2 -->
+  <path d="
+    M 100 156
+    C 96 172, 90 192, 86 208
+    C 82 218, 84 226, 88 230
+  "
+  fill="none" stroke="url(#gold)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- 尾羽 3 -->
+  <path d="
+    M 106 154
+    C 108 168, 108 186, 106 198
+    C 104 208, 106 216, 110 220
+  "
+  fill="none" stroke="#FCD34D" stroke-width="2" stroke-linecap="round" stroke-opacity="0.8"/>
+  <!-- 尾羽 4 -->
+  <path d="
+    M 112 152
+    C 118 164, 122 178, 122 188
+    C 122 196, 120 204, 118 210
+  "
+  fill="none" stroke="#D4A574" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.6"/>
+
+  <!-- 尾羽末端装饰羽球 -->
+  <circle cx="76" cy="232" r="3" fill="#FBBF24" opacity="0.9"/>
+  <circle cx="88" cy="228" r="2.5" fill="#FCD34D" opacity="0.8"/>
+  <circle cx="110" cy="218" r="2" fill="#D4A574" opacity="0.7"/>
+
+  <!-- ===== 底部梧桐叶（青梧树）===== -->
+  <g opacity="0.7">
+    <!-- 左叶 -->
+    <path d="
+      M 128 152
+      C 118 158, 100 165, 90 170
+      C 95 175, 108 178, 118 172
+      Z
+    " fill="#14B8A6"/>
+    <path d="
+      M 128 152
+      C 122 160, 108 174, 100 180
+      C 108 182, 120 178, 126 168
+      Z
+    " fill="#2DD4BF"/>
+    <!-- 右叶 -->
+    <path d="
+      M 128 148
+      C 138 155, 156 164, 166 172
+      C 160 176, 148 176, 136 168
+      Z
+    " fill="#0D9488"/>
+    <path d="
+      M 128 148
+      C 134 158, 148 170, 152 178
+      C 148 178, 138 174, 130 164
+      Z
+    " fill="#14B8A6"/>
+    <!-- 中叶 -->
+    <path d="
+      M 128 145
+      C 128 155, 128 170, 126 182
+      C 131 182, 136 172, 136 160
+      Z
+    " fill="#0F766E"/>
+    <path d="
+      M 128 145
+      C 128 158, 126 170, 122 178
+      C 125 180, 130 172, 130 158
+      Z
+    " fill="#2DD4BF"/>
+  </g>
+
+  <!-- ===== 装饰金星 ===== -->
+  <circle cx="50" cy="95" r="2.5" fill="#FCD34D" opacity="0.6"/>
+  <circle cx="52" cy="145" r="2" fill="#FBBF24" opacity="0.5"/>
+  <circle cx="200" cy="100" r="2" fill="#FCD34D" opacity="0.5"/>
+  <circle cx="205" cy="140" r="1.5" fill="#FBBF24" opacity="0.4"/>
+  <circle cx="180" cy="160" r="1.5" fill="#FCD34D" opacity="0.35"/>
+  <circle cx="55" cy="115" r="1.5" fill="#FBBF24" opacity="0.35"/>
+
+  <!-- ===== 极简版：圆形底色徽章（小尺寸降级）===== -->
+  <!-- 这是为 16x16 做的兜底 — 纯色圆 + 凤凰剪影 -->
+</svg>

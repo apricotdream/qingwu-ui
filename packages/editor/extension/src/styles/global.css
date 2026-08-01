@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-white text-ink-900 antialiased;
+    font-family: theme("fontFamily.sans");
+    -webkit-font-smoothing: antialiased;
+  }
+  html.dark body {
+    @apply bg-ink-950 text-ink-100;
+  }
+  /* 滚动条 */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-ink-200 dark:bg-ink-700 rounded-full;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-300 dark:bg-ink-600;
+    background-clip: content-box;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 shadow-soft;
+  }
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(148, 163, 184, 0.08) 0%,
+      rgba(148, 163, 184, 0.18) 50%,
+      rgba(148, 163, 184, 0.08) 100%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
+  .grid-bg {
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(99, 113, 138, 0.12) 1px, transparent 0);
+    background-size: 18px 18px;
+  }
+}
