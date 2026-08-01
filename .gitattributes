@@ -1,0 +1,27 @@
+# 二进制文件：禁止 CRLF 转换，防止 core.autocrlf 剥离 0x0D 字节损坏资产（0.5.0 曾踩坑：全部 PNG/wasm/ttf 被剥离 CR）
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.bmp binary
+*.wasm binary
+*.ttf binary
+*.otf binary
+*.pfb binary
+*.bcmap binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.tgz binary
+*.bin binary
+*.7z binary
+*.jar binary
+*.xlsx binary
+*.docx binary
+*.pptx binary
