@@ -193,10 +193,11 @@
     },
     "packages/calendar/ui": {
       "name": "@qingwu/calendar",
-      "version": "0.3.1",
+      "version": "0.5.0",
       "devDependencies": {
         "@qingwu/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
+        "happy-dom": "^20.11.1",
         "size-limit": "^13.0.1",
         "tsdown": "^0.22.14",
         "typescript": "^7.0.2",
@@ -227,9 +228,6 @@
         "tsdown": "^0.22.14",
         "typescript": "^7.0.2",
         "vitest": "^4.1.10",
-      },
-      "peerDependencies": {
-        "@qingwu/text-layout": "^0.5.0",
       },
     },
     "packages/text-layout": {

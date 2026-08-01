@@ -3,7 +3,7 @@
   "version": "0.5.0",
   "description": "Qingwu UI Image Upload component — drag & drop, per-format progress bar, client-side compression to original / webp / avif, zero dependencies",
   "type": "module",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "sideEffects": [
     "./dist/style.css"
   ],

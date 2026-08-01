@@ -1,6 +1,14 @@
 /**
  * 历法数据 —— 节日、节气详情、宜忌（黄历）等静态数据。
  * 数据覆盖 2025-2027 年中国法定节假日，常见节日，节气说明。
+ *
+ * 数据来源与免责声明：
+ * - 法定节假日 / 调休安排：来源为国务院办公厅历年《关于部分节假日安排的通知》
+ *   （公开政务数据），逐年由维护者核对更新，以官方公告为准；
+ * - 节日渊源与节气物候文字：库作者编写的传统文化概述（公有领域知识），非百科
+ *   原文转载；
+ * - 黄历宜忌：**简化示意数据**，由基础规则生成，非专业黄历推算结果，仅供展示，
+ *   不作为行事决策依据（正式版可替换为专业黄历数据源）。
  */
 
 import type { SolarTerm } from "./lunar";
@@ -144,14 +152,14 @@ export function getSolarFestival(month: number, day: number): FestivalInfo | nul
 export interface SolarTermDetail {
   name: string;
   meaning: string;
-  phenology: string;    // 物候
-  custom: string;       // 民俗
-  farming: string;      // 农事
-  health: string;       // 养生
+  phenology: string; // 物候
+  custom: string; // 民俗
+  farming: string; // 农事
+  health: string; // 养生
 }
 
 const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
-  "立春": {
+  立春: {
     name: "立春",
     meaning: "春季的开始，万物复苏，阳气初生。太阳到达黄经315°。",
     phenology: "一候东风解冻，二候蛰虫始振，三候鱼陟负冰。",
@@ -159,7 +167,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "春耕准备开始，检修农具，选种备肥。",
     health: "宜养肝护阳，早睡早起，适度运动，忌暴怒。",
   },
-  "雨水": {
+  雨水: {
     name: "雨水",
     meaning: "降雨开始增多，冰雪融化，草木萌动。",
     phenology: "一候獭祭鱼，二候鸿雁来，三候草木萌动。",
@@ -167,7 +175,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "小麦返青期，需灌溉追肥，防春旱。",
     health: "健脾祛湿，少吃酸味多吃甜味，注意保暖。",
   },
-  "惊蛰": {
+  惊蛰: {
     name: "惊蛰",
     meaning: "春雷始鸣，惊醒蛰伏冬眠的昆虫，万物复苏加速。",
     phenology: "一候桃始华，二候仓庚鸣，三候鹰化为鸠。",
@@ -175,7 +183,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "春耕全面展开，播种早稻、玉米。",
     health: "养肝健脾，防春季流行病，适当吃梨润肺。",
   },
-  "春分": {
+  春分: {
     name: "春分",
     meaning: "昼夜平分，此后昼长夜短。春季过半，气温回升明显。",
     phenology: "一候玄鸟至，二候雷乃发声，三候始电。",
@@ -183,7 +191,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "越冬作物进入生长阶段，需加强田间管理。",
     health: "阴阳平衡，饮食宜清淡，多食时令蔬菜。",
   },
-  "清明": {
+  清明: {
     name: "清明",
     meaning: "天气清澈明朗，万物洁净，既是节气又是传统节日。",
     phenology: "一候桐始华，二候田鼠化为鴽，三候虹始见。",
@@ -191,7 +199,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "春播春种关键期，「清明前后，种瓜点豆」。",
     health: "养肝护肝，外出踏青舒展身心，忌食发物。",
   },
-  "谷雨": {
+  谷雨: {
     name: "谷雨",
     meaning: "雨生百谷，降雨及时且充足，有利于谷物生长。",
     phenology: "一候萍始生，二候鸣鸠拂其羽，三候戴胜降于桑。",
@@ -199,7 +207,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "播种移苗、种瓜点豆的最佳时节。",
     health: "健脾祛湿，适当食用薏米、山药等祛湿食物。",
   },
-  "立夏": {
+  立夏: {
     name: "立夏",
     meaning: "夏季开始，万物繁茂生长。",
     phenology: "一候蝼蝈鸣，二候蚯蚓出，三候王瓜生。",
@@ -207,7 +215,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "早稻插秧，中耕除草，防病虫害。",
     health: "养心护阳，午休养神，饮食宜清淡。",
   },
-  "小满": {
+  小满: {
     name: "小满",
     meaning: "麦类等夏熟作物籽粒开始灌浆饱满，但尚未成熟。",
     phenology: "一候苦菜秀，二候靡草死，三候麦秋至。",
@@ -215,7 +223,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "小麦进入乳熟期，水稻追肥。",
     health: "清热利湿，多吃苦味食物，忌贪凉。",
   },
-  "芒种": {
+  芒种: {
     name: "芒种",
     meaning: "有芒的麦子快收，有芒的稻子可种，农忙时节。",
     phenology: "一候螳螂生，二候鵙始鸣，三候反舌无声。",
@@ -223,7 +231,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "抢收小麦，抢种夏玉米、夏大豆。",
     health: "清热降火，多饮水，适当午休。",
   },
-  "夏至": {
+  夏至: {
     name: "夏至",
     meaning: "白昼最长，阳气最盛，此后阴气渐生。",
     phenology: "一候鹿角解，二候蝉始鸣，三候半夏生。",
@@ -231,7 +239,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "水稻需水量最大，注意灌溉防旱。",
     health: "养心安神，饮食宜清淡降火，忌过度贪凉。",
   },
-  "小暑": {
+  小暑: {
     name: "小暑",
     meaning: "暑为炎热之意，小暑即天气开始炎热但尚未达到极致。",
     phenology: "一候温风至，二候蟋蟀居宇，三候鹰始鸷。",
@@ -239,7 +247,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "早稻灌浆成熟，需防高温逼熟。",
     health: "防暑降温，多食绿豆、西瓜等消暑食物。",
   },
-  "大暑": {
+  大暑: {
     name: "大暑",
     meaning: "一年中最热的时期，湿热交蒸。",
     phenology: "一候腐草为萤，二候土润溽暑，三候大雨时行。",
@@ -247,7 +255,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "抢收抢种双抢时节，防旱防涝。",
     health: "清热解暑，健脾祛湿，避免高温时段外出。",
   },
-  "立秋": {
+  立秋: {
     name: "立秋",
     meaning: "秋季开始，暑去凉来，但暑气一时难消（秋老虎）。",
     phenology: "一候凉风至，二候白露降，三候寒蝉鸣。",
@@ -255,7 +263,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "秋粮作物进入灌浆成熟期，棉花开始采收。",
     health: "养肺润燥，适当进补，早卧早起。",
   },
-  "处暑": {
+  处暑: {
     name: "处暑",
     meaning: "「处」即止，暑气至此而止，炎热渐退。",
     phenology: "一候鹰乃祭鸟，二候天地始肃，三候禾乃登。",
@@ -263,7 +271,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "水稻孕穗抽穗，注意防秋旱。",
     health: "润肺防燥，少辛增酸，注意秋乏。",
   },
-  "白露": {
+  白露: {
     name: "白露",
     meaning: "天气转凉，水汽在地面或近地物体上凝结成白色水珠。",
     phenology: "一候鸿雁来，二候玄鸟归，三候群鸟养羞。",
@@ -271,7 +279,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "晚稻抽穗扬花，棉花裂铃吐絮。",
     health: "润肺生津，注意保暖添衣，预防秋燥。",
   },
-  "秋分": {
+  秋分: {
     name: "秋分",
     meaning: "昼夜再次平分，此后昼短夜长，秋已过半。",
     phenology: "一候雷始收声，二候蛰虫坯户，三候水始涸。",
@@ -279,7 +287,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "秋收秋种关键期，抢收水稻玉米。",
     health: "养肺润燥，早睡早起，保持心情平和。",
   },
-  "寒露": {
+  寒露: {
     name: "寒露",
     meaning: "气温更低，露水更多且带寒意，将要结冰。",
     phenology: "一候鸿雁来宾，二候雀入大水为蛤，三候菊有黄华。",
@@ -287,7 +295,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "冬小麦播种，晚稻收割。",
     health: "养阴润燥，防寒保暖，多食滋润食物。",
   },
-  "霜降": {
+  霜降: {
     name: "霜降",
     meaning: "天气渐冷，开始降霜，秋季最后一个节气。",
     phenology: "一候豺乃祭兽，二候草木黄落，三候蛰虫咸俯。",
@@ -295,7 +303,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "秋收扫尾，冬小麦出苗管理。",
     health: "补肺养阴，健脾养胃，注意保暖防寒。",
   },
-  "立冬": {
+  立冬: {
     name: "立冬",
     meaning: "冬季开始，万物收藏，规避寒冷。",
     phenology: "一候水始冰，二候地始冻，三候雉入大水为蜃。",
@@ -303,7 +311,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "秋收完毕，冬储开始，检修农机。",
     health: "养肾藏精，早卧晚起，适度进补。",
   },
-  "小雪": {
+  小雪: {
     name: "小雪",
     meaning: "开始降雪，但雪量不大，故称小雪。",
     phenology: "一候虹藏不见，二候天气上升地气下降，三候闭塞而成冬。",
@@ -311,7 +319,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "果树冬剪，蔬菜大棚保温防冻。",
     health: "养肾防寒，多食温补食物，保持情绪稳定。",
   },
-  "大雪": {
+  大雪: {
     name: "大雪",
     meaning: "降雪量增大，地面可能积雪，仲冬时节开始。",
     phenology: "一候鹖鴠不鸣，二候虎始交，三候荔挺出。",
@@ -319,7 +327,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "冬小麦越冬管理，防冻保墒。",
     health: "温补养肾，早睡晚起，注意头部保暖。",
   },
-  "冬至": {
+  冬至: {
     name: "冬至",
     meaning: "白昼最短，阴极之至，阳气始生。既是一个重要节气，也是传统节日。",
     phenology: "一候蚯蚓结，二候麋角解，三候水泉动。",
@@ -327,7 +335,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "冬闲时节，兴修水利，积肥造肥。",
     health: "温补肾阳，艾灸保健，避免过度劳累。",
   },
-  "小寒": {
+  小寒: {
     name: "小寒",
     meaning: "天气寒冷但尚未达到极致，一年中最寒冷时段的开始。",
     phenology: "一候雁北乡，二候鹊始巢，三候雉始雊。",
@@ -335,7 +343,7 @@ const SOLAR_TERM_DETAILS: Record<string, SolarTermDetail> = {
     farming: "冬小麦越冬管理，果树修剪整形。",
     health: "温阳散寒，适当进补，注意保暖。",
   },
-  "大寒": {
+  大寒: {
     name: "大寒",
     meaning: "一年中最寒冷的时期，寒气逆极。",
     phenology: "一候鸡始乳，二候征鸟厉疾，三候水泽腹坚。",
@@ -357,19 +365,23 @@ export function getSolarTermDetail(termName: string): SolarTermDetail | null {
    ============================================================ */
 
 export interface AlmanacInfo {
-  suitable: string[];   // 宜
+  suitable: string[]; // 宜
   unsuitable: string[]; // 忌
-  gods: string[];       // 神煞
-  clash: string;        // 冲煞
-  favorable: string;    // 吉神
+  gods: string[]; // 神煞
+  clash: string; // 冲煞
+  favorable: string; // 吉神
 }
 
 /** 通用宜忌（按农历月日提供基础宜忌，正式版需完整黄历数据） */
 function getBaseAlmanac(lunarMonth: number, lunarDay: number): AlmanacInfo {
   // 基础宜忌模板，按农历日期的天干地支周期给出
-  const dayMod = ((lunarMonth * 30 + lunarDay) % 12);
-  const earthlyBranch = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"][dayMod];
-  const zodiacSign = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"][dayMod];
+  const dayMod = (lunarMonth * 30 + lunarDay) % 12;
+  const earthlyBranch = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"][
+    dayMod
+  ];
+  const zodiacSign = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"][
+    dayMod
+  ];
 
   const suitableSets: Record<number, string[]> = {
     0: ["祭祀", "祈福", "开光", "出行", "嫁娶"],

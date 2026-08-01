@@ -1,9 +1,9 @@
 {
   "name": "@qingwu/button",
   "version": "0.5.0",
-  "description": "Qingwu UI Button component — pill-shaped, Uiverse-style, framework-agnostic, zero dependencies",
+  "description": "Qingwu UI Button component — pill-shaped, framework-agnostic, zero dependencies",
   "type": "module",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "sideEffects": [
     "./dist/style.css"
   ],

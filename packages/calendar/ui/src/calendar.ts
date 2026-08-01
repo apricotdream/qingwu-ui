@@ -6,31 +6,14 @@
    - 零框架依赖，纯 DOM + CSS
    ============================================================ */
 
+import { getYearGanzhi } from "./lunar";
+import type { DayMetaProvider, PanelProvider } from "./providers";
+import { DetailPanelProvider, HolidayBadgeProvider, LunarDayMetaProvider } from "./providers";
 import type { CalendarUiOptions, HolidayConfig } from "./types";
-import {
-  getAlmanac,
-  getLunarFestival,
-  getSolarFestival,
-  getSolarTermDetail,
-  type AlmanacInfo,
-  type FestivalInfo,
-  type SolarTermDetail,
-} from "./data";
-import {
-  formatLunarDate,
-  getLunarDayName,
-  getLunarMonthName,
-  getNearbySolarTerms,
-  getSolarTerm,
-  getYearGanzhi,
-  solarToLunar,
-  type LunarDate,
-  type SolarTerm,
-} from "./lunar";
 
 /* ---------- 运行时常量 ---------- */
 
-type ViewMode = 'day' | 'month' | 'year';
+type ViewMode = "day" | "month" | "year";
 
 const PREFERS_REDUCED =
   typeof window !== "undefined"
@@ -38,10 +21,9 @@ const PREFERS_REDUCED =
     : false;
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"];
-const WEEKDAY_LABELS_SHORT = ["日", "一", "二", "三", "四", "五", "六"];
 
 /* ---------- SVG 图标（由 icon/icons.ts 提供） ---------- */
-import { ICO_CALENDAR, ICO_ARROW_LEFT, ICO_ARROW_RIGHT } from "../../../../icon/icons";
+import { ICO_ARROW_LEFT, ICO_ARROW_RIGHT, ICO_CALENDAR } from "../../../../icon/icons";
 
 const CALENDAR_ICON = ICO_CALENDAR;
 const ARROW_LEFT = ICO_ARROW_LEFT;
@@ -89,6 +71,10 @@ export class Calendar {
   private readonly holidays: HolidayConfig;
   private readonly animate: boolean;
 
+  /* ---- Provider（默认内置，用户追加在后） ---- */
+  private readonly dayMetaProviders: DayMetaProvider[];
+  private readonly panelProviders: PanelProvider[];
+
   /* ---- 状态 ---- */
   private isOpen = false;
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -104,12 +90,11 @@ export class Calendar {
   private grid!: HTMLElement;
   private detailPanel!: HTMLElement;
   private detailContent!: HTMLElement;
-  private closeBtn!: HTMLButtonElement;
   private todayBtn!: HTMLButtonElement;
   private confirmBtn!: HTMLButtonElement;
 
   /* ---- 视图 + 时间 ---- */
-  private viewMode: ViewMode = 'day';
+  private viewMode: ViewMode = "day";
   private timeRow!: HTMLElement;
   private hourInput!: HTMLInputElement;
   private minuteInput!: HTMLInputElement;
@@ -134,6 +119,14 @@ export class Calendar {
     this.showDetailPanel = opts.showDetailPanel ?? true;
     this.holidays = opts.holidays ?? {};
     this.animate = !PREFERS_REDUCED;
+
+    /* 内置 provider 默认注册；用户 provider 追加在后（顺序即渲染顺序） */
+    this.dayMetaProviders = [
+      new LunarDayMetaProvider(),
+      new HolidayBadgeProvider(this.holidays),
+      ...(opts.dayMetaProviders ?? []),
+    ];
+    this.panelProviders = [new DetailPanelProvider(), ...(opts.panelProviders ?? [])];
 
     this.selectedTime = {
       hour: this.selected.getHours(),
@@ -236,14 +229,23 @@ export class Calendar {
     /* 时间选择器 */
     this.timeRow = el("div", "qw-cal-time");
     this.hourInput = el("input", "qw-cal-time-input") as HTMLInputElement;
-    this.hourInput.type = "number"; this.hourInput.min = "0"; this.hourInput.max = "23";
-    this.hourInput.value = "00"; this.hourInput.setAttribute("aria-label", "时");
+    this.hourInput.type = "number";
+    this.hourInput.min = "0";
+    this.hourInput.max = "23";
+    this.hourInput.value = "00";
+    this.hourInput.setAttribute("aria-label", "时");
     this.minuteInput = el("input", "qw-cal-time-input") as HTMLInputElement;
-    this.minuteInput.type = "number"; this.minuteInput.min = "0"; this.minuteInput.max = "59";
-    this.minuteInput.value = "00"; this.minuteInput.setAttribute("aria-label", "分");
+    this.minuteInput.type = "number";
+    this.minuteInput.min = "0";
+    this.minuteInput.max = "59";
+    this.minuteInput.value = "00";
+    this.minuteInput.setAttribute("aria-label", "分");
     this.secondInput = el("input", "qw-cal-time-input") as HTMLInputElement;
-    this.secondInput.type = "number"; this.secondInput.min = "0"; this.secondInput.max = "59";
-    this.secondInput.value = "00"; this.secondInput.setAttribute("aria-label", "秒");
+    this.secondInput.type = "number";
+    this.secondInput.min = "0";
+    this.secondInput.max = "59";
+    this.secondInput.value = "00";
+    this.secondInput.setAttribute("aria-label", "秒");
 
     const sep1 = el("span", "qw-cal-time-sep", ":");
     const sep2 = el("span", "qw-cal-time-sep", ":");
@@ -259,14 +261,17 @@ export class Calendar {
     });
     this.timeRow.append(
       el("span", "qw-cal-time-label", "时间"),
-      this.hourInput, sep1,
-      this.minuteInput, sep2,
+      this.hourInput,
+      sep1,
+      this.minuteInput,
+      sep2,
       this.secondInput,
-      zeroBtn, endBtn,
+      zeroBtn,
+      endBtn,
     );
     this.mainArea.append(this.timeRow);
 
-    /* 底部操作栏 */
+    /* 底部操作栏（面板级 footer，贯通全宽） */
     const actions = el("div", "qw-cal-actions");
     const cancelBtn = el("button", "qw-cal-cancel-btn", "取消") as HTMLButtonElement;
     cancelBtn.type = "button";
@@ -275,14 +280,6 @@ export class Calendar {
     this.confirmBtn.type = "button";
     this.confirmBtn.addEventListener("click", () => this.confirm());
     actions.append(cancelBtn, this.confirmBtn);
-    actions.append(cancelBtn, this.confirmBtn);
-    this.mainArea.append(actions);
-
-    /* 关闭按钮（面板内） */
-    this.closeBtn = el("button", "qw-cal-close-btn", "×") as HTMLButtonElement;
-    this.closeBtn.type = "button";
-    this.closeBtn.setAttribute("aria-label", "关闭");
-    this.closeBtn.addEventListener("click", () => this.close());
 
     /* 详情面板 */
     this.detailPanel = el("div", "qw-cal-side");
@@ -296,7 +293,8 @@ export class Calendar {
     this.detailContent.append(sideCloseBtn);
     this.detailPanel.append(this.detailContent);
 
-    this.panel.append(this.mainArea, this.detailPanel, this.closeBtn);
+    this.mainArea.append(actions);
+    this.panel.append(this.mainArea, this.detailPanel);
     this.overlay.append(this.panel);
     this.root.append(this.triggerWrap, this.overlay);
   }
@@ -329,7 +327,9 @@ export class Calendar {
 
     /* 日格点击（处理三种视图） */
     this.grid.addEventListener("click", (e) => {
-      const cell = (e.target as HTMLElement).closest<HTMLElement>(".qw-cal-cell, .qw-cal-month-cell, .qw-cal-year-cell");
+      const cell = (e.target as HTMLElement).closest<HTMLElement>(
+        ".qw-cal-cell, .qw-cal-month-cell, .qw-cal-year-cell",
+      );
       if (!cell) return;
 
       // 年视图：点击年份 → 日视图
@@ -358,6 +358,7 @@ export class Calendar {
       const iso = cell.dataset.date;
       if (!iso) return;
       const [y, m, d] = iso.split("-").map(Number);
+      if (y === undefined || m === undefined || d === undefined) return;
       const date = new Date(y, m - 1, d);
       if (this.isDisabled(date)) return;
       const isCurrentMonth = date.getMonth() === this.viewDate.getMonth();
@@ -422,6 +423,16 @@ export class Calendar {
 
     this.overlay.hidden = false;
     document.body.style.overflow = "hidden";
+
+    /* 锚定动画：transform-origin 指向输入框位置（视觉从输入框弱出） */
+    const ir = this.input.getBoundingClientRect();
+    const pr = this.panel.getBoundingClientRect();
+    if (pr.width > 0 && pr.height > 0) {
+      const ox = ((ir.left + ir.width / 2 - pr.left) / pr.width) * 100;
+      const oy = ((ir.top + ir.height / 2 - pr.top) / pr.height) * 100;
+      this.panel.style.transformOrigin = `${ox.toFixed(1)}% ${oy.toFixed(1)}%`;
+    }
+
     if (this.animate) {
       requestAnimationFrame(() => {
         this.overlay.classList.add("is-open");
@@ -433,7 +444,16 @@ export class Calendar {
     }
 
     this.render();
-    this.hideDetail();
+    /* 焦点移入面板首个高频可交互元素（今天按钮；不可用时聚焦面板） */
+    this.panel.tabIndex = -1;
+    const focusTarget = this.todayBtn.classList.contains("is-hidden") ? this.panel : this.todayBtn;
+    focusTarget.focus();
+    /* 详情面板：打开时渲染一次当前选中日期（Provider 重渲时机 = 选中变化） */
+    if (this.showDetailPanel) {
+      this.showDetail(this.selected);
+    } else {
+      this.hideDetail();
+    }
     this.onOpenChangeCb?.(true);
   }
 
@@ -449,6 +469,8 @@ export class Calendar {
     const finish = () => {
       this.overlay.hidden = true;
       this.closeTimer = null;
+      /* 动画结束后归还焦点到输入框 */
+      this.input.focus();
     };
     if (this.animate) {
       this.closeTimer = setTimeout(finish, 220);
@@ -484,7 +506,14 @@ export class Calendar {
   setSelectedDate(date: Date | string): void {
     const d = toDate(date);
     if (!d) return;
-    this.selected = new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds());
+    this.selected = new Date(
+      d.getFullYear(),
+      d.getMonth(),
+      d.getDate(),
+      d.getHours(),
+      d.getMinutes(),
+      d.getSeconds(),
+    );
     this.viewDate = new Date(this.selected);
     this.viewDate.setDate(1);
     this.selectedTime = { hour: d.getHours(), minute: d.getMinutes(), second: d.getSeconds() };
@@ -497,6 +526,8 @@ export class Calendar {
     if (this.closeTimer !== null) clearTimeout(this.closeTimer);
     if (this.docKey) document.removeEventListener("keydown", this.docKey, true);
     if (this.docClick) document.removeEventListener("mousedown", this.docClick);
+    for (const p of this.dayMetaProviders) p.destroy?.();
+    for (const p of this.panelProviders) p.destroy?.();
     this.root.textContent = "";
   }
 
@@ -691,58 +722,27 @@ export class Calendar {
       const dayNum = el("span", "qw-cal-cell-num", String(date.getDate()));
       cell.append(dayNum);
 
-      // 农历信息
-      const lunar = solarToLunar(date);
-      const lunarStr = lunar.day === 1
-        ? getLunarMonthName(lunar.month, lunar.isLeap)
-        : getLunarDayName(lunar.day);
-
-      // 节日优先显示
-      const lunarFest = getLunarFestival(lunar.month, lunar.day);
-      const solarFest = getSolarFestival(date.getMonth() + 1, date.getDate());
-      const term = getSolarTerm(date);
-
-      let subLabel = "";
+      // 格子 meta：按注册顺序合并 DayMetaProvider 结果；
+      // sub / badge 取最后一个非空（追加在后的用户 provider 可覆盖内置），cellClass 全部合并
+      let sub = "";
       let subClass = "qw-cal-cell-sub";
-
-      if (lunarFest) {
-        subLabel = lunarFest.name;
-        subClass += " is-festival";
-      } else if (solarFest) {
-        subLabel = solarFest.name;
-        subClass += " is-solar-festival";
-      } else if (term) {
-        subLabel = term.name;
-        subClass += " is-term";
-      } else if (lunar.day === 1) {
-        subLabel = lunarStr;
-        subClass += " is-lunar-month";
-      } else {
-        subLabel = lunarStr;
-        subClass += " is-lunar";
-      }
-
-      // 节假日/调休标记（优先使用用户配置，其次内置节日）
-      const hDays = this.holidays.holidays ?? [];
-      const wDays = this.holidays.workdays ?? [];
       let badge = "";
-      if (wDays.includes(iso)) {
-        cell.classList.add("is-workday");
-        badge = "工";
-      } else if (hDays.includes(iso)) {
-        cell.classList.add("is-holiday");
-        badge = "休";
-      } else if (lunarFest?.name === "春节" || solarFest?.name === "国庆节" || solarFest?.name === "劳动节") {
-        cell.classList.add("is-holiday");
-        badge = "休";
+      const cellClasses: string[] = [];
+
+      for (const p of this.dayMetaProviders) {
+        const meta = p.getDayMeta(date);
+        if (!meta) continue;
+        if (meta.sub) {
+          sub = meta.sub;
+          subClass = `qw-cal-cell-sub${meta.subClass ? ` ${meta.subClass}` : ""}`;
+        }
+        if (meta.badge) badge = meta.badge;
+        if (meta.cellClass) cellClasses.push(...meta.cellClass.split(/\s+/));
       }
 
-      const sub = el("span", subClass, subLabel);
-      cell.append(sub);
-
-      if (badge) {
-        cell.append(el("span", "qw-cal-cell-badge", badge));
-      }
+      if (sub) cell.append(el("span", subClass, sub));
+      for (const c of cellClasses) if (c) cell.classList.add(c);
+      if (badge) cell.append(el("span", "qw-cal-cell-badge", badge));
 
       frag.append(cell);
     }
@@ -756,8 +756,12 @@ export class Calendar {
 
   private selectDate(date: Date, rerender: boolean): void {
     this.selected = new Date(
-      date.getFullYear(), date.getMonth(), date.getDate(),
-      this.selectedTime.hour, this.selectedTime.minute, this.selectedTime.second,
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      this.selectedTime.hour,
+      this.selectedTime.minute,
+      this.selectedTime.second,
     );
 
     if (rerender) {
@@ -770,107 +774,26 @@ export class Calendar {
   }
 
   private showDetail(date: Date): void {
-    const lunar = solarToLunar(date);
-    const lunarFest = getLunarFestival(lunar.month, lunar.day);
-    const solarFest = getSolarFestival(date.getMonth() + 1, date.getDate());
-    const term = getSolarTerm(date);
-    const terms = getNearbySolarTerms(date);
-    const almanac = getAlmanac(lunar.month, lunar.day);
-    const gz = getYearGanzhi(lunar.year);
+    /* 清空并重建：× 按钮 + 各 PanelProvider 内容块（按注册顺序） */
+    this.detailContent.textContent = "";
+    const sideCloseBtn = el("button", "qw-cal-side-close", "×") as HTMLButtonElement;
+    sideCloseBtn.type = "button";
+    sideCloseBtn.setAttribute("aria-label", "关闭详情");
+    sideCloseBtn.addEventListener("click", () => this.hideDetail());
+    this.detailContent.append(sideCloseBtn);
 
-    const dateStr = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
-    const weekDay = WEEKDAY_LABELS_SHORT[date.getDay()];
-    const lunarStr = formatLunarDate(lunar);
-    const ganzhiStr = `${gz.stem}${gz.branch}年（${gz.zodiac}年）`;
-
-    /* 构建详情 */
-    const rows: string[] = [];
-
-    // 日期概览
-    rows.push(
-      `<div class="qw-detail-date">${dateStr} 星期${weekDay}</div>`,
-      `<div class="qw-detail-lunar">农历 ${lunarStr}</div>`,
-      `<div class="qw-detail-ganzhi">${ganzhiStr}</div>`,
-    );
-
-    // 节日信息
-    if (lunarFest) {
-      rows.push(...this.renderFestivalDetail(lunarFest));
-    }
-    if (solarFest && !lunarFest) {
-      rows.push(...this.renderFestivalDetail(solarFest));
-    }
-
-    // 节气信息
-    if (term) {
-      rows.push(...this.renderTermDetail(term, true));
-    } else if (terms.length > 0) {
-      // 显示附近的节气
-      for (const t of terms) {
-        rows.push(...this.renderTermDetail(t, false));
+    for (const p of this.panelProviders) {
+      const out = p.render(date);
+      if (out == null) continue;
+      if (typeof out === "string") {
+        /* provider 为开发者可信代码，字符串按 HTML 解析 */
+        this.detailContent.insertAdjacentHTML("beforeend", out);
+      } else {
+        this.detailContent.append(out);
       }
     }
 
-    // 黄历宜忌
-    if (almanac) rows.push(...this.renderAlmanac(almanac));
-
-    this.detailContent.innerHTML =
-      '<button class="qw-cal-side-close" aria-label="关闭详情" type="button">×</button>' +
-      rows.join("");
-
-    // 重新绑定侧栏关闭按钮
-    const sideCloseBtn = this.detailContent.querySelector<HTMLButtonElement>(".qw-cal-side-close");
-    if (sideCloseBtn) {
-      sideCloseBtn.addEventListener("click", () => this.hideDetail());
-    }
-
     this.detailPanel.classList.add("is-active");
-  }
-
-  private renderFestivalDetail(fest: FestivalInfo): string[] {
-    const rows: string[] = [];
-    rows.push(`<div class="qw-detail-section"><div class="qw-detail-label">节日</div>`);
-    rows.push(`<div class="qw-detail-fest-name">${fest.name}</div>`);
-    if (fest.origin) {
-      rows.push(`<div class="qw-detail-text"><b>渊源</b> ${fest.origin}</div>`);
-    }
-    if (fest.description) {
-      rows.push(`<div class="qw-detail-text"><b>习俗</b> ${fest.description}</div>`);
-    }
-    rows.push("</div>");
-    return rows;
-  }
-
-  private renderTermDetail(term: SolarTerm, isExact: boolean): string[] {
-    const detail = getSolarTermDetail(term.name);
-    const rows: string[] = [];
-    rows.push(
-      `<div class="qw-detail-section"><div class="qw-detail-label">${isExact ? "今日节气" : "临近节气"}</div>`,
-      `<div class="qw-detail-term-name">${term.name}</div>`,
-    );
-    if (detail) {
-      rows.push(`<div class="qw-detail-text"><b>涵义</b> ${detail.meaning}</div>`);
-      rows.push(`<div class="qw-detail-text"><b>物候</b> ${detail.phenology}</div>`);
-      rows.push(`<div class="qw-detail-text"><b>民俗</b> ${detail.custom}</div>`);
-      rows.push(`<div class="qw-detail-text"><b>农事</b> ${detail.farming}</div>`);
-      rows.push(`<div class="qw-detail-text"><b>养生</b> ${detail.health}</div>`);
-    }
-    rows.push("</div>");
-    return rows;
-  }
-
-  private renderAlmanac(almanac: AlmanacInfo): string[] {
-    const rows: string[] = [];
-    rows.push(`<div class="qw-detail-section"><div class="qw-detail-label">黄历宜忌</div>`);
-    rows.push(
-      `<div class="qw-almanac-item"><b>宜</b> <span class="qw-almanac-suit">${almanac.suitable.join(" · ")}</span></div>`,
-      `<div class="qw-almanac-item"><b>忌</b> <span class="qw-almanac-unsuit">${almanac.unsuitable.join(" · ")}</span></div>`,
-      `<div class="qw-almanac-item qw-almanac-sm"><b>冲煞</b> ${almanac.clash}</div>`,
-      `<div class="qw-almanac-item qw-almanac-sm"><b>吉神</b> ${almanac.favorable}</div>`,
-      `<div class="qw-almanac-item qw-almanac-sm"><b>神煞</b> ${almanac.gods.join(" · ")}</div>`,
-    );
-    rows.push("</div>");
-    return rows;
   }
 
   private hideDetail(): void {
@@ -909,7 +832,11 @@ export class Calendar {
 
   private goToday(): void {
     const today = new Date();
-    this.selectedTime = { hour: today.getHours(), minute: today.getMinutes(), second: today.getSeconds() };
+    this.selectedTime = {
+      hour: today.getHours(),
+      minute: today.getMinutes(),
+      second: today.getSeconds(),
+    };
     this.viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
     this.selectDate(today, true);
   }

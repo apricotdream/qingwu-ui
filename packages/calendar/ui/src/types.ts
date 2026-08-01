@@ -2,6 +2,8 @@
  * 日历组件类型定义
  */
 
+import type { DayMetaProvider, PanelProvider } from "./providers";
+
 /** 节假日配置 */
 export interface HolidayConfig {
   /** 放假日期列表（"YYYY-MM-DD"） */
@@ -30,4 +32,8 @@ export interface CalendarUiOptions {
   showDetailPanel?: boolean;
   /** 节假日配置（放假日期 + 调休上班日期；默认无） */
   holidays?: HolidayConfig;
+  /** 自定义日期格 meta Provider（追加在内置 provider 之后） */
+  dayMetaProviders?: DayMetaProvider[];
+  /** 自定义详情面板内容块 Provider（追加在内置 provider 之后） */
+  panelProviders?: PanelProvider[];
 }

@@ -1,42 +1,45 @@
 /* ============================================================
    青梧UI · Button 组件样式
-   Design: Uiverse.io by suda-code
    @layer qingwu.button
    ============================================================ */
 
 .qw-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 12.5px 30px;
-  border: 0;
-  border-radius: 100px;
-  background-color: #e0e4e8;
-  color: #2c3e50;
-  font-weight: Bold;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 26px;
+  border: none;
+  border-radius: 999px;
+  background-color: #f0f3f8;
+  color: #1a2533;
+  font-weight: 600;
   font-size: 14px;
   font-family: inherit;
+  line-height: 1.5;
   cursor: pointer;
-  transition: all 0.5s;
-  -webkit-transition: all 0.5s;
-  line-height: 1;
+  transition: background-color 0.25s, transform 0.2s, box-shadow 0.25s;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .qw-btn:hover {
-  background-color: #d0d4d8;
-  transform: scale(1.1);
+  background-color: #dde3ed;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .qw-btn:active {
-  transition: all 0.25s;
-  -webkit-transition: all 0.25s;
-  transform: scale(0.98);
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .qw-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
   pointer-events: none;
+  transform: none;
+  box-shadow: none;
 }
 
 /* ---- 变体 ---- */
