@@ -33,10 +33,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/qingwu-team/qingwu-ui.git"
+    "url": "https://github.com/apricotdream/qingwu-ui.git"
   },
-  "homepage": "https://github.com/qingwu-team/qingwu-ui#readme",
-  "bugs": "https://github.com/qingwu-team/qingwu-ui/issues",
+  "homepage": "https://github.com/apricotdream/qingwu-ui#readme",
+  "bugs": "https://github.com/apricotdream/qingwu-ui/issues",
   "keywords": [
     "calendar",
     "date-picker",

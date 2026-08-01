@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "@qingwu/toast";
 import "@qingwu/toast/style.css";
 import DemoCard from "@/components/DemoCard";
@@ -36,12 +36,28 @@ const TOAST_ICONS: Record<string, string> = {
 
 const CLOSE_ICON = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
 
+/* 预览行：解析 **关键词** 标记（与组件 renderLine 同逻辑，空段过滤） */
+function PreviewLine({ text }: { text: string }) {
+  const parts = text.split(/\*\*(.+?)\*\*/g).filter(Boolean);
+  return (
+    <span className="qt-line">
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <em key={part} className="qt-mark">{part}</em>
+        ) : (
+          <span key={part}>{part}</span>
+        ),
+      )}
+    </span>
+  );
+}
+
 /* 样式预览卡片：message + 可选两行（模拟 text-layout 排版） */
 const PREVIEWS = [
-  { type: "info" as const, lines: [{ id: "info-1", text: "磨砂玻璃 · 信息提示" }], icon: TOAST_ICONS.info },
-  { type: "success" as const, lines: [{ id: "ok-1", text: "操作成功" }], icon: TOAST_ICONS.success },
-  { type: "warning" as const, lines: [{ id: "warn-1", text: "磁盘空间不足，请及时清理" }, { id: "warn-2", text: "以释放存储空间" }], icon: TOAST_ICONS.warning },
-  { type: "error" as const, lines: [{ id: "err-1", text: "错误反馈" }], icon: TOAST_ICONS.error },
+  { type: "info" as const, lines: [{ id: "info-1", text: "磨砂玻璃 · **信息提示**" }], icon: TOAST_ICONS.info },
+  { type: "success" as const, lines: [{ id: "ok-1", text: "**操作成功**" }], icon: TOAST_ICONS.success },
+  { type: "warning" as const, lines: [{ id: "warn-1", text: "磁盘空间**不足**，请及时清理" }, { id: "warn-2", text: "以释放存储空间" }], icon: TOAST_ICONS.warning },
+  { type: "error" as const, lines: [{ id: "err-1", text: "**登录失败**：账号或密码错误" }], icon: TOAST_ICONS.error },
 ] as const;
 
 const SCENES = [
@@ -97,17 +113,35 @@ const SCENES = [
   },
 ] as const;
 
-const DEFAULT_TEXT = "这条通知消息的文本内容非常长，用于演示 @qingwu/text-layout 的自适应排版能力：一行放不下时自动换行，超过 maxLines 时按字符截断并追加省略号";
+const DEFAULT_TEXT = "这条通知消息的文本内容非常长，用于演示 **text-layout** 的自适应排版能力：一行放不下时自动换行，超过 maxLines 时按字符截断并追加省略号";
 
 export default function ToastPage() {
-  const [position, setPosition] = useState<string>("bottom-center");
+  const [position, setPosition] = useState<string>("top-center");
   const [text, setText] = useState<string>(DEFAULT_TEXT);
   const [maxLines, setMaxLines] = useState<number>(2);
   const [log, setLog] = useState<string[]>([]);
+  const previewRef = useRef<HTMLDivElement>(null);
 
   const addLog = useCallback((msg: string) => {
     setLog((prev) => [...prev.slice(-39), `[${new Date().toLocaleTimeString()}] ${msg}`]);
   }, []);
+
+  /* 预览卡片：页面加载后逐卡延迟入场（模拟真实触发时序，动画可见）；
+     点击卡片重播动画（错误卡可反复观看震动效果） */
+  useEffect(() => {
+    const cards = previewRef.current?.querySelectorAll(".qt-toast");
+    cards?.forEach((c, i) => {
+      setTimeout(() => c.classList.add("qt-enter"), 200 * (i + 1));
+    });
+  }, []);
+
+  const replayPreview = (e: React.MouseEvent<HTMLDivElement>) => {
+    const card = (e.target as HTMLElement).closest(".qt-toast");
+    if (!card) return;
+    card.classList.remove("qt-enter");
+    void (card as HTMLElement).offsetWidth; /* 强制 reflow 重启动画 */
+    card.classList.add("qt-enter");
+  };
 
   const pos = position as
     | "top-left" | "top-center" | "top-right"
@@ -115,7 +149,8 @@ export default function ToastPage() {
 
   const fireType = (type: "info" | "success" | "warning" | "error") => {
     const labels = { info: "提示", success: "成功", warning: "警告", error: "错误" };
-    const id = toast[type](`${labels[type]} — 轻提示消息`, { position: pos, duration: 3500 });
+    const fns = { info: toast.info, success: toast.success, warning: toast.warn, error: toast.error };
+    const id = fns[type](`${labels[type]} — 轻提示消息`, { position: pos, duration: 3500 });
     addLog(`${labels[type]} | id=${id}`);
   };
 
@@ -200,14 +235,14 @@ export default function ToastPage() {
               ① 样式预览 · 与组件样式实时同步
               ============================================================ */}
           <section>
-            <div className="toast-section-title">样式预览 · Apple 磨砂玻璃</div>
-            <div className="qt-container toast-preview">
+            <div className="toast-section-title">样式预览 · Apple 磨砂玻璃 <span className="toast-preview-hint">（点击卡片重播入场动画）</span></div>
+            <div ref={previewRef} className="qt-container toast-preview" onClick={replayPreview}>
               {PREVIEWS.map((p) => (
-                <div key={p.type} className={`qt-toast qt-${p.type} qt-enter`}>
+                <div key={p.type} className={`qt-toast qt-${p.type}`}>
                   <span className="qt-icon" dangerouslySetInnerHTML={{ __html: p.icon }} />
                   <span className="qt-msg">
                     {p.lines.map((line) => (
-                      <span key={line.id} className="qt-line">{line.text}</span>
+                      <PreviewLine key={line.id} text={line.text} />
                     ))}
                   </span>
                   <button

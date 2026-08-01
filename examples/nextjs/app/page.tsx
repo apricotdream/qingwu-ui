@@ -20,10 +20,9 @@ const COMPONENTS = [
   { href: "/demo/calendar-popup", title: "Calendar 日历", desc: "输入框弹出面板，农历 / 节气 / 节日 / 黄历宜忌", icon: "田", iconClass: "calendar", badge: "stable", badgeText: "稳定" },
   { href: "/demo/search", title: "Search 搜索", desc: "打字机轮播占位 + 类别筛选 + 全键盘导航", icon: "◎", iconClass: "search", badge: "stable", badgeText: "稳定" },
   { href: "/demo/upload", title: "Upload 上传", desc: "拖拽 / 按钮触发，WebP / AVIF 客户端压缩", icon: "↑", iconClass: "upload", badge: "stable", badgeText: "稳定" },
-  { href: "/demo/editor", title: "Editor 编辑器", desc: "AI 辅助 Markdown/WYSIWYG 编辑器", icon: "✎", iconClass: "editor", badge: "stable", badgeText: "稳定" },
+  { href: "/demo/editor", title: "AI Editor 编辑器", desc: "AI 辅助 Markdown/WYSIWYG 编辑器", icon: "✎", iconClass: "editor", badge: "stable", badgeText: "稳定" },
   { href: "/demo/text-layout", title: "Text Layout 排版", desc: "精准文字排版引擎，截断 / 分栏 / 虚拟滚动", icon: "¶", iconClass: "text", badge: "stable", badgeText: "稳定" },
   { href: "/demo/skeleton", title: "Skeleton 骨架", desc: "自动 DOM 测量骨架屏，零布局重复，SSR 可选", icon: "◫", iconClass: "skeleton", badge: "new", badgeText: "新" },
-  { href: "/demo/holiday", title: "自定义休假表", desc: "holidays/workdays JSON 配置，日历角标", icon: "⚑", iconClass: "calendar", badge: "stable", badgeText: "稳定" },
 ];
 
 export default function HomePage() {

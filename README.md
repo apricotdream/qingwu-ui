@@ -19,7 +19,7 @@
 | [`@qingwu/search`](./packages/search) | 搜索框 / 命令面板：打字机占位轮播、全键盘导航、分类筛选 | 0.3.0 | ~4 kB |
 | [`@qingwu/button`](./packages/button) | 胶囊形按钮：default / primary / amber / icon | 0.3.0 | — |
 | [`@qingwu/upload`](./packages/upload) | 图片上传：拖拽 / 按钮触发、客户端压缩（原图 / WebP / AVIF）、独立进度条 | 0.3.0 | ~4 kB |
-| [`@qingwu/editor`](./packages/editor) | 面向中文用户的 AI 智能编辑器 | 0.3.0 | — |
+| [`@qingwu/ai-editor`](./packages/ai-editor) | 面向中文用户的 AI 智能编辑器 | 0.3.0 | — |
 
 ## 安装
 
@@ -318,7 +318,7 @@ qingwu-ui/
 │   ├── search/          # @qingwu/search —— 搜索框 / 命令面板组件
 │   ├── button/          # @qingwu/button —— 胶囊形按钮
 │   ├── upload/          # @qingwu/upload —— 图片上传 / 客户端压缩组件
-│   └── editor/          # @qingwu/editor —— AI 智能编辑器
+│   └── ai-editor/      # @qingwu/ai-editor —— AI 智能编辑器
 ├── examples/nextjs/     # Next.js 演示站（组件 demo 与配置面板）
 ├── tooling/
 │   ├── tsconfig/        # TS7 共享配置

@@ -1,6 +1,6 @@
 {
   "name": "@qingwu/skeleton",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Qingwu UI Skeleton component — runtime DOM-measuring auto shimmer, SSR-aware, zero-dependency skeleton loader",
   "type": "module",
   "license": "MIT",
@@ -38,7 +38,7 @@
     "vitest": "^4.1.10"
   },
   "peerDependencies": {
-    "@qingwu/text-layout": "^0.4.0"
+    "@qingwu/text-layout": "^0.5.0"
   },
   "size-limit": [
     {
@@ -51,11 +51,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/qingwu-team/qingwu-ui.git",
+    "url": "https://github.com/apricotdream/qingwu-ui.git",
     "directory": "packages/skeleton"
   },
-  "homepage": "https://github.com/qingwu-team/qingwu-ui#readme",
-  "bugs": "https://github.com/qingwu-team/qingwu-ui/issues",
+  "homepage": "https://github.com/apricotdream/qingwu-ui#readme",
+  "bugs": "https://github.com/apricotdream/qingwu-ui/issues",
   "keywords": [
     "skeleton",
     "shimmer",

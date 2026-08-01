@@ -16,8 +16,8 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./*"],
-      "@editor/*": ["../../packages/editor/src/*"],
-      "@editor-root/*": ["../../packages/editor/*"],
+      "@editor/*": ["../../packages/ai-editor/src/*"],
+      "@editor-root/*": ["../../packages/ai-editor/*"],
       "@icon/*": ["../../icon/*"]
     }
   },

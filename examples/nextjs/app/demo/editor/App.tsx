@@ -12,7 +12,7 @@ import {
   formatBytes,
   type Locale,
   loadStorageConfig,
-  QingWuEditor,
+  QingWuAIEditor,
   registerS3PreviewConfig,
   setAIProvider,
   setLocale,
@@ -20,7 +20,8 @@ import {
   startBrowserClipperReceiver,
   t,
   validateAttachmentFile,
-} from "@qingwu/editor";
+} from "@qingwu/ai-editor";
+import { toast as qwToast } from "@qingwu/toast";
 
 // 首页直接渲染 README.md；按当前语言切换中英文内容（传原始 markdown，由编辑器单次解析）
 
@@ -45,9 +46,22 @@ const DialogFallback = () => (
 const FONT_KEY = "qingwu_font";
 const AI_CONFIG_SESSION_KEY = "qingwu_ai_config_session";
 const MODE_KEY = "qingwu_editor_mode";
-// 演示用附件上传限制：单文件 50MB，文档附件总大小 100MB
-const DEMO_MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024;
-const DEMO_MAX_TOTAL_ATTACHMENT_SIZE = 100 * 1024 * 1024;
+// 演示用附件上传限制选项（可切换，默认单文件 50MB、总大小 100MB）
+const ATTACHMENT_SIZE_OPTIONS = [
+  { label: "10 MB", value: 10 * 1024 * 1024 },
+  { label: "20 MB", value: 20 * 1024 * 1024 },
+  { label: "50 MB", value: 50 * 1024 * 1024 },
+  { label: "100 MB", value: 100 * 1024 * 1024 },
+  { label: "200 MB", value: 200 * 1024 * 1024 },
+];
+const TOTAL_SIZE_OPTIONS = [
+  { label: "50 MB", value: 50 * 1024 * 1024 },
+  { label: "100 MB", value: 100 * 1024 * 1024 },
+  { label: "200 MB", value: 200 * 1024 * 1024 },
+  { label: "500 MB", value: 500 * 1024 * 1024 },
+];
+const DEFAULT_MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024;
+const DEFAULT_MAX_TOTAL_ATTACHMENT_SIZE = 100 * 1024 * 1024;
 const CLIPPER_ENABLED_KEY = "qingwu_clipper_enabled";
 const CLIPPER_URL_KEY = "qingwu_clipper_url";
 
@@ -165,6 +179,7 @@ function initStorageService() {
     }
   } catch (e) {
     console.warn("[App] 存储初始化失败，回退到本地存储:", e);
+    qwToast.warn("存储初始化失败，已回退到本地存储");
     try {
       setStorageProvider(createLocalStorage(), {
         type: "local",
@@ -322,30 +337,38 @@ export default function App() {
   const onEditorReady = useCallback((editor: Editor) => {
     editorRef.current = editor;
   }, []);
+  // 附件上传限制（可切换，默认 50MB / 100MB），即时传入编辑器与测试区
+  const [maxAttachmentSize, setMaxAttachmentSize] = useState(DEFAULT_MAX_ATTACHMENT_SIZE);
+  const [maxTotalAttachmentSize, setMaxTotalAttachmentSize] = useState(
+    DEFAULT_MAX_TOTAL_ATTACHMENT_SIZE,
+  );
   // 上传限制测试区结果（仅本地校验大小，不触发真实上传）
   const [limitTestResults, setLimitTestResults] = useState<
     { name: string; size: number; ok: boolean; message?: string }[]
   >([]);
-  const handleLimitTest = useCallback((files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    const editor = editorRef.current;
-    // 编辑器未就绪时用空文档校验（只测单文件限制）
-    const doc = (editor?.state.doc ?? { descendants: () => {} }) as never;
-    const results: { name: string; size: number; ok: boolean; message?: string }[] = [];
-    for (const file of Array.from(files)) {
-      const err = validateAttachmentFile(doc, file, {
-        maxAttachmentSize: DEMO_MAX_ATTACHMENT_SIZE,
-        maxTotalAttachmentSize: DEMO_MAX_TOTAL_ATTACHMENT_SIZE,
-      });
-      results.push({
-        name: file.name,
-        size: file.size,
-        ok: !err,
-        message: err ?? undefined,
-      });
-    }
-    setLimitTestResults(results);
-  }, []);
+  const handleLimitTest = useCallback(
+    (files: FileList | null) => {
+      if (!files || files.length === 0) return;
+      const editor = editorRef.current;
+      // 编辑器未就绪时用空文档校验（只测单文件限制）
+      const doc = (editor?.state.doc ?? { descendants: () => {} }) as never;
+      const results: { name: string; size: number; ok: boolean; message?: string }[] = [];
+      for (const file of Array.from(files)) {
+        const err = validateAttachmentFile(doc, file, {
+          maxAttachmentSize,
+          maxTotalAttachmentSize,
+        });
+        results.push({
+          name: file.name,
+          size: file.size,
+          ok: !err,
+          message: err ?? undefined,
+        });
+      }
+      setLimitTestResults(results);
+    },
+    [maxAttachmentSize, maxTotalAttachmentSize],
+  );
   const [clipperEnabled, setClipperEnabled] = useState(getClipperEnabled);
   const [clipperUrl, setClipperUrl] = useState(getClipperUrl);
   const [showClipperSettings, setShowClipperSettings] = useState(false);
@@ -386,12 +409,13 @@ export default function App() {
       onClip: async (clip) => {
         const editor = editorRef.current;
         if (!editor) {
-          console.warn("[qingwu-clipper] 编辑器尚未就绪，无法接收剪藏");
+          qwToast.warn("编辑器尚未就绪，无法接收剪藏");
           return;
         }
         editor.commands.focus("end");
         const sep = editor.getText().trim() ? "\n\n---\n\n" : "";
         editor.commands.insertContent(sep + clip.markdown);
+        qwToast.success("剪藏已插入编辑器");
       },
     });
     return () => receiver.close();
@@ -719,11 +743,39 @@ export default function App() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="text-sm font-medium">附件上传限制</div>
             <div className="text-xs text-default-500">
-              单文件 ≤ {formatBytes(DEMO_MAX_ATTACHMENT_SIZE)} · 文档附件总大小 ≤{" "}
-              {formatBytes(DEMO_MAX_TOTAL_ATTACHMENT_SIZE)}
+              单文件 ≤ {formatBytes(maxAttachmentSize)} · 文档附件总大小 ≤{" "}
+              {formatBytes(maxTotalAttachmentSize)}
             </div>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-1.5 text-xs text-default-500">
+              单文件上限
+              <select
+                value={maxAttachmentSize}
+                onChange={(e) => setMaxAttachmentSize(Number(e.target.value))}
+                className="rounded-lg border border-default-200 bg-background px-2 py-1 text-xs text-foreground outline-none transition-colors focus:border-qingwu-400"
+              >
+                {ATTACHMENT_SIZE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-1.5 text-xs text-default-500">
+              总大小上限
+              <select
+                value={maxTotalAttachmentSize}
+                onChange={(e) => setMaxTotalAttachmentSize(Number(e.target.value))}
+                className="rounded-lg border border-default-200 bg-background px-2 py-1 text-xs text-foreground outline-none transition-colors focus:border-qingwu-400"
+              >
+                {TOTAL_SIZE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <label className="inline-flex cursor-pointer items-center rounded-lg bg-qingwu-600 px-3 py-1.5 text-xs text-white transition-colors hover:bg-qingwu-700">
               选择文件测试
               <input
@@ -734,7 +786,7 @@ export default function App() {
               />
             </label>
             <span className="text-xs text-default-400">
-              此处仅校验大小限制；拖拽文件到下方编辑器可触发真实上传（未配置存储时保留占位）
+              切换限制后编辑器即时生效；拖拽文件到下方编辑器可触发真实上传（未配置存储时保留占位）
             </span>
           </div>
           {limitTestResults.length > 0 && (
@@ -752,13 +804,18 @@ export default function App() {
           )}
         </div>
 
-        <QingWuEditor
+        <QingWuAIEditor
           initialContent={readmeContent}
           mode={editorMode}
           placeholder={t("editor.placeholder")}
           onEditorReady={onEditorReady}
-          maxAttachmentSize={DEMO_MAX_ATTACHMENT_SIZE}
-          maxTotalAttachmentSize={DEMO_MAX_TOTAL_ATTACHMENT_SIZE}
+          maxAttachmentSize={maxAttachmentSize}
+          maxTotalAttachmentSize={maxTotalAttachmentSize}
+          onToast={(message, type) => {
+            if (type === "success") qwToast.success(message);
+            else if (type === "info") qwToast.info(message);
+            else qwToast.error(message);
+          }}
         />
       </main>
 

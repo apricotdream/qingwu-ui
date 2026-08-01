@@ -20,10 +20,11 @@ const IS_MAC =
     : false;
 
 /* ---------- SVG 图标（由 icon/icons.ts 提供） ---------- */
-import { ICO_SEARCH, ICO_MENU, SEARCH_ART } from "../../../icon/icons";
+import { ICO_SEARCH, ICO_MENU, ICON_CLOSE, SEARCH_ART } from "../../../icon/icons";
 const ICO = {
   search: ICO_SEARCH,
   menu: ICO_MENU,
+  close: ICON_CLOSE,
   art: SEARCH_ART,
 } as const;
 
@@ -83,6 +84,7 @@ export class SearchBox {
   private ph!: HTMLElement;
   private menuBtn!: HTMLButtonElement;
   private clearBtn!: HTMLButtonElement;
+  private closeBtn!: HTMLButtonElement;
   private filterbar!: HTMLElement;
   private filterChip!: HTMLButtonElement;
   private empty!: HTMLElement;
@@ -165,7 +167,13 @@ export class SearchBox {
     this.input.setAttribute("spellcheck", "false");
     this.ph = el("span", "qs-ph");
     this.ph.setAttribute("aria-hidden", "true");
-    inputWrap.append(this.input, this.ph);
+
+    /* 清空键：移入输入框内部，有文字时浮现（小 ⌫） */
+    this.clearBtn = el("button", "qs-clear", "⌫") as HTMLButtonElement;
+    this.clearBtn.type = "button";
+    this.clearBtn.setAttribute("aria-label", "清除搜索内容");
+    this.clearBtn.disabled = true;
+    inputWrap.append(this.input, this.ph, this.clearBtn);
 
     this.menuBtn = el("button", "qs-iconbtn", ICO.menu) as HTMLButtonElement;
     this.menuBtn.type = "button";
@@ -173,12 +181,13 @@ export class SearchBox {
     this.menuBtn.setAttribute("aria-pressed", "false");
     this.menuBtn.title = "筛选类别";
 
-    this.clearBtn = el("button", "qs-clear", "⌫") as HTMLButtonElement;
-    this.clearBtn.type = "button";
-    this.clearBtn.setAttribute("aria-label", "清除搜索内容");
-    this.clearBtn.disabled = true;
+    /* 关闭键：输入条最右侧，关闭整个面板 */
+    this.closeBtn = el("button", "qs-iconbtn qs-close", ICO.close) as HTMLButtonElement;
+    this.closeBtn.type = "button";
+    this.closeBtn.setAttribute("aria-label", "关闭搜索");
+    this.closeBtn.title = "关闭搜索";
 
-    this.bar.append(inputWrap, this.menuBtn, this.clearBtn);
+    this.bar.append(inputWrap, this.menuBtn, this.closeBtn);
 
     /* 筛选条 */
     this.filterbar = el("div", "qs-filterbar", "<span>当前筛选</span>");
@@ -217,8 +226,10 @@ export class SearchBox {
     this.toasts = el("div", "qs-toasts");
 
     if (this.trigger) this.root.append(this.trigger);
-    this.root.append(this.overlay, this.toasts);
-    this.focusables = [this.input, this.menuBtn, this.clearBtn];
+    /* 遮罩与 toast 挂到 document.body：脱离宿主 DOM，避免宿主的
+       transform/filter/overflow 等属性把 fixed 定位污染成包含块裁剪 */
+    document.body.append(this.overlay, this.toasts);
+    this.focusables = [this.input, this.clearBtn, this.menuBtn, this.closeBtn];
   }
 
   /* ============================================================
@@ -246,6 +257,9 @@ export class SearchBox {
 
     this.menuBtn.addEventListener("click", () => {
       this.cycleCategory();
+    });
+    this.closeBtn.addEventListener("click", () => {
+      this.close();
     });
     this.filterChip.addEventListener("click", () => {
       this.setCategory(this.categories[0] ?? "全部");
@@ -353,6 +367,8 @@ export class SearchBox {
     if (this.closeTimer !== null) clearTimeout(this.closeTimer);
     if (this.docKey) document.removeEventListener("keydown", this.docKey, true);
     if (this.globalKey) document.removeEventListener("keydown", this.globalKey);
+    this.overlay.remove();
+    this.toasts.remove();
     this.root.textContent = "";
   }
 

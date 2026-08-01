@@ -19,7 +19,7 @@ export type ToastPosition =
 export interface ToastOptions {
   /** 语义类型，默认 "info" */
   type?: ToastType;
-  /** 容器定位，默认 "bottom-center" */
+  /** 容器定位，默认 "top-center" */
   position?: ToastPosition;
   /** 自动消失毫秒数，0 表示常驻，默认 4000 */
   duration?: number;
@@ -30,6 +30,11 @@ export interface ToastOptions {
    * 超过后按字符截断并追加省略号，文本宽度自适应
    */
   maxLines?: number;
+  /**
+   * 错误类型是否触发设备震动（navigator.vibrate），默认 true；
+   * 仅 error 类型震动，桌面端无马达时静默忽略
+   */
+  vibrate?: boolean;
 }
 
 /** 全局/工厂级配置 */
@@ -44,6 +49,8 @@ export interface ToasterOptions {
   maxVisible?: number;
   /** 默认文本最大行数，默认 2 */
   maxLines?: number;
+  /** 错误类型默认是否震动，默认 true */
+  vibrate?: boolean;
 }
 
 /** Promise 链三态消息 */

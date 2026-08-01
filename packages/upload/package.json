@@ -1,6 +1,6 @@
 {
   "name": "@qingwu/upload",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Qingwu UI Image Upload component — drag & drop, per-format progress bar, client-side compression to original / webp / avif, zero dependencies",
   "type": "module",
   "license": "MIT",
@@ -29,7 +29,7 @@
     "size": "size-limit"
   },
   "dependencies": {
-    "@qingwu/button": "^0.4.0"
+    "@qingwu/button": "^0.5.0"
   },
   "devDependencies": {
     "@qingwu/tsconfig": "workspace:*",
@@ -51,11 +51,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/qingwu-team/qingwu-ui.git",
+    "url": "https://github.com/apricotdream/qingwu-ui.git",
     "directory": "packages/upload"
   },
-  "homepage": "https://github.com/qingwu-team/qingwu-ui#readme",
-  "bugs": "https://github.com/qingwu-team/qingwu-ui/issues",
+  "homepage": "https://github.com/apricotdream/qingwu-ui#readme",
+  "bugs": "https://github.com/apricotdream/qingwu-ui/issues",
   "keywords": [
     "upload",
     "image",

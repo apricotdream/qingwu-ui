@@ -1,5 +1,13 @@
 # @qingwu/search
 
+## 0.5.0
+
+### Minor Changes
+
+- 新增 **关闭按钮**（输入条最右侧，关闭整个面板），清空键 ⌫ 移入输入框内部、有文字时浮现
+  - 遮罩与 toast 挂载到 `document.body`：脱离宿主 DOM，避免宿主的 transform/filter/overflow 把 fixed 定位污染成包含块裁剪
+  - `destroy()` 完整清理 overlay/toast，防止残留
+
 ## 0.4.0
 
 ### Patch Changes

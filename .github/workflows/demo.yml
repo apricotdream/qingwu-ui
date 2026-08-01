@@ -1,0 +1,33 @@
+name: Demo 演示页启动
+
+on:
+  workflow_dispatch: # 手动触发：验证演示页（examples/nextjs）能正常启动
+
+jobs:
+  start-demo:
+    name: 启动演示页
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build 组件与演示站
+        run: bun run build
+
+      - name: 启动演示页脚本（next start）并验证
+        run: |
+          bun run --filter qingwu-nextjs-example start &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/demo/button > /dev/null; then
+              echo "✅ 演示页已启动：http://localhost:3000/demo/button"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "❌ 演示页启动失败（60 秒内未就绪）" >&2
+          exit 1

@@ -1,6 +1,6 @@
 {
   "name": "qingwu-nextjs-example",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,7 +13,7 @@
     "@qingwu/button": "workspace:*",
     "@qingwu/skeleton": "workspace:*",
     "@qingwu/calendar": "workspace:*",
-    "@qingwu/editor": "workspace:*",
+    "@qingwu/ai-editor": "workspace:*",
     "@qingwu/search": "workspace:*",
     "@qingwu/toast": "workspace:*",
     "@qingwu/text-layout": "workspace:*",
