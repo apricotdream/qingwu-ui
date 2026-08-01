@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   webpack: (config) => {
     // 编辑器 README.md 以原始字符串导入（等价 Vite ?raw）
     config.module.rules.push({
-      test: /packages[\\/]editor[\\/].*\.md$/,
+      test: /packages[\\/]ai-editor[\\/].*\.md$/,
       type: "asset/source",
     });
     // icon/ 目录别名

@@ -1,6 +1,6 @@
 {
   "name": "@qingwu/button",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Qingwu UI Button component — pill-shaped, Uiverse-style, framework-agnostic, zero dependencies",
   "type": "module",
   "license": "MIT",
@@ -47,11 +47,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/qingwu-team/qingwu-ui.git",
+    "url": "https://github.com/apricotdream/qingwu-ui.git",
     "directory": "packages/button"
   },
-  "homepage": "https://github.com/qingwu-team/qingwu-ui#readme",
-  "bugs": "https://github.com/qingwu-team/qingwu-ui/issues",
+  "homepage": "https://github.com/apricotdream/qingwu-ui#readme",
+  "bugs": "https://github.com/apricotdream/qingwu-ui/issues",
   "keywords": [
     "button",
     "ui-component",

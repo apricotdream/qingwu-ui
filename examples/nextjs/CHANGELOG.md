@@ -1,5 +1,22 @@
 # qingwu-nextjs-example
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @qingwu/ai-editor@0.5.0
+  - @qingwu/button@0.5.0
+  - @qingwu/skeleton@1.0.0
+  - @qingwu/text-layout@0.5.0
+  - @qingwu/search@0.5.0
+  - @qingwu/toast@0.5.0
+  - @qingwu/upload@0.5.0
+
 ## 0.1.3
 
 ### Patch Changes

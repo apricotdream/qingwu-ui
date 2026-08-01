@@ -51,6 +51,25 @@ function el(tag: string, cls?: string, html?: string): HTMLElement {
   return n;
 }
 
+/**
+ * 渲染一行文本：解析 **关键词** 标记为语义色强调节点。
+ * 全部走 textContent，无 innerHTML，杜绝 XSS。
+ */
+function renderLine(container: HTMLElement, text: string): void {
+  const parts = text.split(/\*\*(.+?)\*\*/g);
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (!part) continue;
+    if (i % 2 === 1) {
+      const mark = el("em", "qt-mark");
+      mark.textContent = part;
+      container.appendChild(mark);
+    } else {
+      container.appendChild(document.createTextNode(part));
+    }
+  }
+}
+
 /* ---------- 内部条目 ---------- */
 interface ToastEntry {
   id: string;
@@ -65,11 +84,25 @@ interface ToastEntry {
 
 const DEFAULT_OPTS: Required<ToasterOptions> = {
   type: "info",
-  position: "bottom-center",
+  position: "top-center", /* 默认顶部居中（EP/AntD 惯例） */
   duration: 4000,
   maxVisible: 5,
   maxLines: 2,
+  vibrate: true,
 };
+
+/* 错误震动模式：三次短脉冲（警示感） */
+const ERROR_VIBRATION = [80, 40, 80] as const;
+
+/** 触发设备震动（不支持时静默忽略） */
+function vibrateError(): void {
+  if (typeof navigator === "undefined" || !("vibrate" in navigator)) return;
+  try {
+    navigator.vibrate(ERROR_VIBRATION);
+  } catch {
+    /* 某些环境（无马达/权限受限）抛错，忽略 */
+  }
+}
 
 /* ============================================================ */
 export class Toaster {
@@ -248,7 +281,7 @@ export class Toaster {
 
     if (result.lineCount <= 1) {
       /* 单行：直接填充，CSS 单行省略作兜底 */
-      msgEl.textContent = message;
+      renderLine(msgEl, message);
     } else {
       /* 多行：每行独立 span，末行若被截断追加省略号 */
       result.lines.forEach((line, i) => {
@@ -257,7 +290,7 @@ export class Toaster {
         if (i === result.lines.length - 1 && result.truncated && !text.endsWith("…")) {
           text += "…";
         }
-        span.textContent = text;
+        renderLine(span, text);
         msgEl.appendChild(span);
       });
     }
@@ -294,6 +327,11 @@ export class Toaster {
     const container = this.ensureContainer(entry.position);
     this.toasts.set(entry.id, entry);
     container.appendChild(entry.element);
+
+    /* 错误类型触发设备震动（含队列出队场景） */
+    if (entry.type === "error" && this.opts.vibrate) {
+      vibrateError();
+    }
 
     /* 入场动画 */
     requestAnimationFrame(() => {

@@ -1,5 +1,22 @@
 # @qingwu/upload
 
+## 0.5.0
+
+### Minor Changes
+
+- 新增 **URL 导入** 功能（dropzone 形态）：从 URL 批量导入图片
+
+  - 支持多行批量导入，协议白名单仅 http/https/data，非法协议与格式错误给出中文提示
+  - 导入前 HEAD 预检 Content-Length 超限拦截，不支持的协议按 GET 降级；单次请求超时 `urlImportTimeout`（默认 10000ms）可配
+  - 按文件头签名（magic bytes）识别真实图片格式（PNG/JPEG/GIF/BMP/WebP/AVIF/SVG），后缀不再可信，作为 accept 校验 / 命名 / 压缩判断的权威依据
+  - 新增 `source`（local/url）与 `originalUrl` 字段；无预览的失败条目以占位符展示
+  - 新增 `urlImport` / `urlImportTimeout` 配置项与对应样式
+
+### Patch Changes
+
+- Updated dependencies
+  - @qingwu/button@0.5.0
+
 ## 0.4.0
 
 ### Minor Changes

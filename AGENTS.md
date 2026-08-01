@@ -7,7 +7,7 @@
 - 项目名称：qingwu-ui（青梧UI）
 - 项目类型：前端工具库（开源组件库）
 - 技术栈：TypeScript 7 · tsdown (Rolldown) · Bun + Turborepo · 原生 DOM 渲染 · 原生 CSS + design tokens · vitest · changesets
-- 仓库地址：https://github.com/qingwu-team/qingwu-ui
+- 仓库地址：https://github.com/apricotdream/qingwu-ui
 
 ## 二、AI 协作通则
 

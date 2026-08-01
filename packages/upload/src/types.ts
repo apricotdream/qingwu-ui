@@ -38,6 +38,10 @@ export interface UploadItem {
   preview?: string;
   /** 压缩是否跳过（GIF/SVG 不支持压缩） */
   skipped?: boolean;
+  /** 来源：本地选择（默认）或 URL 导入 */
+  source?: "local" | "url";
+  /** URL 导入时的原始地址 */
+  originalUrl?: string;
 }
 
 /** 自定义上传函数；onProgress 由宿主驱动进度条 */
@@ -67,6 +71,11 @@ export interface UploadOptions {
   headers?: Record<string, string>;
   /** 覆盖内置 XHR 上传 */
   uploadFn?: UploadFn;
+
+  /** URL 导入入口开关（仅 dropzone 形态），默认 true */
+  urlImport?: boolean;
+  /** URL 导入单次请求超时（ms），默认 10000 */
+  urlImportTimeout?: number;
 
   /** 压缩总开关，默认 true；关闭时仅按原图上传 */
   compress?: boolean;

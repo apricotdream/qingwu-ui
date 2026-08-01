@@ -73,7 +73,7 @@ test.describe("Upload 组件演示页", () => {
 
   test("真实上传模式：XHR 打 /api/upload 成功", async ({ page }) => {
     await page.goto("/demo/upload");
-    await page.selectOption("select >> nth=6", "real"); // 上传方式：真实
+    await page.selectOption("select >> nth=7", "real"); // 上传方式：真实（0.4.0 新增 supportedFormats 字段后索引 +1）
     await page.getByRole("button", { name: "应用配置" }).click();
     await selectFile(page, PNG_1PX);
 

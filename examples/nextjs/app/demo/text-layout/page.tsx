@@ -461,7 +461,7 @@ function TableColumnsDemo() {
     ["@qingwu/calendar", "农历日历组件，含节气、节日、黄历、干支纪年，纯 DOM 渲染", "0.3.1", "30 kB"],
     ["@qingwu/search", "搜索框组件，打字机轮播占位、键盘导航、焦点陷阱、结果动画", "0.3.1", "12 kB"],
     ["@qingwu/upload", "图片上传组件，拖拽/点击、客户端压缩、多格式输出", "0.3.1", "8 kB"],
-    ["@qingwu/editor", "AI 编辑器，基于 Tiptap，支持 Markdown 和所见即所得编辑", "0.3.1", "50 kB"],
+    ["@qingwu/ai-editor", "AI 编辑器，基于 Tiptap，支持 Markdown 和所见即所得编辑", "0.3.1", "50 kB"],
     ["@qingwu/text-layout", "文本排版引擎，Pretext 启发两阶段架构，Unicode 感知换行", "0.3.1", "6 kB"],
   ];
 

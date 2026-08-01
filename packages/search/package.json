@@ -1,6 +1,6 @@
 {
   "name": "@qingwu/search",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Framework-agnostic headless search / command-palette component for Qingwu UI — typewriter placeholder, keyboard-first, zero dependencies",
   "type": "module",
   "license": "MIT",
@@ -50,11 +50,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/qingwu-team/qingwu-ui.git",
+    "url": "https://github.com/apricotdream/qingwu-ui.git",
     "directory": "packages/search"
   },
-  "homepage": "https://github.com/qingwu-team/qingwu-ui#readme",
-  "bugs": "https://github.com/qingwu-team/qingwu-ui/issues",
+  "homepage": "https://github.com/apricotdream/qingwu-ui#readme",
+  "bugs": "https://github.com/apricotdream/qingwu-ui/issues",
   "keywords": [
     "search",
     "search-box",

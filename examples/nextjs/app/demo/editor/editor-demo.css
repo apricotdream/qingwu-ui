@@ -1,6 +1,6 @@
 /* 编辑器演示页 App.tsx 的 Tailwind 类生成样式。
    与编辑器包 globals.css 保持一致：只引入 theme + utilities，不引入 preflight，
-   避免重置演示站其他页面的原生元素样式。色板复制自 packages/editor/src/styles/globals.css。 */
+   避免重置演示站其他页面的原生元素样式。色板复制自 packages/ai-editor/src/styles/globals.css。 */
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/utilities";
 @custom-variant dark (&:is(.dark *));

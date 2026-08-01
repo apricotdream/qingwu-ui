@@ -1,6 +1,6 @@
 # @qingwu/search
 
-[青梧UI](https://github.com/qingwu-team/qingwu-ui) 的 **搜索框 / 命令面板组件** —— 框架无关，纯 DOM + CSS，零依赖。
+[青梧UI](https://github.com/apricotdream/qingwu-ui) 的 **搜索框 / 命令面板组件** —— 框架无关，纯 DOM + CSS，零依赖。
 
 - 自渲染：触发条 → 模态面板 → 结果列表 → toast，一行 `new SearchBox(el)` 即用
 - 打字机轮播占位提示（自动尊重 `prefers-reduced-motion`）

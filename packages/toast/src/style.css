@@ -11,12 +11,13 @@
    ============================================================ */
 .qt-container {
   /* 亮色 · 磨砂玻璃 */
-  --qt-bg: 255 255 255;
-  --qt-glass-a: 0.88;      /* 磨砂渐变起点不透明度（玻璃顶部） */
-  --qt-glass-b: 0.7;       /* 磨砂渐变终点不透明度（玻璃底部） */
+  --qt-bg: 250 251 252;    /* 冷灰 tint，与纯白背景区分 */
+  --qt-glass-a: 0.9;       /* 磨砂渐变起点不透明度（玻璃顶部） */
+  --qt-glass-b: 0.74;      /* 磨砂渐变终点不透明度（玻璃底部） */
   --qt-hairline: 255 255 255; /* 高光描边 */
   --qt-hairline-a: 0.4;
   --qt-sheen: 0.22;        /* 玻璃光泽层强度 */
+  --qt-noise: 0.08;        /* 磨砂噪点（黑色颗粒，白色背景可见） */
   --qt-fg: 17 17 17;
   --qt-fg2: 105 105 110;   /* iOS secondaryLabel */
   --qt-shadow-a: 0.08;
@@ -41,6 +42,7 @@
   --qt-hairline: 255 255 255;
   --qt-hairline-a: 0.12;
   --qt-sheen: 0.08;        /* 暗色光泽更克制 */
+  --qt-noise: 0.14;        /* 暗色噪点（白色颗粒，暗背景可见） */
   --qt-fg: 255 255 255;
   --qt-fg2: 152 152 158;   /* iOS dark secondaryLabel */
   --qt-shadow-a: 0.4;
@@ -137,9 +139,12 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
-  /* 入场前：纯 opacity，低内存 */
+  /* 入场前：整体 opacity + 轻微位移缩放，单一 spring 过渡 */
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transform: translateY(10px) scale(0.98);
+  transition:
+    opacity 0.3s ease,
+    transform 0.38s cubic-bezier(0.34, 1.3, 0.5, 1);
 }
 
 /* 玻璃光泽层：顶部渐变高光，模拟玻璃反射 */
@@ -156,15 +161,103 @@
   pointer-events: none;
 }
 
+/* 磨砂噪点纹理：feTurbulence 噪声，纯色背景也有玻璃颗粒感 */
+.qt-toast::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* 黑色颗粒噪点（亮色背景可见） */
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: var(--qt-noise);
+  pointer-events: none;
+}
+
+/* 暗色：白色颗粒噪点 */
+.dark .qt-toast::after,
+[data-theme="dark"] .qt-toast::after {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 /* 入场完成 */
 .qt-toast.qt-enter {
   opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
-/* 退场 */
+/* ============================================================
+   入场动画：图标先弹出，文本从图标向右延伸
+   - 整体 opacity/transform 由 transition 负责（单一来源，无重复）
+   - 图标仅 transform，文本仅 max-width，各自 opacity 不再重复动画
+   - 容器 left:50% + translateX(-50%) 基于自身宽度，扩展始终居中
+   ============================================================ */
+.qt-toast.qt-enter .qt-icon {
+  animation: qt-icon-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) 0.03s backwards;
+}
+@keyframes qt-icon-in {
+  from {
+    transform: scale(0.4);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* 文本从 0 宽向右延伸（max-width 上限 360px，实际宽度由内容决定） */
+.qt-toast.qt-enter .qt-msg {
+  animation: qt-msg-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) 0.14s backwards;
+}
+@keyframes qt-msg-in {
+  from {
+    max-width: 0;
+  }
+  to {
+    max-width: 360px;
+  }
+}
+
+/* 错误震动：进入 + 大幅水平抖动 + 旋转 + 红色背景脉冲（网页端视觉明显） */
+.qt-toast.qt-error.qt-enter {
+  animation: qt-error-in 0.6s cubic-bezier(0.34, 1.3, 0.5, 1);
+}
+@keyframes qt-error-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+    background: linear-gradient(160deg, rgb(var(--qt-red) / 0.35), rgb(var(--qt-red) / 0.2));
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(0) scale(1.02) translateX(-8px) rotate(-1.2deg);
+    background: linear-gradient(160deg, rgb(var(--qt-red) / 0.28), rgb(var(--qt-red) / 0.16));
+  }
+  28% {
+    transform: translateX(8px) rotate(1.2deg);
+  }
+  44% {
+    transform: translateX(-6px) rotate(-1deg);
+  }
+  60% {
+    transform: translateX(4px) rotate(0.8deg);
+  }
+  76% {
+    transform: translateX(-3px) rotate(-0.5deg);
+  }
+  100% {
+    transform: translateX(0) rotate(0) scale(1);
+    background: linear-gradient(160deg, rgb(var(--qt-bg) / var(--qt-glass-a)), rgb(var(--qt-bg) / var(--qt-glass-b)));
+  }
+}
+
+/* 退场：仅 opacity 淡出 */
 .qt-toast.qt-exit {
   opacity: 0;
-  transition-duration: 0.12s;
+  transform: translateY(0) scale(1);
+  transition-duration: 0.12s, 0.12s;
+}
+.qt-toast.qt-exit .qt-icon,
+.qt-toast.qt-exit .qt-msg {
+  animation: none;
 }
 
 /* ============================================================
@@ -201,6 +294,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  overflow: hidden; /* 入场 max-width 动画期间裁剪文本 */
   white-space: nowrap;
   color: rgb(var(--qt-fg));
   font-weight: 500;
@@ -213,6 +307,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* 关键词强调：**关键词** 标记，颜色跟随语义类型 */
+.qt-mark {
+  font-style: normal;
+  font-weight: 650;
+  color: rgb(var(--qt-blue));
+  background: rgb(var(--qt-blue) / 0.12);
+  padding: 0 3px;
+  border-radius: 4px;
+}
+.qt-success .qt-mark { color: rgb(var(--qt-green)); background: rgb(var(--qt-green) / 0.12); }
+.qt-warning .qt-mark { color: rgb(var(--qt-orange)); background: rgb(var(--qt-orange) / 0.12); }
+.qt-error   .qt-mark { color: rgb(var(--qt-red));   background: rgb(var(--qt-red) / 0.12); }
 
 /* ============================================================
    ⑥ 关闭按钮 · SF Symbol xmark
@@ -260,11 +367,21 @@
 }
 
 /* ============================================================
-   ⑦ reduced-motion：动画已是纯 opacity，仅缩短时长
+   ⑦ reduced-motion：禁用全部动画，直接完整显示
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   .qt-toast {
-    transition-duration: 0.05s;
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.05s;
+  }
+  .qt-toast .qt-icon,
+  .qt-toast .qt-msg,
+  .qt-toast.qt-error.qt-enter {
+    animation: none !important;
+  }
+  .qt-msg {
+    max-width: none;
   }
 }
 

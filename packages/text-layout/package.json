@@ -1,6 +1,6 @@
 {
   "name": "@qingwu/text-layout",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Pretext-inspired text layout engine — two-phase prepare/layout, Canvas measurement, Unicode-aware line breaking, virtual scroll heights, multi-line truncation, chip flow, and table column sizing",
   "type": "module",
   "license": "MIT",
@@ -44,11 +44,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/qingwu-team/qingwu-ui.git",
+    "url": "https://github.com/apricotdream/qingwu-ui.git",
     "directory": "packages/text-layout"
   },
-  "homepage": "https://github.com/qingwu-team/qingwu-ui#readme",
-  "bugs": "https://github.com/qingwu-team/qingwu-ui/issues",
+  "homepage": "https://github.com/apricotdream/qingwu-ui#readme",
+  "bugs": "https://github.com/apricotdream/qingwu-ui/issues",
   "keywords": [
     "text-layout",
     "line-breaking",

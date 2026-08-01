@@ -290,7 +290,7 @@
   height: 42px;
   display: flex;
   align-items: center;
-  padding: 0 14px;
+  padding: 0 36px 0 14px;
   border-radius: 11px;
   border: 1.5px solid transparent;
   background:
@@ -395,34 +395,43 @@
   background: color-mix(in srgb, var(--qs-teal) 12%, transparent);
 }
 
-/* 清除键（kbd 方框风格） */
+/* 清空键：嵌入输入框内部，有文字时浮现（小 ⌫，提示"擦除"） */
 .qs-clear {
-  flex: none;
-  min-width: 30px;
-  height: 28px;
-  padding: 0 8px;
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
   display: grid;
   place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
   font-family: var(--qs-font-mono);
-  font-size: 12px;
-  color: var(--qs-ink-2);
-  border: 1px solid var(--qs-line);
-  border-bottom-width: 2px;
-  border-radius: 7px;
-  background: var(--qs-card);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--qs-ink-3);
   cursor: pointer;
   transition:
-    opacity 0.15s,
-    border-color 0.15s,
+    background-color 0.15s,
     color 0.15s;
 }
+.qs-bar:not(.has-value) .qs-clear {
+  display: none;
+}
 .qs-clear:hover:not(:disabled) {
-  border-color: var(--qs-vermilion);
+  background: color-mix(in srgb, var(--qs-vermilion) 10%, transparent);
   color: var(--qs-vermilion);
 }
 .qs-clear:disabled {
-  opacity: 0.4;
   cursor: default;
+}
+
+/* 关闭键：输入条最右侧，关闭整个面板 */
+.qs-iconbtn.qs-close:hover {
+  background: color-mix(in srgb, var(--qs-vermilion) 10%, transparent);
+  color: var(--qs-vermilion);
 }
 
 /* ============================================================

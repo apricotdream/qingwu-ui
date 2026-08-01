@@ -38,7 +38,7 @@
       }
     },
     {
-      "includes": ["packages/editor/src/styles/globals.css"],
+      "includes": ["packages/ai-editor/src/styles/globals.css"],
       "linter": {
         "rules": {
           "style": {
@@ -68,12 +68,16 @@
         "rules": {
           "security": {
             "noDangerouslySetInnerHtml": "off"
+          },
+          "a11y": {
+            "noStaticElementInteractions": "off",
+            "useKeyWithClickEvents": "off"
           }
         }
       }
     },
     {
-      "includes": ["packages/editor/src/**", "packages/editor/tests/**"],
+      "includes": ["packages/ai-editor/src/**", "packages/ai-editor/tests/**"],
       "linter": {
         "rules": {
           "a11y": {
