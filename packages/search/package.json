@@ -3,7 +3,7 @@
   "version": "0.5.0",
   "description": "Framework-agnostic headless search / command-palette component for Qingwu UI — typewriter placeholder, keyboard-first, zero dependencies",
   "type": "module",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "sideEffects": [
     "./dist/style.css"
   ],

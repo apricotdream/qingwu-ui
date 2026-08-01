@@ -82,4 +82,4 @@ tw.start();
 
 ## 许可证
 
-[MIT](./LICENSE) © Qingwu UI Contributors
+[Apache-2.0](./LICENSE) © Qingwu UI Contributors

@@ -3,7 +3,7 @@
 以**中国历法（农历 / 节气 / 节假日 / 调休）**为核心差异化、以**无障碍**为底线、框架无关的开源组件库。
 
 - 🪶 **零依赖** —— 纯 TypeScript + 原生 DOM，不绑定任何框架
-- ♿ **无障碍内建** —— ARIA dialog / combobox / listbox 完整语义，全键盘可用
+- ♿ **无障碍内建** —— ARIA dialog / combobox / listbox 语义，全键盘可用（方向键导航、`Esc` / 遮罩关闭、焦点进出管理）
 - 🌗 **动效克制** —— 自动响应 `prefers-reduced-motion`
 - 📦 **按需引入** —— ESM + CJS 双产物，`sideEffects` 精确标注，完全可 tree-shake
 
@@ -238,6 +238,8 @@ const cal = new Calendar(document.getElementById("calendar")!, {
 | `onOpenChange` | `(open: boolean) => void` | — | 面板开合回调 |
 | `showDetailPanel` | `boolean` | `true` | 右侧农历 / 节气 / 节日 / 黄历详情面板 |
 | `holidays` | `{ holidays?: string[]; workdays?: string[] }` | — | 法定节假日与调休补班日期（`YYYY-MM-DD`） |
+| `dayMetaProviders` | [`DayMetaProvider[]`](#扩展接口provider) | 内置农历/休假 | 自定义日期格 meta（追加在内置之后，可覆盖小字 / 角标） |
+| `panelProviders` | [`PanelProvider[]`](#扩展接口provider) | 内置详情 | 自定义详情面板内容块（追加在内置之后） |
 
 ### 实例方法
 
@@ -252,7 +254,57 @@ const cal = new Calendar(document.getElementById("calendar")!, {
 
 - 日 / 月 / 年三档视图，标题栏点击切换；`今天` 按钮快速回位
 - 面板内时间选择（时:分:秒 + 零时 / 日终快捷键）
-- `←` / `→` 翻页，`Esc` 关闭，点击遮罩关闭，自动响应 `prefers-reduced-motion`
+- `←` / `→` 翻页，`Esc` 关闭，点击遮罩关闭；面板打开时焦点移入「今天」按钮，关闭动画结束后焦点归还输入框
+- 打开时面板从输入框方向"弱出"（锚定动画），自动响应 `prefers-reduced-motion`（降级为无动画）
+
+### 扩展接口（Provider）
+
+日历通过双接口开放内容扩展，**内置 Provider 默认注册**（农历 / 节日 / 节气小字、休工角标、详情面板），用户 Provider 追加在后——小字 / 角标以追加在后的为准，可覆盖内置。
+
+**DayMetaProvider** —— 日期格 meta（同步）：
+
+```ts
+import { Calendar, type DayMetaProvider } from "@qingwu/calendar";
+
+const birthdayProvider: DayMetaProvider = {
+  id: "birthday",
+  getDayMeta(date) {
+    if (date.getMonth() === 7 && date.getDate() === 15) {
+      return { sub: "生日", subClass: "is-festival" }; // 覆盖内置小字
+    }
+    return null;
+  },
+};
+
+new Calendar(el, { dayMetaProviders: [birthdayProvider] });
+```
+
+**PanelProvider** —— 详情面板内容块（同步契约；异步内容自行处理加载 / 失败态，如天气卡片）：
+
+```ts
+import { Calendar, type PanelProvider } from "@qingwu/calendar";
+
+const weatherProvider: PanelProvider = {
+  id: "weather",
+  render(date) {
+    const box = document.createElement("div");
+    box.className = "qw-detail-section";
+    box.innerHTML = `<div class="qw-detail-label">天气</div>`;
+    // 异步：先渲染骨架，再自行 fetch 并替换节点
+    return box;
+  },
+};
+
+new Calendar(el, { panelProviders: [weatherProvider] });
+```
+
+- `PanelProvider.render(date)` 仅在**选中日期变化**时重渲（打开面板时渲染一次选中日期；翻月不重渲，避免异步请求风暴）
+- `destroy()` 会调用各 Provider 的 `destroy?.()` 钩子（用于清理定时器 / 监听）
+
+### 节假日数据与更新机制
+
+- 内置节假日 / 调休数据来源为**国务院办公厅历年放假安排通知**（公开政务数据），覆盖 2025–2027，逐年由维护者核对更新；文档内黄历宜忌为**简化示意数据**（非专业黄历），仅供参考，不作为行事依据。
+- 官方每年 11–12 月发布次年安排后，通过更新 `packages/calendar/ui/src/data.ts` 完成年更；业务侧也可通过 `holidays` 属性在运行时传入自己的节假日 / 调休数据（优先级高于内置）。
 
 ---
 
@@ -361,4 +413,5 @@ bun run release            # 构建全部包 + 发布前校验（publish-check�
 
 ## 许可证
 
-[MIT](./LICENSE) © Qingwu UI Contributors
+[Apache-2.0](./LICENSE) © Qingwu UI Contributors —— 适用于本项目全部包（根目录与各包目录内的 `LICENSE` 均为 Apache-2.0 全文）。
+

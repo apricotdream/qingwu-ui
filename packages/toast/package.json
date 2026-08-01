@@ -3,7 +3,7 @@
   "version": "0.5.0",
   "description": "Framework-agnostic, zero-dependency toast notification for Qingwu UI — ARIA live region, promise chain, queue management, prefers-reduced-motion",
   "type": "module",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "sideEffects": [
     "./dist/style.css"
   ],
