@@ -3,6 +3,29 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "0.5.1",
+    date: "2026-08-01",
+    tag: "Skeleton 骨架屏重设计",
+    changes: [
+      { type: "feat", text: "@qingwu/skeleton 块级渐变位移：每块独立 ::before 渐变层 transform 滑动（合成器线程零 repaint），错峰级联（负延迟，staggerDelay 可配）" },
+      { type: "feat", text: "refetch 自适应：结构签名（structureSignature）+ MutationObserver，loading 期间内容结构变化骨架实时跟上" },
+      { type: "feat", text: "视口增量渲染：只渲染 ±1 屏内骨架块，滚动增量补渲，已渲染上限 500 双向淘汰——长页面 DOM/合成层有界" },
+      { type: "feat", text: "加载期位置守卫：文档坐标逐帧比对，路由回退/布局沉降自动重定位+重测，骨架与内容像素级对齐" },
+      { type: "feat", text: "zIndex 选项（默认 9999，页面 chrome 在上时调低）；root 脱离文档自动自毁（防孤儿覆盖层）" },
+      { type: "improve", text: "门槛过滤：宽≥48px 且高≥8px 的块才建动画层（头像/图标静态），reduced-motion 全关" },
+    ],
+  },
+  {
+    version: "0.5.0",
+    date: "2026-08-01",
+    tag: "八包对齐",
+    changes: [
+      { type: "feat", text: "@qingwu/editor 更名 @qingwu/ai-editor，Toast 解耦为 onToast 事件通道" },
+      { type: "feat", text: "@qingwu/upload 新增 URL 批量导入；@qingwu/toast 默认 top-center + 关键词强调 + error 震动；@qingwu/search 关闭键/清空键内嵌、遮罩挂 body" },
+      { type: "improve", text: "文档站 EP 化改造；八包全部对齐 0.5.0（calendar 直升）" },
+    ],
+  },
+  {
     version: "0.4.0",
     date: "2026-07-31",
     tag: "Toast 组件",
