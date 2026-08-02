@@ -1,0 +1,278 @@
+/* ============================================================
+ 青梧UI · 标签快捷插入组件样式
+ 输入框 + 标签 chip 快捷栏 · Apple tinted 风格 · 明暗双主题 · reduced-motion 友好
+ 尺寸常量与 src/tag-input.ts 布局常量保持一致：
+ 行高 28px（chip 24 + margin 2×2）/ chip 内边距 10×2 + × 按钮 18（无边框）
+ ============================================================ */
+
+.qti {
+  --qti-fg: #111827;
+  --qti-fg-muted: #6b7280;
+  --qti-input-bg: #ffffff;
+  --qti-input-border: #d1d5db;
+  --qti-input-focus: #14b8a6; /* teal 品牌色 */
+
+  /* 标签 chip：品牌 teal 的 tinted 系统色（iOS 15+ 备忘录标签风格） */
+  --qti-chip-accent: #1e605a; /* 青梧品牌 teal */
+  --qti-chip-accent-strong: #123c39;
+  --qti-chip-bg: color-mix(in srgb, var(--qti-chip-accent) 12%, transparent);
+  --qti-chip-hover: color-mix(in srgb, var(--qti-chip-accent) 20%, transparent);
+  --qti-chip-fg: var(--qti-chip-accent-strong);
+  --qti-chip-remove: color-mix(in srgb, var(--qti-chip-accent) 55%, transparent);
+  --qti-chip-remove-hover: var(--qti-chip-accent-strong);
+
+  /* "+N 更多/收起"：iOS systemGray6 中性灰（与 tinted 标签分层） */
+  --qti-more-bg: #f2f2f7;
+  --qti-more-fg: #48484a;
+  --qti-more-hover: #e5e5ea;
+
+  --qti-disabled: 0.5;
+  --qti-font:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", system-ui,
+    sans-serif;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: var(--qti-font);
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--qti-fg);
+}
+/* 暗色主题（iOS systemGray6 底 + 亮 teal tint） */
+.dark .qti,
+[data-theme="dark"] .qti {
+  --qti-fg: #f5f5f7;
+  --qti-fg-muted: #a1a1a6;
+  --qti-input-bg: #1c1c1e;
+  --qti-input-border: #38383a;
+  --qti-input-focus: #2dd4bf;
+
+  --qti-chip-accent: #2dd4bf;
+  --qti-chip-accent-strong: #ccfbf1;
+  --qti-chip-bg: color-mix(in srgb, var(--qti-chip-accent) 18%, transparent);
+  --qti-chip-hover: color-mix(in srgb, var(--qti-chip-accent) 28%, transparent);
+  --qti-chip-remove: color-mix(in srgb, var(--qti-chip-accent) 60%, transparent);
+  --qti-chip-remove-hover: var(--qti-chip-accent-strong);
+
+  --qti-more-bg: #1c1c1e;
+  --qti-more-fg: #98989d;
+  --qti-more-hover: #2c2c2e;
+}
+
+/* ---- 输入框 ---- */
+.qti-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  font: inherit;
+  color: inherit;
+  background: var(--qti-input-bg);
+  border: 1px solid var(--qti-input-border);
+  border-radius: 8px;
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.qti-input::placeholder {
+  color: var(--qti-fg-muted);
+}
+
+.qti-input:focus {
+  border-color: var(--qti-input-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--qti-input-focus) 20%, transparent);
+}
+
+.qti-input:disabled {
+  opacity: var(--qti-disabled);
+  cursor: not-allowed;
+}
+
+/* ---- inline 模式：chip-in-input 输入框容器 ---- */
+.qti-input-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--qti-input-bg);
+  border: 1px solid var(--qti-input-border);
+  border-radius: 8px;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.qti-input-wrap:focus-within {
+  border-color: var(--qti-input-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--qti-input-focus) 20%, transparent);
+}
+
+.qti-inline .qti-input {
+  flex: 1;
+  min-width: 120px;
+  height: 26px;
+  padding: 0 4px;
+  background: none;
+  border: none;
+  border-radius: 0;
+}
+
+.qti-inline .qti-input:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.qti-inline .qti-input::placeholder {
+  color: var(--qti-fg-muted);
+}
+
+.qti-inline .qti-tag {
+  margin: 0;
+}
+
+/* ---- 标签快捷栏 ---- */
+.qti-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  padding: var(--qti-bar-pad, 4px 0);
+  overflow: hidden;
+}
+
+/* 无标签时隐藏 */
+.qti-bar:empty {
+  display: none;
+}
+
+/* ---- 标签 chip（Apple tinted） ---- */
+.qti-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  margin: 2px 4px;
+  background: var(--qti-chip-bg);
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: background-color 0.2s ease-out;
+}
+
+.qti-tag:hover {
+  background: var(--qti-chip-hover);
+}
+
+.qti-tag-insert {
+  box-sizing: border-box;
+  height: 100%;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 22px;
+  color: var(--qti-chip-fg);
+  background: none;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s ease-out;
+}
+
+.qti-tag-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 100%;
+  padding: 0;
+  color: var(--qti-chip-remove);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition:
+    color 0.2s ease-out,
+    transform 0.15s ease-out;
+}
+
+.qti-tag-remove svg {
+  transition: transform 0.2s ease-out;
+}
+
+.qti-tag-remove:hover {
+  color: var(--qti-chip-remove-hover);
+}
+
+.qti-tag-remove:hover svg {
+  transform: scale(1.15);
+}
+
+/* 按压反馈（iOS 触感） */
+.qti-tag-insert:active,
+.qti-tag-remove:active,
+.qti-more:active {
+  transform: scale(0.97);
+}
+
+.qti-tag-insert:disabled,
+.qti-tag-remove:disabled {
+  opacity: var(--qti-disabled);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.qti-tag-insert:focus-visible,
+.qti-tag-remove:focus-visible,
+.qti-more:focus-visible {
+  outline: 2px solid var(--qti-input-focus);
+  outline-offset: 2px;
+}
+
+/* ---- 折叠切换按钮（iOS 系统灰，与 tinted 标签分层） ---- */
+.qti-more {
+  box-sizing: border-box;
+  height: 24px;
+  margin: 2px 4px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 22px;
+  color: var(--qti-more-fg);
+  background: var(--qti-more-bg);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease-out,
+    color 0.2s ease-out,
+    transform 0.15s ease-out;
+}
+
+.qti-more:hover {
+  background: var(--qti-more-hover);
+  color: var(--qti-fg);
+}
+
+.qti-more:disabled {
+  opacity: var(--qti-disabled);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---- 整体禁用 ---- */
+.qti[data-disabled="true"] .qti-tag,
+.qti[data-disabled="true"] .qti-more {
+  opacity: var(--qti-disabled);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qti-input {
+    transition: none;
+  }
+  .qti-tag,
+  .qti-more {
+    transition: none;
+  }
+}

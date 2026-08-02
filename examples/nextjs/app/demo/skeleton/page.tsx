@@ -1,8 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
 import { AutoSkeleton, extractElementInfo, renderSkeletonSnapshot } from "@qingwu/skeleton";
+import { useCallback, useEffect, useRef, useState } from "react";
 import DemoCard from "@/components/DemoCard";
+import { COMPONENT_SECTIONS } from "@/docs.config";
+
+/* ============================================================
+   API 属性表（数据源：docs.config.ts → skeleton.api）
+   ============================================================ */
+
+const SKELETON_API =
+  COMPONENT_SECTIONS.find((s) => s.id === "data")?.pages.find((p) => p.href === "/demo/skeleton")
+    ?.api ?? [];
 
 /* ── 产品卡片 HTML 模板 ── */
 function buildProductCardHTML(): string {
@@ -23,7 +32,8 @@ function buildProductCardHTML(): string {
 
 /* ── 表单 HTML 模板 ── */
 function buildFormHTML(): string {
-  const inputStyle = "width:100%;padding:8px 12px;border:1px solid #d4d4d4;border-radius:6px;font-size:14px;box-sizing:border-box";
+  const inputStyle =
+    "width:100%;padding:8px 12px;border:1px solid #d4d4d4;border-radius:6px;font-size:14px;box-sizing:border-box";
   const labelStyle = "display:block;font-size:14px;font-weight:500;color:#333;margin-bottom:4px";
   return `
     <form class="sk-form" style="display:flex;flex-direction:column;gap:16px;padding:20px;background:#fff;border:1px solid #e5e5e5;border-radius:12px;max-width:420px;font-family:system-ui,-apple-system,sans-serif">
@@ -156,31 +166,22 @@ function ProductCardDemo() {
       title="商品卡片骨架"
       desc="自动测量 DOM 生成精准骨架，无需手写第二套布局。点击按钮切换加载/完成态，骨架与真实内容像素级对齐。"
       snippets={{
-        html: "<!-- 只需写一次真实布局 -->\n<div class=\"product-card\">\n  <img ... />\n  <h3>2025 春季新款连衣裙</h3>\n  <span>¥299</span>\n</div>",
-        react: "import { AutoSkeleton } from \"@qingwu/skeleton\";\nimport \"@qingwu/skeleton/style.css\";\n\nuseEffect(() => {\n  const el = document.getElementById(\"card\")!;\n  el.innerHTML = cardHTML;\n  const sk = new AutoSkeleton(el, { loading: true });\n  // 数据加载完成后\n  sk.update({ loading: false });\n  return () => sk.destroy();\n}, []);",
-        vue: "<script setup>\nimport { ref, onMounted, onUnmounted } from \"vue\";\nimport { AutoSkeleton } from \"@qingwu/skeleton\";\nimport \"@qingwu/skeleton/style.css\";\n\nconst cardRef = ref<HTMLElement>();\nlet sk: AutoSkeleton | null = null;\n\nonMounted(() => {\n  if (!cardRef.value) return;\n  cardRef.value.innerHTML = cardHTML;\n  sk = new AutoSkeleton(cardRef.value, { loading: true });\n  // 数据加载完成后\n  sk.update({ loading: false });\n});\n\nonUnmounted(() => sk?.destroy());\n</script>\n\n<template>\n  <div ref=\"cardRef\" />\n</template>",
+        html: '<!-- 只需写一次真实布局 -->\n<div class="product-card">\n  <img ... />\n  <h3>2025 春季新款连衣裙</h3>\n  <span>¥299</span>\n</div>',
+        react:
+          'import { AutoSkeleton } from "@qingwu/skeleton";\nimport "@qingwu/skeleton/style.css";\n\nuseEffect(() => {\n  const el = document.getElementById("card")!;\n  el.innerHTML = cardHTML;\n  const sk = new AutoSkeleton(el, { loading: true });\n  // 数据加载完成后\n  sk.update({ loading: false });\n  return () => sk.destroy();\n}, []);',
+        vue: '<script setup>\nimport { ref, onMounted, onUnmounted } from "vue";\nimport { AutoSkeleton } from "@qingwu/skeleton";\nimport "@qingwu/skeleton/style.css";\n\nconst cardRef = ref<HTMLElement>();\nlet sk: AutoSkeleton | null = null;\n\nonMounted(() => {\n  if (!cardRef.value) return;\n  cardRef.value.innerHTML = cardHTML;\n  sk = new AutoSkeleton(cardRef.value, { loading: true });\n  // 数据加载完成后\n  sk.update({ loading: false });\n});\n\nonUnmounted(() => sk?.destroy());\n</script>\n\n<template>\n  <div ref="cardRef" />\n</template>',
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
-        <div style={{ display: "flex", gap: 8 }}>
+      <div className="sk-stage">
+        <div className="sk-toggle-row">
           <button
             type="button"
+            className={loading ? "sk-toggle is-loading" : "sk-toggle is-ready"}
             onClick={toggleLoading}
-            style={{
-              padding: "6px 20px",
-              background: loading ? "#e8453c" : "#22c55e",
-              color: "#fff",
-              border: "none",
-              borderRadius: 6,
-              cursor: "pointer",
-              fontSize: 13,
-            }}
           >
             {loading ? "▼ 加载完成" : "▲ 重新加载"}
           </button>
-          <span style={{ fontSize: 12, color: "#888", alignSelf: "center" }}>
-            {loading ? "加载中..." : "已加载"}
-          </span>
+          <span className="sk-state">{loading ? "加载中..." : "已加载"}</span>
         </div>
         <div ref={containerRef} />
       </div>
@@ -217,24 +218,17 @@ function FormDemo() {
       title="表单骨架"
       desc="表单含输入框、下拉选择、文本域等多种控件。骨架自动识别各类元素，精确匹配每个控件的尺寸和位置。"
       snippets={{
-        html: "<form>\n  <input placeholder=\"姓名\" />\n  <select>...</select>\n  <textarea />\n  <button>提交</button>\n</form>",
-        react: "import { AutoSkeleton } from \"@qingwu/skeleton\";\n\nuseEffect(() => {\n  const el = document.getElementById(\"form\")!;\n  el.innerHTML = formHTML;\n  const sk = new AutoSkeleton(el, { loading: true });\n  return () => sk.destroy();\n}, []);\n\n// 数据就绪\nsk.update({ loading: false });",
-        vue: "<script setup>\nimport { ref, onMounted, onUnmounted } from \"vue\";\nimport { AutoSkeleton } from \"@qingwu/skeleton\";\nimport \"@qingwu/skeleton/style.css\";\n\nconst formRef = ref<HTMLElement>();\nconst sk = ref<AutoSkeleton>();\n\nonMounted(() => {\n  formRef.value!.innerHTML = formHTML;\n  sk.value = new AutoSkeleton(formRef.value!, { loading: true });\n});\n\n// 数据就绪后\n// sk.value?.update({ loading: false });\n\nonUnmounted(() => sk.value?.destroy());\n</script>\n\n<template>\n  <div ref=\"formRef\" />\n</template>",
+        html: '<form>\n  <input placeholder="姓名" />\n  <select>...</select>\n  <textarea />\n  <button>提交</button>\n</form>',
+        react:
+          'import { AutoSkeleton } from "@qingwu/skeleton";\n\nuseEffect(() => {\n  const el = document.getElementById("form")!;\n  el.innerHTML = formHTML;\n  const sk = new AutoSkeleton(el, { loading: true });\n  return () => sk.destroy();\n}, []);\n\n// 数据就绪\nsk.update({ loading: false });',
+        vue: '<script setup>\nimport { ref, onMounted, onUnmounted } from "vue";\nimport { AutoSkeleton } from "@qingwu/skeleton";\nimport "@qingwu/skeleton/style.css";\n\nconst formRef = ref<HTMLElement>();\nconst sk = ref<AutoSkeleton>();\n\nonMounted(() => {\n  formRef.value!.innerHTML = formHTML;\n  sk.value = new AutoSkeleton(formRef.value!, { loading: true });\n});\n\n// 数据就绪后\n// sk.value?.update({ loading: false });\n\nonUnmounted(() => sk.value?.destroy());\n</script>\n\n<template>\n  <div ref="formRef" />\n</template>',
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+      <div className="sk-stage">
         <button
           type="button"
+          className={loading ? "sk-toggle is-loading" : "sk-toggle is-ready"}
           onClick={toggle}
-          style={{
-            padding: "6px 20px",
-            background: loading ? "#e8453c" : "#22c55e",
-            color: "#fff",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer",
-            fontSize: 13,
-          }}
         >
           {loading ? "▼ 加载完成" : "▲ 重新加载"}
         </button>
@@ -310,24 +304,16 @@ function TransitionDemo() {
       desc="骨架与真实内容之间的平滑切换。退出时骨架覆盖层逐渐透明，内容文字同步恢复可见，300ms 过渡动画。"
       snippets={{
         html: `<div class="qs-skeleton-overlays is-exiting">...</div>`,
-        react: "// 退出时给覆盖层添加 .is-exiting 类触发 CSS 过渡\nconst overlay = sk.overlay;\noverlay?.classList.add(\"is-exiting\");\nsetTimeout(() => sk.update({ loading: false }), 250);",
-        vue: "// 退出时给覆盖层添加 .is-exiting 类触发 CSS 过渡\nconst overlay = sk.value?.overlay;\noverlay?.classList.add(\"is-exiting\");\nsetTimeout(() => sk.value?.update({ loading: false }), 250);",
+        react:
+          '// 退出时给覆盖层添加 .is-exiting 类触发 CSS 过渡\nconst overlay = sk.overlay;\noverlay?.classList.add("is-exiting");\nsetTimeout(() => sk.update({ loading: false }), 250);',
+        vue: '// 退出时给覆盖层添加 .is-exiting 类触发 CSS 过渡\nconst overlay = sk.value?.overlay;\noverlay?.classList.add("is-exiting");\nsetTimeout(() => sk.value?.update({ loading: false }), 250);',
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+      <div className="sk-stage">
         <button
           type="button"
+          className={loading ? "sk-toggle is-loading" : "sk-toggle is-ready"}
           onClick={toggleWithDelay}
-          style={{
-            padding: "8px 24px",
-            background: loading ? "#6366f1" : "#f59e0b",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            cursor: "pointer",
-            fontSize: 14,
-            fontWeight: 600,
-          }}
         >
           {loading ? "✦ 加载完成" : "✧ 重新加载"}
         </button>
@@ -372,32 +358,27 @@ function SSRDemo() {
       desc="完整管线演示：渲染真实卡片 → extractElementInfo 测量 → renderSkeletonSnapshot 生成纯 CSS 骨架。骨架几何来自真实测量，与内容像素级对齐（同一测量引擎，按构造相等）。"
       snippets={{
         html: `<div class="qs-skel-container" style="...">\n  <!-- 骨架块由 renderSkeletonSnapshot() 生成 -->\n  <div class="qs-skel-block" style="..."></div>\n</div>`,
-        react: "import { extractElementInfo, renderSkeletonSnapshot } from \"@qingwu/skeleton\";\n\n// 构建时：渲染真实页面后测量\nconst snapshot = extractElementInfo(document.querySelector(\".card\")!);\n\nconst html = renderSkeletonSnapshot(snapshot, {\n  width: snapshot[0].x + snapshot[0].width,\n  shimmerColor: \"#f0f0f0\",\n  backgroundColor: \"#e0e0e0\",\n  duration: 1500,\n});\n// 返回完整 CSS 骨架 HTML 字符串",
-        vue: "<!-- Nuxt / Vue SSR 中使用 -->\n<script setup lang=\"ts\">\nimport { renderSkeletonSnapshot } from \"@qingwu/skeleton\";\n\nconst skeletonHTML = renderSkeletonSnapshot(snapshot, {\n  width: 360,\n});\n</script>\n\n<template>\n  <div v-html=\"skeletonHTML\" />\n</template>",
+        react:
+          'import { extractElementInfo, renderSkeletonSnapshot } from "@qingwu/skeleton";\n\n// 构建时：渲染真实页面后测量\nconst snapshot = extractElementInfo(document.querySelector(".card")!);\n\nconst html = renderSkeletonSnapshot(snapshot, {\n  width: snapshot[0].x + snapshot[0].width,\n  shimmerColor: "#f0f0f0",\n  backgroundColor: "#e0e0e0",\n  duration: 1500,\n});\n// 返回完整 CSS 骨架 HTML 字符串',
+        vue: '<!-- Nuxt / Vue SSR 中使用 -->\n<script setup lang="ts">\nimport { renderSkeletonSnapshot } from "@qingwu/skeleton";\n\nconst skeletonHTML = renderSkeletonSnapshot(snapshot, {\n  width: 360,\n});\n</script>\n\n<template>\n  <div v-html="skeletonHTML" />\n</template>',
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+      <div className="sk-stage">
         <button
           type="button"
+          className={
+            html.includes("qs-skel-container") ? "sk-toggle is-loading" : "sk-toggle is-ready"
+          }
           onClick={toggle}
-          style={{
-            padding: "6px 20px",
-            background: html.includes("qs-skel-container") ? "#e8453c" : "#22c55e",
-            color: "#fff",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer",
-            fontSize: 13,
-          }}
         >
           {html.includes("qs-skel-container") ? "▼ 数据就绪" : "▲ 重新加载"}
         </button>
         <div
           id="ssr-demo-stage"
           ref={stageRef}
-          // biome-ignore lint/security/noDangerouslySetInnerHTML: SSR skeleton demo
-          dangerouslySetInnerHTML={{ __html: html }}
           style={{ minWidth: 360 }}
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: SSR skeleton demo
+          dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>
     </DemoCard>
@@ -420,14 +401,30 @@ function buildMiniCardHTML(tint: string): string {
  * Demo 5：动画样式按容器
  * ════════════════════════════════════════════════ */
 function PerContainerDemo() {
-  const refs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)];
+  const refs = [
+    useRef<HTMLDivElement>(null),
+    useRef<HTMLDivElement>(null),
+    useRef<HTMLDivElement>(null),
+  ];
   const skRefs = useRef<(AutoSkeleton | null)[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 每个容器独立的动画配置：颜色 / 时长 / 时序函数
   const containerConfigs = [
-    { tint: "#fdecec", shimmerColor: "#ffb3b3", backgroundColor: "#f5a3a3", duration: 600, timingFunction: "linear" },
-    { tint: "#e9f1fd", shimmerColor: "#b3d1ff", backgroundColor: "#9dbcf5", duration: 2600, timingFunction: "ease-out" },
+    {
+      tint: "#fdecec",
+      shimmerColor: "#ffb3b3",
+      backgroundColor: "#f5a3a3",
+      duration: 600,
+      timingFunction: "linear",
+    },
+    {
+      tint: "#e9f1fd",
+      shimmerColor: "#b3d1ff",
+      backgroundColor: "#9dbcf5",
+      duration: 2600,
+      timingFunction: "ease-out",
+    },
     { tint: "#f3ecfd", shimmerColor: "#e3c8ff", backgroundColor: "#cfa6f5", duration: 1500 },
   ];
 
@@ -451,23 +448,16 @@ function PerContainerDemo() {
       title="动画样式按容器"
       desc="每个容器独立的流光颜色、时长、时序函数，互不覆盖。红色 600ms linear 快扫、蓝色 2600ms ease-out 缓扫、紫色默认配置。"
       snippets={{
-        react: "import { AutoSkeleton } from \"@qingwu/skeleton\";\n\nconst sk = new AutoSkeleton(el, {\n  loading: true,\n  shimmerColor: \"#ffb3b3\",\n  backgroundColor: \"#f5a3a3\",\n  duration: 600,\n  timingFunction: \"linear\",\n});\n// 多个容器并存：各自动画样式独立生效",
-        vue: "<script setup>\nimport { onMounted, onUnmounted } from \"vue\";\nimport { AutoSkeleton } from \"@qingwu/skeleton\";\n\nonMounted(() => {\n  sk.value = new AutoSkeleton(el.value!, {\n    loading: true,\n    shimmerColor: \"#ffb3b3\",\n    duration: 600,\n    timingFunction: \"linear\",\n  });\n});\nonUnmounted(() => sk.value?.destroy());\n</script>",
+        react:
+          'import { AutoSkeleton } from "@qingwu/skeleton";\n\nconst sk = new AutoSkeleton(el, {\n  loading: true,\n  shimmerColor: "#ffb3b3",\n  backgroundColor: "#f5a3a3",\n  duration: 600,\n  timingFunction: "linear",\n});\n// 多个容器并存：各自动画样式独立生效',
+        vue: '<script setup>\nimport { onMounted, onUnmounted } from "vue";\nimport { AutoSkeleton } from "@qingwu/skeleton";\n\nonMounted(() => {\n  sk.value = new AutoSkeleton(el.value!, {\n    loading: true,\n    shimmerColor: "#ffb3b3",\n    duration: 600,\n    timingFunction: "linear",\n  });\n});\nonUnmounted(() => sk.value?.destroy());\n</script>',
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+      <div className="sk-stage">
         <button
           type="button"
+          className={loading ? "sk-toggle is-loading" : "sk-toggle is-ready"}
           onClick={() => setLoading((s) => !s)}
-          style={{
-            padding: "6px 20px",
-            background: loading ? "#e8453c" : "#22c55e",
-            color: "#fff",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer",
-            fontSize: 13,
-          }}
         >
           {loading ? "▼ 加载完成" : "▲ 重新加载"}
         </button>
@@ -482,7 +472,8 @@ function PerContainerDemo() {
                 }}
               />
               <div style={{ fontSize: 11, color: "#888", marginTop: 6, textAlign: "center" }}>
-                {containerConfigs[i]!.duration}ms · {containerConfigs[i]!.timingFunction ?? "ease-in-out"}
+                {containerConfigs[i]!.duration}ms ·{" "}
+                {containerConfigs[i]!.timingFunction ?? "ease-in-out"}
               </div>
             </div>
           ))}
@@ -497,21 +488,46 @@ function PerContainerDemo() {
  * ════════════════════════════════════════════════ */
 export default function SkeletonDemoPage() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 32, paddingBottom: 40 }}>
-      <div className="section-header">
-        <h2>Skeleton 骨架屏</h2>
-        <p className="section-desc">
-          自动骨架加载组件。在加载态自动测量 DOM 结构，生成像素级对齐的流光骨架覆盖层。
-          参考 shimmer-from-structure 算法 + Pretext 文本测量思想，融合青梧组件库的框架无关设计。
-        </p>
-      </div>
+    <div className="demo-grid">
+      <ProductCardDemo />
+      <FormDemo />
+      <TransitionDemo />
+      <PerContainerDemo />
+      <SSRDemo />
 
-      <div className="demo-grid">
-        <ProductCardDemo />
-        <FormDemo />
-        <TransitionDemo />
-        <PerContainerDemo />
-        <SSRDemo />
+      {/* API 属性表 */}
+      <div className="api-section">
+        {SKELETON_API.map((group) => (
+          <section key={group.title}>
+            <h3>{group.title}</h3>
+            <table className="api-table">
+              <thead>
+                <tr>
+                  <th>属性</th>
+                  <th>说明</th>
+                  <th>类型</th>
+                  <th>默认值</th>
+                </tr>
+              </thead>
+              <tbody>
+                {group.props.map((p) => (
+                  <tr key={p.name}>
+                    <td>
+                      <code>{p.name}</code>
+                    </td>
+                    <td>{p.desc}</td>
+                    <td>
+                      <code>{p.type}</code>
+                    </td>
+                    <td>
+                      <code>{p.default}</code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        ))}
       </div>
     </div>
   );

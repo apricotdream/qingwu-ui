@@ -1,16 +1,19 @@
 {
-  "name": "@qingwu/text-layout",
+  "name": "@qingwu/tag-input",
   "version": "0.6.0",
-  "description": "Pretext-inspired text layout engine — two-phase prepare/layout, Canvas measurement, Unicode-aware line breaking, virtual scroll heights, multi-line truncation, chip flow, and table column sizing",
+  "description": "Framework-agnostic tag quick-insert input for Qingwu UI — input + tag chip bar, click/Enter to insert, auto-hide inserted tags, layoutChips-powered expand/collapse",
   "type": "module",
   "license": "Apache-2.0",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/style.css"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
+    "./style.css": "./dist/style.css",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
@@ -20,14 +23,19 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && node -e \"require('fs').cpSync('src/style.css','dist/style.css')\"",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:watch": "vitest",
     "size": "size-limit"
+  },
+  "dependencies": {
+    "@qingwu/text-layout": "^0.6.0"
   },
   "devDependencies": {
     "@qingwu/tsconfig": "workspace:*",
     "@size-limit/preset-small-lib": "^13.0.1",
+    "happy-dom": "^20.11.1",
     "size-limit": "^13.0.1",
     "tsdown": "^0.22.14",
     "typescript": "^7.0.2",
@@ -36,7 +44,7 @@
   "size-limit": [
     {
       "path": "dist/index.mjs",
-      "limit": "8 kB"
+      "limit": "6 kB"
     }
   ],
   "publishConfig": {
@@ -45,18 +53,20 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/apricotdream/qingwu-ui.git",
-    "directory": "packages/text-layout"
+    "directory": "packages/tag-input"
   },
   "homepage": "https://github.com/apricotdream/qingwu-ui#readme",
   "bugs": "https://github.com/apricotdream/qingwu-ui/issues",
   "keywords": [
-    "text-layout",
-    "line-breaking",
-    "text-measurement",
-    "canvas",
-    "typesetting",
-    "virtual-scroll",
-    "truncation",
+    "tag",
+    "tag-input",
+    "chips",
+    "quick-insert",
+    "input",
+    "headless",
+    "framework-agnostic",
+    "keyboard-navigation",
+    "ui-component",
     "qingwu"
   ],
   "author": "Qingwu Team",

@@ -3,6 +3,19 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "0.6.0",
+    date: "2026-08-02",
+    tag: "TagInput 首发 · 九包对齐",
+    changes: [
+      { type: "feat", text: "新增 @qingwu/tag-input 标签快捷插入组件：输入框 + 标签快捷栏，点击标签自动填入（逗号分隔），已插入自动隐藏、删除后重现" },
+      { type: "feat", text: "Apple tinted 风格 chip（teal 品牌 tint、Lucide xmark、按压反馈、暗色 systemGray6 适配）" },
+      { type: "feat", text: "allowEnterCreate：输入框回车将文本创建为新标签；createTag() 程序化创建" },
+      { type: "feat", text: "inline chip-in-input 模式：已选标签 chip 内嵌输入框，× 删除即移除，回车添加已选；maxTags 数量上限" },
+      { type: "improve", text: "text-layout 驱动展开/收起（maxRows 折叠 + \"+N 更多\"）与标签栏高度；受控 / 非受控双模式" },
+      { type: "improve", text: "九包版本统一对齐 0.6.0（tag-input 随本版首次发布，其余无功能变更）；演示页新增 TagInput / 骨架屏 API 属性表" },
+    ],
+  },
+  {
     version: "0.5.1",
     date: "2026-08-01",
     tag: "Skeleton 骨架屏重设计",
