@@ -20,6 +20,7 @@
         "@qingwu/calendar": "workspace:*",
         "@qingwu/search": "workspace:*",
         "@qingwu/skeleton": "workspace:*",
+        "@qingwu/tag-input": "workspace:*",
         "@qingwu/text-layout": "workspace:*",
         "@qingwu/toast": "workspace:*",
         "@qingwu/upload": "workspace:*",
@@ -42,7 +43,7 @@
     },
     "packages/ai-editor": {
       "name": "@qingwu/ai-editor",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "dependencies": {
         "beautiful-mermaid": "^1.1.3",
         "cmdk": "^1.1.1",
@@ -219,11 +220,27 @@
     },
     "packages/skeleton": {
       "name": "@qingwu/skeleton",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "devDependencies": {
         "@qingwu/text-layout": "workspace:*",
         "@qingwu/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
+        "size-limit": "^13.0.1",
+        "tsdown": "^0.22.14",
+        "typescript": "^7.0.2",
+        "vitest": "^4.1.10",
+      },
+    },
+    "packages/tag-input": {
+      "name": "@qingwu/tag-input",
+      "version": "0.5.0",
+      "dependencies": {
+        "@qingwu/text-layout": "^0.5.0",
+      },
+      "devDependencies": {
+        "@qingwu/tsconfig": "workspace:*",
+        "@size-limit/preset-small-lib": "^13.0.1",
+        "happy-dom": "^20.11.1",
         "size-limit": "^13.0.1",
         "tsdown": "^0.22.14",
         "typescript": "^7.0.2",
@@ -246,7 +263,7 @@
       "name": "@qingwu/toast",
       "version": "0.5.0",
       "dependencies": {
-        "@qingwu/text-layout": "^0.4.0",
+        "@qingwu/text-layout": "^0.5.0",
       },
       "devDependencies": {
         "@qingwu/tsconfig": "workspace:*",
@@ -262,7 +279,7 @@
       "name": "@qingwu/upload",
       "version": "0.5.0",
       "dependencies": {
-        "@qingwu/button": "^0.4.0",
+        "@qingwu/button": "^0.5.0",
       },
       "devDependencies": {
         "@qingwu/tsconfig": "workspace:*",
@@ -649,6 +666,8 @@
     "@qingwu/search": ["@qingwu/search@workspace:packages/search"],
 
     "@qingwu/skeleton": ["@qingwu/skeleton@workspace:packages/skeleton"],
+
+    "@qingwu/tag-input": ["@qingwu/tag-input@workspace:packages/tag-input"],
 
     "@qingwu/text-layout": ["@qingwu/text-layout@workspace:packages/text-layout"],
 

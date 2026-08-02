@@ -12,6 +12,7 @@
   "dependencies": {
     "@qingwu/button": "workspace:*",
     "@qingwu/skeleton": "workspace:*",
+    "@qingwu/tag-input": "workspace:*",
     "@qingwu/calendar": "workspace:*",
     "@qingwu/ai-editor": "workspace:*",
     "@qingwu/search": "workspace:*",

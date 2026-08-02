@@ -1,38 +1,41 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import "./css-order.css";
 import "@qingwu/calendar/style.css";
 import "@qingwu/search/style.css";
 import "@qingwu/toast/style.css";
 import "@qingwu/skeleton/style.css";
 import "./globals.css";
-import { SearchBox, type SearchItem } from "@qingwu/search";
 import {
-  ICON_SEARCH,
-  ICON_SUN,
-  ICON_MOON,
-  ICON_MENU,
+  ICON_CHEVRON_DOWN,
   ICON_CLOSE,
   ICON_GITHUB,
-  ICON_CHEVRON_DOWN,
+  ICON_MENU,
+  ICON_MOON,
+  ICON_SEARCH,
   ICON_SIDEBAR_TOGGLE,
+  ICON_SUN,
 } from "@icon/icons";
-import {
-  GUIDE_SECTION,
-  COMPONENT_SECTIONS,
-  HEADER_NAV,
-  SEARCH_ITEMS,
-  HREF_BY_TITLE,
-} from "@/docs.config";
-import PageHero from "@/components/PageHero";
+import { SearchBox, type SearchItem } from "@qingwu/search";
 import DocToc from "@/components/DocToc";
+import PageHero from "@/components/PageHero";
 import PrevNext from "@/components/PrevNext";
+import {
+  COMPONENT_SECTIONS,
+  GUIDE_SECTION,
+  HEADER_NAV,
+  HREF_BY_TITLE,
+  SEARCH_ITEMS,
+} from "@/docs.config";
 
 /* ---- 内联 Icon 渲染组件 ---- */
 function SvgHtml({ html, size = 15 }: { html: string; size?: number }) {
-  const sized = html.replace(/width="[^"]*"/, `width="${size}"`).replace(/height="[^"]*"/, `height="${size}"`);
+  const sized = html
+    .replace(/width="[^"]*"/, `width="${size}"`)
+    .replace(/height="[^"]*"/, `height="${size}"`);
   return <span dangerouslySetInnerHTML={{ __html: sized }} />;
 }
 
@@ -68,23 +71,27 @@ function Sidebar({
       {collapsed ? (
         /* 折叠态：所有页面以 SVG 图标纵排呈现，点击直达 */
         <div className="qw-sider-rail">
-          {groups.flatMap((g) => g.pages).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              title={item.title}
-              className={`qw-sider-rail-link${pathname === item.href ? " is-active" : ""}`}
-            >
-              <SvgHtml html={item.icon} size={17} />
-            </Link>
-          ))}
+          {groups
+            .flatMap((g) => g.pages)
+            .map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                title={item.title}
+                className={`qw-sider-rail-link${pathname === item.href ? " is-active" : ""}`}
+              >
+                <SvgHtml html={item.icon} size={17} />
+              </Link>
+            ))}
         </div>
       ) : (
         groups.map((group) => (
           <div className="qw-sider-group" key={group.id}>
             <div className="qw-sider-group-title">
-              <span className="qw-sider-group-icon"><SvgHtml html={group.icon} /></span>
+              <span className="qw-sider-group-icon">
+                <SvgHtml html={group.icon} />
+              </span>
               {group.title}
             </div>
             {group.pages.map((item) => (
@@ -94,7 +101,9 @@ function Sidebar({
                 onClick={onNavigate}
                 className={`qw-sider-link${pathname === item.href ? " is-active" : ""}`}
               >
-                <span className="qw-sider-link-icon"><SvgHtml html={item.icon} /></span>
+                <span className="qw-sider-link-icon">
+                  <SvgHtml html={item.icon} />
+                </span>
                 {item.title}
               </Link>
             ))}
@@ -176,7 +185,13 @@ function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
           <SvgHtml html={ICON_MENU} size={18} />
         </button>
         <Link href="/" className="qw-header-brand">
-          <div className="qw-header-seal">青</div>
+          <img
+            src="/logo.png"
+            alt="青梧 UI"
+            width={32}
+            height={32}
+            className="qw-header-logo-mark"
+          />
           <span className="qw-header-logo">青梧 UI</span>
         </Link>
       </div>
@@ -203,7 +218,8 @@ function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
           <SvgHtml html={ICON_SEARCH} size={14} />
           <span className="qw-header-search-label">搜索文档</span>
           <span className="qw-header-search-keys">
-            <kbd>⌘</kbd><kbd>K</kbd>
+            <kbd>⌘</kbd>
+            <kbd>K</kbd>
           </span>
         </button>
 
@@ -215,15 +231,20 @@ function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
             aria-haspopup="menu"
             onClick={() => setVersionOpen(!versionOpen)}
           >
-            v0.4.0
+            v0.6.0
             <SvgHtml html={ICON_CHEVRON_DOWN} size={12} />
           </button>
           {versionOpen && (
             <div className="qw-version-menu" role="menu">
               <button className="qw-version-item is-current" type="button" role="menuitem">
-                v0.4.0 <span>当前版本</span>
+                v0.6.0 <span>当前版本</span>
               </button>
-              <Link className="qw-version-item" href="/demo/changelog" role="menuitem" onClick={() => setVersionOpen(false)}>
+              <Link
+                className="qw-version-item"
+                href="/demo/changelog"
+                role="menuitem"
+                onClick={() => setVersionOpen(false)}
+              >
                 查看全部版本
               </Link>
             </div>
@@ -284,6 +305,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/logo.png" />
         <title>青梧 UI — 中国历法组件库</title>
       </head>
       <body>

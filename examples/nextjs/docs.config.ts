@@ -6,13 +6,14 @@
 
 import {
   ICON_BOX,
-  ICON_EDIT,
   ICON_CALENDAR,
-  ICON_SEARCH,
-  ICON_UPLOAD,
-  ICON_TYPE,
+  ICON_EDIT,
   ICON_FILE,
   ICON_INFO,
+  ICON_SEARCH,
+  ICON_TAG,
+  ICON_TYPE,
+  ICON_UPLOAD,
 } from "@icon/icons";
 
 export interface DocPage {
@@ -28,6 +29,27 @@ export interface DocPage {
   keywords: string[];
   /** 侧栏图标 */
   icon: string;
+  /** 组件 API 属性表（demo 页渲染，分组见 ApiGroup） */
+  api?: ApiGroup[];
+}
+
+/** 一个 API 属性 */
+export interface ApiProp {
+  /** 属性名（代码字体） */
+  name: string;
+  /** 说明 */
+  desc: string;
+  /** TS 类型（代码字体） */
+  type: string;
+  /** 默认值；"-" 表示无 */
+  default: string;
+}
+
+/** API 属性表分组（如「配置项」「事件」） */
+export interface ApiGroup {
+  /** 分组标题 */
+  title: string;
+  props: ApiProp[];
 }
 
 export interface DocSection {
@@ -48,7 +70,19 @@ export const GUIDE_SECTION: DocSection = {
       title: "安装",
       en: "Installation",
       desc: "按需安装组件包，零依赖、纯 TypeScript、原生 DOM 渲染，React / Vue / 原生 HTML 均可使用。",
-      keywords: ["npm", "pnpm", "bun", "安装", "快速开始", "quick start", "CDN", "unpkg", "ESM", "CJS", "style.css"],
+      keywords: [
+        "npm",
+        "pnpm",
+        "bun",
+        "安装",
+        "快速开始",
+        "quick start",
+        "CDN",
+        "unpkg",
+        "ESM",
+        "CJS",
+        "style.css",
+      ],
       icon: ICON_BOX,
     },
     {
@@ -56,8 +90,38 @@ export const GUIDE_SECTION: DocSection = {
       title: "历法说明",
       en: "Lunar Calendar",
       desc: "1900-2100 年农历引擎：查表法推算、节气近似算法、节日习俗数据、干支生肖与休假表注入。",
-      keywords: ["农历", "节气", "节日", "干支", "生肖", "宜忌", "黄历", "lunar", "solar term", "festival", "holiday"],
+      keywords: [
+        "农历",
+        "节气",
+        "节日",
+        "干支",
+        "生肖",
+        "宜忌",
+        "黄历",
+        "lunar",
+        "solar term",
+        "festival",
+        "holiday",
+      ],
       icon: ICON_CALENDAR,
+    },
+    {
+      href: "/guide/cover-upload",
+      title: "封面图接入范式",
+      en: "Cover Upload Pattern",
+      desc: "单值字段（如封面 URL）接入 Upload 的完整范式：默认值覆盖、uploadFn 真进度、URL 生命周期、换图删旧、提交校验联动。",
+      keywords: [
+        "封面",
+        "cover",
+        "单值字段",
+        "upload",
+        "onProgress",
+        "uploadFn",
+        "生命周期",
+        "换图",
+        "接入范式",
+      ],
+      icon: ICON_UPLOAD,
     },
   ],
 };
@@ -86,12 +150,318 @@ export const COMPONENT_SECTIONS: DocSection[] = [
         icon: ICON_EDIT,
       },
       {
+        href: "/demo/tag-input",
+        title: "TagInput 标签快捷插入",
+        en: "TagInput",
+        desc: "输入框 + 标签快捷栏：点击标签自动填入，已插入自动隐藏，删除后重现；text-layout 驱动展开/收起。",
+        keywords: [
+          "标签",
+          "tag",
+          "tag input",
+          "快捷插入",
+          "chip",
+          "标签栏",
+          "展开收起",
+          "formatInsert",
+        ],
+        icon: ICON_TAG,
+        api: [
+          {
+            title: "配置项",
+            props: [
+              {
+                name: "value",
+                desc: "受控输入值（传入后进入受控模式，用户操作仅回调不内部改值）",
+                type: "string",
+                default: "-",
+              },
+              { name: "defaultValue", desc: "非受控初始输入值", type: "string", default: '""' },
+              {
+                name: "tags",
+                desc: "受控可用标签列表（传入后 × 删除仅回调不内部改值）",
+                type: "string[]",
+                default: "-",
+              },
+              {
+                name: "defaultTags",
+                desc: "非受控初始可用标签列表",
+                type: "string[]",
+                default: "[]",
+              },
+              {
+                name: "formatInsert",
+                desc: '标签插入格式器，默认原样；标签间默认以 ", " 分隔（自定义格式时需同步 parseTags）',
+                type: "(tag: string) => string",
+                default: "原样",
+              },
+              {
+                name: "parseTags",
+                desc: "从输入值解析已存在标签，驱动快捷栏显隐（已插入的标签按钮消失、删除后重现）",
+                type: "(value: string) => string[]",
+                default: "逗号分割",
+              },
+              {
+                name: "maxRows",
+                desc: "标签栏最大行数（layoutChips 计算），超出折叠为 +N 更多；0 不折叠",
+                type: "number",
+                default: "2",
+              },
+              {
+                name: "moreLabel",
+                desc: "折叠时按钮文案",
+                type: "(count: number) => string",
+                default: "+N 更多",
+              },
+              {
+                name: "collapseLabel",
+                desc: "展开后收起按钮文案",
+                type: "string",
+                default: "收起",
+              },
+              { name: "placeholder", desc: "输入框占位符", type: "string", default: "-" },
+              {
+                name: "allowEnterCreate",
+                desc: "输入框按 Enter 时，将当前输入文本作为新标签加入快捷栏（已存在则忽略）并清空输入；inline 模式下 Enter 始终加入已选标签，无需此开关",
+                type: "boolean",
+                default: "false",
+              },
+              {
+                name: "inline",
+                desc: "chip-in-input 模式：已选标签以 chip 内嵌输入框，× 删除即从输入值移除；下方标签栏仍为可用标签建议",
+                type: "boolean",
+                default: "false",
+              },
+              {
+                name: "maxTags",
+                desc: "输入值中标签数量上限，0 不限；超出后插入 / 回车添加被忽略",
+                type: "number",
+                default: "0",
+              },
+              {
+                name: "disabled",
+                desc: "禁用（输入框与标签按钮均不可交互）",
+                type: "boolean",
+                default: "false",
+              },
+              {
+                name: "readOnly",
+                desc: "只读（输入框只读，标签按钮禁用但可见）",
+                type: "boolean",
+                default: "false",
+              },
+              { name: "removable", desc: "是否渲染 × 移除按钮", type: "boolean", default: "true" },
+              {
+                name: "className",
+                desc: "自定义类名（追加到根容器）",
+                type: "string",
+                default: "-",
+              },
+              {
+                name: "font",
+                desc: "CSS font 字符串（text-layout 测量用），不传则读取容器 computed style",
+                type: "string",
+                default: "computed",
+              },
+            ],
+          },
+          {
+            title: "事件",
+            props: [
+              {
+                name: "onChange",
+                desc: "输入值变化回调（用户输入 / 点击标签插入 / 程序化 insertTag）",
+                type: "(value: string) => void",
+                default: "-",
+              },
+              {
+                name: "onTagsChange",
+                desc: "标签列表变化回调（× 移除快捷标签时）",
+                type: "(tags: string[]) => void",
+                default: "-",
+              },
+            ],
+          },
+          {
+            title: "实例方法",
+            props: [
+              {
+                name: "insertTag(tag)",
+                desc: "程序化插入标签到输入框（已存在则忽略）",
+                type: "(tag: string) => void",
+                default: "-",
+              },
+              {
+                name: "createTag(tag)",
+                desc: "程序化创建新标签加入快捷栏（allowEnterCreate 的内部逻辑；已存在则忽略并清空输入）",
+                type: "(tag: string) => void",
+                default: "-",
+              },
+              {
+                name: "removeTag(tag)",
+                desc: "从快捷栏移除标签（不改动输入值）",
+                type: "(tag: string) => void",
+                default: "-",
+              },
+              {
+                name: "update({ value?, tags? })",
+                desc: "受控模式下外部同步值",
+                type: "(opts) => void",
+                default: "-",
+              },
+              {
+                name: "setDisabled(v) / setReadOnly(v)",
+                desc: "动态切换禁用 / 只读状态",
+                type: "(v: boolean) => void",
+                default: "-",
+              },
+              {
+                name: "destroy()",
+                desc: "销毁组件，清空宿主容器",
+                type: "() => void",
+                default: "-",
+              },
+            ],
+          },
+        ],
+      },
+      {
         href: "/demo/text-layout",
         title: "Text Layout 排版",
         en: "Text Layout",
         desc: "精准文字排版引擎：截断 / 分栏 / 虚拟滚动。",
         keywords: ["排版", "text layout", "截断", "分栏", "虚拟滚动", "文字"],
         icon: ICON_TYPE,
+        api: [
+          {
+            title: "核心引擎",
+            props: [
+              {
+                name: "prepare(text, font?)",
+                desc: "预处理文本：字素分割 + Canvas 宽度测量 + LRU 缓存，返回可复用的排版段",
+                type: "(text, font?) => Segment[]",
+                default: "font 16px system-ui",
+              },
+              {
+                name: "layout(text, options, font?)",
+                desc: "核心排版：按 maxWidth 换行（Unicode 感知断行），返回行 / 高度 / 截断信息",
+                type: "(text, options, font?) => LayoutResult",
+                default: "-",
+              },
+              {
+                name: "layoutSegments(segments, options)",
+                desc: "对已 prepare 的段排版，纯算术可每帧调用",
+                type: "(segments, options) => LayoutResult",
+                default: "-",
+              },
+              {
+                name: "measure(text, maxWidth, lineHeight, font?)",
+                desc: "快速计算行数与总高度",
+                type: "(text, maxWidth, lineHeight, font?) => { lineCount, totalHeight }",
+                default: "-",
+              },
+              {
+                name: "measureWidth(text, font?)",
+                desc: "获取文本宽度（带全局缓存）",
+                type: "(text, font?) => number",
+                default: "-",
+              },
+              {
+                name: "clearCache()",
+                desc: "清除全局宽度缓存（字体变更后调用）",
+                type: "() => void",
+                default: "-",
+              },
+            ],
+          },
+          {
+            title: "布局工具",
+            props: [
+              {
+                name: "layoutChips(items, maxWidth, font?, chipPaddingX?, lineHeight?)",
+                desc: "芯片流 inline 排版：chip 作为不可断行原子元素与文本混合换行",
+                type: "(items, maxWidth, ...) => ChipLayoutResult",
+                default: "chipPaddingX 16 / lineHeight 24",
+              },
+              {
+                name: "truncateToLines(text, maxWidth, maxLines, font?, ellipsis?)",
+                desc: "多行截断：超出 maxLines 按字符截断并追加省略号",
+                type: "(text, maxWidth, maxLines, font?, ellipsis?) => TruncateResult",
+                default: "ellipsis …",
+              },
+              {
+                name: "truncateToHeight(text, maxWidth, maxHeight, lineHeight, font?, ellipsis?)",
+                desc: "截断到最大高度（由行高换算行数）",
+                type: "(text, maxWidth, maxHeight, lineHeight, ...) => TruncateResult",
+                default: "-",
+              },
+              {
+                name: "computeVirtualHeights(items, containerWidth, lineHeight, font?, paddingVertical?, maxLines?)",
+                desc: "虚拟滚动高度预计算：id → 高度映射 + 累计偏移 + 总高度",
+                type: "(items, containerWidth, lineHeight, ...) => VirtualHeightResult",
+                default: "-",
+              },
+              {
+                name: "findVisibleRange(offsets, scrollTop, viewportHeight, overscan?)",
+                desc: "按滚动偏移二分查找可见项范围（含 overscan）",
+                type: "(offsets, scrollTop, viewportHeight, overscan?) => [number, number]",
+                default: "overscan 3",
+              },
+              {
+                name: "computeColumnWidths(rows, availableWidth, font?, minColumnWidth?, maxColumnWidth?)",
+                desc: "表格列宽自动分配：按内容比例 + 最小 / 最大宽度约束",
+                type: "(rows, availableWidth, font?, ...) => ColumnWidthResult",
+                default: "min 60",
+              },
+              {
+                name: "fitRowToColumns(row, columnWidths, font?)",
+                desc: "将行数据按分配列宽逐格截断适配",
+                type: "(row, columnWidths, font?) => string[]",
+                default: "-",
+              },
+            ],
+          },
+          {
+            title: "类型",
+            props: [
+              {
+                name: "LayoutOptions",
+                desc: "排版参数：maxWidth / lineHeight / maxLines / overflowWrap",
+                type: "interface",
+                default: "-",
+              },
+              {
+                name: "LayoutResult",
+                desc: "排版结果：lines / totalHeight / lineCount / truncated",
+                type: "interface",
+                default: "-",
+              },
+              {
+                name: "ChipItem",
+                desc: "芯片流元素：type(text|chip) / text / extraWidth（边框、内边距等额外宽度）",
+                type: "interface",
+                default: "-",
+              },
+              {
+                name: "TruncateResult",
+                desc: "截断结果：text / truncated / lineCount / fullLineCount",
+                type: "interface",
+                default: "-",
+              },
+              {
+                name: "VirtualItem / VirtualHeightResult",
+                desc: "虚拟滚动项与高度计算结果",
+                type: "interface",
+                default: "-",
+              },
+              {
+                name: "ColumnWidthResult",
+                desc: "列宽分配结果：widths / total / truncated",
+                type: "interface",
+                default: "-",
+              },
+            ],
+          },
+        ],
       },
     ],
   },
@@ -105,16 +475,178 @@ export const COMPONENT_SECTIONS: DocSection[] = [
         title: "Calendar 日历",
         en: "Calendar",
         desc: "弹出式日期选择：农历 / 节气 / 节日 / 黄历宜忌 / 休假表 / 禁用规则。",
-        keywords: ["日历", "calendar", "农历", "节气", "节假日", "禁用规则", "date picker", "日期选择"],
+        keywords: [
+          "日历",
+          "calendar",
+          "农历",
+          "节气",
+          "节假日",
+          "禁用规则",
+          "date picker",
+          "日期选择",
+        ],
         icon: ICON_CALENDAR,
       },
       {
         href: "/demo/skeleton",
-        title: "Skeleton 骨架",
+        title: "Skeleton 骨架屏",
         en: "Skeleton",
         desc: "自动 DOM 测量骨架屏：零布局重复，SSR 可选。",
         keywords: ["骨架屏", "skeleton", "加载", "loading", "SSR", "占位"],
         icon: ICON_TYPE,
+        api: [
+          {
+            title: "配置项（AutoSkeletonOptions）",
+            props: [
+              { name: "loading", desc: "是否处于加载态", type: "boolean", default: "必填" },
+              { name: "shimmerColor", desc: "流光颜色", type: "string", default: '"#f0f0f0"' },
+              {
+                name: "backgroundColor",
+                desc: "骨架块背景色",
+                type: "string",
+                default: '"#e0e0e0"',
+              },
+              { name: "duration", desc: "流光动画时长 (ms)", type: "number", default: "1500" },
+              {
+                name: "timingFunction",
+                desc: "动画时序函数（CSS animation-timing-function），如 linear / ease-out / cubic-bezier",
+                type: "string",
+                default: '"ease-in-out"',
+              },
+              {
+                name: "staggerDelay",
+                desc: "错峰步进 (ms)：动画块按文档序递增负 delay 形成级联流水感；0 关闭错峰",
+                type: "number",
+                default: "80",
+              },
+              {
+                name: "zIndex",
+                desc: "覆盖层 z-index（portal 挂载于 body）；页面 sticky 头部需显示在骨架之上时调低",
+                type: "number",
+                default: "9999",
+              },
+              {
+                name: "fallbackBorderRadius",
+                desc: "默认圆角 (px)，用于 borderRadius 为 0 的元素",
+                type: "number",
+                default: "-",
+              },
+              {
+                name: "reducedMotion",
+                desc: "禁用动画（不传时自动检测 prefers-reduced-motion）",
+                type: "boolean",
+                default: "auto",
+              },
+              {
+                name: "maxElements",
+                desc: "骨架最大元素数量（性能保护）",
+                type: "number",
+                default: "500",
+              },
+            ],
+          },
+          {
+            title: "静态骨架（RenderSkeletonSnapshotOptions）",
+            props: [
+              { name: "width", desc: "容器宽度 (px)", type: "number", default: "必填" },
+              {
+                name: "height",
+                desc: "容器高度 (px)，未提供时按块几何自动计算",
+                type: "number",
+                default: "-",
+              },
+              {
+                name: "shimmerColor",
+                desc: "流光颜色（与 AutoSkeleton 同名配置一致）",
+                type: "string",
+                default: '"#f0f0f0"',
+              },
+              {
+                name: "backgroundColor",
+                desc: "骨架块背景色（与 AutoSkeleton 同名配置一致）",
+                type: "string",
+                default: '"#e0e0e0"',
+              },
+              {
+                name: "duration",
+                desc: "流光动画时长 (ms，与 AutoSkeleton 同名配置一致)",
+                type: "number",
+                default: "1500",
+              },
+              {
+                name: "timingFunction",
+                desc: "动画时序函数（与 AutoSkeleton 同名配置一致）",
+                type: "string",
+                default: '"ease-in-out"',
+              },
+              {
+                name: "staggerDelay",
+                desc: "错峰步进 (ms，与 AutoSkeleton 同名配置一致)",
+                type: "number",
+                default: "80",
+              },
+              {
+                name: "reducedMotion",
+                desc: "禁用动画（与 AutoSkeleton 同名配置一致）",
+                type: "boolean",
+                default: "auto",
+              },
+              {
+                name: "maxBlocks",
+                desc: "最大骨架块数（性能保护，超出截断）",
+                type: "number",
+                default: "200",
+              },
+            ],
+          },
+          {
+            title: "函数与实例方法",
+            props: [
+              {
+                name: "new AutoSkeleton(el, options)",
+                desc: "构造：原地测量 DOM 生成骨架覆盖层",
+                type: "(el: HTMLElement, options) => AutoSkeleton",
+                default: "-",
+              },
+              {
+                name: "sk.update({ loading })",
+                desc: "切换加载态（数据就绪后移除骨架）",
+                type: "(opts: Partial<AutoSkeletonOptions>) => void",
+                default: "-",
+              },
+              {
+                name: "sk.overlay",
+                desc: "骨架覆盖层 DOM（可手动加 .is-exiting 触发退出动画）",
+                type: "HTMLElement",
+                default: "-",
+              },
+              {
+                name: "sk.destroy()",
+                desc: "销毁实例，移除覆盖层与监听器",
+                type: "() => void",
+                default: "-",
+              },
+              {
+                name: "extractElementInfo(root)",
+                desc: "测量 DOM 结构，返回骨架块快照（SSR 管线第一步）",
+                type: "(root: HTMLElement) => SkeletonElement[]",
+                default: "-",
+              },
+              {
+                name: "renderSkeletonSnapshot(snapshot, options)",
+                desc: "将测量快照渲染为纯 CSS 静态骨架 HTML（SSR 管线第二步）",
+                type: "(snapshot, options) => string",
+                default: "-",
+              },
+              {
+                name: "isLeafElement / structureSignature",
+                desc: "叶子元素判定 / DOM 结构签名（测试与比对用）",
+                type: "(el) => boolean / (el) => string",
+                default: "-",
+              },
+            ],
+          },
+        ],
       },
     ],
   },
@@ -135,9 +667,136 @@ export const COMPONENT_SECTIONS: DocSection[] = [
         href: "/demo/upload",
         title: "Upload 上传",
         en: "Upload",
-        desc: "拖拽 / 按钮触发，WebP / AVIF 客户端压缩。",
-        keywords: ["上传", "upload", "拖拽", "压缩", "webp", "avif", "图片"],
+        desc: "拖拽 / 按钮触发，WebP / AVIF 客户端压缩，内置 XHR 字节级真实上传进度。",
+        keywords: ["上传", "upload", "拖拽", "压缩", "webp", "avif", "图片", "onProgress", "进度"],
         icon: ICON_UPLOAD,
+        api: [
+          {
+            title: "配置项",
+            props: [
+              {
+                name: "trigger",
+                desc: "触发形态：大拖拽区或小按钮（复用 @qingwu/button 样式）",
+                type: "dropzone | button",
+                default: "dropzone",
+              },
+              { name: "accept", desc: "接受的类型", type: "string[]", default: '["image/*"]' },
+              {
+                name: "supportedFormats",
+                desc: "图片格式白名单（无点扩展名，如 jpg/png/webp/gif/avif）；指定后映射为 input accept 并驱动提示文案",
+                type: "string[]",
+                default: "全支持",
+              },
+              { name: "multiple", desc: "是否允许多选 / 多拖", type: "boolean", default: "true" },
+              {
+                name: "maxCount",
+                desc: "最多保留的上传项总数，0 表示不限",
+                type: "number",
+                default: "0",
+              },
+              { name: "maxSizeMB", desc: "单文件大小上限（MB）", type: "number", default: "10" },
+              {
+                name: "url",
+                desc: "内置 XHR 上传地址（与 uploadFn 二选一；均不传则仅压缩不上传）",
+                type: "string",
+                default: "-",
+              },
+              { name: "fieldName", desc: "FormData 字段名", type: "string", default: '"file"' },
+              {
+                name: "headers",
+                desc: "自定义请求头",
+                type: "Record<string, string>",
+                default: "-",
+              },
+              {
+                name: "uploadFn",
+                desc: "自定义上传函数，onProgress 由宿主驱动进度条",
+                type: "UploadFn",
+                default: "-",
+              },
+              {
+                name: "urlImport",
+                desc: "URL 导入入口开关（仅 dropzone 形态）",
+                type: "boolean",
+                default: "true",
+              },
+              {
+                name: "initialUrls",
+                desc: "编辑态回显：已存在的资源 URL 列表，渲染为成功项（缩略图 + 已上传 + 删除）",
+                type: "string[]",
+                default: "-",
+              },
+              {
+                name: "persist",
+                desc: "持久化策略：未完成的上传项（File + 元数据）存 IndexedDB，刷新后恢复列表并自动重传；成功项不持久化（URL 由宿主经 initialUrls 回显）",
+                type: '"session" | "local" | "off"',
+                default: '"off"',
+              },
+              {
+                name: "previewFit",
+                desc: "单文件模式容器大图适配：cover 铺满裁切 / contain 等比例缩小完整显示 / auto 按比例自适应（与容器比例接近铺满，差异大完整显示避免裁切主体）",
+                type: '"cover" | "contain" | "auto"',
+                default: '"cover"',
+              },
+              {
+                name: "urlImportTimeout",
+                desc: "URL 导入单次请求超时（ms）",
+                type: "number",
+                default: "10000",
+              },
+              {
+                name: "compress",
+                desc: "压缩总开关；关闭时仅按原图上传",
+                type: "boolean",
+                default: "true",
+              },
+              {
+                name: "formats",
+                desc: "输出格式（三选一 / 都要）",
+                type: "OutputFormat[]",
+                default: '["original","webp","avif"]',
+              },
+              { name: "quality", desc: "压缩质量", type: "number", default: "0.8" },
+              { name: "maxWidth", desc: "缩放上限宽度", type: "number", default: "2048" },
+              { name: "maxHeight", desc: "缩放上限高度", type: "number", default: "2048" },
+            ],
+          },
+          {
+            title: "事件",
+            props: [
+              {
+                name: "onStart",
+                desc: "上传项开始上传时触发",
+                type: "(item: UploadItem) => void",
+                default: "-",
+              },
+              {
+                name: "onProgress",
+                desc: "上传进度回调：内置 XHR 为字节级真实进度；uploadFn 模式下由宿主调用 onProgress 驱动",
+                type: "(item: UploadItem) => void",
+                default: "-",
+              },
+              {
+                name: "onSuccess",
+                desc: "上传成功时触发",
+                type: "(item: UploadItem) => void",
+                default: "-",
+              },
+              {
+                name: "onError",
+                desc: "上传失败时触发",
+                type: "(item: UploadItem, error: Error) => void",
+                default: "-",
+              },
+              {
+                name: "onChange",
+                desc: "列表增删时触发；细粒度状态变化请用 onStart / onProgress / onSuccess / onError",
+                type: "(items: UploadItem[]) => void",
+                default: "-",
+              },
+            ],
+          },
+        ],
       },
     ],
   },
@@ -186,7 +845,11 @@ export const CHANGELOG_PAGE: DocPage = {
 /* ---- 头部中心导航 ---- */
 export const HEADER_NAV: { label: string; href: string; match: (pathname: string) => boolean }[] = [
   { label: "指南", href: "/guide/install", match: (p) => p.startsWith("/guide") },
-  { label: "组件", href: "/demo/button", match: (p) => p.startsWith("/demo") },
+  {
+    label: "组件",
+    href: "/demo/button",
+    match: (p) => p.startsWith("/demo") && !p.startsWith("/demo/changelog"),
+  },
   { label: "更新日志", href: "/demo/changelog", match: (p) => p === "/demo/changelog" },
 ];
 

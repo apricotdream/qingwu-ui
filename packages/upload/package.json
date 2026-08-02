@@ -1,6 +1,6 @@
 {
   "name": "@qingwu/upload",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Qingwu UI Image Upload component — drag & drop, per-format progress bar, client-side compression to original / webp / avif, zero dependencies",
   "type": "module",
   "license": "Apache-2.0",

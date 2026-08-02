@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import type { ChipItem } from "@qingwu/text-layout";
 import {
   computeColumnWidths,
   computeVirtualHeights,
@@ -11,10 +11,23 @@ import {
   prepare,
   truncateToLines,
 } from "@qingwu/text-layout";
-import type { ChipItem } from "@qingwu/text-layout";
+import { useMemo, useState } from "react";
 import DemoCard from "@/components/DemoCard";
+import { COMPONENT_SECTIONS } from "@/docs.config";
 
 const FONT = "15px system-ui, -apple-system, sans-serif";
+
+/** 渲染用字体（与测量 FONT 一致，保证像素级对齐） */
+const font = FONT;
+
+/* ============================================================
+   API 属性表（数据源：docs.config.ts → text-layout.api）
+   ============================================================ */
+
+const TEXT_LAYOUT_API =
+  COMPONENT_SECTIONS.find((s) => s.id === "basic")?.pages.find(
+    (p) => p.href === "/demo/text-layout",
+  )?.api ?? [];
 
 /* ── 中英文混合示例文本 ── */
 const DEMO_TEXTS = [
@@ -86,9 +99,9 @@ const { heights, offsets, totalHeight } = computeVirtualHeights(
 // 2. 二分查找可见范围（O(log n)）
 const [start, end] = findVisibleRange(offsets, scrollTop, 400, 5);`}
     >
-      <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+      <div className="tl-row">
         <div>
-          <div style={{ marginBottom: 8 }}>
+          <div className="tl-hint" style={{ marginTop: 0, marginBottom: 8 }}>
             <label>
               容器宽度: {containerWidth}px{" "}
               <input
@@ -101,14 +114,8 @@ const [start, end] = findVisibleRange(offsets, scrollTop, 400, 5);`}
             </label>
           </div>
           <div
-            style={{
-              width: containerWidth,
-              height: viewportHeight,
-              overflowY: "auto",
-              border: "1px solid #e5e7eb",
-              borderRadius: 8,
-              background: "#f9fafb",
-            }}
+            className="tl-viewport"
+            style={{ width: containerWidth, height: viewportHeight }}
             onScroll={(e) => setScrollTop((e.target as HTMLElement).scrollTop)}
           >
             <div style={{ height: totalHeight, position: "relative" }}>
@@ -118,19 +125,8 @@ const [start, end] = findVisibleRange(offsets, scrollTop, 400, 5);`}
                 return (
                   <div
                     key={item.id}
-                    style={{
-                      position: "absolute",
-                      top: offset,
-                      left: 0,
-                      width: "100%",
-                      height: h,
-                      padding: "4px 12px",
-                      font,
-                      lineHeight: "24px",
-                      borderBottom: "1px solid #eee",
-                      boxSizing: "border-box",
-                      fontSize: 14,
-                    }}
+                    className="tl-virtual-item"
+                    style={{ top: offset, height: h, font }}
                   >
                     {item.text}
                   </div>
@@ -138,46 +134,31 @@ const [start, end] = findVisibleRange(offsets, scrollTop, 400, 5);`}
               })}
             </div>
           </div>
-          <div style={{ fontSize: 13, color: "#888", marginTop: 6 }}>
+          <div className="tl-hint">
             可见范围: [{startIdx}, {endIdx}) · 渲染 {visibleItems.length} 项 · 总 {items.length} 项
           </div>
         </div>
 
-        <div>
-          <button
-            onClick={runBenchmark}
-            style={{
-              padding: "8px 16px",
-              border: "1px solid #6366f1",
-              borderRadius: 6,
-              background: "#eef2ff",
-              color: "#4338ca",
-              cursor: "pointer",
-              fontSize: 14,
-            }}
-          >
+        <div style={{ flex: 1 }}>
+          <button type="button" className="tl-btn-primary" onClick={runBenchmark}>
             Run 100项 Benchmark
           </button>
           {pretextTime !== null && domTime !== null && (
-            <table style={{ marginTop: 12, fontSize: 14, borderCollapse: "collapse" }}>
+            <table className="tl-bench-table">
               <thead>
                 <tr>
-                  <th style={{ padding: "4px 12px", textAlign: "left" }}>方案</th>
-                  <th style={{ padding: "4px 12px", textAlign: "right" }}>耗时</th>
+                  <th>方案</th>
+                  <th>耗时</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td style={{ padding: "4px 12px", color: "#059669" }}>Pretext (算术)</td>
-                  <td style={{ padding: "4px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                    {pretextTime.toFixed(2)} ms
-                  </td>
+                  <td className="tl-ok">Pretext (算术)</td>
+                  <td className="num">{pretextTime.toFixed(2)} ms</td>
                 </tr>
                 <tr>
-                  <td style={{ padding: "4px 12px", color: "#dc2626" }}>DOM (回流)</td>
-                  <td style={{ padding: "4px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                    {domTime.toFixed(2)} ms
-                  </td>
+                  <td className="tl-bad">DOM (回流)</td>
+                  <td className="num">{domTime.toFixed(2)} ms</td>
                 </tr>
               </tbody>
             </table>
@@ -217,35 +198,18 @@ const result = layout(messageText, { maxWidth: 300, lineHeight: 22 }, "15px syst
 // result.lineCount  → 行数
 // result.lines       → 每行文本和宽度`}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 420 }}>
+      <div className="tl-bubbles">
         {messages.map((msg, i) => {
           const result = layout(msg.text, { maxWidth: bubbleWidth - 32, lineHeight: 22 }, FONT);
           const isUser = msg.role === "user";
           return (
             <div
               key={i}
-              style={{
-                alignSelf: isUser ? "flex-end" : "flex-start",
-                maxWidth: bubbleWidth,
-                padding: "10px 14px",
-                borderRadius: isUser ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                background: isUser ? "#6366f1" : "#f3f4f6",
-                color: isUser ? "#fff" : "#111",
-                fontSize: 14,
-                font,
-                lineHeight: "22px",
-                wordBreak: "break-word",
-              }}
+              className={`tl-bubble ${isUser ? "tl-bubble-user" : "tl-bubble-assistant"}`}
+              style={{ font }}
             >
               {msg.text}
-              <div
-                style={{
-                  fontSize: 11,
-                  marginTop: 4,
-                  opacity: 0.6,
-                  textAlign: "right",
-                }}
-              >
+              <div className="tl-bubble-meta">
                 {result.lineCount} 行 · {Math.round(result.totalHeight)}px
               </div>
             </div>
@@ -268,7 +232,10 @@ function TruncateDemo() {
     () => truncateToLines(longText, width, maxLines, FONT),
     [longText, width, maxLines],
   );
-  const fullResult = useMemo(() => layout(longText, { maxWidth: width, lineHeight: 24 }, FONT), [longText, width]);
+  const fullResult = useMemo(
+    () => layout(longText, { maxWidth: width, lineHeight: 24 }, FONT),
+    [longText, width],
+  );
 
   return (
     <DemoCard
@@ -283,40 +250,41 @@ const { text, truncated, lineCount, fullLineCount } = truncateToLines(
 // truncated: 是否被截断
 // lineCount: 截断后实际行数`}
     >
-      <div style={{ display: "flex", gap: 12, marginBottom: 12, flexWrap: "wrap", alignItems: "center" }}>
+      <div className="tl-controls">
         <label>
           行数:{" "}
-          <select value={maxLines} onChange={(e) => setMaxLines(Number(e.target.value))} style={selectStyle}>
+          <select
+            className="tl-select"
+            value={maxLines}
+            onChange={(e) => setMaxLines(Number(e.target.value))}
+          >
             {[1, 2, 3, 4, 5, 10].map((n) => (
-              <option key={n} value={n}>{n} 行</option>
+              <option key={n} value={n}>
+                {n} 行
+              </option>
             ))}
           </select>
         </label>
-        <label>
+        <label className="tl-range-label">
           宽度: {width}px{" "}
-          <input type="range" min={160} max={500} value={width} onChange={(e) => setWidth(Number(e.target.value))} />
+          <input
+            type="range"
+            min={160}
+            max={500}
+            value={width}
+            onChange={(e) => setWidth(Number(e.target.value))}
+          />
         </label>
         {result.truncated && (
-          <span style={{ fontSize: 13, color: "#f59e0b", fontWeight: 500 }}>
+          <span className="tl-warn">
             已截断 ({result.fullLineCount}→{result.lineCount} 行)
           </span>
         )}
       </div>
-      <div
-        style={{
-          width,
-          padding: 12,
-          background: "#fefce8",
-          borderRadius: 8,
-          border: "1px solid #fde68a",
-          fontSize: 14,
-          font,
-          lineHeight: "24px",
-        }}
-      >
-        <div style={{ fontWeight: 600, marginBottom: 4 }}>截断前（{fullResult.lineCount} 行）:</div>
-        <div style={{ opacity: 0.5, marginBottom: 12 }}>{longText}</div>
-        <div style={{ fontWeight: 600, marginBottom: 4 }}>
+      <div className="tl-panel tl-panel-yellow" style={{ width, font, lineHeight: "24px" }}>
+        <div className="tl-panel-label">截断前（{fullResult.lineCount} 行）:</div>
+        <div className="tl-panel-orig">{longText}</div>
+        <div className="tl-panel-label">
           截断后（{result.lineCount} 行）{result.truncated ? " ✓" : ""}:
         </div>
         <div>{result.text}</div>
@@ -376,60 +344,43 @@ const items = [
 const { lines, totalHeight } = layoutChips(items, 400, "15px system-ui", 24, 28);
 // lines[0].items → [{ type, text, x, width }, ...]`}
     >
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+      <div className="tl-controls">
         <input
+          className="tl-input"
           value={newChip}
           onChange={(e) => setNewChip(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addChip()}
           placeholder="输入标签名…"
-          style={{ padding: "4px 10px", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 14, width: 160 }}
         />
-        <button onClick={addChip} style={btnStyle}>添加</button>
-        <button onClick={() => setItems(defaultChips)} style={{ ...btnStyle, background: "#f3f4f6", color: "#374151" }}>
+        <button type="button" className="tl-btn" onClick={addChip}>
+          添加
+        </button>
+        <button type="button" className="tl-btn" onClick={() => setItems(defaultChips)}>
           重置
         </button>
-        <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: "#888" }}>
+        <label className="tl-range-label">
           宽: {flowWidth}px
-          <input type="range" min={160} max={500} value={flowWidth} onChange={(e) => setFlowWidth(Number(e.target.value))} />
+          <input
+            type="range"
+            min={160}
+            max={500}
+            value={flowWidth}
+            onChange={(e) => setFlowWidth(Number(e.target.value))}
+          />
         </label>
       </div>
 
       {/* 芯片流渲染 */}
-      <div
-        style={{
-          width: flowWidth,
-          minHeight: 40,
-          padding: "8px 12px",
-          border: "1px solid #e5e7eb",
-          borderRadius: 8,
-          background: "#fff",
-          font,
-          fontSize: 14,
-          lineHeight: "28px",
-        }}
-      >
+      <div className="tl-chip-flow" style={{ width: flowWidth, minHeight: 40, font }}>
         {result.lines.map((line, li) => (
-          <div key={li} style={{ position: "relative", height: 28 }}>
+          <div key={li} className="tl-chip-row">
             {line.items.map((item, ii) => {
               if (item.type === "chip") {
                 return (
                   <span
                     key={ii}
-                    style={{
-                      position: "absolute",
-                      left: item.x,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
-                      padding: "0 10px",
-                      height: 24,
-                      background: "#e0e7ff",
-                      color: "#3730a3",
-                      borderRadius: 12,
-                      fontSize: 13,
-                      cursor: "pointer",
-                      whiteSpace: "nowrap",
-                    }}
+                    className="tl-chip"
+                    style={{ left: item.x }}
                     onClick={() => removeChip(item.text)}
                     title="点击移除"
                   >
@@ -438,7 +389,7 @@ const { lines, totalHeight } = layoutChips(items, 400, "15px system-ui", 24, 28)
                 );
               }
               return (
-                <span key={ii} style={{ position: "absolute", left: item.x }}>
+                <span key={ii} className="tl-chip-text" style={{ left: item.x }}>
                   {item.text}
                 </span>
               );
@@ -446,7 +397,7 @@ const { lines, totalHeight } = layoutChips(items, 400, "15px system-ui", 24, 28)
           </div>
         ))}
       </div>
-      <div style={{ fontSize: 13, color: "#888", marginTop: 6 }}>
+      <div className="tl-hint">
         {result.lines.length} 行 · 总高 {result.totalHeight}px
       </div>
     </DemoCard>
@@ -458,11 +409,31 @@ function TableColumnsDemo() {
   const data = [
     ["组件名称", "描述", "版本", "体积"],
     ["@qingwu/button", "通用按钮组件，支持四种变体：默认、主色、琥珀色、图标按钮", "0.3.1", "4 kB"],
-    ["@qingwu/calendar", "农历日历组件，含节气、节日、黄历、干支纪年，纯 DOM 渲染", "0.3.1", "30 kB"],
-    ["@qingwu/search", "搜索框组件，打字机轮播占位、键盘导航、焦点陷阱、结果动画", "0.3.1", "12 kB"],
+    [
+      "@qingwu/calendar",
+      "农历日历组件，含节气、节日、黄历、干支纪年，纯 DOM 渲染",
+      "0.3.1",
+      "30 kB",
+    ],
+    [
+      "@qingwu/search",
+      "搜索框组件，打字机轮播占位、键盘导航、焦点陷阱、结果动画",
+      "0.3.1",
+      "12 kB",
+    ],
     ["@qingwu/upload", "图片上传组件，拖拽/点击、客户端压缩、多格式输出", "0.3.1", "8 kB"],
-    ["@qingwu/ai-editor", "AI 编辑器，基于 Tiptap，支持 Markdown 和所见即所得编辑", "0.3.1", "50 kB"],
-    ["@qingwu/text-layout", "文本排版引擎，Pretext 启发两阶段架构，Unicode 感知换行", "0.3.1", "6 kB"],
+    [
+      "@qingwu/ai-editor",
+      "AI 编辑器，基于 Tiptap，支持 Markdown 和所见即所得编辑",
+      "0.3.1",
+      "50 kB",
+    ],
+    [
+      "@qingwu/text-layout",
+      "文本排版引擎，Pretext 启发两阶段架构，Unicode 感知换行",
+      "0.3.1",
+      "6 kB",
+    ],
   ];
 
   const [totalWidth, setTotalWidth] = useState(600);
@@ -485,40 +456,30 @@ const { widths, truncated } = computeColumnWidths(
 // truncated: 每列是否需要截断`}
     >
       <div style={{ marginBottom: 10 }}>
-        <label>
+        <label className="tl-range-label">
           表格宽度: {totalWidth}px{" "}
-          <input type="range" min={300} max={800} value={totalWidth} onChange={(e) => setTotalWidth(Number(e.target.value))} />
+          <input
+            type="range"
+            min={300}
+            max={800}
+            value={totalWidth}
+            onChange={(e) => setTotalWidth(Number(e.target.value))}
+          />
         </label>
       </div>
       <div style={{ overflowX: "auto" }}>
-        <table
-          style={{
-            width: totalWidth,
-            borderCollapse: "collapse",
-            fontSize: 14,
-            font,
-            tableLayout: "fixed",
-          }}
-        >
+        <table className="tl-data-table" style={{ width: totalWidth, font }}>
           <colgroup>
             {widths.map((w, i) => (
               <col key={i} style={{ width: w }} />
             ))}
           </colgroup>
           <thead>
-            <tr style={{ background: "#f3f4f6" }}>
+            <tr>
               {data[0]!.map((h, i) => (
-                <th
-                  key={i}
-                  style={{
-                    padding: "6px 10px",
-                    textAlign: "left",
-                    borderBottom: "2px solid #d1d5db",
-                    color: truncated[i] ? "#dc2626" : "#111",
-                  }}
-                >
+                <th key={i} style={{ color: truncated[i] ? "#dc2626" : "#111" }}>
                   {h}
-                  <div style={{ fontSize: 10, fontWeight: 400, color: "#888" }}>
+                  <div className="tl-col-w">
                     {widths[i]}px {truncated[i] ? "(截断)" : ""}
                   </div>
                 </th>
@@ -527,17 +488,11 @@ const { widths, truncated } = computeColumnWidths(
           </thead>
           <tbody>
             {data.slice(1).map((row, ri) => (
-              <tr key={ri} style={{ borderBottom: "1px solid #e5e7eb" }}>
+              <tr key={ri}>
                 {row.map((cell, ci) => (
                   <td
                     key={ci}
-                    style={{
-                      padding: "6px 10px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      color: truncated[ci] ? "#dc2626" : undefined,
-                    }}
+                    style={{ color: truncated[ci] ? "#dc2626" : undefined }}
                     title={cell}
                   >
                     {cell}
@@ -584,24 +539,16 @@ const { lines, totalHeight, lineCount } = layout(text, { maxWidth, lineHeight },
 // 快捷版
 const { lineCount, totalHeight } = measure(text, maxWidth, lineHeight, font);`}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="tl-col">
         <textarea
+          className="tl-textarea"
           value={sampleText}
           onChange={(e) => setSampleText(e.target.value)}
           rows={3}
-          style={{
-            width: "100%",
-            maxWidth: 520,
-            padding: 8,
-            border: "1px solid #d1d5db",
-            borderRadius: 6,
-            font,
-            fontSize: 14,
-            resize: "vertical",
-          }}
+          style={{ font }}
         />
-        <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
-          <label>
+        <div className="tl-controls">
+          <label className="tl-range-label">
             容器宽度: {sampleWidth}px{" "}
             <input
               type="range"
@@ -611,24 +558,15 @@ const { lineCount, totalHeight } = measure(text, maxWidth, lineHeight, font);`}
               onChange={(e) => setSampleWidth(Number(e.target.value))}
             />
           </label>
-          <span style={{ fontSize: 13, color: "#888" }}>
+          <span className="tl-hint" style={{ marginTop: 0 }}>
             {prepared.length} 个 segments · {lineCount} 行 · {Math.round(totalHeight)}px 高
           </span>
         </div>
 
         {/* 渲染排版结果 */}
         <div
-          style={{
-            width: sampleWidth,
-            padding: 8,
-            background: "#f0fdf4",
-            borderRadius: 6,
-            border: "1px solid #bbf7d0",
-            font,
-            fontSize: 14,
-            lineHeight: "22px",
-            wordBreak: "break-word",
-          }}
+          className="tl-panel tl-panel-green"
+          style={{ width: sampleWidth, font, lineHeight: "22px", wordBreak: "break-word" }}
         >
           {result.lines.map((line, i) => (
             <div
@@ -656,7 +594,7 @@ function AlgorithmRules() {
       desc="基于 Pretext 架构 + CSS Text Module Level 3 的行级排版规则"
       full
     >
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, fontSize: 14 }}>
+      <div className="tl-rule-grid">
         {[
           {
             title: "规则 1：两阶段分离",
@@ -671,55 +609,27 @@ function AlgorithmRules() {
             desc: "强断 > 软断 > 溢出断。空格为软断点，CJK 字符前后均可断行，标点禁止出现在行首。无断点时执行 overflow-wrap: break-word 策略。",
           },
           {
-            title: "规则 4：虚拟滚动预计算",
-            desc: "批量 prepare 后在数据加载阶段完成所有 item 高度计算，存入 Map。虚拟滚动组件 O(1) 查找任意 item 高度和偏移，无 DOM 回流。",
+            title: "规则 4：宽度缓存",
+            desc: "(text, font) 为 key 的全局 LRU 宽度缓存。prepare() 后 segment 可复用，避免同一文本重复 Canvas 测量。字体变更后调用 clearCache()。",
           },
           {
-            title: "规则 5：二分查找截断",
-            desc: "O(log n) 二分查找截断位置 vs 逐行构建 O(n)。截断后返回精确的截断位置、实际行数、是否被截断等元信息。",
+            title: "规则 5：虚拟滚动高度",
+            desc: "computeVirtualHeights() 批量预计算每项高度与累计偏移，findVisibleRange() 二分查找可见区间，O(log n) 定位。",
           },
           {
-            title: "规则 6：比例列宽分配",
-            desc: "computeColumnWidths() 先测量每列自然宽度，再按比例分配可用空间，保证最小宽度约束，标注溢出列。适合大表格无渲染预计算场景。",
+            title: "规则 6：芯片流原子性",
+            desc: "芯片（chip）作为不可断行原子元素参与 inline 排版，换行时整体移动。extraWidth 承载边框/内边距/关闭按钮等额外宽度。",
           },
         ].map((rule) => (
-          <div
-            key={rule.title}
-            style={{
-              padding: 14,
-              background: "#f8fafc",
-              borderRadius: 8,
-              border: "1px solid #e2e8f0",
-            }}
-          >
-            <div style={{ fontWeight: 600, marginBottom: 4, color: "#1e293b" }}>{rule.title}</div>
-            <div style={{ color: "#64748b", lineHeight: 1.6 }}>{rule.desc}</div>
+          <div key={rule.title}>
+            <div className="tl-rule-title">{rule.title}</div>
+            <div className="tl-rule-desc">{rule.desc}</div>
           </div>
         ))}
       </div>
     </DemoCard>
   );
 }
-
-/* ── 页面入口 ── */
-
-const font = FONT;
-const selectStyle: React.CSSProperties = {
-  padding: "4px 8px",
-  border: "1px solid #d1d5db",
-  borderRadius: 6,
-  fontSize: 14,
-  background: "#fff",
-};
-const btnStyle: React.CSSProperties = {
-  padding: "4px 14px",
-  border: "none",
-  borderRadius: 6,
-  background: "#6366f1",
-  color: "#fff",
-  fontSize: 14,
-  cursor: "pointer",
-};
 
 export default function TextLayoutPage() {
   return (
@@ -731,6 +641,41 @@ export default function TextLayoutPage() {
       <ChipFlowDemo />
       <TableColumnsDemo />
       <VirtualScrollDemo />
+
+      {/* API 属性表 */}
+      <div className="api-section">
+        {TEXT_LAYOUT_API.map((group) => (
+          <section key={group.title}>
+            <h3>{group.title}</h3>
+            <table className="api-table">
+              <thead>
+                <tr>
+                  <th>属性</th>
+                  <th>说明</th>
+                  <th>类型</th>
+                  <th>默认值</th>
+                </tr>
+              </thead>
+              <tbody>
+                {group.props.map((p) => (
+                  <tr key={p.name}>
+                    <td>
+                      <code>{p.name}</code>
+                    </td>
+                    <td>{p.desc}</td>
+                    <td>
+                      <code>{p.type}</code>
+                    </td>
+                    <td>
+                      <code>{p.default}</code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        ))}
+      </div>
     </div>
   );
 }
