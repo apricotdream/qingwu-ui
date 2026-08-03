@@ -36,5 +36,12 @@ Desktop.ini
 # 缓存
 .cache/
 
-# 本地记忆（不提交）
-.claude/memory/
+# AI 辅助工具本地文件（不提交）
+.claude/
+CLAUDE.md
+AGENTS.md
+.project-memory.md
+.cursor/
+.cursorrules
+.github/copilot-instructions.md
+COPILOT.md
