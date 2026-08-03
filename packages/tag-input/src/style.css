@@ -91,8 +91,15 @@
   cursor: not-allowed;
 }
 
-/* ---- inline 模式：chip-in-input 输入框容器 ---- */
+/* ---- 输入框包裹层 ----
+   非 inline（bar）模式：透明无盒模型，仅承载 input，
+   否则会与 .qti-input 自身的边框叠加成「双输入框」。
+   inline 模式：作为 chip-in-input 的可视容器（flex + 边框 + focus 光晕）。 */
 .qti-input-wrap {
+  display: block;
+}
+
+.qti-inline .qti-input-wrap {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -106,7 +113,7 @@
     box-shadow 0.18s ease;
 }
 
-.qti-input-wrap:focus-within {
+.qti-inline .qti-input-wrap:focus-within {
   border-color: var(--qti-input-focus);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--qti-input-focus) 20%, transparent);
 }

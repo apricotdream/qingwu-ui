@@ -1,3 +1,5 @@
+import type { DeleteConfirmDialogProps } from "./delete-confirm-dialog";
+
 /**
  * 共享删除确认标志
  * 多选删除（选中多个附件/代码块按 Delete）时，只有一个节点弹确认框，
@@ -26,4 +28,24 @@ export function setDeleteConfirmActive(value: boolean): void {
       resetTimer = null;
     }, AUTO_RESET_MS);
   }
+}
+
+/* ---- 全局删除确认渲染器（对外开放，与 setToastProvider 同款模式）---- */
+
+/** 宿主自定义确认渲染器：接收完整确认参数，自行渲染 UI 并调用 onConfirm/onCancel */
+export type ConfirmProvider = (props: DeleteConfirmDialogProps) => void;
+
+let confirmProvider: ConfirmProvider | null = null;
+
+/**
+ * 设置全局删除确认渲染器（默认使用内置项目 DeleteConfirmDialog）。
+ * 传入 null/undefined 恢复内置默认。
+ */
+export function setConfirmProvider(provider: ConfirmProvider | null): void {
+  confirmProvider = provider;
+}
+
+/** 读取全局确认渲染器（内置实现内部使用） */
+export function getConfirmProvider(): ConfirmProvider | null {
+  return confirmProvider;
 }

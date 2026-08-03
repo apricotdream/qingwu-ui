@@ -7,6 +7,7 @@ import {
   type AttachmentLimits,
 } from "../attachment-limits";
 import { getStorageProvider } from "../storage";
+import { openImportChoiceDialog } from "../utils/import-choice-dialog";
 
 type MediaType = "image" | "video" | "audio" | "file" | "markdown";
 
@@ -46,12 +47,13 @@ async function insertMdFile(view: any, file: File, pos?: number, editor?: any) {
     if (storage?.chooseMd) {
       storage.chooseMd(file.name, resolve);
     } else {
-      // 兜底：window.confirm
-      resolve(window.confirm(`将 "${file.name}" 渲染到编辑器？`) ? "render" : "attach");
+      // 兜底：内置项目风格选择弹窗（替代原生 window.confirm）
+      void openImportChoiceDialog(file.name).then(resolve);
     }
   });
 
-  if (choice === null || choice === "attach") {
+  if (choice === null) return; // 取消
+  if (choice === "attach") {
     // 同步校验：超限直接拒绝，不插入占位节点
     const limitErr = limits ? validateAttachmentFile(view.state.doc, file, limits) : null;
     if (limitErr) {
@@ -150,7 +152,7 @@ export async function uploadPlaceholder(
   }
 
   try {
-    const url = await storage.upload(file);
+    const url = await storage.upload(file, "editor");
     URL.revokeObjectURL(placeholderSrc);
 
     let swapped = false;

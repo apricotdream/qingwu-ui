@@ -12,7 +12,12 @@ interface ImageUploadDialogProps {
 
 type Tab = "upload" | "url";
 
-export const ImageUploadDialog: FC<ImageUploadDialogProps> = ({ open, onClose, onInsert, validate }) => {
+export const ImageUploadDialog: FC<ImageUploadDialogProps> = ({
+  open,
+  onClose,
+  onInsert,
+  validate,
+}) => {
   const [tab, setTab] = useState<Tab>("upload");
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -44,46 +49,49 @@ export const ImageUploadDialog: FC<ImageUploadDialogProps> = ({ open, onClose, o
     onClose();
   }, [reset, onClose]);
 
-  const uploadFile = useCallback(async (file: File) => {
-    const ext = file.name.split(".").pop()?.toLowerCase();
-    const allowed = ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "avif"];
-    if (!ext || !allowed.includes(ext)) {
-      setError(`不支持的图片格式: ${ext || "未知"}`);
-      return;
-    }
-    // 优先使用宿主编译期校验（单文件/总大小限制）；缺省回退原硬编码 20MB
-    const limitErr = validate
-      ? validate(file)
-      : file.size > 20 * 1024 * 1024
-        ? "图片大小不能超过 20MB"
-        : null;
-    if (limitErr) {
-      setError(limitErr);
-      toast(limitErr);
-      return;
-    }
+  const uploadFile = useCallback(
+    async (file: File) => {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      const allowed = ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "avif"];
+      if (!ext || !allowed.includes(ext)) {
+        setError(`不支持的图片格式: ${ext || "未知"}`);
+        return;
+      }
+      // 优先使用宿主编译期校验（单文件/总大小限制）；缺省回退原硬编码 20MB
+      const limitErr = validate
+        ? validate(file)
+        : file.size > 20 * 1024 * 1024
+          ? "图片大小不能超过 20MB"
+          : null;
+      if (limitErr) {
+        setError(limitErr);
+        toast(limitErr);
+        return;
+      }
 
-    setUploading(true);
-    setError(null);
+      setUploading(true);
+      setError(null);
 
-    const previewUrl = URL.createObjectURL(file);
-    setPreview(previewUrl);
+      const previewUrl = URL.createObjectURL(file);
+      setPreview(previewUrl);
 
-    try {
-      const storage = getStorageProvider();
-      const url = await storage.upload(file);
-      // 上传成功后释放本地 blob 预览 URL，改用远端 URL
-      URL.revokeObjectURL(previewUrl);
-      setUploadedUrl(url);
-      setPreview(url);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "上传失败");
-      URL.revokeObjectURL(previewUrl);
-      setPreview(null);
-    } finally {
-      setUploading(false);
-    }
-  }, [validate]);
+      try {
+        const storage = getStorageProvider();
+        const url = await storage.upload(file, "editor");
+        // 上传成功后释放本地 blob 预览 URL，改用远端 URL
+        URL.revokeObjectURL(previewUrl);
+        setUploadedUrl(url);
+        setPreview(url);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "上传失败");
+        URL.revokeObjectURL(previewUrl);
+        setPreview(null);
+      } finally {
+        setUploading(false);
+      }
+    },
+    [validate],
+  );
 
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

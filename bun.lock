@@ -43,8 +43,9 @@
     },
     "packages/ai-editor": {
       "name": "@qingwu/ai-editor",
-      "version": "0.5.1",
+      "version": "0.6.0",
       "dependencies": {
+        "@qingwu/toast": "^0.6.0",
         "beautiful-mermaid": "^1.1.3",
         "cmdk": "^1.1.1",
         "dompurify": "^3.4.12",
@@ -182,7 +183,7 @@
     },
     "packages/button": {
       "name": "@qingwu/button",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "devDependencies": {
         "@qingwu/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
@@ -194,7 +195,7 @@
     },
     "packages/calendar/ui": {
       "name": "@qingwu/calendar",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "devDependencies": {
         "@qingwu/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
@@ -207,7 +208,7 @@
     },
     "packages/search": {
       "name": "@qingwu/search",
-      "version": "0.5.0",
+      "version": "0.6.5",
       "devDependencies": {
         "@qingwu/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
@@ -220,7 +221,7 @@
     },
     "packages/skeleton": {
       "name": "@qingwu/skeleton",
-      "version": "0.5.1",
+      "version": "0.6.0",
       "devDependencies": {
         "@qingwu/text-layout": "workspace:*",
         "@qingwu/tsconfig": "workspace:*",
@@ -233,7 +234,7 @@
     },
     "packages/tag-input": {
       "name": "@qingwu/tag-input",
-      "version": "0.5.0",
+      "version": "0.6.1",
       "dependencies": {
         "@qingwu/text-layout": "^0.5.0",
       },
@@ -249,7 +250,7 @@
     },
     "packages/text-layout": {
       "name": "@qingwu/text-layout",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "devDependencies": {
         "@qingwu/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
@@ -261,9 +262,9 @@
     },
     "packages/toast": {
       "name": "@qingwu/toast",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "dependencies": {
-        "@qingwu/text-layout": "^0.5.0",
+        "@qingwu/text-layout": "^0.6.0",
       },
       "devDependencies": {
         "@qingwu/tsconfig": "workspace:*",
@@ -277,7 +278,7 @@
     },
     "packages/upload": {
       "name": "@qingwu/upload",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "dependencies": {
         "@qingwu/button": "^0.5.0",
       },

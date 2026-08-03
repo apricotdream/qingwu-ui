@@ -18,6 +18,31 @@ const ITEMS = [
   { title: "键盘导航", sub: "方向键 Home End PgUp PgDn Enter", kind: "功能", glyph: "⌨" },
 ];
 
+/** 异步服务端模式：模拟远端数据（sub 为正文命中片段），350ms 延迟、支持 abort、含 "err" 时失败 */
+const REMOTE_ITEMS = [
+  { id: "r1", title: "React 并发模型", sub: "…useTransition 让低优先级更新让出主线程，渲染中断可恢复…", kind: "文章", glyph: "R" },
+  { id: "r2", title: "Postgres 全文检索", sub: "…pg_jieba 分词 + tsvector GIN 索引，中文搜索的性价比之选…", kind: "文章", glyph: "P" },
+  { id: "r3", title: "滚动驱动的 GSAP 动效", sub: "…ScrollTrigger 将页面滚动进度映射为时间线播放位置…", kind: "文章", glyph: "G" },
+  { id: "r4", title: "Go 服务端改造笔记", sub: "…Gin + GORM 迁走 Node 服务，全文检索的取舍与索引设计…", kind: "文章", glyph: "G" },
+  { id: "r5", title: "端午安康", sub: "农历五月初五 · 龙舟竞渡", kind: "节日", glyph: "端" },
+];
+
+function mockRemoteSearch(q: string, signal: AbortSignal): Promise<typeof REMOTE_ITEMS> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      const kw = q.toLowerCase();
+      if (kw.includes("err")) {
+        reject(new Error("mock failure"));
+        return;
+      }
+      resolve(
+        REMOTE_ITEMS.filter((it) => `${it.title} ${it.sub ?? ""}`.toLowerCase().includes(kw)),
+      );
+    }, 350);
+    signal.addEventListener("abort", () => clearTimeout(timer));
+  });
+}
+
 const DEFAULT_PLACEHOLDERS = '搜索节日 · 如「中秋节」';
 
 /** props 面板字段定义 */
@@ -46,6 +71,17 @@ const FIELDS: FieldDef[] = [
       { label: "开启", value: "true" },
       { label: "关闭", value: "false" },
     ],
+  },
+  {
+    key: "mode", label: "搜索模式", type: "select", defaultValue: "local",
+    options: [
+      { label: "本地筛选（items）", value: "local" },
+      { label: "异步服务端（search）", value: "async" },
+    ],
+  },
+  {
+    key: "loadingSpriteUrl", label: "加载精灵图 URL", type: "text",
+    defaultValue: "",
   },
 ];
 
@@ -83,11 +119,24 @@ export default function SearchPage() {
 
       opts.typewriter = currentProps.typewriter === "true";
 
-      opts.items = ITEMS;
-      opts.onSelect = (item: { title: string }) => addLog(`选择了「${item.title}」`);
+      if (currentProps.mode === "async") {
+        opts.search = (q: string, signal: AbortSignal) =>
+          mockRemoteSearch(q, signal).then((rows) => {
+            addLog(`异步「${q}」返回 ${rows.length} 条`);
+            return rows;
+          });
+        opts.debounceMs = 300;
+        opts.onQueryChange = (q: string) => addLog(`输入变化：${q || "（空）"}`);
+      } else {
+        opts.items = ITEMS;
+      }
+      const sprite = currentProps.loadingSpriteUrl?.trim();
+      if (sprite) opts.loadingSpriteUrl = sprite;
+      opts.onSelect = (item: { title: string; id?: string }) =>
+        addLog(`选择了「${item.title}」${item.id ? ` · id=${item.id}` : ""}`);
 
       sbRef.current = new SearchBox(el, opts);
-      addLog(`搜索渲染完成（${Object.keys(opts).length} 项配置）`);
+      addLog(`搜索渲染完成（${currentProps.mode === "async" ? "异步服务端" : "本地筛选"}模式）`);
     },
     [addLog]
   );
@@ -119,7 +168,14 @@ export default function SearchPage() {
     if (props.typewriter === "false") {
       lines.push("  typewriter: false,");
     }
-    lines.push("  items: [ /* ... 搜索条目 */ ],");
+    if (props.mode === "async") {
+      lines.push("  search: async (q, signal) =>", "    fetch(`/api/search?q=${q}`, { signal }).then((r) => r.json()),");
+      lines.push("  debounceMs: 300,");
+      const sprite = props.loadingSpriteUrl?.trim();
+      if (sprite) lines.push(`  loadingSpriteUrl: "${sprite}",`);
+    } else {
+      lines.push("  items: [ /* ... 搜索条目 */ ],");
+    }
     lines.push("  onSelect: (item) => console.log(item),");
     return lines;
   };
@@ -204,7 +260,7 @@ export default function SearchPage() {
     <div className="demo-grid">
       <DemoCard
         title="Search 搜索"
-        desc="打字机轮播占位提示 + @property 三色流光边框 + 类别筛选轮转 + 全键盘导航。按 / 或 Ctrl+K 打开面板。"
+        desc="打字机轮播占位提示 + @property 三色流光边框 + 类别筛选轮转 + 全键盘导航。按 / 或 Ctrl+K 打开面板；支持异步服务端搜索（search 选项：防抖 + 竞态取消 + 加载/错误态）。"
         full
         snippets={snippets}
       >

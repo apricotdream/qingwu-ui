@@ -1,5 +1,6 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { getConfirmProvider } from "./delete-confirm";
 
 const MIN_DELETE_PROGRESS_MS = 300;
 
@@ -30,12 +31,26 @@ export function DeleteConfirmDialog({
   onCancel,
 }: DeleteConfirmDialogProps) {
   const [deleting, setDeleting] = useState(false);
+  const delegatedRef = useRef(false);
+  // 宿主经 setConfirmProvider 设置自定义确认渲染器时，交由宿主接管，默认仍用本项目弹窗
+  const provider = getConfirmProvider();
+
+  useEffect(() => {
+    if (!open) {
+      delegatedRef.current = false;
+      return;
+    }
+    if (!provider || delegatedRef.current) return;
+    delegatedRef.current = true;
+    provider({ open, title, message, confirmText, cancelText, onConfirm, onCancel });
+  }, [open, provider, title, message, confirmText, cancelText, onConfirm, onCancel]);
 
   // 关闭时复位 deleting，避免下次打开残留
   useEffect(() => {
     if (!open) setDeleting(false);
   }, [open]);
 
+  if (provider) return null;
   if (!open) return null;
 
   const handleConfirm = async () => {

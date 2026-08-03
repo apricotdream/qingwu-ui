@@ -4,7 +4,7 @@ export function createLocalStorage(): StorageProvider {
   return {
     name: "浏览器内存 (Base64)",
     type: "local",
-    async upload(file: File): Promise<string> {
+    async upload(file: File, _source?: string): Promise<string> {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);

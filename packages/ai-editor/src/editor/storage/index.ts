@@ -1,7 +1,11 @@
 export interface StorageProvider {
   readonly name: string;
   readonly type: StorageProviderType;
-  upload(file: File): Promise<string>;
+  /**
+   * 上传文件。source 为上传出处，默认 "editor"（编辑器内上传）；
+   * 宿主可传 "cover" 等业务语义，供 nameTemplate 的 {src} 占位符使用
+   */
+  upload(file: File, source?: string): Promise<string>;
   remove(url: string): Promise<void>;
 }
 

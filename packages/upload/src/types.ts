@@ -20,8 +20,8 @@ export type UploadStatus = "pending" | "uploading" | "success" | "error";
 /** 一个上传项 = 一张图 × 一个输出格式，拥有独立进度条 */
 export interface UploadItem {
   id: string;
-  /** 用于上传的 blob（压缩后或原图） */
-  file: File;
+  /** 用于上传的 blob（压缩后或原图）；initialUrls 回显的远程项无文件 */
+  file?: File;
   name: string;
   mime: string;
   /** 原始文件大小（字节） */
@@ -38,10 +38,12 @@ export interface UploadItem {
   preview?: string;
   /** 压缩是否跳过（GIF/SVG 不支持压缩） */
   skipped?: boolean;
-  /** 来源：本地选择（默认）或 URL 导入 */
-  source?: "local" | "url";
+  /** 来源：本地选择（默认）、URL 导入或 initialUrls 回显 */
+  source?: "local" | "url" | "remote";
   /** URL 导入时的原始地址 */
   originalUrl?: string;
+  /** initialUrls 回显的远程资源地址 */
+  remoteUrl?: string;
 }
 
 /** 自定义上传函数；onProgress 由宿主驱动进度条 */
@@ -87,6 +89,21 @@ export interface UploadOptions {
   maxWidth?: number;
   /** 缩放上限高度，默认 2048 */
   maxHeight?: number;
+
+  /** 编辑态回显：已存在的资源 URL 列表（渲染为成功项，删除走 remove → onChange 差集） */
+  initialUrls?: string[];
+  /**
+   * 单文件模式容器大图的适配策略：
+   * "cover" 铺满容器（裁切边缘，默认） / "contain" 等比例缩小完整显示（自适应留白）
+   * "auto" 按比例自适应：图片与容器比例接近 → 铺满；差异大（横图进竖容器等）→ 完整显示，避免裁切主体
+   */
+  previewFit?: "cover" | "contain" | "auto";
+  /**
+   * 持久化策略：未完成的上传项（File + 元数据）存入 IndexedDB，刷新后恢复列表并自动重新上传。
+   * "session" 标签页级 / "local" 跨会话；成功项不持久化（上传结果 URL 由宿主经 initialUrls 回显）。
+   * 默认 "off"
+   */
+  persist?: "session" | "local" | "off";
 
   onStart?: (item: UploadItem) => void;
   onProgress?: (item: UploadItem) => void;

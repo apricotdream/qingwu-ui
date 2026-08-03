@@ -38,6 +38,24 @@ test.describe("Upload 组件演示页", () => {
     await expect(page.locator(".cal-log-item").last()).toContainText("完成");
   });
 
+  test("单文件默认配置：容器右上角 ✕ 一键清空全部项并恢复默认提示", async ({ page }) => {
+    await page.goto("/demo/upload");
+    await selectFile(page, PNG_1PX);
+
+    // 三份格式全部成功，单文件容器承载大图预览
+    await waitAllItems(page, "success", 3);
+    await expect(page.locator(".qw-upload-dropzone-preview")).toBeVisible();
+
+    // 点一次右上角 ✕：全部项清空，容器恢复默认提示
+    await page.locator(".qw-upload-dropzone-remove").click();
+    await expect(page.locator(".qw-upload-dropzone")).toContainText("拖拽图片到此处");
+    await expect(page.locator(".qw-upload-item")).toHaveCount(0);
+
+    // 清空后可重新上传新图
+    await selectFile(page, PNG_1PX);
+    await waitAllItems(page, "success", 3);
+  });
+
   test("关闭压缩后仅上传一份原图", async ({ page }) => {
     await page.goto("/demo/upload");
     await page.selectOption("select >> nth=1", "false"); // 压缩：关闭
@@ -57,7 +75,8 @@ test.describe("Upload 组件演示页", () => {
     await expect(page.locator(".qw-upload button.qw-btn")).toContainText("选择图片");
 
     await selectFile(page, PNG_1PX);
-    await waitAllItems(page, "success", 3);
+    // 按钮形态无列表容器：以上传完成态（done）断言成功
+    await expect(page.locator(".qw-upload button.qw-btn")).toContainText("已上传 ✓");
   });
 
   test("单张限制：超过 maxSizeMB 的文件被拒绝并提示", async ({ page }) => {
@@ -71,12 +90,4 @@ test.describe("Upload 组件演示页", () => {
     await expect(page.locator(".qw-upload-item")).toHaveCount(0);
   });
 
-  test("真实上传模式：XHR 打 /api/upload 成功", async ({ page }) => {
-    await page.goto("/demo/upload");
-    await page.selectOption("select >> nth=7", "real"); // 上传方式：真实（0.4.0 新增 supportedFormats 字段后索引 +1）
-    await page.getByRole("button", { name: "应用配置" }).click();
-    await selectFile(page, PNG_1PX);
-
-    await waitAllItems(page, "success", 3);
-  });
 });

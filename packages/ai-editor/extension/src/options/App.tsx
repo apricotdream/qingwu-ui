@@ -5,6 +5,14 @@ import { send } from "../shared/messaging";
 import { extractVars, renderTemplate } from "../shared/templates/engine";
 import { setLocale, t } from "../shared/i18n";
 import {
+  clearHiddenHosts,
+  getFabConfig,
+  resetFabPosition,
+  setFabEnabled,
+  showFabOnHost,
+  type FabConfig,
+} from "../shared/fab";
+import {
   Badge,
   Button,
   Field,
@@ -277,7 +285,110 @@ function AppearanceSection({
           ))}
         </div>
       </Field>
+
+      <div className="border-t border-ink-100 dark:border-ink-900 pt-4 space-y-4">
+        <FabSettings />
+      </div>
     </Card>
+  );
+}
+
+/** 剪藏悬浮球设置：总开关（全局）+ 重置位置 + 已隐藏网站列表（与 content script 实时同步） */
+function FabSettings() {
+  const [config, setConfig] = useState<FabConfig | null>(null);
+  const toast = useToast();
+
+  useEffect(() => {
+    void getFabConfig().then(setConfig);
+    // 内容脚本右键隐藏 / 其它页面修改时保持界面同步
+    const onChanged = (
+      changes: Record<string, chrome.storage.StorageChange>,
+      area: chrome.storage.AreaName,
+    ) => {
+      if (area !== "local") return;
+      void getFabConfig().then(setConfig);
+    };
+    chrome.storage.onChanged.addListener(onChanged);
+    return () => chrome.storage.onChanged.removeListener(onChanged);
+  }, []);
+
+  if (!config) return null;
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-sm">{t("settings.fab.enabled")}</div>
+          <div className="text-[11px] text-ink-500">{t("settings.fab.enabledHint")}</div>
+        </div>
+        <Switch
+          checked={config.enabled}
+          onChange={(v) => {
+            setConfig({ ...config, enabled: v });
+            void setFabEnabled(v);
+          }}
+        />
+      </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-sm">{t("settings.fab.resetPosition")}</div>
+          <div className="text-[11px] text-ink-500">{t("settings.fab.resetPositionHint")}</div>
+        </div>
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={() => {
+            void resetFabPosition();
+            toast.push({ level: "success", message: t("settings.fab.resetPosition") + " ✓" });
+          }}
+        >
+          {t("settings.fab.resetPosition")}
+        </Button>
+      </div>
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="text-sm">{t("settings.fab.hiddenHosts")}</div>
+          {config.hiddenHosts.length > 0 && (
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={() => {
+                setConfig({ ...config, hiddenHosts: [] });
+                void clearHiddenHosts();
+              }}
+            >
+              {t("settings.fab.restoreAll")}
+            </Button>
+          )}
+        </div>
+        {config.hiddenHosts.length === 0 ? (
+          <div className="text-xs text-ink-400">{t("settings.fab.noHiddenHosts")}</div>
+        ) : (
+          <ul className="space-y-1">
+            {config.hiddenHosts.map((host) => (
+              <li key={host} className="flex items-center justify-between gap-2">
+                <span className="text-xs font-mono text-ink-600 dark:text-ink-400 truncate">
+                  {host}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="md"
+                  onClick={() => {
+                    setConfig({
+                      ...config,
+                      hiddenHosts: config.hiddenHosts.filter((h) => h !== host),
+                    });
+                    void showFabOnHost(host);
+                  }}
+                >
+                  {t("settings.fab.restore")}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </>
   );
 }
 

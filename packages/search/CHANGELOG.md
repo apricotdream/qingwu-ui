@@ -1,5 +1,26 @@
 # @qingwu/search
 
+## 0.6.5
+
+### Patch Changes
+
+- `SearchItem` 新增可选 `id` 字段（业务主键透传，不参与匹配与渲染），供宿主的 `onSelect` 跳转/操作使用
+
+## 0.6.4
+
+### Minor Changes
+
+- 加载态升级为**精灵图 steps 帧动画**：新增 `loadingSpriteUrl` / `loadingSpriteFrames`（默认 5）选项，请求在途渲染横向精灵条（transform 步进、GPU 合成、静态暖光晕），与博客列表页同款机制；缺省降级为纯文案「搜索中…」
+
+## 0.6.3
+
+### Minor Changes
+
+- 新增 **异步服务端搜索模式**：`SearchOptions.search(query, signal) => Promise<SearchItem[]>`，输入走防抖（`debounceMs`，默认 200ms）后调用，内置竞态取消（新请求前 abort 旧请求，宿主监听 signal 丢弃过期响应）
+  - loading / 失败态渲染在面板空态区（「搜索中…」/「搜索失败，请检查网络后重试」），输入保留可重发
+  - 类别筛选作用于异步返回结果，切换类别不重复请求（复用最近一次结果）
+  - 提供 `search` 时优先于本地 `items` 筛选；`minQuery` 控制最小触发长度（默认 1）
+
 ## 0.6.0
 
 ### Patch Changes

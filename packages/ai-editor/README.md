@@ -1,5 +1,4 @@
 # 青梧 · QingWu Editor
-  <img src="./public/logo.png" width="80" alt="QingWu Logo" />
   
 > 一款面向中文用户的智能富文本编辑器，基于 Tiptap + React 构建，支持 DeepSeek、通义千问、OpenAI 等大模型接入。
 
@@ -306,9 +305,11 @@ startBrowserClipperReceiver({
 | `onEditorReady` | `(editor: Editor) => void` | - | 编辑器实例就绪回调 |
 | `immediatelyRender` | `boolean` | - | 是否立即渲染编辑器；SSR/Next.js 配合 `dynamic` ssr:false 传 `true` |
 
-#### onToast 接入示例（推荐 @qingwu/toast）
+#### Toast 提示通道
 
-本包不内置 Toast 渲染，超限拦截等提示通过 `onToast` 回调交给宿主：
+超限拦截等提示**默认内置渲染**：未接入任何自定义 Toast 时，自动使用随包内置的 `@qingwu/toast`（样式随包发布，零额外配置）。渲染优先级：`onToast` 实例回调 > `setToastProvider()` 全局渲染器 > 内置 `@qingwu/toast`。
+
+**onToast 实例级接入示例（推荐 @qingwu/toast）**：
 
 ```tsx
 import { toast } from "@qingwu/toast";
@@ -324,6 +325,42 @@ import "@qingwu/toast/style.css";
   }}
 />
 ```
+
+**setToastProvider 全局替换**（与 `setStorageProvider` / `setAIProvider` 同款模式，对所有编辑器实例生效；传 `null` 恢复内置默认）：
+
+```ts
+import { setToastProvider } from "@qingwu/ai-editor";
+
+setToastProvider((message, type) => {
+  // 接入宿主自己的 Toast 组件
+  if (type === "success") myToast.success(message);
+  else if (type === "info") myToast.info(message);
+  else myToast.error(message);
+});
+```
+
+#### 删除确认 / 导入选择
+
+- **删除确认**：默认使用内置项目 `DeleteConfirmDialog`（图片/视频/音频/附件/代码块/表格删除均走它）。宿主可经 `setConfirmProvider()` 全局替换为自定义确认 UI（如接入自己的 Dialog 组件）；传 `null` 恢复内置默认：
+
+```ts
+import { setConfirmProvider } from "@qingwu/ai-editor";
+import type { DeleteConfirmDialogProps } from "@qingwu/ai-editor";
+
+setConfirmProvider(({ title, message, confirmText, cancelText, onConfirm, onCancel }) => {
+  // 渲染宿主自己的确认框，确认时调用 onConfirm()，取消时调用 onCancel()
+  myConfirm({
+    title,
+    message,
+    confirmText,
+    cancelText,
+    onOk: () => void onConfirm(),
+    onCancel,
+  });
+});
+```
+
+- **导入选择**：拖入 MD 文件时优先走宿主 `chooseMd`（内置 `MdImportDialog`）；未接入时回退到内置项目风格选择弹窗（渲染 / 附加 / 取消），不再使用原生 `window.confirm`。
 
 ### 写作助手相关
 

@@ -37,7 +37,7 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
   const [s3SecretKey, setS3SecretKey] = useState("");
   const [s3Domain, setS3Domain] = useState("");
   const [s3UploadPrefix, setS3UploadPrefix] = useState("qingwu");
-  const [s3NameTemplate, setS3NameTemplate] = useState("{timestamp}-{timezone}-{filename}.{ext}");
+  const [s3NameTemplate, setS3NameTemplate] = useState("{ts}{tz}_{src}_{name}_{rand}{ext}");
 
   // 恢复已保存的 S3 配置
   useEffect(() => {
@@ -50,7 +50,7 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
       setS3SecretKey(saved.secretAccessKey || "");
       setS3Domain(saved.customDomain || "");
       setS3UploadPrefix(saved.uploadPrefix || "qingwu");
-      setS3NameTemplate(saved.nameTemplate || "{timestamp}-{timezone}-{filename}.{ext}");
+      setS3NameTemplate(saved.nameTemplate || "{ts}{tz}_{src}_{name}_{rand}{ext}");
       setTab("s3");
     } else if (saved?.type === "oss") {
       // 兼容旧 OSS 配置 → 转为 S3 endpoint
@@ -61,7 +61,7 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
       setS3SecretKey(saved.accessKeySecret || "");
       setS3Domain(saved.customDomain || "");
       setS3UploadPrefix(saved.uploadPrefix || "qingwu");
-      setS3NameTemplate(saved.nameTemplate || "{timestamp}-{timezone}-{filename}.{ext}");
+      setS3NameTemplate(saved.nameTemplate || "{ts}{tz}_{src}_{name}_{rand}{ext}");
       setTab("s3");
     } else if (saved?.type === "cos") {
       // 兼容旧 COS 配置 → 转为 S3 endpoint
@@ -72,7 +72,7 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
       setS3SecretKey(saved.secretKey || "");
       setS3Domain(saved.customDomain || "");
       setS3UploadPrefix(saved.uploadPrefix || "qingwu");
-      setS3NameTemplate(saved.nameTemplate || "{timestamp}-{timezone}-{filename}.{ext}");
+      setS3NameTemplate(saved.nameTemplate || "{ts}{tz}_{src}_{name}_{rand}{ext}");
       setTab("s3");
     }
   }, []);
@@ -106,7 +106,7 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
       const file = new File(["qingwu storage test"], "qingwu-storage-test.txt", {
         type: "text/plain",
       });
-      const url = await provider.upload(file);
+      const url = await provider.upload(file, "editor");
       await provider.remove(url).catch(() => {});
       setTestToast({ type: "success", message: "本地存储可用" });
     } catch (e) {
@@ -127,7 +127,7 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
       secretAccessKey: s3SecretKey,
       customDomain: s3Domain || undefined,
       uploadPrefix: s3UploadPrefix || "qingwu",
-      nameTemplate: s3NameTemplate || "{timestamp}-{timezone}-{filename}.{ext}",
+      nameTemplate: s3NameTemplate || "{ts}{tz}_{src}_{name}_{rand}{ext}",
     };
     const provider = createS3Storage(s3Opts);
     setStorageProvider(provider, {
@@ -139,7 +139,7 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
       secretAccessKey: s3SecretKey,
       customDomain: s3Domain || undefined,
       uploadPrefix: s3UploadPrefix || "qingwu",
-      nameTemplate: s3NameTemplate || "{timestamp}-{timezone}-{filename}.{ext}",
+      nameTemplate: s3NameTemplate || "{ts}{tz}_{src}_{name}_{rand}{ext}",
     });
     registerS3PreviewConfig(s3Opts);
     setSaved(true);
@@ -176,7 +176,7 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
       const file = new File(["qingwu storage test"], "qingwu-storage-test.txt", {
         type: "text/plain",
       });
-      uploadedUrl = await provider.upload(file);
+      uploadedUrl = await provider.upload(file, "editor");
       // 先尝试公开访问
       let accessOk = false;
       let privateAccess = false;
@@ -426,13 +426,13 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
                 <label className="block text-xs text-default-500 mb-1">文件名模板</label>
                 <input
                   className="w-full px-3 py-2 rounded-lg border border-default-200 bg-background text-sm focus:outline-none focus:border-primary"
-                  placeholder="{timestamp}-{timezone}-{filename}.{ext}"
+                  placeholder="{ts}{tz}_{src}_{name}_{rand}{ext}"
                   value={s3NameTemplate}
                   onChange={(e) => setS3NameTemplate(e.target.value)}
                 />
                 <p className="text-[11px] text-default-400 mt-0.5">
                   {
-                    "占位符: {timestamp}=时间戳, {timezone}=时区, {random}=随机ID, {ext}=扩展名, {filename}=原文件名"
+                    "占位符: {ts}=时间戳, {tz}=时区, {src}=出处(editor/cover), {name}=原名, {ext}=扩展名, {rand}=随机串"
                   }
                 </p>
               </div>

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { SearchBox } from "./search";
+import type { SearchItem } from "./types";
 
 function makeContainer(): HTMLElement {
   const div = document.createElement("div");
@@ -255,6 +256,184 @@ describe("SearchBox", () => {
 
     clearBtn.click();
     expect(input.value).toBe("");
+    box.destroy();
+  });
+});
+
+describe("SearchBox 异步服务端模式", () => {
+  let root: HTMLElement;
+
+  beforeEach(() => {
+    root = makeContainer();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = "";
+    vi.useRealTimers();
+  });
+
+  /** 构造带防抖的异步 SearchBox，返回输入框 */
+  function openAsync(
+    search: (q: string, signal: AbortSignal) => Promise<SearchItem[]>,
+    extra: { debounceMs?: number; categories?: string[]; sprite?: string; frames?: number } = {},
+  ): { box: SearchBox; input: HTMLInputElement } {
+    const box = new SearchBox(root, {
+      search,
+      categories: extra.categories ?? ["全部", "文章"],
+      debounceMs: extra.debounceMs ?? 200,
+      loadingSpriteUrl: extra.sprite,
+      loadingSpriteFrames: extra.frames,
+    });
+    box.open();
+    const input = document.querySelector<HTMLInputElement>(".qs-input")!;
+    return { box, input };
+  }
+
+  function type(input: HTMLInputElement, value: string): void {
+    input.value = value;
+    input.dispatchEvent(new Event("input"));
+  }
+
+  test("输入停顿防抖后调用 search 并渲染返回结果", async () => {
+    const search = vi.fn(async (q: string) => [
+      { title: `命中-${q}`, sub: "服务端返回", kind: "文章" },
+    ]);
+    const { box, input } = openAsync(search);
+
+    type(input, "并发");
+    expect(search).not.toHaveBeenCalled(); // 防抖期间不发请求
+
+    await vi.advanceTimersByTimeAsync(200);
+    expect(search).toHaveBeenCalledWith("并发", expect.any(AbortSignal));
+
+    const opts = document.querySelectorAll<HTMLElement>(".qs-opt");
+    expect(opts.length).toBe(1);
+    expect(opts[0]!.textContent).toContain("命中-并发");
+    box.destroy();
+  });
+
+  test("快速连续输入只发起最后一次请求（旧请求被 abort）", async () => {
+    const aborted: AbortSignal[] = [];
+    const search = vi.fn((q: string, signal: AbortSignal) => {
+      return new Promise<SearchItem[]>((resolve) => {
+        signal.addEventListener("abort", () => aborted.push(signal));
+        setTimeout(() => resolve([{ title: `结果-${q}` }]), 100);
+      });
+    });
+    const { box, input } = openAsync(search);
+
+    type(input, "a");
+    await vi.advanceTimersByTimeAsync(200); // 防抖到期，第一次已发出
+    expect(search).toHaveBeenCalledTimes(1);
+    type(input, "ab");
+    await vi.advanceTimersByTimeAsync(200);
+    expect(search).toHaveBeenCalledTimes(2);
+    expect(aborted.length).toBe(1); // 旧请求被 abort
+
+    await vi.advanceTimersByTimeAsync(100);
+    const opts = document.querySelectorAll<HTMLElement>(".qs-opt");
+    expect(opts.length).toBe(1);
+    expect(opts[0]!.textContent).toContain("结果-ab");
+    box.destroy();
+  });
+
+  test("请求在途时显示加载态（缺省为文案）", async () => {
+    const search = vi.fn(
+      () => new Promise<SearchItem[]>(() => {}), // 永不 resolve
+    );
+    const { box, input } = openAsync(search);
+
+    type(input, "test");
+    await vi.advanceTimersByTimeAsync(200);
+    const loading = document.querySelector<HTMLElement>(".qs-loading")!;
+    expect(loading.hidden).toBe(false);
+    expect(loading.textContent).toContain("搜索中");
+    // 无 URL 时只渲染文案，不渲染精灵条
+    expect(loading.querySelector(".qs-loading-sprite")).toBeNull();
+    box.destroy();
+  });
+
+  test("提供 loadingSpriteUrl 时加载态渲染精灵条（帧数注入）", async () => {
+    const search = vi.fn(
+      () => new Promise<SearchItem[]>(() => {}), // 永不 resolve
+    );
+    const { box, input } = openAsync(search, { sprite: "/loading.webp", frames: 5 });
+
+    type(input, "test");
+    await vi.advanceTimersByTimeAsync(200);
+    const loading = document.querySelector<HTMLElement>(".qs-loading")!;
+    const sprite = loading.querySelector<HTMLElement>(".qs-loading-sprite")!;
+    expect(sprite).toBeTruthy();
+    expect(sprite.style.backgroundImage).toContain("loading.webp");
+    expect(sprite.style.getPropertyValue("--qs-frames")).toBe("5");
+    expect(loading.querySelector(".qs-loading-status")?.textContent).toContain("搜索中");
+    box.destroy();
+  });
+
+  test("search 拒绝时显示错误空态", async () => {
+    const search = vi.fn(async () => {
+      throw new Error("network");
+    });
+    const { box, input } = openAsync(search);
+
+    type(input, "boom");
+    await vi.advanceTimersByTimeAsync(200);
+    const empty = document.querySelector<HTMLElement>(".qs-empty")!;
+    expect(empty.textContent).toContain("搜索失败");
+    box.destroy();
+  });
+
+  test("类别筛选作用于异步返回结果", async () => {
+    const search = vi.fn(async () => [
+      { title: "并发模型", kind: "文章" },
+      { title: "休假表", kind: "功能" },
+    ]);
+    const { box, input } = openAsync(search, { categories: ["全部", "文章", "功能"] });
+
+    type(input, "查询");
+    await vi.advanceTimersByTimeAsync(200);
+    expect(document.querySelectorAll(".qs-opt").length).toBe(2);
+
+    // 切到「文章」
+    const menuBtn = document.querySelector<HTMLButtonElement>(".qs-iconbtn")!;
+    menuBtn.click();
+    let opts = document.querySelectorAll<HTMLElement>(".qs-opt");
+    expect(opts.length).toBe(1);
+    expect(opts[0]!.textContent).toContain("并发模型");
+    expect(search).toHaveBeenCalledTimes(1); // 类别切换不重复请求
+
+    // 切到「功能」
+    menuBtn.click();
+    opts = document.querySelectorAll<HTMLElement>(".qs-opt");
+    expect(opts.length).toBe(1);
+    expect(opts[0]!.textContent).toContain("休假表");
+    box.destroy();
+  });
+
+  test("清空输入回到空闲态且中止在途请求", async () => {
+    const aborted: AbortSignal[] = [];
+    const search = vi.fn(
+      (q: string, signal: AbortSignal) =>
+        new Promise<SearchItem[]>((resolve) => {
+          signal.addEventListener("abort", () => aborted.push(signal));
+          setTimeout(() => resolve([{ title: `结果-${q}` }]), 100);
+        }),
+    );
+    const { box, input } = openAsync(search);
+
+    type(input, "并发");
+    await vi.advanceTimersByTimeAsync(200);
+    expect(search).toHaveBeenCalledTimes(1);
+
+    type(input, ""); // 模拟清除
+    expect(aborted.length).toBe(1);
+    const empty = document.querySelector<HTMLElement>(".qs-empty")!;
+    expect(empty.textContent).toContain("在找些什么");
+
+    await vi.advanceTimersByTimeAsync(100);
+    const list = document.querySelector<HTMLElement>(".qs-list")!;
+    expect(list.hidden).toBe(true); // 过期结果不渲染
     box.destroy();
   });
 });

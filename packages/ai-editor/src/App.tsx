@@ -106,7 +106,7 @@ function initStorageService() {
         secretAccessKey: savedConfig.secretAccessKey,
         customDomain: savedConfig.customDomain,
         uploadPrefix: savedConfig.uploadPrefix || "qingwu",
-        nameTemplate: savedConfig.nameTemplate || "{timestamp}-{timezone}-{filename}.{ext}",
+        nameTemplate: savedConfig.nameTemplate || "{ts}{tz}_{src}_{name}_{rand}{ext}",
       };
       setStorageProvider(createS3Storage(s3Opts), savedConfig);
       registerS3PreviewConfig(s3Opts);
@@ -119,7 +119,7 @@ function initStorageService() {
         secretAccessKey: savedConfig.accessKeySecret,
         customDomain: savedConfig.customDomain,
         uploadPrefix: savedConfig.uploadPrefix || "qingwu",
-        nameTemplate: savedConfig.nameTemplate || "{timestamp}-{timezone}-{filename}.{ext}",
+        nameTemplate: savedConfig.nameTemplate || "{ts}{tz}_{src}_{name}_{rand}{ext}",
       };
       setStorageProvider(createS3Storage(s3Opts), {
         type: "s3",
@@ -140,7 +140,7 @@ function initStorageService() {
         secretAccessKey: savedConfig.secretKey,
         customDomain: savedConfig.customDomain,
         uploadPrefix: savedConfig.uploadPrefix || "qingwu",
-        nameTemplate: savedConfig.nameTemplate || "{timestamp}-{timezone}-{filename}.{ext}",
+        nameTemplate: savedConfig.nameTemplate || "{ts}{tz}_{src}_{name}_{rand}{ext}",
       };
       setStorageProvider(createS3Storage(s3Opts), {
         type: "s3",
@@ -474,13 +474,6 @@ export default function App() {
       <header className="sticky top-0 z-40 border-b border-default-200 bg-background/80 backdrop-blur-md">
         <div className="max-w-4xl mx-auto flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <img
-              src="/favicon-32.png"
-              width={24}
-              height={24}
-              alt="青梧"
-              className="shrink-0 rounded"
-            />
             <h1 className="text-base sm:text-lg font-semibold tracking-wide truncate">
               {t("app.title")}
             </h1>

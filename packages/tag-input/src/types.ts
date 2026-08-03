@@ -27,7 +27,8 @@ export interface TagInputOptions {
   formatInsert?: (tag: string) => string;
   /**
    * 从输入值解析已存在标签（驱动快捷栏显隐：已存在的标签按钮消失），
-   * 默认按逗号分割并 trim 去空
+   * 默认按逗号分割并 trim 去空。
+   * 仅 bar 模式生效；inline 模式已选为精确数组，不经此解析
    */
   parseTags?: (value: string) => string[];
 
@@ -46,11 +47,25 @@ export interface TagInputOptions {
   allowEnterCreate?: boolean;
 
   /**
-   * chip-in-input 模式：已选标签（输入值中的标签）以 chip 渲染在
-   * 输入框内部，× 删除即从输入值移除；下方标签栏仍显示可用标签
-   * （建议），点击插入。默认 false（标签栏在输入框下方）
+   * chip-in-input 模式：已选标签以 chip 渲染在输入框内部，× 删除即
+   * 从已选数组移除；下方标签栏仍显示可用标签（建议），点击插入。
+   * 默认 false（标签栏在输入框下方）。
+   * inline 模式下 value / defaultValue 字符串不生效，已选以
+   * selected / defaultSelected 数组为准，input 文本仅承载草稿。
    */
   inline?: boolean;
+
+  /**
+   * inline 模式专属：已选标签数组（一等公民，受控）。
+   * 传入后组件进入受控模式，提交 / × 删除 / 点建议仅回调
+   * onSelectedChange，由调用方同步后以 update({ selected }) 回灌。
+   * 草稿经 Enter / 逗号 / 失焦 / 点建议提交进已选。
+   */
+  selected?: string[];
+  /** inline 模式专属：非受控初始已选标签数组 */
+  defaultSelected?: string[];
+  /** inline 模式专属：已选标签数组变化回调（提交 / × 删除 / 点建议时触发） */
+  onSelectedChange?: (selected: string[]) => void;
 
   /**
    * 标签数量上限（输入值中的标签数），0 表示不限，默认 0；
