@@ -7,7 +7,7 @@
  * - 提供全文搜索（标题 + 内容前 N 字）
  */
 
-import type { ClipRecord, ClipperSettings } from "../types";
+import type { ClipperSettings, ClipRecord } from "../types";
 
 const DB_NAME = "qingwu-clipper";
 const DB_VERSION = 1;
@@ -66,13 +66,15 @@ export const db = {
     return tx(STORE_RECORDS, "readonly", (s) => s.get(id));
   },
 
-  async listRecords(opts: {
-    query?: string;
-    tag?: string;
-    favoriteOnly?: boolean;
-    limit?: number;
-    offset?: number;
-  } = {}): Promise<{ items: ClipRecord[]; total: number }> {
+  async listRecords(
+    opts: {
+      query?: string;
+      tag?: string;
+      favoriteOnly?: boolean;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ): Promise<{ items: ClipRecord[]; total: number }> {
     const db = await openDB();
     return new Promise((resolve, reject) => {
       const t = db.transaction(STORE_RECORDS, "readonly");
@@ -86,10 +88,7 @@ export const db = {
       cursorReq.onsuccess = () => {
         const cursor = cursorReq.result;
         if (!cursor) {
-          const sliced = results.slice(
-            opts.offset ?? 0,
-            (opts.offset ?? 0) + (opts.limit ?? 50),
-          );
+          const sliced = results.slice(opts.offset ?? 0, (opts.offset ?? 0) + (opts.limit ?? 50));
           resolve({ items: sliced, total: results.length });
           return;
         }
@@ -103,7 +102,8 @@ export const db = {
           return;
         }
         if (q) {
-          const hay = `${rec.noteTitle} ${rec.content.title} ${rec.content.excerpt} ${rec.tags.join(" ")}`.toLowerCase();
+          const hay =
+            `${rec.noteTitle} ${rec.content.title} ${rec.content.excerpt} ${rec.tags.join(" ")}`.toLowerCase();
           if (!hay.includes(q)) {
             cursor.continue();
             return;

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 async function alignInfo(page: Page) {
   return page.evaluate(() => {
@@ -8,14 +8,18 @@ async function alignInfo(page: Page) {
       scrollY: window.scrollY,
       overlayCount: overlays.length,
       rootCount: roots.length,
-      maxDelta: Math.max(...overlays.map((o) => {
-        const or = o.getBoundingClientRect();
-        const best = roots.map((r) => {
-          const rr = r.getBoundingClientRect();
-          return Math.abs(or.left - rr.left) + Math.abs(or.top - rr.top);
-        }).sort((a, b) => a - b)[0]!;
-        return best;
-      })),
+      maxDelta: Math.max(
+        ...overlays.map((o) => {
+          const or = o.getBoundingClientRect();
+          const best = roots
+            .map((r) => {
+              const rr = r.getBoundingClientRect();
+              return Math.abs(or.left - rr.left) + Math.abs(or.top - rr.top);
+            })
+            .sort((a, b) => a - b)[0]!;
+          return best;
+        }),
+      ),
     };
   });
 }

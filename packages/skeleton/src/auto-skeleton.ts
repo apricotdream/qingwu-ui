@@ -26,9 +26,9 @@
  * ```
  */
 
-import type { AutoSkeletonOptions, SkeletonElement } from "./types";
 import { extractElementInfo, structureSignature } from "./core";
 import { MIN_ANIMATED_HEIGHT, MIN_ANIMATED_WIDTH, SKELETON_STATIC_STYLES } from "./styles";
+import type { AutoSkeletonOptions, SkeletonElement } from "./types";
 
 // ─── 视口增量渲染常量 ───
 // 预取：视口外 ±1 屏范围内的块也渲染（滚动体感无缝，合成层仍约两屏量级）
@@ -40,7 +40,13 @@ const MAX_RENDERED_BLOCKS = 500;
 const DEFAULT_OPTIONS: Required<
   Pick<
     AutoSkeletonOptions,
-    "shimmerColor" | "backgroundColor" | "duration" | "staggerDelay" | "zIndex" | "fallbackBorderRadius" | "maxElements"
+    | "shimmerColor"
+    | "backgroundColor"
+    | "duration"
+    | "staggerDelay"
+    | "zIndex"
+    | "fallbackBorderRadius"
+    | "maxElements"
   >
 > = {
   shimmerColor: "#f0f0f0",
@@ -207,18 +213,12 @@ export class AutoSkeleton {
     if (!this.overlayEl) return;
 
     const style = this.overlayEl.style;
-    style.setProperty(
-      "--qs-sk-shimmer",
-      this.options.shimmerColor ?? DEFAULT_OPTIONS.shimmerColor,
-    );
+    style.setProperty("--qs-sk-shimmer", this.options.shimmerColor ?? DEFAULT_OPTIONS.shimmerColor);
     style.setProperty(
       "--qs-sk-bg",
       this.options.backgroundColor ?? DEFAULT_OPTIONS.backgroundColor,
     );
-    style.setProperty(
-      "--qs-sk-duration",
-      `${this.options.duration ?? DEFAULT_OPTIONS.duration}ms`,
-    );
+    style.setProperty("--qs-sk-duration", `${this.options.duration ?? DEFAULT_OPTIONS.duration}ms`);
     style.setProperty("--qs-sk-timing", this.options.timingFunction ?? "ease-in-out");
 
     // z-index：默认压在页面上层；页面 chrome 需在骨架之上时调低
@@ -325,8 +325,8 @@ export class AutoSkeleton {
 
   /** 创建单个覆盖层块（门槛过滤 is-shimmer + 错峰负延迟） */
   private createBlockDiv(el: SkeletonElement, index: number): HTMLDivElement {
-    const fallbackRadius = this.options.fallbackBorderRadius ??
-      DEFAULT_OPTIONS.fallbackBorderRadius;
+    const fallbackRadius =
+      this.options.fallbackBorderRadius ?? DEFAULT_OPTIONS.fallbackBorderRadius;
 
     const div = document.createElement("div");
     div.className = "qs-skeleton-overlay";

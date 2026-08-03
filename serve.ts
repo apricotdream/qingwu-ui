@@ -7,7 +7,7 @@ serve({
   port: 3000,
   async fetch(req) {
     const url = new URL(req.url);
-    let path = url.pathname === "/" ? "/demo/index.html" : url.pathname;
+    const path = url.pathname === "/" ? "/demo/index.html" : url.pathname;
 
     // 安全处理：只允许访问项目内的文件
     const fullPath = ROOT + path;

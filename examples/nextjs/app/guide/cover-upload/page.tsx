@@ -87,57 +87,76 @@ export default function CoverUploadGuide() {
       <h2 id="problem">问题：默认值是陷阱</h2>
       <p>
         <code>Upload</code> 的默认配置面向<b>多图相册</b>场景：一张图默认产出
-        <code> original + webp + avif</code> 三份（<code>formats</code>）、允许多选
-        （<code>multiple: true</code>）、数量不限（<code>maxCount: 0</code>）。而封面是
+        <code> original + webp + avif</code> 三份（<code>formats</code>）、允许多选 （
+        <code>multiple: true</code>）、数量不限（<code>maxCount: 0</code>）。而封面是
         <b>单值字段</b>（如 <code>coverUrl: string</code>）——三个默认值一个都不满足，必须显式覆盖：
       </p>
       <table>
         <thead>
-          <tr><th>默认值</th><th>后果</th><th>封面场景覆盖</th></tr>
+          <tr>
+            <th>默认值</th>
+            <th>后果</th>
+            <th>封面场景覆盖</th>
+          </tr>
         </thead>
         <tbody>
           <tr>
-            <td><code>formats: ["original","webp","avif"]</code></td>
+            <td>
+              <code>formats: ["original","webp","avif"]</code>
+            </td>
             <td>一张封面 = 3 个上传项 = 3 次上传 = 3 份存储 = 3 个 URL</td>
-            <td><code>formats: ["webp"]</code> —— 只产一份</td>
+            <td>
+              <code>formats: ["webp"]</code> —— 只产一份
+            </td>
           </tr>
           <tr>
-            <td><code>maxCount: 0</code>（不限）</td>
+            <td>
+              <code>maxCount: 0</code>（不限）
+            </td>
             <td>无上限，单值字段装不下多张</td>
-            <td><code>maxCount: 1</code></td>
+            <td>
+              <code>maxCount: 1</code>
+            </td>
           </tr>
           <tr>
-            <td><code>multiple: true</code></td>
+            <td>
+              <code>multiple: true</code>
+            </td>
             <td>一次多选，列表撑爆</td>
-            <td><code>multiple: false</code></td>
+            <td>
+              <code>multiple: false</code>
+            </td>
           </tr>
         </tbody>
       </table>
       <p>
-        注意：<code>maxCount: 1</code> 满额后再选新图是<b>拒绝</b>，不是替换
-        （<code>validateFile</code> 直接返回 <code>"count"</code>）——换图由宿主完成（见下文）。
+        注意：<code>maxCount: 1</code> 满额后再选新图是<b>拒绝</b>，不是替换 （
+        <code>validateFile</code> 直接返回 <code>"count"</code>）——换图由宿主完成（见下文）。
       </p>
       <p>
         <b>单文件模式的容器行为</b>：<code>maxCount: 1</code> 时拖拽容器本身承载大图预览——
         成功/上传中显示图片，悬停显示「点击移除」（右上角 ✕ 为<b>一键清空</b>：该图衍生的
-        全部格式项、回显项与上传中的请求一并清除，即 <code>clear()</code> 语义），列表同步隐藏；
-        URL 导入入口位于图片框内底部（大图态隐藏，恢复默认后重现）；上传过程有
-        350ms 视觉保底，快速上传不会一闪而过。
+        全部格式项、回显项与上传中的请求一并清除，即 <code>clear()</code> 语义），列表同步隐藏； URL
+        导入入口位于图片框内底部（大图态隐藏，恢复默认后重现）；上传过程有 350ms
+        视觉保底，快速上传不会一闪而过。
       </p>
 
       <h2 id="config">接入配置</h2>
       <p>
-        用 <code>trigger: "button"</code> 形态：不占版面、不与页面其他拖拽区抢事件，同时关闭 URL 面板
-        ——URL 的「外链原样入库」语义由你自己的 URL 输入框承担，<code>Upload</code> 的 URL 导入是
-        「下载外链 → 压缩 → 重传到你的存储」的资源搬移语义，两者天差地别，别混。
+        用 <code>trigger: "button"</code> 形态：不占版面、不与页面其他拖拽区抢事件，同时关闭 URL
+        面板 ——URL 的「外链原样入库」语义由你自己的 URL 输入框承担，<code>Upload</code> 的 URL
+        导入是 「下载外链 → 压缩 → 重传到你的存储」的资源搬移语义，两者天差地别，别混。
       </p>
-      <pre><code>{SNIPPET_CONFIG}</code></pre>
+      <pre>
+        <code>{SNIPPET_CONFIG}</code>
+      </pre>
 
       <h2 id="url-lifecycle">URL 生命周期：宿主的 map</h2>
       <p>两个事实决定 URL 必须由宿主持有：</p>
       <ul>
         <li>
-          <code>UploadItem</code> 没有「上传结果 URL」字段（<code>originalUrl</code> 是 URL 导入的源地址，不是产物地址）
+          <code>UploadItem</code> 没有「上传结果 URL」字段（<code>originalUrl</code> 是 URL
+          导入的源地址，不是产物地址）
         </li>
         <li>
           内置 XHR 上传不解析响应体——<code>load</code> 只检查状态码，宿主拿不到存储 URL。
@@ -149,25 +168,32 @@ export default function CoverUploadGuide() {
         <b>File 引用</b>做 key 把 URL 交给 <code>onSuccess</code>（传给 uploadFn 的
         <code>item.file</code> 是同一引用）。
       </p>
-      <pre><code>{SNIPPET_UPLOAD_FN}</code></pre>
+      <pre>
+        <code>{SNIPPET_UPLOAD_FN}</code>
+      </pre>
       <p>
         删除链路：用户点删除 → 组件 <code>remove(id)</code> 同步触发 <code>onChange</code>
         （只删列表项，不碰存储）→ 宿主拿全量 items 与自己的 map 做差集 → 被移除的 id 对应 URL →
         调存储删除接口。存储删除是宿主的职责，组件不做。
       </p>
-      <pre><code>{SNIPPET_LIFECYCLE}</code></pre>
+      <pre>
+        <code>{SNIPPET_LIFECYCLE}</code>
+      </pre>
 
       <h2 id="replace-edit">换图与编辑态</h2>
       <p>
-        编辑已有封面时，用 <code>initialUrls</code> 把 <code>coverUrl</code> 回显为成功项
-        （缩略图 + 已上传 + 删除按钮），无需组件外另挂预览。回显项计入数量上限——
+        编辑已有封面时，用 <code>initialUrls</code> 把 <code>coverUrl</code> 回显为成功项 （缩略图 +
+        已上传 + 删除按钮），无需组件外另挂预览。回显项计入数量上限——
         <code>maxCount: 1</code> 时换图需先删旧项（列表 ✕ → onChange 差集删存储 + 清字段）再选新图。
       </p>
-      <pre><code>{SNIPPET_EDIT}</code></pre>
+      <pre>
+        <code>{SNIPPET_EDIT}</code>
+      </pre>
       <p>
         换图删除时机：<b>新图成功后再删旧图</b>。先删的代价不可逆——新图上传失败 → 旧图存储已删、
-        字段还显示旧图 → 发布即裂图。后删的唯一代价是孤儿图（上传成功但未发布就关页），那是存量问题。
-        且只删<b>本站资产</b>（相对路径 <code>/</code> 开头）——手动填的外链 URL 绝不碰。
+        字段还显示旧图 →
+        发布即裂图。后删的唯一代价是孤儿图（上传成功但未发布就关页），那是存量问题。 且只删
+        <b>本站资产</b>（相对路径 <code>/</code> 开头）——手动填的外链 URL 绝不碰。
       </p>
 
       <h2 id="validation">提交校验联动</h2>
@@ -175,9 +201,12 @@ export default function CoverUploadGuide() {
         上传是异步的：上传中 <code>coverUrl</code> 还是空，用户手快点提交 → 校验器报「封面必填」。
         不要在校验器里感知上传状态，直接<b>提交按钮联动上传状态</b>：
       </p>
-      <pre><code>{SNIPPET_SUBMIT}</code></pre>
+      <pre>
+        <code>{SNIPPET_SUBMIT}</code>
+      </pre>
       <p>
-        上传中用户仍可填写其他字段，只有提交被禁；上传失败 → 状态复位 → 校验器正常报错 + 失败原因展示。
+        上传中用户仍可填写其他字段，只有提交被禁；上传失败 → 状态复位 → 校验器正常报错 +
+        失败原因展示。
       </p>
     </article>
   );

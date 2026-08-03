@@ -9,7 +9,7 @@
  *         + 不含真实元素子节点（仅有文本/void 元素）的元素
  */
 
-import type { SkeletonElement, LeafTag, VoidTag } from "./types";
+import type { LeafTag, SkeletonElement, VoidTag } from "./types";
 
 interface LeafCandidate {
   element: Element;
@@ -79,10 +79,7 @@ function advancePast(walker: TreeWalker, root: Element): Element | null {
  * 注：不修改任何 DOM（原地测量前提）；纯文本表格单元格
  * 直接以整个单元格矩形作为骨架块。
  */
-function collectLeafElements(
-  root: Element,
-  leafCandidates: LeafCandidate[],
-): void {
+function collectLeafElements(root: Element, leafCandidates: LeafCandidate[]): void {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
 
   let node = walker.nextNode() as Element | null;
@@ -120,10 +117,7 @@ function collectLeafElements(
  * @param maxElements - 最大测量元素数（性能保护，默认 500）
  * @returns 叶子元素的几何信息数组
  */
-export function extractElementInfo(
-  element: Element,
-  maxElements: number = 500,
-): SkeletonElement[] {
+export function extractElementInfo(element: Element, maxElements: number = 500): SkeletonElement[] {
   const leafCandidates: LeafCandidate[] = [];
 
   const parentRect = element.getBoundingClientRect();
@@ -165,10 +159,7 @@ export function extractElementInfo(
  */
 export function structureSignature(root: Element): string {
   let hash = 0;
-  const walker = document.createTreeWalker(
-    root,
-    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
-  );
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
 
   let node = walker.nextNode();
   while (node) {

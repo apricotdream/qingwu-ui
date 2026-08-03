@@ -1,17 +1,17 @@
 import type { Editor } from "@tiptap/core";
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { toast } from "../../components/toast";
-import {
-  getEditorAttachmentLimits,
-  validateAttachmentFile,
-  type AttachmentLimits,
-} from "../attachment-limits";
-import { uploadPlaceholder } from "./image-upload";
 import Suggestion, {
   findSuggestionMatch as defaultFindSuggestionMatch,
   type SuggestionOptions,
 } from "@tiptap/suggestion";
+import { toast } from "../../components/toast";
+import {
+  type AttachmentLimits,
+  getEditorAttachmentLimits,
+  validateAttachmentFile,
+} from "../attachment-limits";
+import { uploadPlaceholder } from "./image-upload";
 
 export interface SlashCommandItem {
   title: string;

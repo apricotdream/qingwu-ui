@@ -1,5 +1,5 @@
-import { describe, it, expect, afterEach } from "vitest";
-import { isLeafElement, extractElementInfo, structureSignature } from "./core";
+import { afterEach, describe, expect, it } from "vitest";
+import { extractElementInfo, isLeafElement, structureSignature } from "./core";
 
 afterEach(() => {
   document.body.innerHTML = "";
@@ -51,8 +51,18 @@ describe("extractElementInfo", () => {
     `;
     const root = mockRects("root");
     rects.set(root, { left: 10, top: 20, width: 200, height: 100 } as DOMRect);
-    rects.set(document.querySelector("img")!, { left: 10, top: 20, width: 50, height: 40 } as DOMRect);
-    rects.set(document.querySelector("span")!, { left: 70, top: 30, width: 30, height: 16 } as DOMRect);
+    rects.set(document.querySelector("img")!, {
+      left: 10,
+      top: 20,
+      width: 50,
+      height: 40,
+    } as DOMRect);
+    rects.set(document.querySelector("span")!, {
+      left: 70,
+      top: 30,
+      width: 30,
+      height: 16,
+    } as DOMRect);
 
     const result = extractElementInfo(root);
     expect(result).toHaveLength(2);
@@ -69,7 +79,12 @@ describe("extractElementInfo", () => {
     `;
     const root = mockRects("root");
     rects.set(root, { left: 0, top: 0, width: 200, height: 100 } as DOMRect);
-    rects.set(document.querySelector("div > span")!, { left: 0, top: 0, width: 50, height: 20 } as DOMRect);
+    rects.set(document.querySelector("div > span")!, {
+      left: 0,
+      top: 0,
+      width: 50,
+      height: 20,
+    } as DOMRect);
 
     const result = extractElementInfo(root);
     expect(result).toHaveLength(1);

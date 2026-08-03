@@ -20,7 +20,8 @@ const IS_MAC =
     : false;
 
 /* ---------- SVG 图标（由 icon/icons.ts 提供） ---------- */
-import { ICO_SEARCH, ICO_MENU, ICON_CLOSE, SEARCH_ART } from "../../../icon/icons";
+import { ICO_MENU, ICO_SEARCH, ICON_CLOSE, SEARCH_ART } from "../../../icon/icons";
+
 const ICO = {
   search: ICO_SEARCH,
   menu: ICO_MENU,

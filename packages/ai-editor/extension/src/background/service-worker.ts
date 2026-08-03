@@ -9,28 +9,28 @@
 
 import { runAI, testAI } from "../shared/ai/provider";
 import { ClipperError, toClipperError } from "../shared/errors";
-import { registerHandler } from "../shared/messaging";
+import { sliceForAI } from "../shared/extract/readability";
 import {
-  err,
-  ok,
   type AIRunPayload,
   type DownloadMdPayload,
   type ExtractPayload,
+  err,
   type ListPayload,
   type ListResult,
   type MessageResponse,
   type NotifyPayload,
+  ok,
   type PushEditorPayload,
   type SavePayload,
   type TemplateRenderPayload,
 } from "../shared/messages";
+import { registerHandler } from "../shared/messaging";
 import { db, loadSettings } from "../shared/storage/db";
-import { sliceForAI } from "../shared/extract/readability";
 import { renderTemplate } from "../shared/templates/engine";
 import type {
   AIProviderConfig,
-  ClipRecord,
   ClipperSettings,
+  ClipRecord,
   ExtractedContent,
 } from "../shared/types";
 
@@ -217,8 +217,8 @@ registerHandler({
     const now = new Date().toISOString();
     const tpl =
       payload.templateId === "default"
-        ? settings.templates.find((t) => t.id === "default") ?? settings.templates[0]
-        : settings.templates.find((t) => t.id === payload.templateId) ?? settings.templates[0];
+        ? (settings.templates.find((t) => t.id === "default") ?? settings.templates[0])
+        : (settings.templates.find((t) => t.id === payload.templateId) ?? settings.templates[0]);
 
     let rendered = "";
     let unknownVars: string[] = [];
@@ -256,14 +256,8 @@ registerHandler({
     await db.saveRecord(record);
 
     // 更新最近路径/标签
-    settings.recentPaths = unique([
-      payload.notePath,
-      ...(settings.recentPaths ?? []),
-    ]).slice(0, 20);
-    settings.recentTags = unique([
-      ...payload.tags,
-      ...(settings.recentTags ?? []),
-    ]).slice(0, 50);
+    settings.recentPaths = unique([payload.notePath, ...(settings.recentPaths ?? [])]).slice(0, 20);
+    settings.recentTags = unique([...payload.tags, ...(settings.recentTags ?? [])]).slice(0, 50);
     await persistSettings(settings);
 
     // 自动推送
@@ -387,8 +381,7 @@ registerHandler({
   "template:render": async (msg) => {
     const { templateId, content, extra } = msg.payload as TemplateRenderPayload;
     const settings = await loadSettings();
-    const tpl =
-      settings.templates.find((t) => t.id === templateId) ?? settings.templates[0];
+    const tpl = settings.templates.find((t) => t.id === templateId) ?? settings.templates[0];
     if (!tpl) return err("template.missing", "模板不存在", { retryable: false });
     const r = renderTemplate(tpl, {
       content,
@@ -427,9 +420,7 @@ registerHandler({
     const { recordId, filename } = msg.payload as DownloadMdPayload;
     const r = await db.getRecord(recordId);
     if (!r) return err("not-found", "记录不存在", { retryable: false });
-    const name =
-      filename ??
-      `${sanitizeFilename(r.noteTitle)}.md`;
+    const name = filename ?? `${sanitizeFilename(r.noteTitle)}.md`;
     try {
       const url = URL.createObjectURL(
         new Blob([r.renderedMarkdown], { type: "text/markdown;charset=utf-8" }),
@@ -478,7 +469,13 @@ registerHandler({
 
 // ===== 在页面上下文执行（注入脚本） =====
 type PageExtractStrategy = "readability" | "site-rule" | "manual-selection" | "full-dom";
-type PageExtractedImage = { src: string; alt?: string; caption?: string; width?: number; height?: number };
+type PageExtractedImage = {
+  src: string;
+  alt?: string;
+  caption?: string;
+  width?: number;
+  height?: number;
+};
 type PageExtractedVideo = { src: string; poster?: string };
 type PageExtractedLink = { href: string; text: string };
 
@@ -492,17 +489,49 @@ function extractInPage(
   const doc = document;
 
   const NEGATIVE = [
-    "nav","header","footer","aside","form","iframe","script","style","noscript","svg",
-    "[aria-hidden='true']","[role='navigation']","[role='banner']","[role='complementary']",
-    ".ad",".ads",".advert",".sidebar",".comment",".comments",".related",".recommend",
-    ".share",".social",".newsletter",".subscribe",".promo",".modal",".popup",
-    ".breadcrumb",".pagination",".post-meta","#comments","#sidebar","#header","#footer",
+    "nav",
+    "header",
+    "footer",
+    "aside",
+    "form",
+    "iframe",
+    "script",
+    "style",
+    "noscript",
+    "svg",
+    "[aria-hidden='true']",
+    "[role='navigation']",
+    "[role='banner']",
+    "[role='complementary']",
+    ".ad",
+    ".ads",
+    ".advert",
+    ".sidebar",
+    ".comment",
+    ".comments",
+    ".related",
+    ".recommend",
+    ".share",
+    ".social",
+    ".newsletter",
+    ".subscribe",
+    ".promo",
+    ".modal",
+    ".popup",
+    ".breadcrumb",
+    ".pagination",
+    ".post-meta",
+    "#comments",
+    "#sidebar",
+    "#header",
+    "#footer",
   ];
-  const POSITIVE = ["article","content","main","post","entry","story","body","text","blog"];
+  const POSITIVE = ["article", "content", "main", "post", "entry", "story", "body", "text", "blog"];
 
   function readMeta(names: string[]): string | undefined {
     for (const n of names) {
-      const m = doc.querySelector(`meta[name='${n}']`) ?? doc.querySelector(`meta[property='${n}']`);
+      const m =
+        doc.querySelector(`meta[name='${n}']`) ?? doc.querySelector(`meta[property='${n}']`);
       const v = m?.getAttribute("content");
       if (v) return v.trim();
     }
@@ -515,20 +544,39 @@ function extractInPage(
   }
 
   const url = location.href;
-  const title = readMeta(["og:title","twitter:title"]) ?? doc.title ?? "";
-  const author = readMeta(["author","article:author","twitter:creator"]);
+  const title = readMeta(["og:title", "twitter:title"]) ?? doc.title ?? "";
+  const author = readMeta(["author", "article:author", "twitter:creator"]);
   const siteName = readMeta(["og:site_name"]) ?? location.hostname;
-  const publishedAt = parseDate(readMeta(["article:published_time","datePublished"]) ?? doc.querySelector("time[datetime]")?.getAttribute("datetime") ?? undefined);
-  const description = readMeta(["description","og:description"]);
+  const publishedAt = parseDate(
+    readMeta(["article:published_time", "datePublished"]) ??
+      doc.querySelector("time[datetime]")?.getAttribute("datetime") ??
+      undefined,
+  );
+  const description = readMeta(["description", "og:description"]);
   const lang = doc.documentElement.getAttribute("lang") ?? undefined;
 
   if (payload.mode === "bookmark") {
     return {
-      url, finalUrl: url, title, author, siteName, publishedAt, description, lang,
-      excerpt: description ?? "", contentHtml: "", contentText: "", markdown: `# ${title}\n\n${description ?? ""}\n\n${url}`,
-      images: [], videos: [], links: [{ href: url, text: title }],
-      wordCount: 0, readingMinutes: 0, strategy: "manual-selection",
-      capturedAt: new Date().toISOString(), warnings: [],
+      url,
+      finalUrl: url,
+      title,
+      author,
+      siteName,
+      publishedAt,
+      description,
+      lang,
+      excerpt: description ?? "",
+      contentHtml: "",
+      contentText: "",
+      markdown: `# ${title}\n\n${description ?? ""}\n\n${url}`,
+      images: [],
+      videos: [],
+      links: [{ href: url, text: title }],
+      wordCount: 0,
+      readingMinutes: 0,
+      strategy: "manual-selection",
+      capturedAt: new Date().toISOString(),
+      warnings: [],
     };
   }
 
@@ -544,17 +592,24 @@ function extractInPage(
     if (!rule.pattern) continue;
     try {
       const re = new RegExp(
-        `^${rule.pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
+        `^${rule.pattern
+          .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+          .replace(/\*/g, ".*")
+          .replace(/\?/g, ".")}$`,
         "i",
       );
       if (!re.test(url)) continue;
-    } catch { continue; }
+    } catch {
+      continue;
+    }
     if (rule.contentSelector) {
       root = doc.querySelector(rule.contentSelector);
       if (root) {
         strategy = "site-rule";
         for (const s of rule.stripSelectors ?? []) {
-          root.querySelectorAll(s).forEach((e) => e.remove());
+          root.querySelectorAll(s).forEach((e) => {
+            e.remove();
+          });
         }
         break;
       }
@@ -572,7 +627,9 @@ function extractInPage(
       } else {
         // 评分
         let best: { el: Element; score: number } | null = null;
-        for (const c of Array.from(doc.body.querySelectorAll<HTMLElement>("div, section, article, main"))) {
+        for (const c of Array.from(
+          doc.body.querySelectorAll<HTMLElement>("div, section, article, main"),
+        )) {
           const cls = `${c.className} ${c.id}`.toLowerCase();
           let score = 0;
           for (const h of POSITIVE) if (cls.includes(h)) score += 25;
@@ -589,7 +646,9 @@ function extractInPage(
 
   const clone = root!.cloneNode(true) as Element;
   for (const sel of NEGATIVE) {
-    clone.querySelectorAll(sel).forEach((e) => e.remove());
+    clone.querySelectorAll(sel).forEach((e) => {
+      e.remove();
+    });
   }
   clone.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
     const ds = img.dataset.src;
@@ -597,7 +656,10 @@ function extractInPage(
   });
 
   const contentHtml = (clone as HTMLElement).innerHTML;
-  const contentText = (clone.textContent ?? "").replace(/\s+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  const contentText = (clone.textContent ?? "")
+    .replace(/\s+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
   // 极简 markdown
   const md: string[] = [];
@@ -637,7 +699,13 @@ function extractInPage(
     seenImg.add(src);
     const fig = img.closest("figure");
     const caption = fig?.querySelector("figcaption")?.textContent?.trim() || img.alt || undefined;
-    images.push({ src, alt: img.alt || undefined, caption, width: img.width || undefined, height: img.height || undefined });
+    images.push({
+      src,
+      alt: img.alt || undefined,
+      caption,
+      width: img.width || undefined,
+      height: img.height || undefined,
+    });
   });
   const videos: PageExtractedVideo[] = [];
   clone.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
@@ -649,7 +717,11 @@ function extractInPage(
   clone.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((a) => {
     let href = a.getAttribute("href") ?? "";
     if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
-    try { href = new URL(href, url).toString(); } catch { return; }
+    try {
+      href = new URL(href, url).toString();
+    } catch {
+      return;
+    }
     if (seenLink.has(href)) return;
     seenLink.add(href);
     links.push({ href, text: a.textContent?.trim() ?? "" });
@@ -660,10 +732,29 @@ function extractInPage(
   if (strategy === "full-dom") warnings.push("未匹配到正文容器，已使用整页 DOM");
 
   return {
-    url, finalUrl: url, title, author, siteName, publishedAt, description, lang,
-    excerpt: contentText.slice(0, 200), contentHtml, contentText, markdown: md.join("\n").replace(/\n{3,}/g, "\n\n").trim(),
-    images, videos, links, wordCount: contentText.length, readingMinutes: Math.max(1, Math.ceil(contentText.length / 600)),
-    strategy, capturedAt: new Date().toISOString(), warnings,
+    url,
+    finalUrl: url,
+    title,
+    author,
+    siteName,
+    publishedAt,
+    description,
+    lang,
+    excerpt: contentText.slice(0, 200),
+    contentHtml,
+    contentText,
+    markdown: md
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim(),
+    images,
+    videos,
+    links,
+    wordCount: contentText.length,
+    readingMinutes: Math.max(1, Math.ceil(contentText.length / 600)),
+    strategy,
+    capturedAt: new Date().toISOString(),
+    warnings,
   };
 }
 
@@ -675,7 +766,9 @@ async function pushToEditor(
   // 浏览器降级通道：HTTP 不可用时（纯 Web dev 模式无 node:http），
   // 通过 chrome.tabs.create 打开编辑器页面 + 注入 postMessage 推送 markdown。
   // 编辑器页面监听 window.message 事件接收。
-  async function fallbackBrowserPush(): Promise<{ ok: true } | { ok: false; error: string; retryable: boolean }> {
+  async function fallbackBrowserPush(): Promise<
+    { ok: true } | { ok: false; error: string; retryable: boolean }
+  > {
     const editorUrl = target.editorUrl ?? "http://localhost:5173";
     try {
       const tab = await chrome.tabs.create({ url: editorUrl, active: true });
@@ -786,26 +879,31 @@ function waitForTabComplete(tabId: number, timeoutMs: number): Promise<void> {
       clearTimeout(timer);
       resolve();
     };
-    const listener = (
-      id: number,
-      info: chrome.tabs.TabChangeInfo,
-      tab: chrome.tabs.Tab,
-    ) => {
+    const listener = (id: number, info: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => {
       if (id === tabId && (info.status === "complete" || tab.status === "complete")) {
         finish();
       }
     };
     chrome.tabs.onUpdated.addListener(listener);
     // 先检查当前状态
-    chrome.tabs.get(tabId).then((tab) => {
-      if (tab.status === "complete") finish();
-    }).catch(() => finish());
+    chrome.tabs
+      .get(tabId)
+      .then((tab) => {
+        if (tab.status === "complete") finish();
+      })
+      .catch(() => finish());
     const timer = setTimeout(finish, timeoutMs);
   });
 }
 
 function sanitizeFilename(name: string): string {
-  return name.replace(/[<>:"/\\|?*\x00-\x1f]/g, "_").slice(0, 100).trim() || "untitled";
+  return (
+    name
+      // biome-ignore lint/suspicious/noControlCharactersInRegex: 文件名净化需剔除 0x00-0x1F 控制字符
+      .replace(/[<>:"/\\|?*\x00-\x1f]/g, "_")
+      .slice(0, 100)
+      .trim() || "untitled"
+  );
 }
 
 async function persistSettings(s: ClipperSettings): Promise<void> {

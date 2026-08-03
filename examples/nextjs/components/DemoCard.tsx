@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
 import { ICON_CHEVRON_UP, ICON_CODE } from "@icon/icons";
+import { type ReactNode, useState } from "react";
 
 function SvgHtml({ html, size = 14 }: { html: string; size?: number }) {
-  const sized = html.replace(/width="[^"]*"/, `width="${size}"`).replace(/height="[^"]*"/, `height="${size}"`);
+  const sized = html
+    .replace(/width="[^"]*"/, `width="${size}"`)
+    .replace(/height="[^"]*"/, `height="${size}"`);
+  // biome-ignore lint/security/noDangerouslySetInnerHtml: 渲染 @icon/icons 可信 SVG 字符串
   return <span dangerouslySetInnerHTML={{ __html: sized }} />;
 }
 
@@ -60,11 +63,7 @@ export default function DemoCard({
                 ))}
               </div>
             )}
-            <button
-              className="demo-toggle-code"
-              type="button"
-              onClick={() => setOpen(!open)}
-            >
+            <button className="demo-toggle-code" type="button" onClick={() => setOpen(!open)}>
               <SvgHtml html={open ? ICON_CHEVRON_UP : ICON_CODE} />
               {open ? "收起代码" : "展开代码"}
             </button>

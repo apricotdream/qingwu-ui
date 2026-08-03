@@ -1,3 +1,3 @@
 import { Calendar } from "./calendar";
 
-window.QingwuCalendarUI = { Calendar };
+(window as any).QingwuCalendarUI = { Calendar };

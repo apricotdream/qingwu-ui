@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "@qingwu/toast";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "@qingwu/toast/style.css";
 import DemoCard from "@/components/DemoCard";
 
@@ -29,12 +29,16 @@ const TYPES = [
 /* 与 @qingwu/toast 组件一致的 SVG 图标（样式预览用） */
 const TOAST_ICONS: Record<string, string> = {
   info: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
-  success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>',
-  warning: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-  error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+  success:
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>',
+  warning:
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  error:
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
 };
 
-const CLOSE_ICON = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+const CLOSE_ICON =
+  '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
 
 /* 预览行：解析 **关键词** 标记（与组件 renderLine 同逻辑，空段过滤） */
 function PreviewLine({ text }: { text: string }) {
@@ -43,7 +47,9 @@ function PreviewLine({ text }: { text: string }) {
     <span className="qt-line">
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <em key={part} className="qt-mark">{part}</em>
+          <em key={part} className="qt-mark">
+            {part}
+          </em>
         ) : (
           <span key={part}>{part}</span>
         ),
@@ -54,10 +60,29 @@ function PreviewLine({ text }: { text: string }) {
 
 /* 样式预览卡片：message + 可选两行（模拟 text-layout 排版） */
 const PREVIEWS = [
-  { type: "info" as const, lines: [{ id: "info-1", text: "磨砂玻璃 · **信息提示**" }], icon: TOAST_ICONS.info },
-  { type: "success" as const, lines: [{ id: "ok-1", text: "**操作成功**" }], icon: TOAST_ICONS.success },
-  { type: "warning" as const, lines: [{ id: "warn-1", text: "磁盘空间**不足**，请及时清理" }, { id: "warn-2", text: "以释放存储空间" }], icon: TOAST_ICONS.warning },
-  { type: "error" as const, lines: [{ id: "err-1", text: "**登录失败**：账号或密码错误" }], icon: TOAST_ICONS.error },
+  {
+    type: "info" as const,
+    lines: [{ id: "info-1", text: "磨砂玻璃 · **信息提示**" }],
+    icon: TOAST_ICONS.info,
+  },
+  {
+    type: "success" as const,
+    lines: [{ id: "ok-1", text: "**操作成功**" }],
+    icon: TOAST_ICONS.success,
+  },
+  {
+    type: "warning" as const,
+    lines: [
+      { id: "warn-1", text: "磁盘空间**不足**，请及时清理" },
+      { id: "warn-2", text: "以释放存储空间" },
+    ],
+    icon: TOAST_ICONS.warning,
+  },
+  {
+    type: "error" as const,
+    lines: [{ id: "err-1", text: "**登录失败**：账号或密码错误" }],
+    icon: TOAST_ICONS.error,
+  },
 ] as const;
 
 const SCENES = [
@@ -65,13 +90,18 @@ const SCENES = [
     key: "persistent",
     label: "常驻通知",
     desc: "不自动消失，点击关闭",
-    action: (pos: string) => toast.info("点击此处或右侧 × 可关闭此通知", { position: pos as never, duration: 0 }),
+    action: (pos: string) =>
+      toast.info("点击此处或右侧 × 可关闭此通知", { position: pos as never, duration: 0 }),
   },
   {
     key: "long",
     label: "长文本截断",
     desc: "超长消息自动省略",
-    action: (pos: string) => toast.info("这条通知消息的文本内容非常长，用于验证文本在桌面端单行截断和移动端两行换行的显示效果", { position: pos as never }),
+    action: (pos: string) =>
+      toast.info(
+        "这条通知消息的文本内容非常长，用于验证文本在桌面端单行截断和移动端两行换行的显示效果",
+        { position: pos as never },
+      ),
   },
   {
     key: "promise",
@@ -80,7 +110,11 @@ const SCENES = [
     action: (pos: string) => {
       toast.promise(
         new Promise<string>((resolve, reject) => {
-          setTimeout(() => (Math.random() > 0.4 ? resolve("数据加载成功") : reject(new Error("网络请求失败"))), 2500);
+          setTimeout(
+            () =>
+              Math.random() > 0.4 ? resolve("数据加载成功") : reject(new Error("网络请求失败")),
+            2500,
+          );
         }),
         {
           loading: "正在加载数据...",
@@ -113,7 +147,8 @@ const SCENES = [
   },
 ] as const;
 
-const DEFAULT_TEXT = "这条通知消息的文本内容非常长，用于演示 **text-layout** 的自适应排版能力：一行放不下时自动换行，超过 maxLines 时按字符截断并追加省略号";
+const DEFAULT_TEXT =
+  "这条通知消息的文本内容非常长，用于演示 **text-layout** 的自适应排版能力：一行放不下时自动换行，超过 maxLines 时按字符截断并追加省略号";
 
 export default function ToastPage() {
   const [position, setPosition] = useState<string>("top-center");
@@ -144,12 +179,21 @@ export default function ToastPage() {
   };
 
   const pos = position as
-    | "top-left" | "top-center" | "top-right"
-    | "bottom-left" | "bottom-center" | "bottom-right";
+    | "top-left"
+    | "top-center"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-center"
+    | "bottom-right";
 
   const fireType = (type: "info" | "success" | "warning" | "error") => {
     const labels = { info: "提示", success: "成功", warning: "警告", error: "错误" };
-    const fns = { info: toast.info, success: toast.success, warning: toast.warn, error: toast.error };
+    const fns = {
+      info: toast.info,
+      success: toast.success,
+      warning: toast.warn,
+      error: toast.error,
+    };
     const id = fns[type](`${labels[type]} — 轻提示消息`, { position: pos, duration: 3500 });
     addLog(`${labels[type]} | id=${id}`);
   };
@@ -190,14 +234,14 @@ export default function ToastPage() {
       "// Promise 链",
       "toast.promise(fetchUser(), {",
       '  loading: "加载中...",',
-      '  success: (data) => `欢迎 ${data.name}`,',
+      "  success: (data) => `欢迎 ${data.name}`,",
       '  error: "加载失败",',
       "});",
       "",
       "// 关闭 & 配置",
       "toast.dismiss(id);",
       "toast.dismissAll();",
-      'toast.configure({ maxVisible: 3 });',
+      "toast.configure({ maxVisible: 3 });",
     ].join("\n");
 
     const html = [
@@ -214,7 +258,7 @@ export default function ToastPage() {
       '<script setup lang="ts">',
       'import { toast } from "@qingwu/toast";',
       'import "@qingwu/toast/style.css";',
-      '',
+      "",
       'onMounted(() => toast("Vue 就绪"));',
       "</script>",
     ].join("\n");
@@ -235,7 +279,10 @@ export default function ToastPage() {
               ① 样式预览 · 与组件样式实时同步
               ============================================================ */}
           <section>
-            <div className="toast-section-title">样式预览 · Apple 磨砂玻璃 <span className="toast-preview-hint">（点击卡片重播入场动画）</span></div>
+            <div className="toast-section-title">
+              样式预览 · Apple 磨砂玻璃{" "}
+              <span className="toast-preview-hint">（点击卡片重播入场动画）</span>
+            </div>
             <div ref={previewRef} className="qt-container toast-preview" onClick={replayPreview}>
               {PREVIEWS.map((p) => (
                 <div key={p.type} className={`qt-toast qt-${p.type}`}>
@@ -281,14 +328,19 @@ export default function ToastPage() {
               ③ 定位选择
               ============================================================ */}
           <section>
-            <div className="toast-section-title">定位 · 当前: {POSITIONS.find((p) => p.key === position)?.label}</div>
+            <div className="toast-section-title">
+              定位 · 当前: {POSITIONS.find((p) => p.key === position)?.label}
+            </div>
             <div className="toast-pos-grid">
               {POSITIONS.map((p) => (
                 <button
                   key={p.key}
                   className={`toast-pos-cell${position === p.key ? " is-active" : ""}`}
                   type="button"
-                  onClick={() => { setPosition(p.key); addLog(`切换定位 → ${p.label}`); }}
+                  onClick={() => {
+                    setPosition(p.key);
+                    addLog(`切换定位 → ${p.label}`);
+                  }}
                 >
                   {p.label}
                 </button>
@@ -361,7 +413,9 @@ export default function ToastPage() {
                   <div className="cal-log-empty">点击上方交互控件，每次操作将记录在此</div>
                 ) : (
                   log.map((msg, i) => (
-                    <div key={i} className="cal-log-item">{msg}</div>
+                    <div key={i} className="cal-log-item">
+                      {msg}
+                    </div>
                   ))
                 )}
               </div>

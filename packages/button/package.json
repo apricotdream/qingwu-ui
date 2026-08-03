@@ -25,7 +25,7 @@
   "scripts": {
     "build": "tsdown && node -e \"require('fs').cpSync('src/style.css','dist/style.css')\"",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "size": "size-limit"
   },
   "devDependencies": {

@@ -74,7 +74,10 @@ export function truncateToLines(
   // 构建截断文本
   const truncSegments = segments.slice(0, lo);
   const truncText =
-    truncSegments.map((s) => s.text).join("").trimEnd() + ellipsis;
+    truncSegments
+      .map((s) => s.text)
+      .join("")
+      .trimEnd() + ellipsis;
 
   // 验证最终行数
   const verifyResult = layout(truncText, { maxWidth, lineHeight: 1 }, font);

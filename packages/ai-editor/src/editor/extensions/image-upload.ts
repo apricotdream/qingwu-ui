@@ -2,9 +2,9 @@ import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { toast } from "../../components/toast";
 import {
+  type AttachmentLimits,
   getEditorAttachmentLimits,
   validateAttachmentFile,
-  type AttachmentLimits,
 } from "../attachment-limits";
 import { getStorageProvider } from "../storage";
 import { openImportChoiceDialog } from "../utils/import-choice-dialog";

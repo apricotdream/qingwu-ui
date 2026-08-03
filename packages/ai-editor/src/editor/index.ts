@@ -1,11 +1,11 @@
 // 主编辑器组件
 
 export type { Editor } from "@tiptap/core";
-// 附件上传限制工具
-export { formatBytes, getDocAttachmentTotal, validateAttachmentFile } from "./attachment-limits";
-export type { AttachmentLimits } from "./attachment-limits";
 // 图片上传弹窗
 export { ImageUploadDialog } from "../components/image-upload-dialog";
+export type { ToastListener, ToastType } from "../components/toast";
+// Toast 提示通道（对外开放自定义：setToastProvider 全局替换 / onToast 实例级覆盖）
+export { setToastProvider, subscribeToast, toast } from "../components/toast";
 export type { TocPanelProps } from "../components/toc";
 // 目录面板
 export { TocPanel } from "../components/toc";
@@ -27,6 +27,11 @@ export { createOpenAIProvider } from "./ai/providers/openai";
 // 兼容旧版导出（标记为 deprecated）
 export { createOpenAICompatProvider } from "./ai/providers/openai-compat";
 export { createQwenProvider } from "./ai/providers/qwen";
+export type { QingWuAIEditorProps } from "./ai-editor";
+export { QingWuAIEditor } from "./ai-editor";
+export type { AttachmentLimits } from "./attachment-limits";
+// 附件上传限制工具
+export { formatBytes, getDocAttachmentTotal, validateAttachmentFile } from "./attachment-limits";
 export type {
   BrowserClipperReceiver,
   ClipperErrorBody,
@@ -61,8 +66,6 @@ export { getDefaultSlashCommands } from "./extensions/slash-command";
 export type { I18nDict, Locale } from "./i18n";
 // i18n
 export { getLocale, setLocale, t, tf } from "./i18n";
-export type { QingWuAIEditorProps } from "./ai-editor";
-export { QingWuAIEditor } from "./ai-editor";
 export type {
   COSStorageConfig,
   LocalStorageConfig,
@@ -86,12 +89,9 @@ export { createLocalStorage } from "./storage/providers/local";
 export { createOSSStorage } from "./storage/providers/oss";
 export type { S3StorageOptions } from "./storage/providers/s3";
 export { createS3Storage } from "./storage/providers/s3";
-// 安全工具
-export { escapeHtml, sanitizeHtml, sanitizeSvg } from "./utils/sanitize";
-// Toast 提示通道（对外开放自定义：setToastProvider 全局替换 / onToast 实例级覆盖）
-export { setToastProvider, subscribeToast, toast } from "../components/toast";
-export type { ToastListener, ToastType } from "../components/toast";
+export type { ConfirmProvider } from "./utils/delete-confirm";
 // 删除确认（默认内置项目 DeleteConfirmDialog，可经 setConfirmProvider 全局覆盖）
 export { setConfirmProvider } from "./utils/delete-confirm";
-export type { ConfirmProvider } from "./utils/delete-confirm";
 export type { DeleteConfirmDialogProps } from "./utils/delete-confirm-dialog";
+// 安全工具
+export { escapeHtml, sanitizeHtml, sanitizeSvg } from "./utils/sanitize";

@@ -7,7 +7,7 @@
  */
 
 import { ClipperError, toClipperError } from "./errors";
-import type { Message, MessageResponse, MessageKind } from "./messages";
+import type { Message, MessageKind, MessageResponse } from "./messages";
 import { isMessage, ok as okResp } from "./messages";
 
 const DEFAULT_TIMEOUT = 60_000;
@@ -34,7 +34,8 @@ export async function send<T = unknown>(
     try {
       runtime.sendMessage(msg, (resp: MessageResponse<T>) => {
         const err = chrome.runtime.lastError;
-        if (err) reject(new ClipperError("runtime", err.message ?? "runtime error", { retryable: false }));
+        if (err)
+          reject(new ClipperError("runtime", err.message ?? "runtime error", { retryable: false }));
         else resolve(resp ?? okResp(null as T));
       });
     } catch (e) {
@@ -68,7 +69,10 @@ export function registerHandler(
   handlers: Partial<
     Record<
       MessageKind,
-      (msg: Message, sender: chrome.runtime.MessageSender) => Promise<MessageResponse> | MessageResponse
+      (
+        msg: Message,
+        sender: chrome.runtime.MessageSender,
+      ) => Promise<MessageResponse> | MessageResponse
     >
   >,
 ) {

@@ -89,18 +89,16 @@ export function httpStatusToAIError(status: number, body?: string): ClipperError
     });
   }
   if (AUTH_STATUS.has(status)) {
-    return new ClipperError(
-      "auth-failed",
-      "API Key 无效或权限不足，请在设置页检查",
-      { retryable: false, raw: body },
-    );
+    return new ClipperError("auth-failed", "API Key 无效或权限不足，请在设置页检查", {
+      retryable: false,
+      raw: body,
+    });
   }
   if (NOT_FOUND_STATUS.has(status)) {
-    return new ClipperError(
-      "model-not-found",
-      "模型或接口路径不存在，请检查 baseURL 与 model",
-      { retryable: false, raw: body },
-    );
+    return new ClipperError("model-not-found", "模型或接口路径不存在，请检查 baseURL 与 model", {
+      retryable: false,
+      raw: body,
+    });
   }
   if (status >= 500) {
     return new ClipperError("provider-error", `服务方返回 ${status}，请稍候重试`, {
@@ -114,9 +112,12 @@ export function httpStatusToAIError(status: number, body?: string): ClipperError
   });
 }
 
-export function clipperErrorToAIError(
-  e: ClipperError,
-): { code: AIErrorCode; message: string; raw?: string; retryable: boolean } {
+export function clipperErrorToAIError(e: ClipperError): {
+  code: AIErrorCode;
+  message: string;
+  raw?: string;
+  retryable: boolean;
+} {
   return {
     code: e.code as AIErrorCode,
     message: e.message,

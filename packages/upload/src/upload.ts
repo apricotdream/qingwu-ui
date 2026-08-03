@@ -59,10 +59,7 @@ function getPersistDb(): Promise<IDBDatabase | null> {
 }
 
 /** 全量覆盖写（先清后写）；IndexedDB 不可用时写内存 Map */
-async function persistWriteAll(
-  strategy: PersistStrategy,
-  entries: PersistEntry[],
-): Promise<void> {
+async function persistWriteAll(strategy: PersistStrategy, entries: PersistEntry[]): Promise<void> {
   const db = await getPersistDb();
   if (!db) {
     const mem = persistMemory[strategy];
@@ -160,7 +157,11 @@ function parseUrlLines(text: string): string[] {
 }
 
 /** 带超时的 fetch；超时以 AbortError 抛出 */
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<Response> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
@@ -174,7 +175,11 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: numbe
  * HEAD 预检：Content-Length 超限返回 { tooLarge: true }；
  * HEAD 不可用（405/CORS 等）返回 null，由调用方降级直接 GET。
  */
-async function headCheck(url: string, maxBytes: number, timeoutMs: number): Promise<{ tooLarge: boolean } | null> {
+async function headCheck(
+  url: string,
+  maxBytes: number,
+  timeoutMs: number,
+): Promise<{ tooLarge: boolean } | null> {
   try {
     const res = await fetchWithTimeout(url, { method: "HEAD" }, timeoutMs);
     const len = res.headers.get("content-length");
@@ -193,11 +198,13 @@ async function detectImageType(blob: Blob): Promise<string | null> {
   const head = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
   if (head.length < 4) return null;
   // PNG
-  if (head[0] === 0x89 && head[1] === 0x50 && head[2] === 0x4e && head[3] === 0x47) return "image/png";
+  if (head[0] === 0x89 && head[1] === 0x50 && head[2] === 0x4e && head[3] === 0x47)
+    return "image/png";
   // JPEG
   if (head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) return "image/jpeg";
   // GIF
-  if (head[0] === 0x47 && head[1] === 0x49 && head[2] === 0x46 && head[3] === 0x38) return "image/gif";
+  if (head[0] === 0x47 && head[1] === 0x49 && head[2] === 0x46 && head[3] === 0x38)
+    return "image/gif";
   // BMP
   if (head[0] === 0x42 && head[1] === 0x4d) return "image/bmp";
   // RIFF 容器 → WebP（字节 8-11 为 "WEBP"）
@@ -212,7 +219,8 @@ async function detectImageType(blob: Blob): Promise<string | null> {
   }
   // SVG：文本形式，允许前置 XML 声明/注释
   const text = await blob.slice(0, 512).text();
-  if (/^\s*(?:<\?xml[\s\S]*?\?>\s*)?(?:<!--[\s\S]*?-->\s*)?<svg[\s>/]/i.test(text)) return "image/svg+xml";
+  if (/^\s*(?:<\?xml[\s\S]*?\?>\s*)?(?:<!--[\s\S]*?-->\s*)?<svg[\s>/]/i.test(text))
+    return "image/svg+xml";
   return null;
 }
 
@@ -856,7 +864,13 @@ export class ImageUpload {
       }
       const name = nameFromUrl(raw, mime);
       const file = new File([blob], name, { type: mime });
-      const reason = validateFile(file, this.accept, this.opts.maxSizeMB, this.items.length, this.opts.maxCount);
+      const reason = validateFile(
+        file,
+        this.accept,
+        this.opts.maxSizeMB,
+        this.items.length,
+        this.opts.maxCount,
+      );
       if (reason) {
         const msg =
           reason === "type"
@@ -1006,9 +1020,7 @@ export class ImageUpload {
     const fitContain = this.opts.previewFit === "contain" || this.opts.previewFit === "auto";
     this.dropzonePreviewBox.innerHTML =
       `<img class="qw-upload-dropzone-preview${fitContain ? " is-contain" : ""}" src="${escapeHTML(preview)}" alt="" />` +
-      `<span class="qw-upload-dropzone-mask">${
-        uploading ? `上传中 ${pct}%` : "点击预览"
-      }</span>` +
+      `<span class="qw-upload-dropzone-mask">${uploading ? `上传中 ${pct}%` : "点击预览"}</span>` +
       (uploading
         ? `<span class="qw-upload-dropzone-progress"><i style="width:${pct}%"></i></span>`
         : "") +
@@ -1020,8 +1032,7 @@ export class ImageUpload {
           if (!imgEl.naturalWidth || !imgEl.naturalHeight) return;
           // 自适应：图片比例与容器比例接近 → 铺满（裁切少）；差异大（如横图进竖容器）→ 完整显示，避免裁切主体
           const imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
-          const boxRatio =
-            (this.dropzone.clientWidth || 1) / (this.dropzone.clientHeight || 1);
+          const boxRatio = (this.dropzone.clientWidth || 1) / (this.dropzone.clientHeight || 1);
           const diff = Math.abs(imgRatio - boxRatio) / boxRatio;
           imgEl.classList.toggle("is-contain", diff >= 0.2);
         };
@@ -1144,7 +1155,11 @@ export class ImageUpload {
      ============================================================ */
 
   /** 同步按钮形态状态（其他形态为空操作） */
-  private syncBtn(item: UploadItem, state: "uploading" | "done" | "error", pct: number | null): void {
+  private syncBtn(
+    item: UploadItem,
+    state: "uploading" | "done" | "error",
+    pct: number | null,
+  ): void {
     if (!this.btn) return;
     if (state === "uploading") this.btnItemId = item.id; // 认领当前上传项
     if (this.btnItemId !== item.id) return;

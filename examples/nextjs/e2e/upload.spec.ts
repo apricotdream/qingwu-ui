@@ -89,5 +89,4 @@ test.describe("Upload 组件演示页", () => {
     await expect(page.locator(".qw-upload-hint")).toContainText("被拒绝");
     await expect(page.locator(".qw-upload-item")).toHaveCount(0);
   });
-
 });

@@ -211,8 +211,8 @@ function InlineSection() {
       <div className="qti-demo-basic">
         <div ref={ref} />
         <div className="qti-demo-state">
-          已选：<code>{selected.join(", ") || "（空）"}</code> · 已选以 chip 内嵌输入框，
-          × 删除即移除；草稿经 <code>Enter</code> / 逗号 / 失焦提交（<code>maxTags: 5</code>
+          已选：<code>{selected.join(", ") || "（空）"}</code> · 已选以 chip 内嵌输入框， ×
+          删除即移除；草稿经 <code>Enter</code> / 逗号 / 失焦提交（<code>maxTags: 5</code>
           上限，超出保留草稿）；下方快捷栏为可用标签建议
         </div>
       </div>

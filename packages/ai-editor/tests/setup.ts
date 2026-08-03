@@ -10,3 +10,17 @@ class ResizeObserverMock {
 if (!("ResizeObserver" in globalThis)) {
   globalThis.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
 }
+
+// jsdom 未实现 matchMedia，部分 UI 依赖它做媒体查询
+if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia;
+}

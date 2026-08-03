@@ -5,8 +5,8 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { type FC, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SearchBar } from "../components/search-bar";
-import { toast, subscribeToast } from "../components/toast";
 import type { ToastType } from "../components/toast";
+import { subscribeToast, toast } from "../components/toast";
 import { TocPanel } from "../components/toc";
 import { AISelector } from "./ai/components/ai-selector";
 import { formatBytes, getDocAttachmentTotal, validateAttachmentFile } from "./attachment-limits";
@@ -1425,7 +1425,12 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
               onClose={() => setShowImageDialog(false)}
               onInsert={handleImageInsert}
               validate={(file) =>
-                editor ? validateAttachmentFile(editor.state.doc, file, { maxAttachmentSize, maxTotalAttachmentSize }) : null
+                editor
+                  ? validateAttachmentFile(editor.state.doc, file, {
+                      maxAttachmentSize,
+                      maxTotalAttachmentSize,
+                    })
+                  : null
               }
             />
           </Suspense>

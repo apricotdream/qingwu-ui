@@ -1,9 +1,10 @@
 /** 扩展侧边栏：剪藏主界面，含草稿编辑、历史管理、推送与下载。 */
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { setLocale, t } from "../shared/i18n";
 import { send } from "../shared/messaging";
 import { renderTemplate } from "../shared/templates/engine";
-import { setLocale, t } from "../shared/i18n";
+import type { ClipperSettings, ClipRecord, ExtractedContent } from "../shared/types";
 import {
   Badge,
   Button,
@@ -19,11 +20,6 @@ import {
   useTheme,
   useToast,
 } from "../shared/ui";
-import type {
-  ClipRecord,
-  ClipperSettings,
-  ExtractedContent,
-} from "../shared/types";
 
 type Tab = "clip" | "history" | "settings";
 
@@ -39,9 +35,7 @@ export function App() {
 
   if (!settings) {
     return (
-      <div className="h-screen flex items-center justify-center text-sm text-ink-500">
-        加载中…
-      </div>
+      <div className="h-screen flex items-center justify-center text-sm text-ink-500">加载中…</div>
     );
   }
 
@@ -53,19 +47,13 @@ export function App() {
       onAccentChange={(accent) => void persistSettings({ ...settings, accent }, setSettings)}
     >
       <ToastProvider>
-        <Inner
-          settings={settings}
-          setSettings={setSettings}
-        />
+        <Inner settings={settings} setSettings={setSettings} />
       </ToastProvider>
     </ThemeProvider>
   );
 }
 
-async function persistSettings(
-  s: ClipperSettings,
-  setter: (s: ClipperSettings) => void,
-) {
+async function persistSettings(s: ClipperSettings, setter: (s: ClipperSettings) => void) {
   setter(s);
   await send("settings:set", s);
 }
@@ -95,7 +83,9 @@ function Inner({
       if (typeof msg !== "object" || msg === null) return;
       const m = msg as { kind: string; payload?: unknown };
       if (m.kind === "clip:extract") {
-        await runExtract(m.payload as { mode: "page" | "selection" | "bookmark"; selection?: string });
+        await runExtract(
+          m.payload as { mode: "page" | "selection" | "bookmark"; selection?: string },
+        );
       }
     };
     chrome.runtime.onMessage.addListener(listener);
@@ -128,10 +118,7 @@ function Inner({
       })();
     }
 
-    const listener = (
-      changes: Record<string, chrome.storage.StorageChange>,
-      areaName: string,
-    ) => {
+    const listener = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
       if (areaName !== "local") return;
       const pendingDraft = changes.pendingDraft?.newValue as
         | { content?: ExtractedContent }
@@ -193,7 +180,9 @@ function Inner({
         const content = await send<ExtractedContent>("clip:extract", p);
         setDraft(createClipDraft(content, settings));
         // 消费 pendingDraft（实时提取覆盖暂存）
-        try { await chrome.storage.local.remove("pendingDraft"); } catch {}
+        try {
+          await chrome.storage.local.remove("pendingDraft");
+        } catch {}
         if (content.warnings.length > 0) {
           toast.push({
             level: "warning",
@@ -223,17 +212,14 @@ function Inner({
   async function runAutoAI(content: ExtractedContent) {
     if (!settings?.ai) return;
     if (settings.autoSummary) {
-      void send<{ ok: boolean; data?: unknown; error?: { message: string } }>(
-        "ai:run",
-        {
-          request: {
-            mode: "summary",
-            text: content.contentText,
-            targetLang: settings.locale,
-            maxTokens: 300,
-          },
+      void send<{ ok: boolean; data?: unknown; error?: { message: string } }>("ai:run", {
+        request: {
+          mode: "summary",
+          text: content.contentText,
+          targetLang: settings.locale,
+          maxTokens: 300,
         },
-      )
+      })
         .then((r: any) => {
           if (r?.ok && r.data?.data) {
             setDraft((d) => (d ? { ...d, aiSummary: String(r.data.data) } : d));
@@ -253,9 +239,7 @@ function Inner({
       })
         .then((r: any) => {
           if (r?.ok && Array.isArray(r.data?.data)) {
-            setDraft((d) =>
-              d ? { ...d, aiTags: r.data.data as string[] } : d,
-            );
+            setDraft((d) => (d ? { ...d, aiTags: r.data.data as string[] } : d));
           }
         })
         .catch(() => {});
@@ -271,7 +255,9 @@ function Inner({
       <SidePanelHeader
         tab={tab}
         onTab={setTab}
-        onRefresh={() => draft && runExtract({ mode: draft.content.selection ? "selection" : "page" })}
+        onRefresh={() =>
+          draft && runExtract({ mode: draft.content.selection ? "selection" : "page" })
+        }
         onExtract={(m) => void runExtract({ mode: m })}
       />
       <div className="flex-1 overflow-y-auto">
@@ -331,10 +317,7 @@ interface ClipDraft {
   autoSummaryRan: boolean;
 }
 
-function createClipDraft(
-  content: ExtractedContent,
-  settings: ClipperSettings,
-): ClipDraft {
+function createClipDraft(content: ExtractedContent, settings: ClipperSettings): ClipDraft {
   const now = new Date();
   const notePath = (settings.recentPaths[0] ?? "Clippings/{{YYYY}}/{{MM}}")
     .replace(/{{YYYY}}/g, String(now.getFullYear()))
@@ -476,8 +459,7 @@ function ClipTab({
 
   const preview = useMemo(() => {
     if (!draft) return "";
-    const tpl =
-      settings.templates.find((x) => x.id === draft.templateId) ?? settings.templates[0];
+    const tpl = settings.templates.find((x) => x.id === draft.templateId) ?? settings.templates[0];
     if (!tpl) return "";
     return renderTemplate(tpl, {
       content: draft.content,
@@ -598,11 +580,7 @@ function ClipTab({
       </Field>
 
       {/* AI 操作 */}
-      <AIPanel
-        draft={draft}
-        setDraft={setDraft}
-        settings={settings}
-      />
+      <AIPanel draft={draft} setDraft={setDraft} settings={settings} />
 
       {/* 操作按钮 */}
       <div className="sticky bottom-0 left-0 right-0 bg-white dark:bg-ink-950 pt-2 flex gap-2 border-t border-ink-100 dark:border-ink-900">
@@ -733,9 +711,7 @@ function Meta({ label, value }: { label: string; value?: string }) {
   return (
     <div>
       <div className="text-ink-400 dark:text-ink-500">{label}</div>
-      <div className="text-ink-700 dark:text-ink-300 truncate">
-        {value || "—"}
-      </div>
+      <div className="text-ink-700 dark:text-ink-300 truncate">{value || "—"}</div>
     </div>
   );
 }
@@ -801,9 +777,7 @@ function TagsInput({
   const [input, setInput] = useState("");
   const [focused, setFocused] = useState(false);
   const suggestions = recent
-    .filter(
-      (r) => !tags.includes(r) && r.toLowerCase().includes(input.toLowerCase()),
-    )
+    .filter((r) => !tags.includes(r) && r.toLowerCase().includes(input.toLowerCase()))
     .slice(0, 6);
 
   function addTag(t: string) {
@@ -916,18 +890,15 @@ function AIPanel({
     }
     setBusy(mode);
     try {
-      const r = await send<{ ok: boolean; data: unknown; error?: { message: string } }>(
-        "ai:run",
-        {
-          request: {
-            mode,
-            text: draft.content.contentText,
-            targetLang: extra?.targetLang,
-            instruction: extra?.instruction,
-            maxTokens: mode === "summary" ? 300 : mode === "tags" ? 100 : undefined,
-          },
+      const r = await send<{ ok: boolean; data: unknown; error?: { message: string } }>("ai:run", {
+        request: {
+          mode,
+          text: draft.content.contentText,
+          targetLang: extra?.targetLang,
+          instruction: extra?.instruction,
+          maxTokens: mode === "summary" ? 300 : mode === "tags" ? 100 : undefined,
         },
-      );
+      });
       const resp = r as any;
       if (!resp.ok) {
         toast.push({
@@ -946,7 +917,10 @@ function AIPanel({
       } else if (mode === "translate") {
         // 翻译写入 summary 下方（暂存到 aiSummary 末尾）
         const oldSummary = draft.aiSummary ? `${draft.aiSummary}\n\n` : "";
-        setDraft({ ...draft, aiSummary: `${oldSummary}## ${extra?.targetLang === "en-US" ? "EN" : "中文"} 翻译\n${String(data ?? "")}` });
+        setDraft({
+          ...draft,
+          aiSummary: `${oldSummary}## ${extra?.targetLang === "en-US" ? "EN" : "中文"} 翻译\n${String(data ?? "")}`,
+        });
       } else if (mode === "rename") {
         setDraft({ ...draft, noteTitle: String(data ?? draft.noteTitle) });
       }
@@ -974,15 +948,32 @@ function AIPanel({
         {!settings.ai && <Badge variant="muted">未配置</Badge>}
       </div>
       <div className="flex flex-wrap gap-1.5">
-        <AIButton icon="summary" label={t("ai.summary.medium")} loading={busy === "summary"} onClick={() => callAI("summary")} />
-        <AIButton icon="tag" label={t("ai.tags")} loading={busy === "tags"} onClick={() => callAI("tags")} />
+        <AIButton
+          icon="summary"
+          label={t("ai.summary.medium")}
+          loading={busy === "summary"}
+          onClick={() => callAI("summary")}
+        />
+        <AIButton
+          icon="tag"
+          label={t("ai.tags")}
+          loading={busy === "tags"}
+          onClick={() => callAI("tags")}
+        />
         <AIButton
           icon="translate"
           label={`${t("ai.translate")} ${settings.locale === "zh-CN" ? "EN" : "中"}`}
           loading={busy === "translate"}
-          onClick={() => callAI("translate", { targetLang: settings.locale === "zh-CN" ? "en-US" : "zh-CN" })}
+          onClick={() =>
+            callAI("translate", { targetLang: settings.locale === "zh-CN" ? "en-US" : "zh-CN" })
+          }
         />
-        <AIButton icon="rename" label={t("ai.rename")} loading={busy === "rename"} onClick={() => callAI("rename")} />
+        <AIButton
+          icon="rename"
+          label={t("ai.rename")}
+          loading={busy === "rename"}
+          onClick={() => callAI("rename")}
+        />
       </div>
       {draft.aiSummary && (
         <div className="mt-1 p-2 rounded-md bg-violet-50 dark:bg-violet-950/30 text-xs text-ink-700 dark:text-ink-300 whitespace-pre-wrap">
@@ -992,8 +983,20 @@ function AIPanel({
       {busy && (
         <div className="flex items-center gap-2 text-[11px] text-violet-600 dark:text-violet-400">
           <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25" />
-            <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeOpacity="0.25"
+            />
+            <path
+              d="M22 12a10 10 0 0 1-10 10"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
           </svg>
           {t("ai.thinking")}
         </div>
@@ -1024,8 +1027,20 @@ function AIButton({
       {label}
       {loading && (
         <svg className="animate-spin h-2.5 w-2.5 ml-0.5" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeOpacity="0.25" />
-          <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+            strokeOpacity="0.25"
+          />
+          <path
+            d="M22 12a10 10 0 0 1-10 10"
+            stroke="currentColor"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
         </svg>
       )}
     </button>
@@ -1062,13 +1077,7 @@ function ExtractingSkeleton() {
 
 // ===== History Tab =====
 
-function HistoryTab({
-  activeId,
-  onOpen,
-}: {
-  activeId?: string;
-  onOpen: (r: ClipRecord) => void;
-}) {
+function HistoryTab({ activeId, onOpen }: { activeId?: string; onOpen: (r: ClipRecord) => void }) {
   const [query, setQuery] = useState("");
   const [favOnly, setFavOnly] = useState(false);
   const [items, setItems] = useState<ClipRecord[]>([]);
@@ -1189,9 +1198,7 @@ function HistoryTab({
                         void toggleFav(r);
                       }}
                       className={`h-6 w-6 rounded flex items-center justify-center ${
-                        r.favorite
-                          ? "text-amber-500"
-                          : "text-ink-400 hover:text-amber-500"
+                        r.favorite ? "text-amber-500" : "text-ink-400 hover:text-amber-500"
                       }`}
                     >
                       <Icon name={r.favorite ? "star-filled" : "star"} size={12} />
@@ -1247,10 +1254,7 @@ function SettingsTab({
                     : "bg-ink-100 dark:bg-ink-800 text-ink-600 dark:text-ink-400"
                 }`}
               >
-                <Icon
-                  name={m === "auto" ? "auto" : m === "dark" ? "moon" : "sun"}
-                  size={12}
-                />
+                <Icon name={m === "auto" ? "auto" : m === "dark" ? "moon" : "sun"} size={12} />
                 {m === "auto" ? "自动" : m === "dark" ? "深色" : "浅色"}
               </button>
             ))}
@@ -1285,9 +1289,7 @@ function SettingsTab({
             {settings.ai.kind} · {settings.ai.model ?? "默认模型"}
           </div>
         ) : (
-          <div className="text-[11px] text-ink-500 dark:text-ink-400">
-            {t("toast.ai.noKey")}
-          </div>
+          <div className="text-[11px] text-ink-500 dark:text-ink-400">{t("toast.ai.noKey")}</div>
         )}
         <div className="flex items-center justify-between">
           <span className="text-[11px] text-ink-600 dark:text-ink-400">

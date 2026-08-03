@@ -1,3 +1,9 @@
-export { Toaster } from "./toast";
 export { toast } from "./singleton";
-export type { ToastType, ToastPosition, ToastOptions, ToasterOptions, PromiseMessages } from "./types";
+export { Toaster } from "./toast";
+export type {
+  PromiseMessages,
+  ToasterOptions,
+  ToastOptions,
+  ToastPosition,
+  ToastType,
+} from "./types";

@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { renderSkeletonSnapshot } from "./ssr";
 
 const snapshot = [
@@ -18,7 +18,7 @@ describe("renderSkeletonSnapshot", () => {
     expect(html).toContain("qs-shimmer-slide");
     expect(html).toContain(".qs-skel-block.is-shimmer::before");
     expect(html).toContain('role="status"');
-    expect(html).toContain("aria-label=\"加载中\"");
+    expect(html).toContain('aria-label="加载中"');
     expect(html).toContain("width:200px");
     expect(blockCount(html)).toBe(2);
   });

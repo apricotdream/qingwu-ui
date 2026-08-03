@@ -40,23 +40,40 @@ const RESERVED = new Set([
 export function resolveVar(name: string, ctx: TemplateContext): string | undefined {
   const { content, tags, aiSummary, aiTags, extra } = ctx;
   switch (name) {
-    case "title": return content.title || "Untitled";
-    case "url": return content.url;
-    case "finalUrl": return content.finalUrl;
-    case "author": return content.author ?? "";
-    case "siteName": return content.siteName ?? "";
-    case "published": return content.publishedAt ?? "";
-    case "captured": return content.capturedAt;
-    case "description": return content.description ?? "";
-    case "excerpt": return content.excerpt;
-    case "content": return content.contentHtml;
-    case "markdown": return content.markdown;
-    case "tags": return tags.join(", ");
-    case "aiSummary": return aiSummary ?? "";
-    case "aiTags": return (aiTags ?? []).join(", ");
-    case "wordCount": return String(content.wordCount);
-    case "readingMinutes": return String(content.readingMinutes);
-    case "lang": return content.lang ?? "";
+    case "title":
+      return content.title || "Untitled";
+    case "url":
+      return content.url;
+    case "finalUrl":
+      return content.finalUrl;
+    case "author":
+      return content.author ?? "";
+    case "siteName":
+      return content.siteName ?? "";
+    case "published":
+      return content.publishedAt ?? "";
+    case "captured":
+      return content.capturedAt;
+    case "description":
+      return content.description ?? "";
+    case "excerpt":
+      return content.excerpt;
+    case "content":
+      return content.contentHtml;
+    case "markdown":
+      return content.markdown;
+    case "tags":
+      return tags.join(", ");
+    case "aiSummary":
+      return aiSummary ?? "";
+    case "aiTags":
+      return (aiTags ?? []).join(", ");
+    case "wordCount":
+      return String(content.wordCount);
+    case "readingMinutes":
+      return String(content.readingMinutes);
+    case "lang":
+      return content.lang ?? "";
   }
   // 日期模式 {{YYYY}} {{MM}} {{DD}} {{HH}} {{mm}}
   if (/^[YMDHms]+$/.test(name)) {
@@ -74,12 +91,15 @@ export function resolveVar(name: string, ctx: TemplateContext): string | undefin
   return extra?.[name];
 }
 
-export function renderTemplate(tpl: Template, ctx: TemplateContext): {
+export function renderTemplate(
+  tpl: Template,
+  ctx: TemplateContext,
+): {
   rendered: string;
   unknownVars: string[];
 } {
   const unknown = new Set<string>();
-  let out = tpl.body.replace(
+  const out = tpl.body.replace(
     /\{\{\s*([a-zA-Z_][a-zA-Z0-9_|:/\-\\]*)\s*\}\}/g,
     (full, name: string) => {
       const v = resolveVar(name.trim(), ctx);
@@ -104,11 +124,7 @@ export function extractVars(tpl: Template): string[] {
   return [...set];
 }
 
-export function pickTemplate(
-  templates: Template[],
-  url: string,
-  defaultId: string,
-): Template {
+export function pickTemplate(templates: Template[], url: string, defaultId: string): Template {
   // 优先匹配 pathPattern
   for (const t of templates) {
     if (!t.pathPattern) continue;
@@ -121,7 +137,10 @@ export function pickTemplate(
 function matchGlobSafe(pattern: string, input: string): boolean {
   try {
     const re = new RegExp(
-      `^${pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
+      `^${pattern
+        .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+        .replace(/\*/g, ".*")
+        .replace(/\?/g, ".")}$`,
       "i",
     );
     return re.test(input);

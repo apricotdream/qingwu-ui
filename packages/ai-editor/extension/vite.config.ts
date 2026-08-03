@@ -1,7 +1,7 @@
-import { defineConfig, type Plugin } from "vite";
-import react from "@vitejs/plugin-react";
-import { resolve } from "node:path";
 import { existsSync, mkdirSync, renameSync, rmSync } from "node:fs";
+import { resolve } from "node:path";
+import react from "@vitejs/plugin-react";
+import { defineConfig, type Plugin } from "vite";
 
 const target = process.env.TARGET ?? "chrome";
 

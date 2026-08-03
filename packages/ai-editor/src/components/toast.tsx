@@ -19,11 +19,7 @@ export interface ToastOptions {
   duration?: number;
 }
 
-export type ToastListener = (
-  message: string,
-  type: ToastType,
-  options?: ToastOptions,
-) => void;
+export type ToastListener = (message: string, type: ToastType, options?: ToastOptions) => void;
 
 const listeners = new Set<ToastListener>();
 
@@ -40,11 +36,7 @@ export function setToastProvider(provider: ToastListener | null): void {
 }
 
 /** 触发全局 toast（任意上下文可调用） */
-export function toast(
-  message: string,
-  type: ToastType = "error",
-  options?: ToastOptions,
-): void {
+export function toast(message: string, type: ToastType = "error", options?: ToastOptions): void {
   if (listeners.size > 0) {
     for (const listener of listeners) listener(message, type, options);
     return;

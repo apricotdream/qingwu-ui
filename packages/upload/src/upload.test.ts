@@ -122,12 +122,12 @@ describe("ImageUpload 组件", () => {
   });
 
   test("trigger: button 模式进度内嵌按钮、成功后点击移除复位", async () => {
-    let progressCb: ((p: number) => void) | null = null;
+    const progressCb: { current: ((p: number) => void) | null } = { current: null };
     const uploader = new ImageUpload(root, {
       compress: false,
       trigger: "button",
       uploadFn: (_file, onProgress) => {
-        progressCb = onProgress;
+        progressCb.current = onProgress;
         return new Promise<void>(() => {}); // 测试外驱动进度，永不自行结束
       },
     });
@@ -140,7 +140,7 @@ describe("ImageUpload 组件", () => {
     expect(btn.textContent).toContain("上传中");
     expect(btn.disabled).toBe(true);
 
-    progressCb?.(42);
+    progressCb.current?.(42);
     expect(btn.textContent).toContain("42%");
     const bar = btn.querySelector<HTMLElement>(".qw-upload-btn-progress")!;
     expect(bar.style.width).toBe("42%");
@@ -185,7 +185,9 @@ describe("ImageUpload 组件", () => {
     expect(onChange).toHaveBeenCalledTimes(1); // 构造后同步通知宿主
 
     // 单文件模式：回显项在容器大图中（列表隐藏），右上角有移除按钮
-    const thumb = root.querySelector<HTMLImageElement>(".qw-upload-dropzone img.qw-upload-dropzone-preview");
+    const thumb = root.querySelector<HTMLImageElement>(
+      ".qw-upload-dropzone img.qw-upload-dropzone-preview",
+    );
     expect(thumb?.src).toContain("/uploads/cover.webp");
     expect(root.querySelector<HTMLElement>(".qw-upload-list")?.hidden).toBe(true);
     expect(root.querySelector(".qw-upload-dropzone-remove")).toBeTruthy();
@@ -222,7 +224,9 @@ describe("ImageUpload 组件", () => {
       await vi.advanceTimersByTimeAsync(0);
 
       // 大图在容器内，列表隐藏（视觉保底窗口内为上传中态）
-      const img = root.querySelector<HTMLImageElement>(".qw-upload-dropzone img.qw-upload-dropzone-preview");
+      const img = root.querySelector<HTMLImageElement>(
+        ".qw-upload-dropzone img.qw-upload-dropzone-preview",
+      );
       expect(img).toBeTruthy();
       expect(root.querySelector<HTMLElement>(".qw-upload-list")?.hidden).toBe(true);
 
@@ -352,8 +356,16 @@ describe("ImageUpload 组件", () => {
     try {
       // 一张图 = 原图 + webp + avif 三项（mock 压缩产物）
       vi.mocked(compressImage).mockResolvedValue([
-        { format: "webp", mime: "image/webp", blob: new File([new Uint8Array(1)], "a.webp", { type: "image/webp" }) },
-        { format: "avif", mime: "image/avif", blob: new File([new Uint8Array(1)], "a.avif", { type: "image/avif" }) },
+        {
+          format: "webp",
+          mime: "image/webp",
+          blob: new File([new Uint8Array(1)], "a.webp", { type: "image/webp" }),
+        },
+        {
+          format: "avif",
+          mime: "image/avif",
+          blob: new File([new Uint8Array(1)], "a.avif", { type: "image/avif" }),
+        },
       ]);
       const onChange = vi.fn();
       const uploader = new ImageUpload(root, {
@@ -370,7 +382,9 @@ describe("ImageUpload 组件", () => {
       // 点一次 ✕：三项全清，容器恢复默认提示
       root.querySelector<HTMLElement>(".qw-upload-dropzone-remove")!.click();
       expect(uploader.getItems()).toHaveLength(0);
-      expect(root.querySelector<HTMLElement>(".qw-upload-dropzone")!.textContent).toContain("拖拽图片到此处");
+      expect(root.querySelector<HTMLElement>(".qw-upload-dropzone")!.textContent).toContain(
+        "拖拽图片到此处",
+      );
       expect(onChange).toHaveBeenLastCalledWith([]);
       uploader.destroy();
     } finally {
@@ -382,8 +396,16 @@ describe("ImageUpload 组件", () => {
     vi.useFakeTimers();
     try {
       vi.mocked(compressImage).mockResolvedValue([
-        { format: "webp", mime: "image/webp", blob: new File([new Uint8Array(1)], "a.webp", { type: "image/webp" }) },
-        { format: "avif", mime: "image/avif", blob: new File([new Uint8Array(1)], "a.avif", { type: "image/avif" }) },
+        {
+          format: "webp",
+          mime: "image/webp",
+          blob: new File([new Uint8Array(1)], "a.webp", { type: "image/webp" }),
+        },
+        {
+          format: "avif",
+          mime: "image/avif",
+          blob: new File([new Uint8Array(1)], "a.avif", { type: "image/avif" }),
+        },
       ]);
       const onChange = vi.fn();
       const uploader = new ImageUpload(root, {
@@ -421,7 +443,9 @@ describe("ImageUpload 组件", () => {
     input.dispatchEvent(new Event("change"));
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(root.querySelector<HTMLElement>(".qw-upload-dropzone")?.textContent).toContain("拖拽图片到此处");
+    expect(root.querySelector<HTMLElement>(".qw-upload-dropzone")?.textContent).toContain(
+      "拖拽图片到此处",
+    );
     expect(root.querySelector(".qw-upload-list")?.querySelector(".qw-upload-item")).toBeTruthy();
     uploader.destroy();
   });
@@ -479,10 +503,10 @@ describe("ImageUpload 组件", () => {
   test("persist: session 未完成项持久化，新实例恢复并自动重传，成功项出库", async () => {
     vi.useFakeTimers();
     try {
-      let resolveUpload: (() => void) | null = null;
+      const resolveUpload: { current: (() => void) | null } = { current: null };
       const uploadFn = () =>
         new Promise<void>((resolve) => {
-          resolveUpload = resolve;
+          resolveUpload.current = resolve;
         });
 
       // 实例 1：添加文件后挂起（uploading 未完成）
@@ -502,7 +526,7 @@ describe("ImageUpload 组件", () => {
       expect(u2.getItems()[0]?.status).toBe("uploading");
 
       // 完成上传 → 成功项出库（再开实例不再恢复）
-      resolveUpload?.();
+      resolveUpload.current?.();
       await vi.advanceTimersByTimeAsync(0);
       expect(u2.getItems()[0]?.status).toBe("success");
       u2.destroy();

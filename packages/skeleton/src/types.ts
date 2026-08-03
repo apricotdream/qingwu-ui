@@ -86,7 +86,15 @@ export interface RenderSkeletonSnapshotOptions {
 }
 
 /** 叶子元素类型 */
-export type LeafTag = "img" | "svg" | "video" | "canvas" | "iframe" | "input" | "textarea" | "button";
+export type LeafTag =
+  | "img"
+  | "svg"
+  | "video"
+  | "canvas"
+  | "iframe"
+  | "input"
+  | "textarea"
+  | "button";
 
 /** 不占尺寸的元素（空格元素） */
 export type VoidTag = "br" | "wbr" | "hr";

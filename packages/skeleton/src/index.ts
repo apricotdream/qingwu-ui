@@ -19,16 +19,14 @@
 
 // ─── 主类 ───
 export { AutoSkeleton } from "./auto-skeleton";
-
-// ─── 静态骨架渲染（快照渲染器） ───
-export { renderSkeletonSnapshot } from "./ssr";
-
 // ─── 核心引擎（高级用法） ───
 export { extractElementInfo, isLeafElement, structureSignature } from "./core";
+// ─── 静态骨架渲染（快照渲染器） ───
+export { renderSkeletonSnapshot } from "./ssr";
 
 // ─── 类型 ───
 export type {
   AutoSkeletonOptions,
-  SkeletonElement,
   RenderSkeletonSnapshotOptions,
+  SkeletonElement,
 } from "./types";

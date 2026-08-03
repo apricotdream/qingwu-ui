@@ -6,7 +6,9 @@
   :root {
     color-scheme: light;
   }
-  html, body, #root {
+  html,
+  body,
+  #root {
     height: 100%;
   }
   body {
@@ -18,7 +20,10 @@
     @apply bg-ink-950 text-ink-100;
   }
   /* 滚动条 */
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
   ::-webkit-scrollbar-thumb {
     @apply bg-ink-200 dark:bg-ink-700 rounded-full;
     border: 2px solid transparent;
@@ -45,8 +50,11 @@
     @apply animate-shimmer;
   }
   .grid-bg {
-    background-image:
-      radial-gradient(circle at 1px 1px, rgba(99, 113, 138, 0.12) 1px, transparent 0);
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      rgba(99, 113, 138, 0.12) 1px,
+      transparent 0
+    );
     background-size: 18px 18px;
   }
 }

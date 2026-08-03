@@ -1,17 +1,26 @@
 /** 扩展选项页：配置推送方式、HTTP 端点、AI、模板与语言等。 */
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { send } from "../shared/messaging";
-import { extractVars, renderTemplate } from "../shared/templates/engine";
-import { setLocale, t } from "../shared/i18n";
 import {
   clearHiddenHosts,
+  type FabConfig,
   getFabConfig,
   resetFabPosition,
   setFabEnabled,
   showFabOnHost,
-  type FabConfig,
 } from "../shared/fab";
+import { setLocale, t } from "../shared/i18n";
+import { send } from "../shared/messaging";
+import { extractVars, renderTemplate } from "../shared/templates/engine";
+import type {
+  AccentColor,
+  AIProviderConfig,
+  ClipperSettings,
+  EditorTarget,
+  Locale,
+  Template,
+  ThemeMode,
+} from "../shared/types";
 import {
   Badge,
   Button,
@@ -26,15 +35,6 @@ import {
   ToastProvider,
   useToast,
 } from "../shared/ui";
-import type {
-  AIProviderConfig,
-  AccentColor,
-  ClipperSettings,
-  EditorTarget,
-  Locale,
-  Template,
-  ThemeMode,
-} from "../shared/types";
 
 type Section = "general" | "appearance" | "ai" | "templates" | "editor" | "siterules";
 
@@ -52,9 +52,7 @@ export function App() {
 
   if (!settings) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-ink-500">
-        加载中…
-      </div>
+      <div className="min-h-screen flex items-center justify-center text-ink-500">加载中…</div>
     );
   }
 
@@ -85,10 +83,7 @@ export function App() {
                   <AISection settings={settings} onSave={(s) => void save(s, setSettings)} />
                 )}
                 {section === "templates" && (
-                  <TemplatesSection
-                    settings={settings}
-                    onSave={(s) => void save(s, setSettings)}
-                  />
+                  <TemplatesSection settings={settings} onSave={(s) => void save(s, setSettings)} />
                 )}
                 {section === "editor" && (
                   <EditorSection settings={settings} onSave={(s) => void save(s, setSettings)} />
@@ -125,13 +120,7 @@ function Header() {
   );
 }
 
-function Sidebar({
-  section,
-  onSection,
-}: {
-  section: Section;
-  onSection: (s: Section) => void;
-}) {
+function Sidebar({ section, onSection }: { section: Section; onSection: (s: Section) => void }) {
   const items: Array<{ id: Section; icon: import("../shared/ui").IconName; label: string }> = [
     { id: "general", icon: "settings", label: t("settings.section.general") },
     { id: "appearance", icon: "sun", label: t("settings.section.appearance") },
@@ -276,10 +265,7 @@ function AppearanceSection({
                   : "border-transparent bg-ink-100 dark:bg-ink-800"
               }`}
             >
-              <span
-                className="h-5 w-5 rounded-full"
-                style={{ background: a.color }}
-              />
+              <span className="h-5 w-5 rounded-full" style={{ background: a.color }} />
               <span className="text-[11px]">{a.label}</span>
             </button>
           ))}
@@ -417,7 +403,11 @@ function AISection({
         cfg,
       );
       if (r.ok && r.data?.data) {
-        toast.push({ level: "success", message: "连接成功", detail: `返回：${r.data.data.slice(0, 80)}` });
+        toast.push({
+          level: "success",
+          message: "连接成功",
+          detail: `返回：${r.data.data.slice(0, 80)}`,
+        });
       } else {
         toast.push({
           level: "error",
@@ -464,9 +454,7 @@ function AISection({
             <Input
               value={cfg.baseURL ?? ""}
               placeholder="https://api.deepseek.com/v1 或 https://api.openai.com/v1"
-              onChange={(e) =>
-                onSave({ ...settings, ai: { ...cfg, baseURL: e.target.value } })
-              }
+              onChange={(e) => onSave({ ...settings, ai: { ...cfg, baseURL: e.target.value } })}
             />
           </Field>
           <Field label={t("settings.ai.apiKey")}>
@@ -474,9 +462,7 @@ function AISection({
               type="password"
               value={cfg.apiKey ?? ""}
               placeholder="sk-..."
-              onChange={(e) =>
-                onSave({ ...settings, ai: { ...cfg, apiKey: e.target.value } })
-              }
+              onChange={(e) => onSave({ ...settings, ai: { ...cfg, apiKey: e.target.value } })}
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
@@ -484,9 +470,7 @@ function AISection({
               <Input
                 value={cfg.model ?? ""}
                 placeholder="deepseek-chat / qwen-plus / gpt-4o-mini"
-                onChange={(e) =>
-                  onSave({ ...settings, ai: { ...cfg, model: e.target.value } })
-                }
+                onChange={(e) => onSave({ ...settings, ai: { ...cfg, model: e.target.value } })}
               />
             </Field>
             <Field label={t("settings.ai.temperature")}>
@@ -508,7 +492,9 @@ function AISection({
           <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-[11px] p-2 rounded-md flex gap-1.5">
             <Icon name="info" size={12} className="mt-0.5 shrink-0" />
             <span>
-              DeepSeek 用户请填 baseURL <code>https://api.deepseek.com</code>，模型填 <code>deepseek-chat</code>。插件会自动补全 <code>/v1/chat/completions</code>，不会出现 404。
+              DeepSeek 用户请填 baseURL <code>https://api.deepseek.com</code>，模型填{" "}
+              <code>deepseek-chat</code>。插件会自动补全 <code>/v1/chat/completions</code>，不会出现
+              404。
             </span>
           </div>
         </>
@@ -518,7 +504,8 @@ function AISection({
         <div className="bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-300 text-[11px] p-2 rounded-md flex gap-1.5">
           <Icon name="info" size={12} className="mt-0.5 shrink-0" />
           <span>
-            在 chrome://flags 启用 <code>Prompt API for Gemini Nano</code> 与 <code>Optimization Guide On Device Model</code>，重启浏览器后生效。
+            在 chrome://flags 启用 <code>Prompt API for Gemini Nano</code> 与{" "}
+            <code>Optimization Guide On Device Model</code>，重启浏览器后生效。
           </span>
         </div>
       )}
@@ -557,9 +544,7 @@ function TemplatesSection({
     if (!active) return;
     onSave({
       ...settings,
-      templates: settings.templates.map((t) =>
-        t.id === active.id ? { ...t, ...patch } : t,
-      ),
+      templates: settings.templates.map((t) => (t.id === active.id ? { ...t, ...patch } : t)),
     });
   }
 
@@ -610,12 +595,7 @@ function TemplatesSection({
           <Icon name="plus" size={13} />
           {t("settings.template.new")}
         </Button>
-        <Button
-          variant="ghost"
-          size="md"
-          onClick={setDefault}
-          disabled={active?.isDefault}
-        >
+        <Button variant="ghost" size="md" onClick={setDefault} disabled={active?.isDefault}>
           设为默认
         </Button>
         <Button
@@ -631,10 +611,7 @@ function TemplatesSection({
       {active && (
         <>
           <Field label="模板名称">
-            <Input
-              value={active.name}
-              onChange={(e) => updateActive({ name: e.target.value })}
-            />
+            <Input value={active.name} onChange={(e) => updateActive({ name: e.target.value })} />
           </Field>
           <Field label={t("settings.template.pathPattern")}>
             <Input
@@ -643,10 +620,7 @@ function TemplatesSection({
               onChange={(e) => updateActive({ pathPattern: e.target.value })}
             />
           </Field>
-          <Field
-            label={t("settings.template.body")}
-            hint={t("settings.template.vars")}
-          >
+          <Field label={t("settings.template.body")} hint={t("settings.template.vars")}>
             <Textarea
               value={active.body}
               onChange={(e) => updateActive({ body: e.target.value })}
@@ -769,7 +743,8 @@ function EditorSection({
           <div className="bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-300 text-[11px] p-2 rounded-md flex gap-1.5">
             <Icon name="info" size={12} className="mt-0.5 shrink-0" />
             <span>
-              HTTP 推送失败时（如纯浏览器 dev 模式无本地服务），插件会打开此页面并通过 postMessage 推送剪藏。默认 http://localhost:5173（vite dev）。
+              HTTP 推送失败时（如纯浏览器 dev 模式无本地服务），插件会打开此页面并通过 postMessage
+              推送剪藏。默认 http://localhost:5173（vite dev）。
             </span>
           </div>
           <Button variant="secondary" onClick={() => void testConnection()}>

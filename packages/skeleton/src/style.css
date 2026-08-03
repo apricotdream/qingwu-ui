@@ -9,8 +9,12 @@
 /* ── 流光关键帧（transform 动画，合成器线程，零 repaint） ── */
 
 @keyframes qs-shimmer-slide {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(100%); }
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
 }
 
 /* ── 测量态：真实内容透明化（原地测量，不移动子节点） ── */
@@ -64,8 +68,8 @@
     var(--qs-sk-shimmer, #f0f0f0) 50%,
     transparent 100%
   );
-  animation: qs-shimmer-slide var(--qs-sk-duration, 1500ms)
-    var(--qs-sk-timing, ease-in-out) infinite;
+  animation: qs-shimmer-slide var(--qs-sk-duration, 1500ms) var(--qs-sk-timing, ease-in-out)
+    infinite;
   /* 错峰：每块负延迟（--qs-sk-delay 写在块上，继承到 ::before） */
   animation-delay: var(--qs-sk-delay, 0ms);
   will-change: transform;
@@ -100,8 +104,8 @@
     var(--qs-sk-shimmer, #f0f0f0) 50%,
     transparent 100%
   );
-  animation: qs-shimmer-slide var(--qs-sk-duration, 1500ms)
-    var(--qs-sk-timing, ease-in-out) infinite;
+  animation: qs-shimmer-slide var(--qs-sk-duration, 1500ms) var(--qs-sk-timing, ease-in-out)
+    infinite;
   /* 错峰：每块负延迟（--qs-sk-delay 写在块上，继承到 ::before） */
   animation-delay: var(--qs-sk-delay, 0ms);
   will-change: transform;

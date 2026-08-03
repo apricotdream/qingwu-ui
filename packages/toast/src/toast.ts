@@ -7,7 +7,13 @@
    ============================================================ */
 
 import { layout } from "@qingwu/text-layout";
-import type { ToastType, ToastPosition, ToastOptions, ToasterOptions, PromiseMessages } from "./types";
+import type {
+  PromiseMessages,
+  ToasterOptions,
+  ToastOptions,
+  ToastPosition,
+  ToastType,
+} from "./types";
 
 /* ---------- 运行时常量 ---------- */
 const PREFERS_REDUCED =
@@ -84,7 +90,7 @@ interface ToastEntry {
 
 const DEFAULT_OPTS: Required<ToasterOptions> = {
   type: "info",
-  position: "top-center", /* 默认顶部居中（EP/AntD 惯例） */
+  position: "top-center" /* 默认顶部居中（EP/AntD 惯例） */,
   duration: 4000,
   maxVisible: 5,
   maxLines: 2,
@@ -181,11 +187,7 @@ export class Toaster {
   /* ---- Promise 链 ---- */
 
   /** 跟随 Promise 三态：loading → success | error */
-  promise<T>(
-    promise: Promise<T>,
-    messages: PromiseMessages<T>,
-    options?: ToastOptions,
-  ): string {
+  promise<T>(promise: Promise<T>, messages: PromiseMessages<T>, options?: ToastOptions): string {
     const id = this.show(messages.loading, {
       ...options,
       type: "info",
@@ -197,9 +199,7 @@ export class Toaster {
       (data) => {
         this.dismiss(id);
         const msg =
-          typeof messages.success === "function"
-            ? messages.success(data)
-            : messages.success;
+          typeof messages.success === "function" ? messages.success(data) : messages.success;
         // 确保 loading toast 已完全移除后再显示 success
         requestAnimationFrame(() => {
           this.success(msg, options);
@@ -207,10 +207,7 @@ export class Toaster {
       },
       (err) => {
         this.dismiss(id);
-        const msg =
-          typeof messages.error === "function"
-            ? messages.error(err)
-            : messages.error;
+        const msg = typeof messages.error === "function" ? messages.error(err) : messages.error;
         requestAnimationFrame(() => {
           this.error(msg, options);
         });

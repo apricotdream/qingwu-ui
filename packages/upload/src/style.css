@@ -360,7 +360,9 @@
   color: #fff;
   background: rgba(10, 14, 14, 0);
   opacity: 0;
-  transition: opacity 0.2s, background-color 0.2s;
+  transition:
+    opacity 0.2s,
+    background-color 0.2s;
 }
 .qw-upload-dropzone.is-preview:hover .qw-upload-dropzone-mask {
   opacity: 1;
@@ -441,8 +443,12 @@
   border-radius: 8px;
 }
 @keyframes qwFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ---- 单文件大图适配：contain 等比例缩小完整显示（自适应留白） ----

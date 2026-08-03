@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 
 const SAMPLE_EVENTS = [
   { type: "ext", tag: "扩展", msg: "lunarPlugin 注册成功", time: "17:49:30.000" },
@@ -10,11 +10,21 @@ const SAMPLE_EVENTS = [
   { type: "perf", tag: "性能", msg: "首屏渲染耗时 2.3ms（含 dayMeta 计算）", time: "17:49:30.008" },
   { type: "sel", tag: "选择", msg: "用户选择 2026-10-01（国庆节·休）", time: "17:49:32.150" },
   { type: "sel", tag: "选择", msg: "onChange 回调触发: 2026-10-01", time: "17:49:32.152" },
-  { type: "perf", tag: "性能", msg: "本次 Patch: 2 个日格（选中态 + 旧选中态清除）", time: "17:49:32.154" },
+  {
+    type: "perf",
+    tag: "性能",
+    msg: "本次 Patch: 2 个日格（选中态 + 旧选中态清除）",
+    time: "17:49:32.154",
+  },
   { type: "ext", tag: "扩展", msg: "holidayPlugin 读取 2026 年休假 JSON", time: "17:49:32.200" },
   { type: "rule", tag: "规则", msg: "规则引擎编译 3 条禁用规则（周末禁用）", time: "17:49:32.201" },
   { type: "sel", tag: "选择", msg: "用户翻页到 2026-11 月", time: "17:49:35.001" },
-  { type: "perf", tag: "性能", msg: "本月 Patch: 42 个日格（月切换）耗时 1.8ms", time: "17:49:35.004" },
+  {
+    type: "perf",
+    tag: "性能",
+    msg: "本月 Patch: 42 个日格（月切换）耗时 1.8ms",
+    time: "17:49:35.004",
+  },
   { type: "ext", tag: "扩展", msg: "panel 关闭（onOpenChange: false）", time: "17:49:36.500" },
   { type: "perf", tag: "性能", msg: "累计 total Patch: 46 次", time: "17:49:36.501" },
 ];
@@ -54,7 +64,10 @@ export default function LogPage() {
     <>
       <section className="page-hero">
         <h1>事件日志</h1>
-        <p>日历组件运行时的事件流：插件注册 → 选择变更 → Patch 统计 → 规则编译。所有事件均可在控制台和自定义回调中捕获。</p>
+        <p>
+          日历组件运行时的事件流：插件注册 → 选择变更 → Patch 统计 →
+          规则编译。所有事件均可在控制台和自定义回调中捕获。
+        </p>
       </section>
 
       <div className="demo-grid">
@@ -80,7 +93,14 @@ export default function LogPage() {
 
             <ul className="log" style={{ maxHeight: 400, marginTop: 12 }}>
               {log.length === 0 && (
-                <li style={{ color: "var(--ink-3)", fontFamily: "var(--font-ui)", fontStyle: "italic", padding: "8px 0" }}>
+                <li
+                  style={{
+                    color: "var(--ink-3)",
+                    fontFamily: "var(--font-ui)",
+                    fontStyle: "italic",
+                    padding: "8px 0",
+                  }}
+                >
                   点击「播放事件流」开始模拟...
                 </li>
               )}
@@ -110,7 +130,9 @@ export default function LogPage() {
                 { tag: "规则", cls: "rule", desc: "规则编译、规则命中、禁用判断" },
               ].map((item) => (
                 <div key={item.tag} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span className={`tag ${item.cls}`} style={{ flex: "none" }}>{item.tag}</span>
+                  <span className={`tag ${item.cls}`} style={{ flex: "none" }}>
+                    {item.tag}
+                  </span>
                   <span style={{ fontSize: 12.5, color: "var(--ink-2)" }}>{item.desc}</span>
                 </div>
               ))}

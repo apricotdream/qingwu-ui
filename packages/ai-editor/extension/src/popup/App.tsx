@@ -1,8 +1,11 @@
 /** 扩展弹窗：快捷入口，触发整页 / 选区剪藏并打开侧边栏。 */
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { setLocale, t } from "../shared/i18n";
 import { send } from "../shared/messaging";
+import type { ClipperSettings, ExtractedContent } from "../shared/types";
 import {
+  Badge,
   Button,
   Icon,
   QingWuLogo,
@@ -10,10 +13,7 @@ import {
   ToastProvider,
   useTheme,
   useToast,
-  Badge,
 } from "../shared/ui";
-import { t, setLocale } from "../shared/i18n";
-import type { ClipperSettings, ExtractedContent } from "../shared/types";
 
 // popup 直接调 sidePanel.open（popup 是用户手势上下文，
 // 通过消息让 background 调会丢失手势而失败）
@@ -42,10 +42,7 @@ export function App() {
   );
 }
 
-async function persist(
-  next: ClipperSettings,
-  setter: (s: ClipperSettings) => void,
-) {
+async function persist(next: ClipperSettings, setter: (s: ClipperSettings) => void) {
   setter(next);
   await send("settings:set", next);
 }
@@ -173,9 +170,7 @@ function Inner({
   );
 }
 
-async function loadSettingsAndLocale(
-  setSettings: (s: ClipperSettings) => void,
-) {
+async function loadSettingsAndLocale(setSettings: (s: ClipperSettings) => void) {
   const s = await send<ClipperSettings>("settings:get");
   setSettings(s);
   setLocale(s.locale);
@@ -245,12 +240,8 @@ function AiSetupBanner() {
         <Icon name="ai" size={16} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-xs font-semibold text-ink-800 dark:text-ink-100">
-          启用 AI 智能剪藏
-        </div>
-        <div className="text-[11px] text-ink-600 dark:text-ink-400">
-          一键生成摘要 / 标签 / 翻译
-        </div>
+        <div className="text-xs font-semibold text-ink-800 dark:text-ink-100">启用 AI 智能剪藏</div>
+        <div className="text-[11px] text-ink-600 dark:text-ink-400">一键生成摘要 / 标签 / 翻译</div>
       </div>
       <Icon name="chevron-right" size={14} className="text-ink-400" />
     </motion.a>
@@ -347,9 +338,25 @@ function ActionButton({
       </div>
       {loading && (
         <div className="absolute inset-0 rounded-xl bg-white/60 dark:bg-ink-950/60 flex items-center justify-center backdrop-blur-sm">
-          <svg className="animate-spin h-5 w-5 text-qingwu-600 dark:text-qingwu-400" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25" />
-            <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+          <svg
+            className="animate-spin h-5 w-5 text-qingwu-600 dark:text-qingwu-400"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeOpacity="0.25"
+            />
+            <path
+              d="M22 12a10 10 0 0 1-10 10"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
           </svg>
         </div>
       )}
