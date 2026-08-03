@@ -1,7 +1,9 @@
 import { expect, type Page, test } from "@playwright/test";
 
 /** 与包内 isLeafElement 一致的叶子判定，用于收集真实内容几何 */
-async function collectLeafGeoms(page: Page): Promise<Array<{ top: number; left: number; width: number; height: number }>> {
+async function collectLeafGeoms(
+  page: Page,
+): Promise<Array<{ top: number; left: number; width: number; height: number }>> {
   return page.evaluate(() => {
     const stage = document.querySelector("#ssr-demo-stage");
     const sRect = stage!.getBoundingClientRect();
@@ -13,9 +15,7 @@ async function collectLeafGeoms(page: Page): Promise<Array<{ top: number; left: 
         const r = el.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) return false;
         if (alwaysLeaf.includes(el.tagName)) return true;
-        const hasRealChildren = Array.from(el.children).some(
-          (c) => !voidTags.includes(c.tagName),
-        );
+        const hasRealChildren = Array.from(el.children).some((c) => !voidTags.includes(c.tagName));
         return !hasRealChildren;
       })
       .map((el) => {
@@ -32,7 +32,9 @@ async function collectLeafGeoms(page: Page): Promise<Array<{ top: number; left: 
 }
 
 /** 收集静态骨架块几何（相对 stage，按 top 排序） */
-async function collectSkeletonGeoms(page: Page): Promise<Array<{ top: number; left: number; width: number; height: number }>> {
+async function collectSkeletonGeoms(
+  page: Page,
+): Promise<Array<{ top: number; left: number; width: number; height: number }>> {
   return page.evaluate(() => {
     const stage = document.querySelector("#ssr-demo-stage");
     const sRect = stage!.getBoundingClientRect();

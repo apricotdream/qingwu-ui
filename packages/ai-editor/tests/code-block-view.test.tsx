@@ -6,7 +6,10 @@ import { QingWuAIEditor } from "../src/editor";
 const CODE_BLOCK_HTML = '<pre><code class="language-ts">const value = 1</code></pre>';
 
 // 上传限制为必填 props，测试统一传 100MB / 500MB
-const UPLOAD_LIMITS = { maxAttachmentSize: 100 * 1024 * 1024, maxTotalAttachmentSize: 500 * 1024 * 1024 };
+const UPLOAD_LIMITS = {
+  maxAttachmentSize: 100 * 1024 * 1024,
+  maxTotalAttachmentSize: 500 * 1024 * 1024,
+};
 
 function getCodeBlockEnd(editor: Editor) {
   let codeBlockEnd = 0;

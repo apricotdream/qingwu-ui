@@ -5,7 +5,7 @@
    ============================================================ */
 
 import { Toaster } from "./toast";
-import type { ToastOptions, ToasterOptions, PromiseMessages } from "./types";
+import type { PromiseMessages, ToasterOptions, ToastOptions } from "./types";
 
 let _inst: Toaster | null = null;
 

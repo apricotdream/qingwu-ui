@@ -8,12 +8,7 @@
  * - 右键弹出菜单，可隐藏当前网站的悬浮球
  * - 剪藏 toast 跟随悬浮球弹出
  */
-import {
-  FAB_STORAGE_KEYS,
-  getFabConfig,
-  hideFabOnHost,
-  setFabPosition,
-} from "../shared/fab";
+import { FAB_STORAGE_KEYS, getFabConfig, hideFabOnHost, setFabPosition } from "../shared/fab";
 import { setLocale, t } from "../shared/i18n";
 
 // 用 128 大图：42px 显示 + 高分屏 2x 都无需放大位图，避免模糊
@@ -59,8 +54,7 @@ const DRAG_THRESHOLD = 5;
   let dragging = false;
   /** 本次指针序列是否构成拖拽（构成则抑制随后的 click） */
   let dragged = false;
-  let dragStart: { x: number; y: number; left: number; top: number } | null =
-    null;
+  let dragStart: { x: number; y: number; left: number; top: number } | null = null;
   let toastEl: HTMLDivElement | null = null;
   let toastTimer: number | null = null;
   let menuEl: HTMLDivElement | null = null;
@@ -134,10 +128,7 @@ const DRAG_THRESHOLD = 5;
     if (!toastEl || !fab) return;
     const r = fab.getBoundingClientRect();
     const tw = Math.min(toastEl.offsetWidth || 320, window.innerWidth - 16);
-    const left = Math.max(
-      8,
-      Math.min(r.left + r.width / 2 - tw / 2, window.innerWidth - tw - 8),
-    );
+    const left = Math.max(8, Math.min(r.left + r.width / 2 - tw / 2, window.innerWidth - tw - 8));
     const above = r.top >= 96;
     toastEl.dataset.side = above ? "above" : "below";
     toastEl.style.left = `${Math.round(left)}px`;
@@ -159,8 +150,12 @@ const DRAG_THRESHOLD = 5;
   function ensureFab(position: { x: number; y: number } | null) {
     if (fab) return;
     // 防御：清理页面上残留的旧实例（多入口重复注入等）
-    document.querySelectorAll(".qingwu-clipper-fab").forEach((el) => el.remove());
-    document.querySelectorAll(".qingwu-clipper-toast").forEach((el) => el.remove());
+    document.querySelectorAll(".qingwu-clipper-fab").forEach((el) => {
+      el.remove();
+    });
+    document.querySelectorAll(".qingwu-clipper-toast").forEach((el) => {
+      el.remove();
+    });
 
     fab = document.createElement("button");
     fab.type = "button";
@@ -169,9 +164,7 @@ const DRAG_THRESHOLD = 5;
     fab.className = "qingwu-clipper-fab";
     fab.innerHTML = `<img src="${FAB_ICON}" alt="青梧" />`;
 
-    fabPos = clampToViewport(
-      position ?? defaultFabPosition(),
-    );
+    fabPos = clampToViewport(position ?? defaultFabPosition());
     applyFabPosition(fabPos);
 
     fab.addEventListener("pointerdown", (e) => {
@@ -279,11 +272,7 @@ const DRAG_THRESHOLD = 5;
         });
       } else if (resp?.error) {
         const retryHint = resp.error.retryable ? `，${t("fab.retryHint")}` : "";
-        showToast(
-          `${t("fab.clipFailed")}：${resp.error.message}${retryHint}`,
-          "error",
-          3000,
-        );
+        showToast(`${t("fab.clipFailed")}：${resp.error.message}${retryHint}`, "error", 3000);
       } else {
         showToast(t("fab.noResponse"), "error", 3000);
       }
@@ -298,9 +287,7 @@ const DRAG_THRESHOLD = 5;
     const menu = ensureFabMenu();
     const menuW = 190;
     const menuH = 38;
-    menu.style.left = `${Math.round(
-      Math.min(x, window.innerWidth - menuW - 8),
-    )}px`;
+    menu.style.left = `${Math.round(Math.min(x, window.innerWidth - menuW - 8))}px`;
     menu.style.top = `${Math.round(Math.min(y, window.innerHeight - menuH - 8))}px`;
     menu.classList.add("qingwu-clipper-menu--visible");
   }

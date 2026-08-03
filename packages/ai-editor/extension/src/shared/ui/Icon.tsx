@@ -2,9 +2,13 @@
  * 青梧图标 - 基于青梧品牌真实 PNG
  */
 
-import type { SVGProps, ImgHTMLAttributes } from "react";
+import type { ImgHTMLAttributes, SVGProps } from "react";
 
-export function QingWuLogo({ size = 24, style, ...rest }: {
+export function QingWuLogo({
+  size = 24,
+  style,
+  ...rest
+}: {
   size?: number;
   style?: React.CSSProperties;
 } & Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "alt" | "width" | "height" | "style">) {
@@ -196,7 +200,10 @@ const ICONS: Record<IconName, React.ReactNode> = {
   ),
   "star-filled": (
     <>
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" />
+      <polygon
+        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+        fill="currentColor"
+      />
     </>
   ),
   tag: (

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { Button } from "./Button";
 
 export interface ModalProps {
@@ -61,9 +61,7 @@ export function Modal({
                   {title}
                 </div>
                 {description && (
-                  <div className="text-xs mt-1 text-ink-600 dark:text-ink-400">
-                    {description}
-                  </div>
+                  <div className="text-xs mt-1 text-ink-600 dark:text-ink-400">{description}</div>
                 )}
               </div>
             )}

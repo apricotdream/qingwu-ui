@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
 import { Calendar } from "@qingwu/calendar";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "@qingwu/button/style.css";
 import DemoCard from "@/components/DemoCard";
 
@@ -31,7 +31,9 @@ function DatePickerField({
       onChange: (dateStr: string) => {
         syncing.current = true;
         onChange(dateStr.slice(0, 10));
-        setTimeout(() => { syncing.current = false; }, 0);
+        setTimeout(() => {
+          syncing.current = false;
+        }, 0);
       },
     });
     return () => cal.destroy();
@@ -85,10 +87,22 @@ const FIELDS: FieldDef[] = [
     key: "holidays",
     label: "休假日历（JSON）",
     type: "textarea",
-    defaultValue: JSON.stringify({
-      holidays: ["2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06", "2026-10-07"],
-      workdays: ["2026-10-10", "2026-10-11"],
-    }, null, 2),
+    defaultValue: JSON.stringify(
+      {
+        holidays: [
+          "2026-10-01",
+          "2026-10-02",
+          "2026-10-03",
+          "2026-10-04",
+          "2026-10-05",
+          "2026-10-06",
+          "2026-10-07",
+        ],
+        workdays: ["2026-10-10", "2026-10-11"],
+      },
+      null,
+      2,
+    ),
   },
 ];
 
@@ -110,14 +124,40 @@ interface VisCell {
 }
 
 const GRID_CELLS: VisCell[] = [
-  /* 7/27 - 8/2 */ { d: 27, sub: "廿三", m: "prev" }, { d: 28, sub: "廿四", m: "prev" }, { d: 29, sub: "廿五", m: "prev" }, { d: 30, sub: "廿六", m: "prev" }, { d: 31, sub: "廿七", m: "prev" }, { d: 1, sub: "建军", m: "curr", holiday: true, badge: "休", badgeClass: "rest" }, { d: 2, sub: "十九", m: "curr" },
-  ...[7, 8, 9, 10, 11, 12, 13].map((d) => ({ d, sub: ["二十", "廿一", "廿二", "廿三", "廿四", "廿五", "廿六"][d - 7], m: "curr" })),
+  /* 7/27 - 8/2 */ { d: 27, sub: "廿三", m: "prev" },
+  { d: 28, sub: "廿四", m: "prev" },
+  { d: 29, sub: "廿五", m: "prev" },
+  { d: 30, sub: "廿六", m: "prev" },
+  { d: 31, sub: "廿七", m: "prev" },
+  { d: 1, sub: "建军", m: "curr", holiday: true, badge: "休", badgeClass: "rest" },
+  { d: 2, sub: "十九", m: "curr" },
+  ...[7, 8, 9, 10, 11, 12, 13].map((d) => ({
+    d,
+    sub: ["二十", "廿一", "廿二", "廿三", "廿四", "廿五", "廿六"][d - 7],
+    m: "curr",
+  })),
   ...[14, 15, 16, 17, 18, 19, 20].map((d) => {
-    const subs: Record<number, string> = { 14: "廿七", 15: "廿八", 16: "廿九", 17: "三十", 18: "初一", 19: "初二", 20: "初三" };
+    const subs: Record<number, string> = {
+      14: "廿七",
+      15: "廿八",
+      16: "廿九",
+      17: "三十",
+      18: "初一",
+      19: "初二",
+      20: "初三",
+    };
     return { d, sub: subs[d] ?? `${d}`, m: "curr" };
   }),
-  ...[21, 22, 23, 24, 25, 26, 27].map((d) => ({ d, sub: `初${["四", "五", "六", "七", "八", "九", "十"][d - 21]}`, m: "curr" })),
-  ...[28, 29, 30, 31, 1, 2, 3].map((d) => ({ d, sub: d <= 31 ? `十${d - 27}` : `${d}`, m: "curr" })),
+  ...[21, 22, 23, 24, 25, 26, 27].map((d) => ({
+    d,
+    sub: `初${["四", "五", "六", "七", "八", "九", "十"][d - 21]}`,
+    m: "curr",
+  })),
+  ...[28, 29, 30, 31, 1, 2, 3].map((d) => ({
+    d,
+    sub: d <= 31 ? `十${d - 27}` : `${d}`,
+    m: "curr",
+  })),
 ].map((cell) => ({ ...cell, today: cell.d === 31 && cell.m === "curr" }));
 
 /* ============================================================
@@ -203,7 +243,9 @@ function DisabledCalendar({ ruleTitle }: { ruleTitle: string }) {
   return (
     <div style={{ marginTop: 10 }}>
       <div className="qw-weekdays">
-        {WEEKDAYS.map((w) => <span key={w}>{w}</span>)}
+        {WEEKDAYS.map((w) => (
+          <span key={w}>{w}</span>
+        ))}
       </div>
       <div className="vis-cal" style={{ borderRadius: 6, maxWidth: 280 }}>
         {cells.map((cell, i) => (
@@ -214,11 +256,20 @@ function DisabledCalendar({ ruleTitle }: { ruleTitle: string }) {
               minHeight: 34,
               padding: "4px 1px",
               opacity: cell.d === 0 ? 0.15 : cell.disabled ? 0.35 : 1,
-              background: cell.disabled ? "color-mix(in srgb, var(--line) 40%, transparent)" : undefined,
+              background: cell.disabled
+                ? "color-mix(in srgb, var(--line) 40%, transparent)"
+                : undefined,
               textDecoration: cell.disabled ? "line-through" : undefined,
             }}
           >
-            {cell.d > 0 && <span className="vis-cal-cell-num" style={{ fontSize: 11, color: cell.disabled ? "var(--ink-3)" : undefined }}>{cell.d}</span>}
+            {cell.d > 0 && (
+              <span
+                className="vis-cal-cell-num"
+                style={{ fontSize: 11, color: cell.disabled ? "var(--ink-3)" : undefined }}
+              >
+                {cell.d}
+              </span>
+            )}
           </div>
         ))}
       </div>
@@ -233,7 +284,7 @@ export default function CalendarPopupPage() {
   const calRef = useRef<Calendar | null>(null);
 
   const [props, setProps] = useState<Record<string, string>>(() =>
-    Object.fromEntries(FIELDS.map((f) => [f.key, f.defaultValue]))
+    Object.fromEntries(FIELDS.map((f) => [f.key, f.defaultValue])),
   );
 
   const [log, setLog] = useState<string[]>([]);
@@ -290,15 +341,19 @@ export default function CalendarPopupPage() {
       try {
         const h = JSON.parse(currentProps.holidays || "{}");
         if (h.holidays || h.workdays) opts.holidays = h;
-      } catch { /* JSON 格式错误，忽略 */ }
+      } catch {
+        /* JSON 格式错误，忽略 */
+      }
       opts.onChange = (date: string) => addLog(`onChange → ${date}`);
       opts.onOpenChange = (open: boolean) => addLog(`面板 ${open ? "打开" : "关闭"}`);
 
       calRef.current = new Calendar(el, opts);
-      const count = Object.keys(opts).filter((k) => k !== "onChange" && k !== "onOpenChange").length;
+      const count = Object.keys(opts).filter(
+        (k) => k !== "onChange" && k !== "onOpenChange",
+      ).length;
       addLog(`日历渲染完成（${count} 项配置）`);
     },
-    [addLog]
+    [addLog],
   );
 
   /* 首次加载 */
@@ -320,12 +375,14 @@ export default function CalendarPopupPage() {
   /* 构建 opts 代码行 */
   const buildOptsLines = () => {
     const lines: string[] = [];
-    if (props.placeholder && props.placeholder !== "点击选择日期") lines.push(`  placeholder: "${props.placeholder}",`);
+    if (props.placeholder && props.placeholder !== "点击选择日期")
+      lines.push(`  placeholder: "${props.placeholder}",`);
     if (props.selected) lines.push(`  selected: "${props.selected}",`);
     if (props.min) lines.push(`  min: "${props.min}",`);
     if (props.max) lines.push(`  max: "${props.max}",`);
     if (props.inputName) lines.push(`  inputName: "${props.inputName}",`);
-    if (props.showDetailPanel === "true") lines.push("  showDetailPanel: true,    // 开启右侧详情面板");
+    if (props.showDetailPanel === "true")
+      lines.push("  showDetailPanel: true,    // 开启右侧详情面板");
     try {
       const h = JSON.parse(props.holidays || "{}");
       if (h.holidays || h.workdays) {
@@ -334,7 +391,9 @@ export default function CalendarPopupPage() {
         if (h.workdays?.length) lines.push("    workdays: " + JSON.stringify(h.workdays) + ",");
         lines.push("  },");
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return lines;
   };
 
@@ -347,7 +406,7 @@ export default function CalendarPopupPage() {
       'import "@qingwu/calendar/style.css";',
       "",
       "function CalendarPicker() {",
-      '  const rootRef = useRef<HTMLDivElement>(null);',
+      "  const rootRef = useRef<HTMLDivElement>(null);",
       "  const calRef = useRef<Calendar | null>(null);",
       "",
       "  useEffect(() => {",
@@ -356,7 +415,7 @@ export default function CalendarPopupPage() {
       `    calRef.current = new Calendar(el, ${optsLines.length > 0 ? "{" : ""}`,
       ...optsLines,
       optsLines.length > 0 ? "    });" : "    {});",
-      '    return () => calRef.current?.destroy();',
+      "    return () => calRef.current?.destroy();",
       "  }, []);",
       "",
       '  return <div ref={rootRef} className="qw-cal-root" />;',
@@ -364,13 +423,13 @@ export default function CalendarPopupPage() {
     ].join("\n");
 
     const html = [
-      '<!DOCTYPE html>',
+      "<!DOCTYPE html>",
       '<html lang="zh-CN">',
       "<head>",
       '  <meta charset="utf-8" />',
       '  <script type="module">',
       '    import { Calendar } from "https://unpkg.com/@qingwu/calendar";',
-      '  </script>',
+      "  </script>",
       '  <link rel="stylesheet" href="https://unpkg.com/@qingwu/calendar/style.css" />',
       "</head>",
       "<body>",
@@ -463,7 +522,9 @@ export default function CalendarPopupPage() {
             ))}
           </div>
           <div className="cal-props-actions">
-            <button className="qw-btn qw-btn-primary" type="button" onClick={handleConfirm}>应用配置</button>
+            <button className="qw-btn qw-btn-primary" type="button" onClick={handleConfirm}>
+              应用配置
+            </button>
           </div>
         </div>
 
@@ -477,7 +538,9 @@ export default function CalendarPopupPage() {
                 <div className="cal-log-empty">暂无日志，操作日历后将在此显示</div>
               ) : (
                 log.map((msg, i) => (
-                  <div key={i} className="cal-log-item">{msg}</div>
+                  <div key={i} className="cal-log-item">
+                    {msg}
+                  </div>
                 ))
               )}
             </div>
@@ -495,17 +558,23 @@ export default function CalendarPopupPage() {
           <div style={{ maxWidth: 500, width: "100%" }}>
             {/* 月导航 */}
             <div className="cal-top" style={{ justifyContent: "center", marginBottom: 14 }}>
-              <button className="btn icon" style={{ width: 32, height: 32, fontSize: 14 }}>‹</button>
+              <button className="btn icon" style={{ width: 32, height: 32, fontSize: 14 }}>
+                ‹
+              </button>
               <div className="cal-title" style={{ minWidth: 120, justifyContent: "center" }}>
                 <span className="cal-month">2026 年 8 月</span>
                 <span className="cal-lunar-year">丙午年·七月</span>
               </div>
-              <button className="btn icon" style={{ width: 32, height: 32, fontSize: 14 }}>›</button>
+              <button className="btn icon" style={{ width: 32, height: 32, fontSize: 14 }}>
+                ›
+              </button>
             </div>
 
             {/* 星期头 */}
             <div className="qw-weekdays">
-              {WEEKDAYS.map((w) => <span key={w}>{w}</span>)}
+              {WEEKDAYS.map((w) => (
+                <span key={w}>{w}</span>
+              ))}
             </div>
 
             {/* 日格网格 */}
@@ -588,7 +657,11 @@ export default function CalendarPopupPage() {
               key={h.name}
               className={`holiday-toggle${enabled.has(h.name) ? " is-on" : ""}`}
               onClick={() => toggleHoliday(h.name)}
-              style={enabled.has(h.name) ? { borderColor: h.color, color: h.color, background: `${h.color}15` } : undefined}
+              style={
+                enabled.has(h.name)
+                  ? { borderColor: h.color, color: h.color, background: `${h.color}15` }
+                  : undefined
+              }
             >
               {h.name} ({h.start} ~ {h.end})
             </button>
@@ -596,21 +669,46 @@ export default function CalendarPopupPage() {
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 16 }}>
           {Object.entries(MONTH_DAYS).map(([month, { days, startDow }]) => {
-            const monthNames: Record<string, string> = { "1": "一月", "2": "二月", "4": "四月", "5": "五月", "6": "六月", "9": "九月", "10": "十月" };
-            const cells: { d: number; isHoliday: boolean; isWorkday: boolean; holidayName?: string; workdayName?: string }[] = [];
-            for (let i = 0; i < startDow; i++) cells.push({ d: 0, isHoliday: false, isWorkday: false });
+            const monthNames: Record<string, string> = {
+              "1": "一月",
+              "2": "二月",
+              "4": "四月",
+              "5": "五月",
+              "6": "六月",
+              "9": "九月",
+              "10": "十月",
+            };
+            const cells: {
+              d: number;
+              isHoliday: boolean;
+              isWorkday: boolean;
+              holidayName?: string;
+              workdayName?: string;
+            }[] = [];
+            for (let i = 0; i < startDow; i++)
+              cells.push({ d: 0, isHoliday: false, isWorkday: false });
             for (let d = 1; d <= days; d++) {
               const hn = getHolidayName(month, d);
               const wn = getWorkdayName(month, d);
-              cells.push({ d, isHoliday: !!hn, isWorkday: !!wn, holidayName: hn ?? undefined, workdayName: wn ?? undefined });
+              cells.push({
+                d,
+                isHoliday: !!hn,
+                isWorkday: !!wn,
+                holidayName: hn ?? undefined,
+                workdayName: wn ?? undefined,
+              });
             }
             while (cells.length % 7 !== 0) cells.push({ d: 0, isHoliday: false, isWorkday: false });
 
             return (
               <div key={month} style={{ flex: "1 1 150px", minWidth: 150 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{monthNames[month]}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+                  {monthNames[month]}
+                </div>
                 <div className="qw-weekdays">
-                  {WEEKDAYS.map((w) => <span key={w}>{w}</span>)}
+                  {WEEKDAYS.map((w) => (
+                    <span key={w}>{w}</span>
+                  ))}
                 </div>
                 <div className="vis-cal" style={{ borderRadius: 6 }}>
                   {cells.map((cell, i) => (
@@ -622,7 +720,9 @@ export default function CalendarPopupPage() {
                     >
                       {cell.d > 0 && (
                         <>
-                          <span className="vis-cal-cell-num" style={{ fontSize: 11.5 }}>{cell.d}</span>
+                          <span className="vis-cal-cell-num" style={{ fontSize: 11.5 }}>
+                            {cell.d}
+                          </span>
                           {cell.isHoliday && <span className="vis-cal-cell-badge rest">休</span>}
                           {cell.isWorkday && <span className="vis-cal-cell-badge work">班</span>}
                         </>
@@ -642,12 +742,34 @@ export default function CalendarPopupPage() {
         desc="向 Calendar 组件传入 holidays / workdays JSON 配置即可启用休假标记。"
         full
       >
-        <div style={{ background: "var(--qw-code-bg)", padding: 16, borderRadius: 8, fontFamily: "var(--font-mono)", fontSize: 12.5, lineHeight: 1.7, color: "var(--ink-2)" }}>
-          <span style={{ color: "var(--ink-3)", fontStyle: "italic" }}>// 在日历初始化时传入休假配置</span><br />
-          <span style={{ color: "var(--teal)" }}>new</span> Calendar(el, {"{"}<br />
-          {"  "}holidays: {"{"}<br />
-          {"    "}<span style={{ color: "var(--vermilion)" }}>holidays</span>: [<span style={{ color: "var(--vermilion)" }}>&quot;2026-10-01&quot;</span>, <span style={{ color: "var(--vermilion)" }}>&quot;2026-10-02&quot;</span>, ...],<br />
-          {"    "}<span style={{ color: "var(--teal)" }}>workdays</span>: [<span style={{ color: "var(--teal)" }}>&quot;2026-10-10&quot;</span>, ...],<br />
+        <div
+          style={{
+            background: "var(--qw-code-bg)",
+            padding: 16,
+            borderRadius: 8,
+            fontFamily: "var(--font-mono)",
+            fontSize: 12.5,
+            lineHeight: 1.7,
+            color: "var(--ink-2)",
+          }}
+        >
+          <span style={{ color: "var(--ink-3)", fontStyle: "italic" }}>
+            // 在日历初始化时传入休假配置
+          </span>
+          <br />
+          <span style={{ color: "var(--teal)" }}>new</span> Calendar(el, {"{"}
+          <br />
+          {"  "}holidays: {"{"}
+          <br />
+          {"    "}
+          <span style={{ color: "var(--vermilion)" }}>holidays</span>: [
+          <span style={{ color: "var(--vermilion)" }}>&quot;2026-10-01&quot;</span>,{" "}
+          <span style={{ color: "var(--vermilion)" }}>&quot;2026-10-02&quot;</span>, ...],
+          <br />
+          {"    "}
+          <span style={{ color: "var(--teal)" }}>workdays</span>: [
+          <span style={{ color: "var(--teal)" }}>&quot;2026-10-10&quot;</span>, ...],
+          <br />
           {"  }"},<br />
           {"}"});
         </div>
@@ -665,9 +787,15 @@ export default function CalendarPopupPage() {
               key={r.title}
               className={`holiday-toggle${i === activeRule ? " is-on" : ""}`}
               onClick={() => setActiveRule(i)}
-              style={i === activeRule
-                ? { borderColor: "var(--teal)", color: "var(--teal)", background: "color-mix(in srgb, var(--teal) 10%, transparent)" }
-                : undefined}
+              style={
+                i === activeRule
+                  ? {
+                      borderColor: "var(--teal)",
+                      color: "var(--teal)",
+                      background: "color-mix(in srgb, var(--teal) 10%, transparent)",
+                    }
+                  : undefined
+              }
             >
               {r.title}
             </button>
@@ -683,9 +811,14 @@ export default function CalendarPopupPage() {
                   {RULES_EXAMPLES[activeRule].code.split("\n").map((line, i) => {
                     const highlighted = line
                       .replace(/"([^"]+)"/g, '<span class="hl-str">"$1"</span>')
-                      .replace(/\b(registerRules|type|values|start|end|date|fn|dayOfWeek|range|before|after|custom)\b/g, '<span class="hl-fn">$1</span>')
+                      .replace(
+                        /\b(registerRules|type|values|start|end|date|fn|dayOfWeek|range|before|after|custom)\b/g,
+                        '<span class="hl-fn">$1</span>',
+                      )
                       .replace(/\b([0-9]+)\b/g, '<span class="hl-num">$1</span>');
-                    return <span key={i} dangerouslySetInnerHTML={{ __html: highlighted + "\n" }} />;
+                    return (
+                      <span key={i} dangerouslySetInnerHTML={{ __html: highlighted + "\n" }} />
+                    );
                   })}
                 </code>
               </pre>
@@ -703,17 +836,43 @@ export default function CalendarPopupPage() {
         desc="四种内置规则类型覆盖常见禁用场景，同时支持自定义函数实现复杂逻辑。"
         full
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: 14,
+          }}
+        >
           {[
             { type: "dayOfWeek", desc: "按星期禁用（0=周日，6=周六）", example: "values: [0, 6]" },
-            { type: "range", desc: "日期区间禁用（含起止日）", example: 'start: "2026-10-01", end: "2026-10-08"' },
-            { type: "before / after", desc: "某日期之前/之后全部禁用", example: 'date: "2026-01-01"' },
-            { type: "custom", desc: "自定义函数，接收 dayMeta 返回 boolean", example: "fn: (dayMeta) => boolean" },
+            {
+              type: "range",
+              desc: "日期区间禁用（含起止日）",
+              example: 'start: "2026-10-01", end: "2026-10-08"',
+            },
+            {
+              type: "before / after",
+              desc: "某日期之前/之后全部禁用",
+              example: 'date: "2026-01-01"',
+            },
+            {
+              type: "custom",
+              desc: "自定义函数，接收 dayMeta 返回 boolean",
+              example: "fn: (dayMeta) => boolean",
+            },
           ].map((r) => (
             <div key={r.type} className="rule-card">
               <div className="rule-card-title">{r.type}</div>
-              <div style={{ fontSize: 12.5, color: "var(--ink-2)", lineHeight: 1.6, marginBottom: 6 }}>{r.desc}</div>
-              <code style={{ fontSize: 11.5, fontFamily: "var(--font-mono)", color: "var(--ink-3)" }}>{r.example}</code>
+              <div
+                style={{ fontSize: 12.5, color: "var(--ink-2)", lineHeight: 1.6, marginBottom: 6 }}
+              >
+                {r.desc}
+              </div>
+              <code
+                style={{ fontSize: 11.5, fontFamily: "var(--font-mono)", color: "var(--ink-3)" }}
+              >
+                {r.example}
+              </code>
             </div>
           ))}
         </div>

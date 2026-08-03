@@ -9,13 +9,7 @@
  */
 
 import { ClipperError, httpStatusToAIError, toClipperError } from "../errors";
-import type {
-  AIErrorCode,
-  AIProviderConfig,
-  AIRequest,
-  AIResponse,
-  Locale,
-} from "../types";
+import type { AIErrorCode, AIProviderConfig, AIRequest, AIResponse, Locale } from "../types";
 
 interface OpenAIChatResponse {
   choices?: Array<{ message?: { content?: string } }>;
@@ -149,7 +143,17 @@ async function callChromeBuiltIn(
   systemPrompt: string,
   userText: string,
 ): Promise<{ text: string }> {
-  const ai = (globalThis as { ai?: { languageModel?: { create: (opts: { systemPrompt: string }) => Promise<{ prompt: (t: string) => Promise<string>; destroy?: () => void }> } } }).ai;
+  const ai = (
+    globalThis as {
+      ai?: {
+        languageModel?: {
+          create: (opts: {
+            systemPrompt: string;
+          }) => Promise<{ prompt: (t: string) => Promise<string>; destroy?: () => void }>;
+        };
+      };
+    }
+  ).ai;
   if (!ai?.languageModel) {
     throw new ClipperError("provider-error", "Chrome 内置 AI 不可用，需在 chrome://flags 启用", {
       retryable: false,
@@ -174,15 +178,13 @@ function buildPrompt(req: AIRequest): { system: string; user: string } {
             ? "用 3-5 句话概括"
             : "用 6-10 句话详细概括";
       return {
-        system:
-          "你是一个网页内容摘要助手。只输出摘要正文，不要附加标题或前缀。",
+        system: "你是一个网页内容摘要助手。只输出摘要正文，不要附加标题或前缀。",
         user: `请${lengthHint}以下网页内容，目标语言：${req.targetLang === "en-US" ? "英文" : "中文"}\n\n${req.text}`,
       };
     }
     case "tags":
       return {
-        system:
-          "你是标签提取助手。输出 3-8 个标签，用逗号分隔，仅小写中英文，不要带 # 号。",
+        system: "你是标签提取助手。输出 3-8 个标签，用逗号分隔，仅小写中英文，不要带 # 号。",
         user: `为以下内容提取标签：\n\n${req.text}`,
       };
     case "translate":
@@ -194,8 +196,7 @@ function buildPrompt(req: AIRequest): { system: string; user: string } {
       };
     case "rename":
       return {
-        system:
-          "你是标题重写助手。仅输出一个 30 字以内的简洁标题，不要引号或前缀。",
+        system: "你是标题重写助手。仅输出一个 30 字以内的简洁标题，不要引号或前缀。",
         user: `为以下内容拟定标题：\n\n${req.text}`,
       };
     case "custom":
@@ -214,16 +215,11 @@ function parseTags(text: string): string[] {
     .slice(0, 8);
 }
 
-export async function runAI(
-  cfg: AIProviderConfig,
-  req: AIRequest,
-): Promise<AIResponse> {
+export async function runAI(cfg: AIProviderConfig, req: AIRequest): Promise<AIResponse> {
   const start = performance.now();
   try {
     let text: string;
-    let usage:
-      | { promptTokens?: number; completionTokens?: number }
-      | undefined;
+    let usage: { promptTokens?: number; completionTokens?: number } | undefined;
 
     if (cfg.kind === "chrome-built-in") {
       const { system, user } = buildPrompt(req);

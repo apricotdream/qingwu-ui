@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { findPage } from "@/docs.config";
 
 interface TocEntry {
@@ -56,7 +56,7 @@ export default function DocToc() {
       <div className="qw-toc-title">本页目录</div>
       <ul className="qw-toc-list">
         {entries.map((e, i) => (
-          <li key={i}>
+          <li key={e.text}>
             <a
               className={`qw-toc-link${active === e.text ? " is-active" : ""}`}
               href={`#${i}`}

@@ -3,7 +3,9 @@ export default function InspectorPage() {
     <>
       <section className="page-hero">
         <h1>dayMeta 检视器</h1>
-        <p>悬停或聚焦日期时实时查看 dayMeta 合并管线输出，追溯每条字段的来源插件，检验插件执行顺序。</p>
+        <p>
+          悬停或聚焦日期时实时查看 dayMeta 合并管线输出，追溯每条字段的来源插件，检验插件执行顺序。
+        </p>
       </section>
 
       <div className="demo-grid">
@@ -11,7 +13,10 @@ export default function InspectorPage() {
         <div className="demo-card is-full">
           <div className="demo-card-header">
             <h4>dayMeta 管线架构</h4>
-            <p>多个 DayMetaProvider 插件按注册顺序依次执行，后注册的插件可覆盖前序结果，最终合并为完整 dayMeta 对象。</p>
+            <p>
+              多个 DayMetaProvider
+              插件按注册顺序依次执行，后注册的插件可覆盖前序结果，最终合并为完整 dayMeta 对象。
+            </p>
           </div>
           <div className="demo-card-stage">
             <div className="pipeline" style={{ justifyContent: "center" }}>
@@ -40,7 +45,9 @@ export default function InspectorPage() {
               </div>
               <span className="pipeline-arrow">=</span>
               <div className="pipeline-step" style={{ borderColor: "var(--teal)", borderWidth: 2 }}>
-                <div className="pipeline-step-label" style={{ color: "var(--vermilion)" }}>Output</div>
+                <div className="pipeline-step-label" style={{ color: "var(--vermilion)" }}>
+                  Output
+                </div>
                 <div className="pipeline-step-name">dayMeta</div>
               </div>
             </div>
@@ -69,7 +76,8 @@ export default function InspectorPage() {
               <dd style={{ color: "var(--vermilion)" }}>休（1/8 天）</dd>
               <dt>宜忌</dt>
               <dd style={{ fontSize: 11 }}>
-                <span style={{ color: "var(--teal)" }}>宜：</span>嫁娶 出行 开业 立约 祭祀<br />
+                <span style={{ color: "var(--teal)" }}>宜：</span>嫁娶 出行 开业 立约 祭祀
+                <br />
                 <span style={{ color: "var(--vermilion)" }}>忌：</span>动土 安葬 开渠 放水
               </dd>
             </dl>
@@ -86,13 +94,27 @@ export default function InspectorPage() {
             <div className="trace">
               <div className="trace-title">来源追溯</div>
               <ol>
-                <li><code>lunarDate</code> → lunarPlugin（农历引擎）</li>
-                <li><code>stemBranch</code> → lunarPlugin（天干地支计算）</li>
-                <li><code>festival</code> → festivalPlugin（节日数据集）</li>
-                <li><code>solarTerm</code> → solarTermPlugin（节气数据集）</li>
-                <li><code>isHoliday</code> → holidayPlugin（用户 JSON 配置）</li>
-                <li><code>isWorkday</code> → holidayPlugin（调班数据）</li>
-                <li><code>almanac</code> → lunarPlugin（黄历宜忌）</li>
+                <li>
+                  <code>lunarDate</code> → lunarPlugin（农历引擎）
+                </li>
+                <li>
+                  <code>stemBranch</code> → lunarPlugin（天干地支计算）
+                </li>
+                <li>
+                  <code>festival</code> → festivalPlugin（节日数据集）
+                </li>
+                <li>
+                  <code>solarTerm</code> → solarTermPlugin（节气数据集）
+                </li>
+                <li>
+                  <code>isHoliday</code> → holidayPlugin（用户 JSON 配置）
+                </li>
+                <li>
+                  <code>isWorkday</code> → holidayPlugin（调班数据）
+                </li>
+                <li>
+                  <code>almanac</code> → lunarPlugin（黄历宜忌）
+                </li>
               </ol>
             </div>
           </div>

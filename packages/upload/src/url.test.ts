@@ -5,15 +5,21 @@ import { ImageUpload } from "./upload";
 function imageBlob(kind: "png" | "jpeg" | "gif" | "webp" | "avif" | "svg" | "bmp"): Blob {
   switch (kind) {
     case "png":
-      return new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0])]);
+      return new Blob([
+        new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]),
+      ]);
     case "jpeg":
       return new Blob([new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0])]);
     case "gif":
       return new Blob(["GIF89a", new Uint8Array([0, 0, 0, 0])]);
     case "webp":
-      return new Blob([new Uint8Array([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50])]);
+      return new Blob([
+        new Uint8Array([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]),
+      ]);
     case "avif":
-      return new Blob([new Uint8Array([0, 0, 0, 0x18, 0x66, 0x74, 0x79, 0x70, 0x61, 0x76, 0x69, 0x66])]);
+      return new Blob([
+        new Uint8Array([0, 0, 0, 0x18, 0x66, 0x74, 0x79, 0x70, 0x61, 0x76, 0x69, 0x66]),
+      ]);
     case "svg":
       return new Blob(['<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg"></svg>']);
     case "bmp":
@@ -43,9 +49,7 @@ async function waitFor(cond: () => boolean, timeoutMs = 2000): Promise<void> {
 }
 
 /** stub 全局 fetch，返回调用记录；handler 按需返回响应 */
-function stubFetch(
-  handler: (method: string, url: string) => Promise<Response>,
-): FetchCalls {
+function stubFetch(handler: (method: string, url: string) => Promise<Response>): FetchCalls {
   const calls: FetchCalls = [];
   vi.stubGlobal(
     "fetch",
@@ -73,9 +77,7 @@ describe("URL 导入", () => {
 
   test("https 图片导入成功：识别格式、文件名、溯源标记", async () => {
     const calls = stubFetch(async (method) =>
-      method === "HEAD"
-        ? imageResponse(imageBlob("png"))
-        : imageResponse(imageBlob("png")),
+      method === "HEAD" ? imageResponse(imageBlob("png")) : imageResponse(imageBlob("png")),
     );
     const uploader = new ImageUpload(root, { compress: false });
 
@@ -112,7 +114,8 @@ describe("URL 导入", () => {
 
   test("HEAD 预检 Content-Length 超限 → 拒绝且不发起 GET", async () => {
     const calls = stubFetch(async (method) => {
-      if (method === "HEAD") return imageResponse(imageBlob("png"), 200, { "content-length": String(20 * 1024 * 1024) });
+      if (method === "HEAD")
+        return imageResponse(imageBlob("png"), 200, { "content-length": String(20 * 1024 * 1024) });
       throw new Error("不应发起 GET");
     });
     const uploader = new ImageUpload(root, { compress: false, maxSizeMB: 10 });
@@ -200,7 +203,8 @@ describe("URL 导入", () => {
 
     // data: URL 跳过 HEAD 预检，直接 GET 解析
     const dataUrl =
-      "data:image/png;base64," + btoa(String.fromCharCode(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a));
+      "data:image/png;base64," +
+      btoa(String.fromCharCode(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a));
     const item = await uploader.addFromUrl(dataUrl);
     expect(item).not.toBeNull();
     expect(item!.name).toBe("url-image.png");
@@ -266,12 +270,12 @@ describe("URL 导入", () => {
 
     const panel = root.querySelector<HTMLElement>(".qw-upload-urlpanel")!;
     expect(panel.hidden).toBe(true);
-    (root.querySelector<HTMLElement>(".qw-upload-urlbtn")!).click();
+    root.querySelector<HTMLElement>(".qw-upload-urlbtn")!.click();
     expect(panel.hidden).toBe(false);
 
     const input = root.querySelector<HTMLTextAreaElement>(".qw-upload-urlinput")!;
     input.value = "https://a.com/good.png\nhttps://a.com/bad.png";
-    (root.querySelector<HTMLButtonElement>(".qw-upload-urlgo")!).click();
+    root.querySelector<HTMLButtonElement>(".qw-upload-urlgo")!.click();
 
     // 等待批量导入完成（成功项 + 失败项）
     await waitFor(() => uploader.getItems().length === 2);

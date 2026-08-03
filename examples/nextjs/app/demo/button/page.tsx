@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { Button } from "@qingwu/button";
+import { useEffect, useRef } from "react";
 import "@qingwu/button/style.css";
 import DemoCard from "@/components/DemoCard";
 
@@ -35,7 +35,8 @@ export default function ButtonPage() {
       <DemoCard
         title="Button 按钮"
         desc="按钮变体：默认、主色、琥珀色、图标按钮"
-        full code={`import { Button } from "@qingwu/button";
+        full
+        code={`import { Button } from "@qingwu/button";
 import "@qingwu/button/style.css";
 
 const btn = new Button({ text: "确认", variant: "primary" });

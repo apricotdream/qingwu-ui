@@ -823,8 +823,7 @@ export default function App() {
           <div className="mt-2 text-[11px] text-default-400">
             {toastMode === "default" &&
               "内置默认：未传 onToast、未 setToastProvider，提示由随包内置 @qingwu/toast 渲染（开箱即用）。"}
-            {toastMode === "onToast" &&
-              "实例级：经 onToast 回调转发给宿主自己的 Toast 组件渲染。"}
+            {toastMode === "onToast" && "实例级：经 onToast 回调转发给宿主自己的 Toast 组件渲染。"}
             {toastMode === "provider" &&
               "全局级：setToastProvider() 替换默认渲染器，消息带 [setToastProvider] 前缀以示区别。"}
           </div>

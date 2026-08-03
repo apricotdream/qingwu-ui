@@ -130,7 +130,9 @@ export function AudioEmbedView({ node, deleteNode, editor }: any) {
           {!src ? (
             // 无 src：历史坏节点（上传中断/round-trip 丢 src）或对象被删，渲染缺失态而非永久转圈
             <div className="audio-embed-loading audio-embed-missing">
-              <span className="audio-embed-missing-icon" aria-hidden="true">!</span>
+              <span className="audio-embed-missing-icon" aria-hidden="true">
+                !
+              </span>
               音频文件缺失
             </div>
           ) : audioReady && audioUrl ? (

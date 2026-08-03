@@ -557,7 +557,7 @@
 }
 /* 静态暖光晕：径向渐变、不参与换帧，零每帧开销 */
 .qs-loading-leaf::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -24%;
   background: radial-gradient(

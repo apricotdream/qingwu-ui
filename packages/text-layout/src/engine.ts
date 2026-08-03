@@ -368,10 +368,7 @@ export function prepare(text: string, font: string = "16px system-ui"): Segment[
  * 纯算术计算，不触发任何 DOM/Canvas 操作
  * 可在每帧、每次 resize 时自由调用
  */
-export function layoutSegments(
-  segments: Segment[],
-  options: LayoutOptions,
-): LayoutResult {
+export function layoutSegments(segments: Segment[], options: LayoutOptions): LayoutResult {
   const { maxWidth, lineHeight, maxLines, overflowWrap = "break-word" } = options;
   const lines: LayoutLine[] = [];
 

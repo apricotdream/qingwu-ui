@@ -24,7 +24,7 @@ const snippets = {
     "}",
   ].join("\n"),
   html: [
-    '<!DOCTYPE html>',
+    "<!DOCTYPE html>",
     '<html lang="zh-CN">',
     "<head>",
     '  <meta charset="utf-8" />',

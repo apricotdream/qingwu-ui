@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { Calendar } from "@qingwu/calendar";
+import { useEffect, useRef } from "react";
 
 export default function CalendarPopup({
   placeholder = "选择日期",
@@ -21,7 +21,7 @@ export default function CalendarPopup({
       onChange: (date) => console.log("[Calendar]", date),
     });
     return () => cal.destroy();
-  }, []);
+  }, [placeholder, initial]);
 
   return <div ref={rootRef} className="qw-cal-root" />;
 }

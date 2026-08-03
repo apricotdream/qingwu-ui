@@ -23,6 +23,11 @@
       "trailingCommas": "all"
     }
   },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
   "assist": {
     "actions": {
       "source": {
@@ -32,9 +37,92 @@
   },
   "overrides": [
     {
-      "includes": ["demo/**"],
+      "includes": ["**/file-viewer/vendor/**"],
       "linter": {
         "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      },
+      "assist": {
+        "enabled": false
+      }
+    },
+    {
+      "includes": ["**/*.d.ts"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      },
+      "assist": {
+        "enabled": false
+      }
+    },
+    {
+      "includes": ["examples/nextjs/app/demo/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noLabelWithoutControl": "off",
+            "noSvgWithoutTitle": "off",
+            "noStaticElementInteractions": "off",
+            "useButtonType": "off",
+            "useKeyWithClickEvents": "off",
+            "useValidAnchor": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off",
+            "noCommentText": "off",
+            "useIterableCallbackReturn": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/ai-editor/extension/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noLabelWithoutControl": "off",
+            "noStaticElementInteractions": "off",
+            "noSvgWithoutTitle": "off",
+            "useButtonType": "off",
+            "useIframeTitle": "off",
+            "useKeyWithClickEvents": "off",
+            "useMediaCaption": "off",
+            "useSemanticElements": "off",
+            "useValidAnchor": "off"
+          },
+          "complexity": {
+            "useOptionalChain": "off"
+          },
+          "correctness": {
+            "noUnknownFunction": "off",
+            "noUnsafeOptionalChaining": "off",
+            "useExhaustiveDependencies": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off",
+            "noAssignInExpressions": "off",
+            "noExplicitAny": "off",
+            "noImplicitAnyLet": "off",
+            "noUnknownAtRules": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
       }
     },
     {

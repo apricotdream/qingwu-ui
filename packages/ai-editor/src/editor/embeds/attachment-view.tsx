@@ -56,18 +56,65 @@ type RendererFamily = "pdf" | "word" | "spreadsheet" | "presentation" | "archive
 
 const EXT_RENDERER: Record<string, RendererFamily> = {
   pdf: "pdf",
-  docx: "word", docm: "word", dotx: "word", dotm: "word", doc: "word", dot: "word", rtf: "word", odt: "word",
-  xlsx: "spreadsheet", xlsm: "spreadsheet", xlsb: "spreadsheet", xls: "spreadsheet", xltx: "spreadsheet", xlt: "spreadsheet", csv: "spreadsheet", tsv: "spreadsheet", ods: "spreadsheet", numbers: "spreadsheet",
-  pptx: "presentation", pptm: "presentation", potx: "presentation", potm: "presentation", ppsx: "presentation", ppsm: "presentation", ppt: "presentation", pot: "presentation", odp: "presentation",
-  zip: "archive", rar: "archive", "7z": "archive", tar: "archive", gz: "archive", tgz: "archive", bz2: "archive", xz: "archive", zst: "archive",
-  txt: "text", md: "text", log: "text", html: "text", htm: "text", css: "text", js: "text", jsx: "text", ts: "text", tsx: "text", py: "text", sh: "text", sql: "text", json: "text", xml: "text", yml: "text", yaml: "text",
+  docx: "word",
+  docm: "word",
+  dotx: "word",
+  dotm: "word",
+  doc: "word",
+  dot: "word",
+  rtf: "word",
+  odt: "word",
+  xlsx: "spreadsheet",
+  xlsm: "spreadsheet",
+  xlsb: "spreadsheet",
+  xls: "spreadsheet",
+  xltx: "spreadsheet",
+  xlt: "spreadsheet",
+  csv: "spreadsheet",
+  tsv: "spreadsheet",
+  ods: "spreadsheet",
+  numbers: "spreadsheet",
+  pptx: "presentation",
+  pptm: "presentation",
+  potx: "presentation",
+  potm: "presentation",
+  ppsx: "presentation",
+  ppsm: "presentation",
+  ppt: "presentation",
+  pot: "presentation",
+  odp: "presentation",
+  zip: "archive",
+  rar: "archive",
+  "7z": "archive",
+  tar: "archive",
+  gz: "archive",
+  tgz: "archive",
+  bz2: "archive",
+  xz: "archive",
+  zst: "archive",
+  txt: "text",
+  md: "text",
+  log: "text",
+  html: "text",
+  htm: "text",
+  css: "text",
+  js: "text",
+  jsx: "text",
+  ts: "text",
+  tsx: "text",
+  py: "text",
+  sh: "text",
+  sql: "text",
+  json: "text",
+  xml: "text",
+  yml: "text",
+  yaml: "text",
 };
 
 const RENDERER_LOADERS: Record<RendererFamily, () => Promise<unknown>> = {
   pdf: () => import("@file-viewer/renderer-pdf").then((m) => m.pdfRenderer),
   word: () => import("@file-viewer/renderer-word").then((m) => m.wordRenderer),
-  spreadsheet: () =>
-    import("@file-viewer/renderer-spreadsheet").then((m) => m.spreadsheetRenderer),
+  spreadsheet: () => import("@file-viewer/renderer-spreadsheet").then((m) => m.spreadsheetRenderer),
   presentation: () =>
     import("@file-viewer/renderer-presentation").then((m) => m.presentationRenderer),
   archive: () => import("@file-viewer/renderer-archive").then((m) => m.archiveRenderer),
@@ -171,10 +218,7 @@ function shouldFetchForPreview(url: string): boolean {
 
 /** base64url 编码，用于 /api/preview 代理路径规避 IDM 扩展名拦截 */
 function encodePreviewPath(url: string): string {
-  return btoa(encodeURIComponent(url))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  return btoa(encodeURIComponent(url)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 /**
@@ -196,7 +240,9 @@ async function fetchViaPreviewProxy(
     const ct = res.headers.get("Content-Type") || "";
     // SPA fallback（如 dev server 返回 index.html）表示代理端点不存在
     if (ct.includes("text/html")) {
-      console.warn("[attachment] /api/preview returned HTML (endpoint missing), fallback to direct XHR");
+      console.warn(
+        "[attachment] /api/preview returned HTML (endpoint missing), fallback to direct XHR",
+      );
       return null;
     }
     const buf = await res.arrayBuffer();

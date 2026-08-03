@@ -36,6 +36,7 @@ function SvgHtml({ html, size = 15 }: { html: string; size?: number }) {
   const sized = html
     .replace(/width="[^"]*"/, `width="${size}"`)
     .replace(/height="[^"]*"/, `height="${size}"`);
+  // biome-ignore lint/security/noDangerouslySetInnerHtml: 渲染 @icon/icons 可信 SVG 字符串
   return <span dangerouslySetInnerHTML={{ __html: sized }} />;
 }
 
@@ -283,6 +284,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
 
   /* 路由变化时关闭抽屉 */
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 依赖 pathname 触发“路由变化时关闭抽屉”
   useEffect(() => {
     setDrawerOpen(false);
   }, [pathname]);
@@ -323,7 +325,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {drawerOpen && (
           <div className="qw-drawer-layer">
-            <div className="qw-drawer-backdrop" onClick={() => setDrawerOpen(false)} />
+            <button
+              type="button"
+              className="qw-drawer-backdrop"
+              aria-label="关闭导航"
+              onClick={() => setDrawerOpen(false)}
+            />
             <div className="qw-drawer">
               <div className="qw-drawer-head">
                 <span className="qw-drawer-title">导航</span>

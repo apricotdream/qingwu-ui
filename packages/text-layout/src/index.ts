@@ -11,33 +11,29 @@
  *   - 表格列宽自动分配
  */
 
-// ─── 核心引擎 ───
-export { prepare, layout, layoutSegments, measure, measureWidth, clearCache } from "./engine";
-
-// ─── 类型 ───
-export type {
-  SegmentType,
-  Segment,
-  LayoutOptions,
-  LayoutLine,
-  LayoutResult,
-  VirtualItem,
-  VirtualHeightResult,
-  TruncateResult,
-  ChipItem,
-  ChipLine,
-  ChipLayoutResult,
-  ColumnWidthResult,
-} from "./types";
-
-// ─── 虚拟滚动 ───
-export { computeVirtualHeights, findVisibleRange } from "./virtual-scroll";
-
-// ─── 多行截断 ───
-export { truncateToLines, truncateToHeight } from "./truncate";
-
 // ─── 芯片流布局 ───
 export { layoutChips } from "./chip-flow";
-
+// ─── 核心引擎 ───
+export { clearCache, layout, layoutSegments, measure, measureWidth, prepare } from "./engine";
 // ─── 表格列宽 ───
 export { computeColumnWidths, fitRowToColumns } from "./table-columns";
+
+// ─── 多行截断 ───
+export { truncateToHeight, truncateToLines } from "./truncate";
+// ─── 类型 ───
+export type {
+  ChipItem,
+  ChipLayoutResult,
+  ChipLine,
+  ColumnWidthResult,
+  LayoutLine,
+  LayoutOptions,
+  LayoutResult,
+  Segment,
+  SegmentType,
+  TruncateResult,
+  VirtualHeightResult,
+  VirtualItem,
+} from "./types";
+// ─── 虚拟滚动 ───
+export { computeVirtualHeights, findVisibleRange } from "./virtual-scroll";

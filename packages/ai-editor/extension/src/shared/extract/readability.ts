@@ -11,11 +11,11 @@
  */
 
 import type {
-  ExtractStrategy,
   ExtractedContent,
   ExtractedImage,
   ExtractedLink,
   ExtractedVideo,
+  ExtractStrategy,
   SiteRule,
 } from "../types";
 
@@ -172,9 +172,7 @@ function stripNegatives(root: Element) {
 
 function readMeta(doc: Document, names: string[]): string | undefined {
   for (const n of names) {
-    const m =
-      doc.querySelector(`meta[name='${n}']`) ??
-      doc.querySelector(`meta[property='${n}']`);
+    const m = doc.querySelector(`meta[name='${n}']`) ?? doc.querySelector(`meta[property='${n}']`);
     const v = m?.getAttribute("content");
     if (v) return v.trim();
   }
@@ -201,24 +199,43 @@ function htmlToMarkdown(html: string): string {
     const inner = Array.from(el.childNodes).map(walk).join("");
 
     switch (tag) {
-      case "h1": return `\n# ${inner.trim()}\n\n`;
-      case "h2": return `\n## ${inner.trim()}\n\n`;
-      case "h3": return `\n### ${inner.trim()}\n\n`;
-      case "h4": return `\n#### ${inner.trim()}\n\n`;
-      case "h5": return `\n##### ${inner.trim()}\n\n`;
-      case "h6": return `\n###### ${inner.trim()}\n\n`;
-      case "p": return `${inner.trim()}\n\n`;
-      case "br": return "\n";
-      case "hr": return "\n---\n\n";
+      case "h1":
+        return `\n# ${inner.trim()}\n\n`;
+      case "h2":
+        return `\n## ${inner.trim()}\n\n`;
+      case "h3":
+        return `\n### ${inner.trim()}\n\n`;
+      case "h4":
+        return `\n#### ${inner.trim()}\n\n`;
+      case "h5":
+        return `\n##### ${inner.trim()}\n\n`;
+      case "h6":
+        return `\n###### ${inner.trim()}\n\n`;
+      case "p":
+        return `${inner.trim()}\n\n`;
+      case "br":
+        return "\n";
+      case "hr":
+        return "\n---\n\n";
       case "strong":
-      case "b": return `**${inner}**`;
+      case "b":
+        return `**${inner}**`;
       case "em":
-      case "i": return `*${inner}*`;
+      case "i":
+        return `*${inner}*`;
       case "del":
-      case "s": return `~~${inner}~~`;
-      case "code": return `\`${inner}\``;
-      case "pre": return `\n\`\`\`\n${el.textContent}\n\`\`\`\n\n`;
-      case "blockquote": return `\n${inner.trim().split("\n").map((l) => `> ${l}`).join("\n")}\n\n`;
+      case "s":
+        return `~~${inner}~~`;
+      case "code":
+        return `\`${inner}\``;
+      case "pre":
+        return `\n\`\`\`\n${el.textContent}\n\`\`\`\n\n`;
+      case "blockquote":
+        return `\n${inner
+          .trim()
+          .split("\n")
+          .map((l) => `> ${l}`)
+          .join("\n")}\n\n`;
       case "a": {
         const href = el.getAttribute("href") ?? "";
         return `[${inner}](${href})`;
@@ -237,22 +254,29 @@ function htmlToMarkdown(html: string): string {
         });
         return `\n${lines.join("\n")}\n\n`;
       }
-      case "li": return inner;
-      case "table": return `\n${inner}\n`;
+      case "li":
+        return inner;
+      case "table":
+        return `\n${inner}\n`;
       case "tr": {
         const cells = qsa(el, ":scope > td, :scope > th").map((c) => walk(c).trim());
         return `| ${cells.join(" | ")} |\n`;
       }
       case "thead":
-      case "tbody": return inner;
-      case "figure": return `${inner}\n`;
-      case "figcaption": return `*${inner}*\n`;
+      case "tbody":
+        return inner;
+      case "figure":
+        return `${inner}\n`;
+      case "figcaption":
+        return `*${inner}*\n`;
       default:
         return BLOCK_TAGS.has(el.tagName) ? `${inner}\n` : inner;
     }
   };
 
-  return walk(tmp).replace(/\n{3,}/g, "\n\n").trim();
+  return walk(tmp)
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 function collectImages(root: Element): ExtractedImage[] {
@@ -267,9 +291,7 @@ function collectImages(root: Element): ExtractedImage[] {
     seen.add(src);
     const fig = img.closest("figure");
     const caption =
-      fig?.querySelector("figcaption")?.textContent?.trim() ||
-      img.getAttribute("alt") ||
-      undefined;
+      fig?.querySelector("figcaption")?.textContent?.trim() || img.getAttribute("alt") || undefined;
     out.push({
       src,
       alt: img.getAttribute("alt") ?? undefined,
@@ -342,11 +364,14 @@ export function extractContent(doc: Document, opts: ExtractOptions): ExtractedCo
     "twitter:creator",
   ]);
   const siteName =
-    readMeta(doc, ["og:site_name", "application-name"]) ??
-    doc.location?.hostname ??
-    "";
+    readMeta(doc, ["og:site_name", "application-name"]) ?? doc.location?.hostname ?? "";
   const publishedAt = parseDate(
-    readMeta(doc, ["article:published_time", "og:article:published_time", "datePublished", "date"]) ??
+    readMeta(doc, [
+      "article:published_time",
+      "og:article:published_time",
+      "datePublished",
+      "date",
+    ]) ??
       doc.querySelector("time[datetime]")?.getAttribute("datetime") ??
       undefined,
   );
@@ -421,7 +446,11 @@ export function extractContent(doc: Document, opts: ExtractOptions): ExtractedCo
     if (root) {
       strategy = "site-rule";
       ruleApplied = true;
-      for (const s of rule.stripSelectors ?? []) qsa(root, s).forEach((e) => e.remove());
+      for (const s of rule.stripSelectors ?? []) {
+        qsa(root, s).forEach((e) => {
+          e.remove();
+        });
+      }
       break;
     }
   }
@@ -444,7 +473,10 @@ export function extractContent(doc: Document, opts: ExtractOptions): ExtractedCo
   }
 
   const contentHtml = clone.innerHTML;
-  const contentText = (clone.textContent ?? "").replace(/\s+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  const contentText = (clone.textContent ?? "")
+    .replace(/\s+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
   const markdown = htmlToMarkdown(contentHtml);
   const images = collectImages(clone);
   const videos = collectVideos(clone);
@@ -491,7 +523,10 @@ function stripHtml(html: string): string {
 export function matchGlob(pattern: string, input: string): boolean {
   if (!pattern) return false;
   const re = new RegExp(
-    `^${pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
+    `^${pattern
+      .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+      .replace(/\*/g, ".*")
+      .replace(/\?/g, ".")}$`,
     "i",
   );
   return re.test(input);

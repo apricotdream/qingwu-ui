@@ -26,11 +26,20 @@ test("回退后：骨架块与透明化真实内容逐块对齐", async ({ page 
 async function blockContentDeltas(page: import("@playwright/test").Page) {
   return page.evaluate(() => {
     const roots = Array.from(document.querySelectorAll(".qs-skeleton-measuring"));
-    const leafTags = new Set(["IMG", "SVG", "VIDEO", "CANVAS", "IFRAME", "INPUT", "TEXTAREA", "BUTTON"]);
+    const leafTags = new Set([
+      "IMG",
+      "SVG",
+      "VIDEO",
+      "CANVAS",
+      "IFRAME",
+      "INPUT",
+      "TEXTAREA",
+      "BUTTON",
+    ]);
     let maxDelta = 0;
     let blockCount = 0;
-    let rootCount = roots.length;
-    let overlayCount = document.querySelectorAll(".qs-skeleton-overlays").length;
+    const rootCount = roots.length;
+    const overlayCount = document.querySelectorAll(".qs-skeleton-overlays").length;
 
     for (const root of roots) {
       // 收集该容器内的骨架块
@@ -53,7 +62,9 @@ async function blockContentDeltas(page: import("@playwright/test").Page) {
         const el = n as HTMLElement;
         const r = el.getBoundingClientRect();
         if (r.width > 0 && r.height > 0) {
-          const hasRealChildren = Array.from(el.children).some((c) => !["BR", "WBR", "HR"].includes(c.tagName));
+          const hasRealChildren = Array.from(el.children).some(
+            (c) => !["BR", "WBR", "HR"].includes(c.tagName),
+          );
           if (leafTags.has(el.tagName) || !hasRealChildren) {
             leaves.push({ left: r.left, top: r.top, width: r.width, height: r.height });
           }

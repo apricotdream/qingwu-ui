@@ -43,9 +43,7 @@ export interface MessageResponse<T = unknown> {
   };
 }
 
-export type ExtractPayload =
-  | { mode: ClipMode }
-  | { mode: "selection"; selection: string };
+export type ExtractPayload = { mode: ClipMode } | { mode: "selection"; selection: string };
 
 export type SavePayload = {
   content: ExtractedContent;

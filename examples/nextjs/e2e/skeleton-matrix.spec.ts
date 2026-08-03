@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 /** 每个覆盖层与其测量容器坐标差（取最近容器） */
 async function alignDeltas(page: Page) {
@@ -15,10 +15,7 @@ async function alignDeltas(page: Page) {
             const rr = r.getBoundingClientRect();
             return { dx: or.left - rr.left, dy: or.top - rr.top };
           })
-          .sort(
-            (a, b) =>
-              Math.abs(a.dx) + Math.abs(a.dy) - (Math.abs(b.dx) + Math.abs(b.dy)),
-          )[0]!;
+          .sort((a, b) => Math.abs(a.dx) + Math.abs(a.dy) - (Math.abs(b.dx) + Math.abs(b.dy)))[0]!;
         return best;
       }),
     };

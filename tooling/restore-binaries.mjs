@@ -9,9 +9,32 @@ import { writeFileSync } from "node:fs";
 const EXEC_OPTS = { maxBuffer: 512 * 1024 * 1024 };
 
 const BINARY_EXT = new Set([
-  "png", "jpg", "jpeg", "gif", "webp", "avif", "ico", "bmp",
-  "wasm", "ttf", "otf", "pfb", "bcmap", "woff", "woff2", "eot",
-  "pdf", "zip", "gz", "tgz", "bin", "7z", "jar", "xlsx", "docx", "pptx",
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+  "avif",
+  "ico",
+  "bmp",
+  "wasm",
+  "ttf",
+  "otf",
+  "pfb",
+  "bcmap",
+  "woff",
+  "woff2",
+  "eot",
+  "pdf",
+  "zip",
+  "gz",
+  "tgz",
+  "bin",
+  "7z",
+  "jar",
+  "xlsx",
+  "docx",
+  "pptx",
 ]);
 
 const raw = execSync("git diff --raw -M1% 37b311e HEAD", { encoding: "utf8" }).trim();

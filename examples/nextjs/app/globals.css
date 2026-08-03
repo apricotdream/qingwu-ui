@@ -799,6 +799,9 @@ body::before {
 .qw-drawer-backdrop {
   position: absolute;
   inset: 0;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
   background: rgba(10, 14, 14, 0.4);
   animation: fadeIn 0.2s ease-out both;
 }
@@ -1476,6 +1479,7 @@ body::before {
   border: 1.5px solid transparent;
   border-radius: 8px;
   outline: none;
+  /* biome-ignore lint/suspicious/noDuplicateProperties: 多背景层是对 var(--card) 的渐进增强回退 */
   background:
     linear-gradient(var(--card), var(--card)) padding-box,
     var(--qw-input-ring) border-box,

@@ -1,4 +1,4 @@
-import { forwardRef, type ButtonHTMLAttributes } from "react";
+import { type ButtonHTMLAttributes, forwardRef } from "react";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger" | "subtle";
 type Size = "sm" | "md" | "lg" | "icon";
@@ -14,10 +14,8 @@ const VARIANT: Record<Variant, string> = {
     "bg-qingwu-600 text-white shadow-soft hover:bg-qingwu-700 active:bg-qingwu-800 disabled:bg-qingwu-300 dark:disabled:bg-qingwu-900",
   secondary:
     "bg-white text-ink-800 border border-ink-200 hover:bg-ink-50 dark:bg-ink-900 dark:text-ink-100 dark:border-ink-700 dark:hover:bg-ink-800",
-  ghost:
-    "bg-transparent text-ink-700 hover:bg-ink-100 dark:text-ink-200 dark:hover:bg-ink-800",
-  danger:
-    "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 disabled:bg-rose-300",
+  ghost: "bg-transparent text-ink-700 hover:bg-ink-100 dark:text-ink-200 dark:hover:bg-ink-800",
+  danger: "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 disabled:bg-rose-300",
   subtle:
     "bg-qingwu-50 text-qingwu-700 hover:bg-qingwu-100 dark:bg-qingwu-900/30 dark:text-qingwu-300 dark:hover:bg-qingwu-900/50",
 };
@@ -30,7 +28,10 @@ const SIZE: Record<Size, string> = {
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = "primary", size = "md", loading, className = "", children, disabled, ...rest }, ref) => (
+  (
+    { variant = "primary", size = "md", loading, className = "", children, disabled, ...rest },
+    ref,
+  ) => (
     <button
       ref={ref}
       disabled={disabled || loading}
@@ -39,8 +40,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     >
       {loading && (
         <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25" />
-          <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeOpacity="0.25"
+          />
+          <path
+            d="M22 12a10 10 0 0 1-10 10"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
         </svg>
       )}
       {children}

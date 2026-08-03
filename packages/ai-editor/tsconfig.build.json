@@ -16,5 +16,12 @@
     "src/editor/**/*",
     "src/components/**/*"
   ],
-  "exclude": ["node_modules", "dist", "tests", "src/main.tsx", "src/App.tsx", "src/components/demo-content.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests",
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/components/demo-content.ts"
+  ]
 }

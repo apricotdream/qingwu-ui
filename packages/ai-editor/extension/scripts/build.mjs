@@ -14,8 +14,8 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
-  readFileSync,
   readdirSync,
+  readFileSync,
   statSync,
   writeFileSync,
 } from "node:fs";
@@ -205,18 +205,14 @@ async function buildTarget(target) {
     log(`  dist/${target} 不存在，请先运行：TARGET=${target} npx vite build`);
     return;
   }
-  const manifestSrc =
-    target === "firefox" ? "manifest.firefox.json" : "manifest.json";
+  const manifestSrc = target === "firefox" ? "manifest.firefox.json" : "manifest.json";
   const manifestPath = join(root, manifestSrc);
   if (!existsSync(manifestPath)) {
     log(`  找不到 ${manifestSrc}`);
     return;
   }
   const manifestContent = JSON.parse(readFileSync(manifestPath, "utf-8"));
-  writeFileSync(
-    join(distDir, "manifest.json"),
-    JSON.stringify(manifestContent, null, 2),
-  );
+  writeFileSync(join(distDir, "manifest.json"), JSON.stringify(manifestContent, null, 2));
 
   // content-script 的 CSS 是独立文件（manifest.content_scripts.css 引用），
   // vite 只把 content-script.ts 作为 JS 入口打包，不会处理这份 CSS，需手动复制

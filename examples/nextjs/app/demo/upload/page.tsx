@@ -261,7 +261,9 @@ export default function UploadPage() {
       lines.push(`  maxSizeMB: ${props.maxSizeMB},        // 单张大小上限（MB）`);
     if (props.maxCount !== "0") lines.push(`  maxCount: ${props.maxCount},       // 数量上限`);
     if (props.supportedFormats !== "all")
-      lines.push(`  supportedFormats: ["${props.supportedFormats.split(",").join('", "')}"], // 图片格式白名单`);
+      lines.push(
+        `  supportedFormats: ["${props.supportedFormats.split(",").join('", "')}"], // 图片格式白名单`,
+      );
     if (props.initial === "true")
       lines.push('  initialUrls: ["/logo.png"],  // 编辑态回显：已存在封面渲染为成功项');
     if (props.persist !== "off")

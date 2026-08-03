@@ -20,9 +20,7 @@
     "clipboardWrite",
     "notifications"
   ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup/index.html",
     "default_title": "青梧 Web Clipper (Alt+Shift+C)",

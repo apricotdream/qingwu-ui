@@ -1,8 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./src/**/*.{html,tsx,ts}",
-  ],
+  content: ["./src/**/*.{html,tsx,ts}"],
   darkMode: "class",
   theme: {
     extend: {
@@ -35,13 +33,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: [
-          "Inter",
-          "PingFang SC",
-          "Microsoft YaHei",
-          "system-ui",
-          "sans-serif",
-        ],
+        sans: ["Inter", "PingFang SC", "Microsoft YaHei", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "Cascadia Code", "Consolas", "monospace"],
       },
       boxShadow: {

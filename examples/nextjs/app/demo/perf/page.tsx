@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 
 /* 模拟性能基准测试 */
 const METRICS = [
@@ -32,9 +32,8 @@ export default function PerfPage() {
       const snapshot: Record<string, number> = {};
       for (const m of METRICS) {
         const val = m.base + (Math.random() - 0.5) * m.variance * 2;
-        snapshot[m.key] = m.variance === 0
-          ? m.base + round * 2
-          : Math.max(0, Math.round(val * 10) / 10);
+        snapshot[m.key] =
+          m.variance === 0 ? m.base + round * 2 : Math.max(0, Math.round(val * 10) / 10);
       }
       setResults(snapshot);
       setHistory((prev) => [...prev, snapshot]);
@@ -52,7 +51,10 @@ export default function PerfPage() {
     <>
       <section className="page-hero">
         <h1>渲染性能</h1>
-        <p>日历组件采用一次性节点创建 + 快照 Diff + 按格 DOM Patch 的渲染策略，避免全量重绘。点击下方按钮运行 12 轮性能模拟。</p>
+        <p>
+          日历组件采用一次性节点创建 + 快照 Diff + 按格 DOM Patch
+          的渲染策略，避免全量重绘。点击下方按钮运行 12 轮性能模拟。
+        </p>
       </section>
 
       <div className="demo-grid">
@@ -90,7 +92,9 @@ export default function PerfPage() {
                     <div className="perf-sim-bar">
                       <div
                         className="perf-sim-bar-fill"
-                        style={{ width: `${Math.min(100, ((results[m.key] ?? 0) / maxTotal) * 100)}%` }}
+                        style={{
+                          width: `${Math.min(100, ((results[m.key] ?? 0) / maxTotal) * 100)}%`,
+                        }}
                       />
                     </div>
                   )}
@@ -101,7 +105,16 @@ export default function PerfPage() {
             {/* 历史图表 */}
             {history.length > 0 && (
               <div style={{ marginTop: 20 }}>
-                <div style={{ fontSize: 12, fontWeight: 650, color: "var(--ink-3)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 650,
+                    color: "var(--ink-3)",
+                    marginBottom: 8,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                  }}
+                >
                   累计 Patch 趋势
                 </div>
                 <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 60 }}>
@@ -111,9 +124,10 @@ export default function PerfPage() {
                       style={{
                         flex: 1,
                         height: `${Math.max(4, ((h.total ?? 0) / maxTotal) * 100)}%`,
-                        background: running && i === history.length - 1
-                          ? "linear-gradient(180deg, var(--vermilion), var(--amber))"
-                          : "var(--teal)",
+                        background:
+                          running && i === history.length - 1
+                            ? "linear-gradient(180deg, var(--vermilion), var(--amber))"
+                            : "var(--teal)",
                         borderRadius: "2px 2px 0 0",
                         transition: "height 0.3s ease",
                         minWidth: 6,
@@ -123,7 +137,16 @@ export default function PerfPage() {
                     />
                   ))}
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 10, color: "var(--ink-3)", fontFamily: "var(--font-mono)" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginTop: 4,
+                    fontSize: 10,
+                    color: "var(--ink-3)",
+                    fontFamily: "var(--font-mono)",
+                  }}
+                >
                   <span>轮 1</span>
                   <span>轮 {history.length}</span>
                 </div>
@@ -139,15 +162,34 @@ export default function PerfPage() {
             <p>三种核心优化策略，确保日历组件在频繁交互下保持流畅。</p>
           </div>
           <div className="demo-card-stage">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: 16,
+              }}
+            >
               {[
-                { title: "一次性节点创建", desc: "初始化时一次性创建所有日格 DOM 节点（42个），后续不再增删节点。" },
-                { title: "快照 Diff", desc: "每次状态变更生成 dayMeta 快照与上一次对比，精确定位变化的日格。" },
-                { title: "按格 Patch", desc: "仅对 Diff 标记的日格节点进行 DOM 属性写入，其余节点保持不变。" },
+                {
+                  title: "一次性节点创建",
+                  desc: "初始化时一次性创建所有日格 DOM 节点（42个），后续不再增删节点。",
+                },
+                {
+                  title: "快照 Diff",
+                  desc: "每次状态变更生成 dayMeta 快照与上一次对比，精确定位变化的日格。",
+                },
+                {
+                  title: "按格 Patch",
+                  desc: "仅对 Diff 标记的日格节点进行 DOM 属性写入，其余节点保持不变。",
+                },
               ].map((s) => (
                 <div key={s.title} className="perf-card" style={{ textAlign: "left" }}>
                   <div className="perf-card-label">{s.title}</div>
-                  <div style={{ fontSize: 12.5, color: "var(--ink-2)", lineHeight: 1.6, marginTop: 6 }}>{s.desc}</div>
+                  <div
+                    style={{ fontSize: 12.5, color: "var(--ink-2)", lineHeight: 1.6, marginTop: 6 }}
+                  >
+                    {s.desc}
+                  </div>
                 </div>
               ))}
             </div>

@@ -23,23 +23,16 @@ export const Textarea = forwardRef<
 ));
 Textarea.displayName = "Textarea";
 
-export const Select = forwardRef<
-  HTMLSelectElement,
-  SelectHTMLAttributes<HTMLSelectElement>
->(({ className = "", children, ...rest }, ref) => (
-  <select ref={ref} className={`${BASE} pr-8 ${className}`} {...rest}>
-    {children}
-  </select>
-));
+export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
+  ({ className = "", children, ...rest }, ref) => (
+    <select ref={ref} className={`${BASE} pr-8 ${className}`} {...rest}>
+      {children}
+    </select>
+  ),
+);
 Select.displayName = "Select";
 
-export function Label({
-  children,
-  hint,
-}: {
-  children: React.ReactNode;
-  hint?: string;
-}) {
+export function Label({ children, hint }: { children: React.ReactNode; hint?: string }) {
   return (
     <label className="flex items-center gap-2 text-xs font-medium text-ink-700 dark:text-ink-300 mb-1.5">
       {children}

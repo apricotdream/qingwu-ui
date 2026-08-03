@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
 import { SearchBox } from "@qingwu/search";
+import { useCallback, useEffect, useRef, useState } from "react";
 import DemoCard from "@/components/DemoCard";
 
 const ITEMS = [
@@ -20,10 +20,34 @@ const ITEMS = [
 
 /** 异步服务端模式：模拟远端数据（sub 为正文命中片段），350ms 延迟、支持 abort、含 "err" 时失败 */
 const REMOTE_ITEMS = [
-  { id: "r1", title: "React 并发模型", sub: "…useTransition 让低优先级更新让出主线程，渲染中断可恢复…", kind: "文章", glyph: "R" },
-  { id: "r2", title: "Postgres 全文检索", sub: "…pg_jieba 分词 + tsvector GIN 索引，中文搜索的性价比之选…", kind: "文章", glyph: "P" },
-  { id: "r3", title: "滚动驱动的 GSAP 动效", sub: "…ScrollTrigger 将页面滚动进度映射为时间线播放位置…", kind: "文章", glyph: "G" },
-  { id: "r4", title: "Go 服务端改造笔记", sub: "…Gin + GORM 迁走 Node 服务，全文检索的取舍与索引设计…", kind: "文章", glyph: "G" },
+  {
+    id: "r1",
+    title: "React 并发模型",
+    sub: "…useTransition 让低优先级更新让出主线程，渲染中断可恢复…",
+    kind: "文章",
+    glyph: "R",
+  },
+  {
+    id: "r2",
+    title: "Postgres 全文检索",
+    sub: "…pg_jieba 分词 + tsvector GIN 索引，中文搜索的性价比之选…",
+    kind: "文章",
+    glyph: "P",
+  },
+  {
+    id: "r3",
+    title: "滚动驱动的 GSAP 动效",
+    sub: "…ScrollTrigger 将页面滚动进度映射为时间线播放位置…",
+    kind: "文章",
+    glyph: "G",
+  },
+  {
+    id: "r4",
+    title: "Go 服务端改造笔记",
+    sub: "…Gin + GORM 迁走 Node 服务，全文检索的取舍与索引设计…",
+    kind: "文章",
+    glyph: "G",
+  },
   { id: "r5", title: "端午安康", sub: "农历五月初五 · 龙舟竞渡", kind: "节日", glyph: "端" },
 ];
 
@@ -43,7 +67,7 @@ function mockRemoteSearch(q: string, signal: AbortSignal): Promise<typeof REMOTE
   });
 }
 
-const DEFAULT_PLACEHOLDERS = '搜索节日 · 如「中秋节」';
+const DEFAULT_PLACEHOLDERS = "搜索节日 · 如「中秋节」";
 
 /** props 面板字段定义 */
 interface FieldDef {
@@ -57,7 +81,10 @@ interface FieldDef {
 const FIELDS: FieldDef[] = [
   { key: "placeholders", label: "占位文本", type: "text", defaultValue: DEFAULT_PLACEHOLDERS },
   {
-    key: "categories", label: "类别筛选", type: "select", defaultValue: "全部,节日,节气,功能",
+    key: "categories",
+    label: "类别筛选",
+    type: "select",
+    defaultValue: "全部,节日,节气,功能",
     options: [
       { label: "无", value: "" },
       { label: "全部,节日,节气", value: "全部,节日,节气" },
@@ -66,21 +93,29 @@ const FIELDS: FieldDef[] = [
     ],
   },
   {
-    key: "typewriter", label: "打字机动效", type: "boolean", defaultValue: "true",
+    key: "typewriter",
+    label: "打字机动效",
+    type: "boolean",
+    defaultValue: "true",
     options: [
       { label: "开启", value: "true" },
       { label: "关闭", value: "false" },
     ],
   },
   {
-    key: "mode", label: "搜索模式", type: "select", defaultValue: "local",
+    key: "mode",
+    label: "搜索模式",
+    type: "select",
+    defaultValue: "local",
     options: [
       { label: "本地筛选（items）", value: "local" },
       { label: "异步服务端（search）", value: "async" },
     ],
   },
   {
-    key: "loadingSpriteUrl", label: "加载精灵图 URL", type: "text",
+    key: "loadingSpriteUrl",
+    label: "加载精灵图 URL",
+    type: "text",
     defaultValue: "",
   },
 ];
@@ -90,7 +125,7 @@ export default function SearchPage() {
   const sbRef = useRef<SearchBox | null>(null);
 
   const [props, setProps] = useState<Record<string, string>>(() =>
-    Object.fromEntries(FIELDS.map((f) => [f.key, f.defaultValue]))
+    Object.fromEntries(FIELDS.map((f) => [f.key, f.defaultValue])),
   );
 
   const [log, setLog] = useState<string[]>([]);
@@ -112,7 +147,11 @@ export default function SearchPage() {
       const opts: Record<string, unknown> = {};
 
       const ph = currentProps.placeholders?.trim();
-      if (ph) opts.placeholders = ph.split("·").map((s) => s.trim()).filter(Boolean);
+      if (ph)
+        opts.placeholders = ph
+          .split("·")
+          .map((s) => s.trim())
+          .filter(Boolean);
 
       const cats = currentProps.categories?.trim();
       if (cats) opts.categories = cats.split(",").map((s) => s.trim());
@@ -138,7 +177,7 @@ export default function SearchPage() {
       sbRef.current = new SearchBox(el, opts);
       addLog(`搜索渲染完成（${currentProps.mode === "async" ? "异步服务端" : "本地筛选"}模式）`);
     },
-    [addLog]
+    [addLog],
   );
 
   useEffect(() => {
@@ -158,18 +197,29 @@ export default function SearchPage() {
     const lines: string[] = [];
     const ph = props.placeholders?.trim();
     if (ph) {
-      const phArr = ph.split("·").map((s) => `"${s.trim()}"`).filter(Boolean);
+      const phArr = ph
+        .split("·")
+        .map((s) => `"${s.trim()}"`)
+        .filter(Boolean);
       lines.push(`  placeholders: [${phArr.join(", ")}],`);
     }
     const cats = props.categories?.trim();
     if (cats) {
-      lines.push(`  categories: [${cats.split(",").map((s) => `"${s.trim()}"`).join(", ")}],`);
+      lines.push(
+        `  categories: [${cats
+          .split(",")
+          .map((s) => `"${s.trim()}"`)
+          .join(", ")}],`,
+      );
     }
     if (props.typewriter === "false") {
       lines.push("  typewriter: false,");
     }
     if (props.mode === "async") {
-      lines.push("  search: async (q, signal) =>", "    fetch(`/api/search?q=${q}`, { signal }).then((r) => r.json()),");
+      lines.push(
+        "  search: async (q, signal) =>",
+        "    fetch(`/api/search?q=${q}`, { signal }).then((r) => r.json()),",
+      );
       lines.push("  debounceMs: 300,");
       const sprite = props.loadingSpriteUrl?.trim();
       if (sprite) lines.push(`  loadingSpriteUrl: "${sprite}",`);
@@ -183,16 +233,14 @@ export default function SearchPage() {
   /* 多格式代码 */
   const snippets = (() => {
     const optsLines = buildOptsLines();
-    const optsBlock = optsLines.length > 0
-      ? ["{", ...optsLines, "}"].join("\n    ")
-      : "{}";
+    const optsBlock = optsLines.length > 0 ? ["{", ...optsLines, "}"].join("\n    ") : "{}";
 
     const react = [
       'import { SearchBox } from "@qingwu/search";',
       'import "@qingwu/search/style.css";',
       "",
       "function CommandPalette() {",
-      '  const rootRef = useRef<HTMLDivElement>(null);',
+      "  const rootRef = useRef<HTMLDivElement>(null);",
       "  const sbRef = useRef<SearchBox | null>(null);",
       "",
       "  useEffect(() => {",
@@ -201,21 +249,21 @@ export default function SearchPage() {
       `    sbRef.current = new SearchBox(el, ${optsLines.length > 0 ? "{" : ""}`,
       ...optsLines,
       optsLines.length > 0 ? "    });" : "    {});",
-      '    return () => sbRef.current?.destroy();',
+      "    return () => sbRef.current?.destroy();",
       "  }, []);",
       "",
-      '  return <div ref={rootRef} />;',
+      "  return <div ref={rootRef} />;",
       "}",
     ].join("\n");
 
     const html = [
-      '<!DOCTYPE html>',
+      "<!DOCTYPE html>",
       '<html lang="zh-CN">',
       "<head>",
       '  <meta charset="utf-8" />',
       '  <script type="module">',
       '    import { SearchBox } from "https://unpkg.com/@qingwu/search";',
-      '  </script>',
+      "  </script>",
       '  <link rel="stylesheet" href="https://unpkg.com/@qingwu/search/style.css" />',
       "</head>",
       "<body>",
@@ -277,7 +325,9 @@ export default function SearchPage() {
                     onChange={(e) => setProps((p) => ({ ...p, [field.key]: e.target.value }))}
                   >
                     {field.options?.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
                     ))}
                   </select>
                 ) : (
@@ -292,7 +342,9 @@ export default function SearchPage() {
             ))}
           </div>
           <div className="cal-props-actions">
-            <button className="qw-btn qw-btn-primary" type="button" onClick={handleConfirm}>应用配置</button>
+            <button className="qw-btn qw-btn-primary" type="button" onClick={handleConfirm}>
+              应用配置
+            </button>
           </div>
         </div>
 
@@ -306,7 +358,9 @@ export default function SearchPage() {
                 <div className="cal-log-empty">暂无日志，操作搜索后将在此显示</div>
               ) : (
                 log.map((msg, i) => (
-                  <div key={i} className="cal-log-item">{msg}</div>
+                  <div key={i} className="cal-log-item">
+                    {msg}
+                  </div>
                 ))
               )}
             </div>

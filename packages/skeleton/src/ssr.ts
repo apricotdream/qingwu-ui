@@ -16,8 +16,8 @@
  * 运行时 AutoSkeleton 共用，两条路径动画行为一致。
  */
 
-import type { SkeletonElement, RenderSkeletonSnapshotOptions } from "./types";
 import { MIN_ANIMATED_HEIGHT, MIN_ANIMATED_WIDTH } from "./styles";
+import type { RenderSkeletonSnapshotOptions, SkeletonElement } from "./types";
 
 const DEFAULT_MAX_BLOCKS = 200;
 const DEFAULT_FALLBACK_BORDER_RADIUS = 4;
@@ -94,16 +94,11 @@ export function renderSkeletonSnapshot(
 
   const blocksHtml = blocks
     .map((b, i) => {
-      const br = b.borderRadius === "0px"
-        ? DEFAULT_FALLBACK_BORDER_RADIUS
-        : b.borderRadius;
+      const br = b.borderRadius === "0px" ? DEFAULT_FALLBACK_BORDER_RADIUS : b.borderRadius;
       // 门槛过滤（与运行时 AutoSkeleton 共用常量）：小块静态，宽块动画
-      const isShimmer =
-        b.width >= MIN_ANIMATED_WIDTH && b.height >= MIN_ANIMATED_HEIGHT;
+      const isShimmer = b.width >= MIN_ANIMATED_WIDTH && b.height >= MIN_ANIMATED_HEIGHT;
       // 错峰：按文档序递增负延迟（0 关闭错峰）
-      const delay = isShimmer && staggerDelay > 0
-        ? `--qs-sk-delay:-${i * staggerDelay}ms;`
-        : "";
+      const delay = isShimmer && staggerDelay > 0 ? `--qs-sk-delay:-${i * staggerDelay}ms;` : "";
       return `<div class="${isShimmer ? "qs-skel-block is-shimmer" : "qs-skel-block"}" style="
         position:absolute;
         top:${b.y}px;

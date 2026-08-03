@@ -2,14 +2,7 @@
  * 主题 Provider - 自动跟随系统深浅 + 强调色切换
  */
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import type { AccentColor, ThemeMode } from "../types";
 
 interface ThemeContextValue {
@@ -107,9 +100,7 @@ export function useAccentTagClass(): string {
 function useResolvedTheme(mode: ThemeMode): "light" | "dark" {
   const [sys, setSys] = useState<"light" | "dark">(() => {
     if (typeof window === "undefined") return "light";
-    return window.matchMedia?.("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+    return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   });
   useEffect(() => {
     const mq = window.matchMedia?.("(prefers-color-scheme: dark)");

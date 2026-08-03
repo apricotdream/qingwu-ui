@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { AutoSkeleton } from "./auto-skeleton";
 
 function setup(): HTMLElement {
@@ -363,8 +363,7 @@ describe("AutoSkeleton 视口增量渲染", () => {
     // 510 行 × 100px 间距的长页，逐屏滚过全部行
     const rows = Array.from(
       { length: 510 },
-      (_, i) =>
-        `<div data-w="100" data-h="20" data-y="${i * 100}">row ${i}</div>`,
+      (_, i) => `<div data-w="100" data-h="20" data-y="${i * 100}">row ${i}</div>`,
     ).join("");
     document.body.innerHTML = `<div id="root">${rows}</div>`;
     mockRects();
@@ -386,9 +385,7 @@ describe("AutoSkeleton 视口增量渲染", () => {
     expect(skeleton.overlay!.querySelectorAll(".qs-skeleton-overlay").length).toBeLessThanOrEqual(
       600,
     );
-    expect(skeleton.overlay!.querySelectorAll(".qs-skeleton-overlay").length).toBeGreaterThan(
-      10,
-    );
+    expect(skeleton.overlay!.querySelectorAll(".qs-skeleton-overlay").length).toBeGreaterThan(10);
 
     skeleton.destroy();
     Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
