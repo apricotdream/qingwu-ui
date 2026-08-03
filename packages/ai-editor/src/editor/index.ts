@@ -88,3 +88,10 @@ export type { S3StorageOptions } from "./storage/providers/s3";
 export { createS3Storage } from "./storage/providers/s3";
 // 安全工具
 export { escapeHtml, sanitizeHtml, sanitizeSvg } from "./utils/sanitize";
+// Toast 提示通道（对外开放自定义：setToastProvider 全局替换 / onToast 实例级覆盖）
+export { setToastProvider, subscribeToast, toast } from "../components/toast";
+export type { ToastListener, ToastType } from "../components/toast";
+// 删除确认（默认内置项目 DeleteConfirmDialog，可经 setConfirmProvider 全局覆盖）
+export { setConfirmProvider } from "./utils/delete-confirm";
+export type { ConfirmProvider } from "./utils/delete-confirm";
+export type { DeleteConfirmDialogProps } from "./utils/delete-confirm-dialog";

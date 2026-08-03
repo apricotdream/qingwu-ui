@@ -11,6 +11,85 @@ import { Button } from "@qingwu/button";
 import { compressImage, detectEncodeMimes } from "./compress";
 import type { CompressedFile, OutputFormat, UploadItem, UploadOptions } from "./types";
 
+/* ============================================================
+   持久化：未完成上传项（File + 元数据）存入 IndexedDB
+   IndexedDB 不可用时（如测试环境）降级内存 Map，行为等价
+   ============================================================ */
+
+type PersistStrategy = "session" | "local";
+
+interface PersistEntry {
+  id: string;
+  file: File;
+  name: string;
+  mime: string;
+  originalSize: number;
+  size: number;
+  format: OutputFormat;
+  source?: "local" | "url";
+  originalUrl?: string;
+}
+
+const PERSIST_DB = "qw-upload";
+const PERSIST_VERSION = 1;
+const persistMemory: Record<PersistStrategy, Map<string, PersistEntry>> = {
+  session: new Map(),
+  local: new Map(),
+};
+let persistDbPromise: Promise<IDBDatabase | null> | null = null;
+
+function openPersistDb(): Promise<IDBDatabase | null> {
+  if (typeof indexedDB === "undefined") return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const req = indexedDB.open(PERSIST_DB, PERSIST_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      for (const store of ["session", "local"] as const) {
+        if (!db.objectStoreNames.contains(store)) db.createObjectStore(store, { keyPath: "id" });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+function getPersistDb(): Promise<IDBDatabase | null> {
+  if (!persistDbPromise) persistDbPromise = openPersistDb();
+  return persistDbPromise;
+}
+
+/** 全量覆盖写（先清后写）；IndexedDB 不可用时写内存 Map */
+async function persistWriteAll(
+  strategy: PersistStrategy,
+  entries: PersistEntry[],
+): Promise<void> {
+  const db = await getPersistDb();
+  if (!db) {
+    const mem = persistMemory[strategy];
+    mem.clear();
+    for (const e of entries) mem.set(e.id, e);
+    return;
+  }
+  const tx = db.transaction(strategy, "readwrite");
+  const store = tx.objectStore(strategy);
+  store.clear();
+  for (const e of entries) store.put(e);
+  await new Promise<void>((resolve) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+  });
+}
+
+async function persistReadAll(strategy: PersistStrategy): Promise<PersistEntry[]> {
+  const db = await getPersistDb();
+  if (!db) return [...persistMemory[strategy].values()];
+  return new Promise((resolve) => {
+    const req = db.transaction(strategy, "readonly").objectStore(strategy).getAll();
+    req.onsuccess = () => resolve(req.result as PersistEntry[]);
+    req.onerror = () => resolve([]);
+  });
+}
+
 const FORMAT_LABEL: Record<OutputFormat, string> = {
   original: "原图",
   webp: "WebP",
@@ -175,6 +254,9 @@ export function validateFile(
   return null;
 }
 
+/** 单文件大图模式的「上传中」视觉保底时长：真实上传可能瞬间完成，避免进度一闪而过 */
+const MIN_UPLOAD_VISIBLE_MS = 350;
+
 let idSeq = 0;
 function nextId(): string {
   idSeq += 1;
@@ -204,6 +286,9 @@ export class ImageUpload {
       | "maxHeight"
       | "urlImport"
       | "urlImportTimeout"
+      | "initialUrls"
+      | "persist"
+      | "previewFit"
     >
   >;
   /** 生效的 accept：显式 accept > supportedFormats 映射 > ["image/*"] */
@@ -223,7 +308,21 @@ export class ImageUpload {
   private encodable: ReadonlySet<string> | null = null;
 
   private dropzone!: HTMLElement;
+  /** 拖拽容器提示区（ico/main/sub；状态切换只切 hidden，不重建容器） */
+  private dropzoneHint!: HTMLElement;
+  /** 单文件大图区（absolute 盖满容器） */
+  private dropzonePreviewBox!: HTMLElement;
+  /** 单文件模式容器大图预览对应的 item id（非空时容器点击 = 预览，X = 移除） */
+  private dropzonePreviewId: string | null = null;
+  private previewLightbox: HTMLElement | null = null;
+  /** 上传开始时间戳（视觉保底计算） */
+  private uploadStartAt = 0;
+  /** 视觉保底到期时间戳：期间成功项仍渲染为「上传中」态 */
+  private holdDropzoneUntil = 0;
   private btn: Button | null = null;
+  /** 按钮形态状态机：空闲选文件 / 上传中忽略 / 已上传或失败点击移除 */
+  private btnState: "idle" | "uploading" | "done" | "error" = "idle";
+  private btnItemId: string | null = null;
   private hint!: HTMLElement;
   private list!: HTMLElement;
   private input!: HTMLInputElement;
@@ -248,6 +347,9 @@ export class ImageUpload {
       maxHeight: opts.maxHeight ?? 2048,
       urlImport: opts.urlImport ?? true,
       urlImportTimeout: opts.urlImportTimeout ?? 10000,
+      initialUrls: opts.initialUrls ?? [],
+      persist: opts.persist ?? "off",
+      previewFit: opts.previewFit ?? "cover",
     };
     this.accept = this.opts.accept.length
       ? this.opts.accept
@@ -270,12 +372,90 @@ export class ImageUpload {
     this.bind();
     root.append(this.el);
 
+    // 编辑态回显：initialUrls 渲染为成功项（无文件、不参与上传，删除走 remove → onChange 差集）
+    for (const raw of this.opts.initialUrls ?? []) {
+      this.items.push({
+        id: nextId(),
+        file: undefined,
+        name: nameFromUrl(raw, "image/*"),
+        mime: "image/*",
+        originalSize: 0,
+        size: 0,
+        format: "original",
+        status: "success",
+        progress: 100,
+        preview: raw,
+        source: "remote",
+        remoteUrl: raw,
+      });
+    }
+    if (this.items.length > 0) {
+      this.renderList();
+      this.emitChange();
+    }
+
+    // 持久化恢复：上次未完成的项（刷新/重开后列表还在），恢复为 pending 并自动重新上传
+    if (this.opts.persist !== "off") void this.restorePersisted();
+
     // 预热格式编码探测（压缩开启时），避免首个文件等待
     if (this.opts.compress) {
       void detectEncodeMimes().then((s) => {
         this.encodable = s;
       });
     }
+  }
+
+  /** 恢复持久化的未完成项并自动重新上传（成功项不持久化，由宿主 initialUrls 回显） */
+  private async restorePersisted(): Promise<void> {
+    const strategy = this.opts.persist;
+    if (strategy === "off") return;
+    const entries = await persistReadAll(strategy);
+    for (const e of entries) {
+      if (this.items.some((i) => i.id === e.id)) continue;
+      const preview = URL.createObjectURL(e.file);
+      this.previewUrls.add(preview);
+      this.items.push({
+        id: e.id,
+        file: e.file,
+        name: e.name,
+        mime: e.mime,
+        originalSize: e.originalSize,
+        size: e.size,
+        format: e.format,
+        status: "pending",
+        progress: 0,
+        preview,
+        source: e.source ?? "local",
+        originalUrl: e.originalUrl,
+      });
+    }
+    if (entries.length > 0) {
+      this.renderList();
+      this.emitChange();
+      for (const item of this.items) {
+        if (item.status === "pending") void this.upload(item);
+      }
+    }
+  }
+
+  /** 持久化同步：只保留未完成项（上传中/失败/等待）；成功与 remote 项不入库 */
+  private syncPersist(): void {
+    const strategy = this.opts.persist;
+    if (strategy === "off") return;
+    const entries: PersistEntry[] = this.items
+      .filter((i) => i.file && i.status !== "success" && i.source !== "remote")
+      .map((i) => ({
+        id: i.id,
+        file: i.file!,
+        name: i.name,
+        mime: i.mime,
+        originalSize: i.originalSize,
+        size: i.size,
+        format: i.format,
+        source: i.source === "url" ? ("url" as const) : undefined,
+        originalUrl: i.originalUrl,
+      }));
+    void persistWriteAll(strategy, entries);
   }
 
   /* ============================================================
@@ -291,12 +471,13 @@ export class ImageUpload {
     this.input.hidden = true;
 
     if (this.opts.trigger === "button") {
-      /* 按钮变体：复用 @qingwu/button 样式，点击打开文件选择 */
+      /* 按钮变体：复用 @qingwu/button 样式，进度内嵌按钮，不渲染列表容器 */
       this.btn = new Button({
         text: "选择图片",
         variant: "primary",
-        onClick: () => this.input.click(),
+        onClick: () => this.handleBtnClick(),
       });
+      this.btn.el.classList.add("qw-upload-btn");
       this.el.append(this.btn.el, this.input);
     } else {
       this.dropzone = el("div", "qw-upload-dropzone");
@@ -304,15 +485,16 @@ export class ImageUpload {
       this.dropzone.setAttribute("tabindex", "0");
       this.dropzone.setAttribute("aria-label", "选择或拖拽图片上传");
 
-      const hintText = this.opts.maxCount > 0 ? `最多 ${this.opts.maxCount} 张 · ` : "";
-      const fmtHint = this.opts.supportedFormats.length
-        ? this.opts.supportedFormats.map((f) => f.toUpperCase()).join("/")
-        : "JPG/PNG/WebP/GIF/AVIF";
-      this.dropzone.innerHTML =
+      // 提示区（稳定子元素，状态切换只切 hidden，不重建容器）
+      this.dropzoneHint = el("div", "qw-upload-dropzone-hint");
+      this.dropzoneHint.innerHTML =
         `<span class="qw-upload-ico">${ICO_UPLOAD}</span>` +
         `<span class="qw-upload-main">拖拽图片到此处，或 <em>点击选择</em></span>` +
-        `<span class="qw-upload-sub">${hintText}单张 ≤ ${this.opts.maxSizeMB} MB · 支持 ${fmtHint}</span>`;
-      this.dropzone.append(this.input);
+        `<span class="qw-upload-sub">${this.hintText()}</span>`;
+      // 单文件大图区（absolute 盖满容器）
+      this.dropzonePreviewBox = el("div", "qw-upload-dropzone-preview-box");
+      this.dropzonePreviewBox.hidden = true;
+      this.dropzone.append(this.dropzoneHint, this.dropzonePreviewBox);
 
       if (this.opts.urlImport) {
         this.urlBar = el("div", "qw-upload-urlbar");
@@ -332,6 +514,7 @@ export class ImageUpload {
         cancel.type = "button";
         cancel.addEventListener("click", () => this.closeUrlPanel());
         this.urlPanel.append(this.urlInput, this.urlGoBtn, cancel);
+        // URL 入口在图片框内（底部）
         this.dropzone.append(this.urlBar, this.urlPanel);
       }
       this.el.append(this.dropzone);
@@ -340,20 +523,38 @@ export class ImageUpload {
     this.hint = el("div", "qw-upload-hint");
     this.hint.hidden = true;
 
+    /* 按钮形态不渲染列表容器：进度内嵌按钮，移除/清空后按钮复位 */
+    if (this.opts.trigger === "button") {
+      this.el.append(this.hint);
+      return;
+    }
+
     this.list = el("div", "qw-upload-list");
     this.list.hidden = true;
 
-    this.el.append(this.hint, this.list);
+    this.el.append(this.hint, this.list, this.input);
   }
 
   private bind(): void {
     this.input.addEventListener("change", () => {
-      this.addFiles(Array.from(this.input.files ?? []));
+      this.handleFiles(Array.from(this.input.files ?? []));
       this.input.value = "";
     });
 
-    /* 拖拽（仅拖拽区形态） */
-    this.dropzone?.addEventListener("click", () => this.input.click());
+    /* 拖拽（仅拖拽区形态）；大图模式：✕ = 一键清空全部（单文件容器承载整个字段），容器点击 = 图片预览 */
+    this.dropzone?.addEventListener("click", (e) => {
+      if ((e.target as HTMLElement).closest(".qw-upload-dropzone-remove")) {
+        // ✕ 只出现在单文件预览态：一张图可衍生多份格式项，点 ✕ = 放弃整个字段（clear 语义）
+        this.clear();
+        return;
+      }
+      if (this.dropzonePreviewId) {
+        const item = this.items.find((i) => i.id === this.dropzonePreviewId);
+        if (item?.preview && item.status === "success") this.openPreview(item.preview);
+        return;
+      }
+      this.input.click();
+    });
     this.dropzone?.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
@@ -376,7 +577,7 @@ export class ImageUpload {
     this.dropzone?.addEventListener("drop", (e) => {
       e.preventDefault();
       this.dropzone.classList.remove("is-drag");
-      this.addFiles(Array.from(e.dataTransfer?.files ?? []));
+      this.handleFiles(Array.from(e.dataTransfer?.files ?? []));
     });
 
     /* URL 导入：入口/面板事件（stopPropagation 防止触发文件选择） */
@@ -397,8 +598,8 @@ export class ImageUpload {
     });
     this.urlGoBtn?.addEventListener("click", () => void this.importUrls());
 
-    /* 列表事件委托：删除按钮 */
-    this.list.addEventListener("click", (e) => {
+    /* 列表事件委托：删除按钮（按钮形态无列表，跳过） */
+    this.list?.addEventListener("click", (e) => {
       const btn = (e.target as HTMLElement).closest<HTMLElement>(".qw-upload-remove");
       if (btn?.dataset.id) this.remove(btn.dataset.id);
     });
@@ -417,7 +618,7 @@ export class ImageUpload {
   }
   private hintTimer: number | undefined;
 
-  private addFiles(files: File[]): void {
+  private handleFiles(files: File[]): void {
     let rejected = 0;
     for (const file of files) {
       const reason = validateFile(
@@ -522,6 +723,7 @@ export class ImageUpload {
     this.items.push(...pending);
     this.renderList();
     this.emitChange();
+    this.syncPersist(); // 新项入库（未完成态）
     for (const item of pending) void this.upload(item);
     return pending;
   }
@@ -533,13 +735,18 @@ export class ImageUpload {
     this.setStatus(item, "uploading");
     item.progress = 0;
     this.onStart?.(item);
+    this.syncBtn(item, "uploading", 0);
+    this.uploadStartAt = Date.now();
+    this.renderItem(item); // 立即进入大图「上传中 0%」态（快速上传也可见）
 
     try {
       if (this.uploadFn) {
-        await this.uploadFn(item.file, (p) => {
+        // 上传项必有文件（remote 回显项为 success 态不会走到这里）
+        await this.uploadFn(item.file!, (p) => {
           item.progress = p;
           this.renderItem(item);
           this.onProgress?.(item);
+          this.syncBtn(item, "uploading", item.progress);
         });
       } else if (this.url) {
         await this.uploadXHR(item);
@@ -547,9 +754,20 @@ export class ImageUpload {
       // 无 url 也无 uploadFn：仅压缩/选择模式，直接视为成功
       this.setStatus(item, "success");
       item.progress = 100;
+      // 单文件大图模式视觉保底：先设 hold 再渲染，上传中态至少可见 MIN_UPLOAD_VISIBLE_MS，再切「点击移除」
+      const remain = MIN_UPLOAD_VISIBLE_MS - (Date.now() - this.uploadStartAt);
+      if (this.dropzone && this.opts.maxCount === 1 && remain > 0) {
+        this.holdDropzoneUntil = Date.now() + remain;
+        window.setTimeout(() => {
+          this.holdDropzoneUntil = 0;
+          if (this.dropzonePreviewId === item.id) this.renderItem(item);
+        }, remain);
+      }
       this.renderItem(item);
       this.onSuccess?.(item);
+      this.syncBtn(item, "done", null);
       this.emitChange();
+      this.syncPersist(); // 成功项出库，失败/等待项保留
     } catch (err) {
       const e = err instanceof Error ? err : new Error(String(err));
       if (e.name === "AbortError") return; // 主动移除，不报错
@@ -557,7 +775,9 @@ export class ImageUpload {
       this.setStatus(item, "error");
       this.renderItem(item);
       this.onError?.(item, e);
+      this.syncBtn(item, "error", null);
       this.emitChange();
+      this.syncPersist(); // 失败项保留（刷新后可重试）
     }
   }
 
@@ -589,7 +809,7 @@ export class ImageUpload {
         reject(new DOMException("上传已取消", "AbortError"));
       });
       const fd = new FormData();
-      fd.append(this.opts.fieldName, item.file, item.file.name);
+      fd.append(this.opts.fieldName, item.file!, item.file!.name);
       xhr.send(fd);
     });
   }
@@ -731,11 +951,103 @@ export class ImageUpload {
   }
 
   private renderList(): void {
-    this.list.hidden = this.items.length === 0;
+    if (!this.list) return; // 按钮形态无列表容器
+    this.renderDropzone();
+    // 先清空：隐藏态（空态/大图模式）不重建，但必须清掉残留行——✕ 全清后隐藏列表不应残留上次的项
     this.list.textContent = "";
+    if (this.list.hidden) return; // 大图模式或空态：列表隐藏
     const frag = document.createDocumentFragment();
     for (const item of this.items) frag.append(this.buildItem(item));
     this.list.append(frag);
+  }
+
+  /** 拖拽区默认提示文案 */
+  private hintText(): string {
+    const hintCount = this.opts.maxCount > 0 ? `最多 ${this.opts.maxCount} 张 · ` : "";
+    const fmtHint = this.opts.supportedFormats.length
+      ? this.opts.supportedFormats.map((f) => f.toUpperCase()).join("/")
+      : "JPG/PNG/WebP/GIF/AVIF";
+    return `${hintCount}单张 ≤ ${this.opts.maxSizeMB} MB · 支持 ${fmtHint}`;
+  }
+
+  /**
+   * 单文件模式（maxCount=1）下容器承载大图预览：成功/上传中且有预览的项替换默认提示，
+   * 列表同步隐藏；空态/失败态恢复默认提示（失败项仍走列表展示）。
+   * 只切换子元素 hidden，不重建容器——URL 导入入口（容器内）不受影响。
+   */
+  private renderDropzone(): void {
+    if (!this.dropzone || this.opts.maxCount !== 1) return;
+    const item = this.items.find((i) => i.status === "success" || i.status === "uploading");
+    const preview = item?.preview;
+    const show = !!preview;
+    this.dropzonePreviewId = show ? item!.id : null;
+    this.dropzone.classList.toggle("is-preview", show);
+    this.dropzoneHint.hidden = show;
+    this.dropzonePreviewBox.hidden = !show;
+    if (this.urlBar) {
+      this.urlBar.hidden = show; // 大图盖满容器，URL 入口随提示区一起隐藏
+      if (this.urlPanel) this.urlPanel.hidden = true; // 大图切换时收起展开面板
+    }
+    // 单文件大图模式或空态：列表隐藏；其他状态列表展示（失败项等）
+    if (this.list) this.list.hidden = this.items.length === 0 || this.dropzonePreviewId !== null;
+    if (!show) return;
+    // 视觉保底窗口内：已成功的项仍渲染为「上传中」态，避免快速上传进度一闪而过
+    const hold = item!.status === "success" && Date.now() < this.holdDropzoneUntil;
+    // 容器内进度条 = 所有上传中项的聚合（多格式多份时进度条仍完整反映整体）
+    const active = this.items.filter(
+      (i) => i.status === "uploading" || (i.status === "success" && hold),
+    );
+    const uploading = active.length > 0;
+    const pct =
+      uploading && active.length > 0
+        ? Math.round(active.reduce((sum, i) => sum + i.progress, 0) / active.length)
+        : item!.progress;
+    // auto：初始保守用 contain（完整显示），图片加载完成后按「图 ≥ 容器」判定切换 cover
+    const fitContain = this.opts.previewFit === "contain" || this.opts.previewFit === "auto";
+    this.dropzonePreviewBox.innerHTML =
+      `<img class="qw-upload-dropzone-preview${fitContain ? " is-contain" : ""}" src="${escapeHTML(preview)}" alt="" />` +
+      `<span class="qw-upload-dropzone-mask">${
+        uploading ? `上传中 ${pct}%` : "点击预览"
+      }</span>` +
+      (uploading
+        ? `<span class="qw-upload-dropzone-progress"><i style="width:${pct}%"></i></span>`
+        : "") +
+      `<button type="button" class="qw-upload-dropzone-remove" aria-label="移除图片" title="移除">✕</button>`;
+    if (this.opts.previewFit === "auto") {
+      const imgEl = this.dropzonePreviewBox.querySelector<HTMLImageElement>("img");
+      if (imgEl) {
+        const applyAutoFit = () => {
+          if (!imgEl.naturalWidth || !imgEl.naturalHeight) return;
+          // 自适应：图片比例与容器比例接近 → 铺满（裁切少）；差异大（如横图进竖容器）→ 完整显示，避免裁切主体
+          const imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
+          const boxRatio =
+            (this.dropzone.clientWidth || 1) / (this.dropzone.clientHeight || 1);
+          const diff = Math.abs(imgRatio - boxRatio) / boxRatio;
+          imgEl.classList.toggle("is-contain", diff >= 0.2);
+        };
+        // 缓存命中的图（如 initialUrls 回显）可能在监听前已 complete，load 不再触发 → 立即执行一次
+        if (imgEl.complete) applyAutoFit();
+        else imgEl.addEventListener("load", applyAutoFit, { once: true });
+      }
+    }
+  }
+
+  /** 打开图片预览（全屏遮罩），点击关闭 */
+  private openPreview(url: string): void {
+    if (this.previewLightbox) return;
+    const layer = el("div", "qw-upload-lightbox");
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "";
+    layer.append(img);
+    layer.addEventListener("click", () => this.closePreview());
+    document.body.append(layer);
+    this.previewLightbox = layer;
+  }
+
+  private closePreview(): void {
+    this.previewLightbox?.remove();
+    this.previewLightbox = null;
   }
 
   private buildItem(item: UploadItem): HTMLElement {
@@ -763,9 +1075,11 @@ export class ImageUpload {
     head.append(name, tag);
 
     const sizeText =
-      item.originalSize !== item.size
-        ? `${formatBytes(item.originalSize)} → ${formatBytes(item.size)}`
-        : formatBytes(item.size);
+      item.source === "remote"
+        ? "已上传"
+        : item.originalSize !== item.size
+          ? `${formatBytes(item.originalSize)} → ${formatBytes(item.size)}`
+          : formatBytes(item.size);
     const meta = el("span", "qw-upload-meta");
     meta.textContent = sizeText;
 
@@ -805,6 +1119,8 @@ export class ImageUpload {
   }
 
   private renderItem(item: UploadItem): void {
+    if (!this.list) return; // 按钮形态无列表容器
+    this.renderDropzone(); // 单文件模式：进度/状态变化同步容器大图
     const row = this.list.querySelector<HTMLElement>(`[data-id="${item.id}"]`);
     if (row) this.updateItemDom(row, item);
   }
@@ -818,6 +1134,62 @@ export class ImageUpload {
   }
 
   /** 移除一个上传项（上传中会中止请求） */
+  /** 程序化添加文件（等同用户选择/拖入组件），走完整压缩上传管线 */
+  addFiles(files: File[]): void {
+    this.handleFiles(files);
+  }
+
+  /* ============================================================
+     按钮形态：状态机 + 内嵌进度
+     ============================================================ */
+
+  /** 同步按钮形态状态（其他形态为空操作） */
+  private syncBtn(item: UploadItem, state: "uploading" | "done" | "error", pct: number | null): void {
+    if (!this.btn) return;
+    if (state === "uploading") this.btnItemId = item.id; // 认领当前上传项
+    if (this.btnItemId !== item.id) return;
+    this.btnState = state;
+    if (state === "uploading") {
+      this.btn.disabled = true;
+      this.renderBtn("上传中", pct ?? 0);
+    } else {
+      this.btn.disabled = false;
+      this.renderBtn(state === "done" ? "已上传 ✓" : "上传失败", null);
+    }
+  }
+
+  /**
+   * 按钮形态渲染：自管按钮内部 DOM（Button.text setter 用 textContent 会清掉进度条子元素）。
+   * 进度条为半透明白条叠在主色按钮上，宿主主题化时无需额外覆盖。
+   */
+  private renderBtn(label: string, pct: number | null): void {
+    const btnEl = this.btn?.el;
+    if (!btnEl) return;
+    btnEl.textContent = "";
+    const txt = el("span", "qw-upload-btn-label");
+    txt.textContent = pct === null ? label : `${label} ${pct}%`;
+    btnEl.append(txt);
+    if (pct !== null) {
+      const bar = el("span", "qw-upload-btn-progress");
+      bar.style.width = `${pct}%`;
+      btnEl.append(bar);
+    }
+  }
+
+  /** 按钮点击状态机：空闲选文件 / 上传中忽略 / 已上传或失败点击移除（单文件已上传 = 清空全部） */
+  private handleBtnClick(): void {
+    if (this.btnState === "uploading") return;
+    if (this.btnState === "done" || this.btnState === "error") {
+      if (!this.btnItemId) return;
+      // 单文件按钮形态：一张图可衍生多份格式项，已上传后点击 = 放弃整个字段；
+      // 若只删一项，其余项会残留并卡死数量上限（新文件永远被拒）
+      if (this.btnState === "done" && this.opts.maxCount === 1) this.clear();
+      else this.remove(this.btnItemId);
+      return;
+    }
+    this.input.click();
+  }
+
   remove(id: string): void {
     const xhr = this.xhrs.get(id);
     if (xhr) {
@@ -832,8 +1204,14 @@ export class ImageUpload {
         URL.revokeObjectURL(item.preview);
         this.previewUrls.delete(item.preview);
       }
+      if (this.btn && this.btnItemId === id) {
+        this.btnState = "idle";
+        this.btnItemId = null;
+        this.renderBtn("选择图片", null);
+      }
       this.renderList();
       this.emitChange();
+      this.syncPersist();
     }
   }
 
@@ -845,13 +1223,37 @@ export class ImageUpload {
     }
     this.xhrs.clear();
     this.items = [];
+    if (this.btn) {
+      this.btnState = "idle";
+      this.btnItemId = null;
+      this.renderBtn("选择图片", null);
+    }
     this.renderList();
     this.emitChange();
+    this.syncPersist();
   }
 
   /** 销毁组件，释放全部资源 */
   destroy(): void {
-    this.clear();
+    // 静默清理：不触发 onChange（宿主差集会把已成功项误判为「被移除」→ 清字段 + 删存储）。
+    // 宿主在 Step1 切步骤/离开时卸载组件，字段与已上传 URL 必须保留。
+    for (const id of [...this.xhrs.keys()]) {
+      const xhr = this.xhrs.get(id);
+      if (xhr) xhr.abort();
+    }
+    this.xhrs.clear();
+    this.items = [];
+    if (this.btn) {
+      this.btnState = "idle";
+      this.btnItemId = null;
+      this.renderBtn("选择图片", null);
+    }
+    if (this.list) {
+      this.list.hidden = true;
+      this.list.textContent = "";
+    }
+    if (this.opts.persist !== "off") void persistWriteAll(this.opts.persist, []); // 销毁即丢弃持久化
+    this.closePreview();
     for (const url of this.previewUrls) URL.revokeObjectURL(url);
     this.previewUrls.clear();
     if (this.hintTimer !== undefined) clearTimeout(this.hintTimer);

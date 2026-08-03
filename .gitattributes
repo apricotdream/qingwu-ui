@@ -1,5 +1,7 @@
 # 二进制文件：禁止 CRLF 转换，防止 core.autocrlf 剥离 0x0D 字节损坏资产（0.5.0 曾踩坑：全部 PNG/wasm/ttf 被剥离 CR）
 *.png binary
+# Windows 批处理必须 CRLF：cmd.exe 解析 LF-only 版会错乱（跳过主体、pause 不执行 → 双击闪退）
+*.bat text eol=crlf
 *.jpg binary
 *.jpeg binary
 *.gif binary

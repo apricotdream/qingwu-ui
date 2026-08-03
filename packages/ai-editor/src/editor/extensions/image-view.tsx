@@ -163,6 +163,33 @@ export function ImageView({ node, deleteNode, editor }: any) {
     <NodeViewWrapper as="div" className="image-node-view group/img" contentEditable={false}>
       {showPlaceholder ? (
         <div className="image-placeholder">
+          {isEditable && (
+            <button
+              type="button"
+              className="img-ctrl-btn img-ctrl-btn--del image-placeholder-del"
+              onClick={() => {
+                if (isDeleteConfirmActive()) return;
+                setDeleteConfirmActive(true);
+                setShowDeleteConfirm(true);
+              }}
+              title="删除"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+            </button>
+          )}
           <svg
             width="32"
             height="32"
@@ -371,16 +398,23 @@ export function ImageView({ node, deleteNode, editor }: any) {
       <DeleteConfirmDialog
         open={showDeleteConfirm}
         title="确认删除图片"
-        message="此操作将同时删除对象存储中的文件，不可撤销。"
+        message={
+          showPlaceholder
+            ? "该图片无法在当前环境加载，仅从编辑器中移除该图片节点，不影响存储文件。"
+            : "此操作将同时删除对象存储中的文件，不可撤销。"
+        }
         onCancel={() => {
           setDeleteConfirmActive(false);
           setShowDeleteConfirm(false);
         }}
         onConfirm={async () => {
-          try {
-            await removeStoredResource(src);
-          } catch {
-            /* 存储删除失败仍移除节点 */
+          // 无法加载的图片（本地路径/加载失败）不在对象存储中，跳过存储删除
+          if (!showPlaceholder) {
+            try {
+              await removeStoredResource(src);
+            } catch {
+              /* 存储删除失败仍移除节点 */
+            }
           }
           setDeleteConfirmActive(false);
           await new Promise((r) => setTimeout(r, 300));

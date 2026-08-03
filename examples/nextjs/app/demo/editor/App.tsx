@@ -17,8 +17,10 @@ import {
   setAIProvider,
   setLocale,
   setStorageProvider,
+  setToastProvider,
   startBrowserClipperReceiver,
   t,
+  toast,
   validateAttachmentFile,
 } from "@qingwu/ai-editor";
 import { toast as qwToast } from "@qingwu/toast";
@@ -342,6 +344,23 @@ export default function App() {
   const [maxTotalAttachmentSize, setMaxTotalAttachmentSize] = useState(
     DEFAULT_MAX_TOTAL_ATTACHMENT_SIZE,
   );
+  // Toast 接入方式演示：内置默认 / onToast 实例级 / setToastProvider 全局
+  type ToastMode = "default" | "onToast" | "provider";
+  const [toastMode, setToastMode] = useState<ToastMode>("default");
+  // provider 模式设置全局渲染器（消息带前缀以示区别），其余模式恢复内置默认
+  useEffect(() => {
+    if (toastMode === "provider") {
+      setToastProvider((message, type) => {
+        if (type === "success") qwToast.success(`[setToastProvider] ${message}`);
+        else if (type === "info") qwToast.info(`[setToastProvider] ${message}`);
+        else qwToast.error(`[setToastProvider] ${message}`);
+      });
+    } else {
+      setToastProvider(null);
+    }
+    // 卸载时复位，避免全局渲染器泄漏到其他页面
+    return () => setToastProvider(null);
+  }, [toastMode]);
   // 上传限制测试区结果（仅本地校验大小，不触发真实上传）
   const [limitTestResults, setLimitTestResults] = useState<
     { name: string; size: number; ok: boolean; message?: string }[]
@@ -527,13 +546,6 @@ export default function App() {
       <header className="sticky top-0 z-40 border-b border-default-200 bg-background/80 backdrop-blur-md">
         <div className="max-w-4xl mx-auto flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <img
-              src="/favicon-32.png"
-              width={24}
-              height={24}
-              alt="青梧"
-              className="shrink-0 rounded"
-            />
             <h1 className="text-base sm:text-lg font-semibold tracking-wide truncate">
               {t("app.title")}
             </h1>
@@ -776,6 +788,25 @@ export default function App() {
                 ))}
               </select>
             </label>
+            <label className="flex items-center gap-1.5 text-xs text-default-500">
+              Toast 接入方式
+              <select
+                value={toastMode}
+                onChange={(e) => setToastMode(e.target.value as ToastMode)}
+                className="rounded-lg border border-default-200 bg-background px-2 py-1 text-xs text-foreground outline-none transition-colors focus:border-qingwu-400"
+              >
+                <option value="default">内置默认 @qingwu/toast</option>
+                <option value="onToast">onToast 实例级</option>
+                <option value="provider">setToastProvider 全局</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              className="rounded-lg border border-default-200 px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-default-100"
+              onClick={() => toast("Toast 提示通道工作正常（**info**）", "info")}
+            >
+              发送测试提示
+            </button>
             <label className="inline-flex cursor-pointer items-center rounded-lg bg-qingwu-600 px-3 py-1.5 text-xs text-white transition-colors hover:bg-qingwu-700">
               选择文件测试
               <input
@@ -789,11 +820,19 @@ export default function App() {
               切换限制后编辑器即时生效；拖拽文件到下方编辑器可触发真实上传（未配置存储时保留占位）
             </span>
           </div>
+          <div className="mt-2 text-[11px] text-default-400">
+            {toastMode === "default" &&
+              "内置默认：未传 onToast、未 setToastProvider，提示由随包内置 @qingwu/toast 渲染（开箱即用）。"}
+            {toastMode === "onToast" &&
+              "实例级：经 onToast 回调转发给宿主自己的 Toast 组件渲染。"}
+            {toastMode === "provider" &&
+              "全局级：setToastProvider() 替换默认渲染器，消息带 [setToastProvider] 前缀以示区别。"}
+          </div>
           {limitTestResults.length > 0 && (
             <ul className="mt-3 space-y-1">
-              {limitTestResults.map((result, i) => (
+              {limitTestResults.map((result) => (
                 <li
-                  key={`${result.name}-${i}`}
+                  key={`${result.name}-${result.size}`}
                   className={`text-xs ${result.ok ? "text-green-600" : "text-danger"}`}
                 >
                   {result.ok ? "✓ 通过" : "✗ 拦截"} {result.name}（{formatBytes(result.size)}）
@@ -811,11 +850,15 @@ export default function App() {
           onEditorReady={onEditorReady}
           maxAttachmentSize={maxAttachmentSize}
           maxTotalAttachmentSize={maxTotalAttachmentSize}
-          onToast={(message, type) => {
-            if (type === "success") qwToast.success(message);
-            else if (type === "info") qwToast.info(message);
-            else qwToast.error(message);
-          }}
+          onToast={
+            toastMode === "onToast"
+              ? (message, type) => {
+                  if (type === "success") qwToast.success(message);
+                  else if (type === "info") qwToast.info(message);
+                  else qwToast.error(message);
+                }
+              : undefined
+          }
         />
       </main>
 

@@ -1482,6 +1482,7 @@
 /* 鈹€鈹€ 鍥剧墖鍔犺浇澶辫触鍗犱綅 鈹€鈹€ */
 
 .image-placeholder {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1495,6 +1496,14 @@
   color: #a1a1aa;
   text-align: center;
   cursor: default;
+}
+
+/* 占位图右上角常驻删除按钮 */
+.image-placeholder-del {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
 }
 
 .image-placeholder-text {
@@ -2441,6 +2450,10 @@
 /* 音频加载占位（签名预加载完成前不渲染 <audio>，避免 src 切换闪烁） */
 .audio-embed-loading { display: flex; align-items: center; justify-content: center; gap: 8px; height: 40px; color: #71717a; font-size: 13px; background: #f4f4f5; border-radius: 8px; }
 .audio-embed-spinner { width: 16px; height: 16px; border: 2px solid #d4d4d8; border-top-color: #6366f1; border-radius: 50%; animation: xg-spin 0.7s linear infinite; }
+/* 音频缺失态（无 src 的坏节点，替代永久转圈） */
+.audio-embed-missing { background: #fef2f2; color: #b91c1c; }
+.dark .audio-embed-missing { background: rgba(127,29,29,0.15); color: #fca5a5; }
+.audio-embed-missing-icon { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: currentColor; color: #fff; font-size: 11px; font-weight: 700; line-height: 1; }
 
 /* 删除中动画：覆盖在确认卡片之上的遮罩 */
 .delete-progress { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; background: rgba(255,255,255,0.92); backdrop-filter: blur(2px); border-radius: 12px; z-index: 10; animation: delete-fade-in 0.18s ease; }
@@ -2573,17 +2586,7 @@
   color: #60a5fa;
 }
 
-/* 移动端目录抽屉遮罩 */
-.qingwu-toc-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9997;
-  background: rgba(0, 0, 0, 0.3);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-}
-
-/* 移动端目录抽屉面板 */
+/* 移动端目录抽屉面板 - 不设遮罩层，抽屉展开时编辑器内容保持可见可交互 */
 .qingwu-toc-drawer {
   position: fixed;
   right: 0;

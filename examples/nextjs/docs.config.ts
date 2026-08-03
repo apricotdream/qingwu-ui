@@ -171,11 +171,16 @@ export const COMPONENT_SECTIONS: DocSection[] = [
             props: [
               {
                 name: "value",
-                desc: "受控输入值（传入后进入受控模式，用户操作仅回调不内部改值）",
+                desc: "受控输入值（传入后进入受控模式，用户操作仅回调不内部改值；inline 模式下不生效）",
                 type: "string",
                 default: "-",
               },
-              { name: "defaultValue", desc: "非受控初始输入值", type: "string", default: '""' },
+              {
+                name: "defaultValue",
+                desc: "非受控初始输入值（inline 模式下不生效）",
+                type: "string",
+                default: '""',
+              },
               {
                 name: "tags",
                 desc: "受控可用标签列表（传入后 × 删除仅回调不内部改值）",
@@ -227,9 +232,21 @@ export const COMPONENT_SECTIONS: DocSection[] = [
               },
               {
                 name: "inline",
-                desc: "chip-in-input 模式：已选标签以 chip 内嵌输入框，× 删除即从输入值移除；下方标签栏仍为可用标签建议",
+                desc: "chip-in-input 模式：已选标签以 chip 内嵌输入框，× 删除即从已选数组移除；下方标签栏仍为可用标签建议；inline 下 value 字符串不生效，已选以 selected / defaultSelected 为准，input 仅承载草稿（Enter / 逗号 / 失焦 / 点建议提交）",
                 type: "boolean",
                 default: "false",
+              },
+              {
+                name: "selected",
+                desc: "inline 专属：已选标签数组（受控，传入后提交/删除仅回调 onSelectedChange，由调用方以 update({ selected }) 回灌）",
+                type: "string[]",
+                default: "-",
+              },
+              {
+                name: "defaultSelected",
+                desc: "inline 专属：非受控初始已选标签数组",
+                type: "string[]",
+                default: "[]",
               },
               {
                 name: "maxTags",
@@ -269,7 +286,7 @@ export const COMPONENT_SECTIONS: DocSection[] = [
             props: [
               {
                 name: "onChange",
-                desc: "输入值变化回调（用户输入 / 点击标签插入 / 程序化 insertTag）",
+                desc: "输入值变化回调（bar 模式：逗号拼接串；inline 模式：草稿文本）",
                 type: "(value: string) => void",
                 default: "-",
               },
@@ -279,6 +296,12 @@ export const COMPONENT_SECTIONS: DocSection[] = [
                 type: "(tags: string[]) => void",
                 default: "-",
               },
+              {
+                name: "onSelectedChange",
+                desc: "inline 专属：已选标签数组变化回调（提交 / × 删除 / 点建议时触发）",
+                type: "(selected: string[]) => void",
+                default: "-",
+              },
             ],
           },
           {
@@ -286,7 +309,7 @@ export const COMPONENT_SECTIONS: DocSection[] = [
             props: [
               {
                 name: "insertTag(tag)",
-                desc: "程序化插入标签到输入框（已存在则忽略）",
+                desc: "程序化插入标签到输入框（已存在则忽略；inline 模式为提交到已选数组并清空草稿）",
                 type: "(tag: string) => void",
                 default: "-",
               },

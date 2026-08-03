@@ -585,7 +585,8 @@ export interface QingWuAIEditorProps {
   immediatelyRender?: boolean;
   /**
    * 全局提示回调（附件超限拦截 / 文档附件超限警告等）。
-   * 由宿主接入自己的 Toast 组件（如 @qingwu/toast）；不传时提示静默丢弃。
+   * 由宿主接入自己的 Toast 组件（如 @qingwu/toast）；不传时回退到内置
+   * @qingwu/toast 默认渲染，也可通过 setToastProvider() 全局替换。
    */
   onToast?: (message: string, type: ToastType) => void;
 }
@@ -622,7 +623,6 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   const [showVideoDialog, setShowVideoDialog] = useState(false);
   const [showStorageSettings, setShowStorageSettings] = useState(false);
   const [showExport, setShowExport] = useState(false);
-  const [pasteTip, setPasteTip] = useState<string | null>(null);
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [showHighlightColors, setShowHighlightColors] = useState(false);
 
@@ -804,8 +804,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           try {
             const resourceUrls = await collectClipboardResourceUrls(cb);
             if (resourceUrls.size === 0 && hasLocalMediaRefs(text)) {
-              setPasteTip(
+              // 走 toast 通道：默认内置 @qingwu/toast 渲染，宿主可经 onToast/setToastProvider 自定义
+              toast(
                 "检测到本地相对路径图片/视频，但剪贴板没有对应文件；浏览器无法直接读取，请同时复制附件文件，或先上传后使用 URL。",
+                "info",
+                { maxLines: 3, duration: 6000 },
               );
             }
             const processed = applyResourceUrls(text, resourceUrls);
@@ -887,7 +890,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     editor.setEditable(!isReadonly, false);
   }, [editor, isReadonly]);
 
-  // Toast 通道订阅：宿主传入 onToast 则转发，否则消息静默丢弃（Toast 功能不可用）
+  // Toast 通道订阅：宿主传入 onToast 则转发；否则回退到内置 @qingwu/toast 默认渲染
   useEffect(() => {
     if (!onToast) return;
     return subscribeToast(onToast);
@@ -1005,12 +1008,6 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     };
   }, [editor, openAIPanel]);
 
-  useEffect(() => {
-    if (!pasteTip) return;
-    const timer = window.setTimeout(() => setPasteTip(null), 6000);
-    return () => window.clearTimeout(timer);
-  }, [pasteTip]);
-
   // 写作助手面板定位 - 基于选区位置，移动端全宽
   useEffect(() => {
     if (!showAI || !editor) return;
@@ -1071,10 +1068,22 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   );
 
   // 桌面内联侧栏可见 = 用户开启 TOC 且 视口宽屏 且 非全屏。
-  // 悬浮球可见 = TOC 功能启用 且 用户开启 TOC 且 桌面侧栏当前不可见
+  // 悬浮球可见 = TOC 功能启用 且 用户开启 TOC 且 桌面侧栏当前不可见 且 目录抽屉未展开
   // （窄屏 / 浏览器放大到窄视口 / 网页全屏 / 原生全屏 都落入此分支）。
+  // 抽屉展开时目录已直接展示，悬浮球隐藏避免重叠。
   const desktopTocVisible = showTocState && isWide && !editorWebFS && !editorNativeFS;
-  const fabVisible = showToc && showTocState && !desktopTocVisible;
+  const fabVisible = showToc && showTocState && !desktopTocVisible && !showTocMobile;
+  // 目录启用但桌面侧栏不可见（窄视口 / 全屏等）时，挂载后直接展开抽屉展示目录内容，
+  // 而不是只亮出悬浮球等用户再点一次。仅首次挂载自动展开一次；
+  // 用户手动关闭抽屉后，悬浮球作为折叠态入口保留。
+  const autoOpenedTocRef = useRef(false);
+  useEffect(() => {
+    if (autoOpenedTocRef.current) return;
+    autoOpenedTocRef.current = true;
+    if (showToc && showTocState && !desktopTocVisible) {
+      setShowTocMobile(true);
+    }
+  }, [showToc, showTocState, desktopTocVisible]);
 
   // 桌面目录改为编辑器卡片之外的独立侧栏（flex 兄弟节点 + sticky），
   // 不再用 fixed 浮层：fixed 在「宿主容器满宽」或「祖先存在 transform/filter 包含块」时
@@ -1102,7 +1111,18 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
               <button
                 type="button"
                 className={`qed-tb-btn qed-tb-btn--desktop-only${showTocState ? " is-active" : ""}`}
-                onClick={() => setShowTocState(!showTocState)}
+                onClick={() => {
+                  if (showTocState) {
+                    // 收起目录时同步关闭抽屉，避免浮层残留
+                    setShowTocState(false);
+                    setShowTocMobile(false);
+                  } else {
+                    setShowTocState(true);
+                    // 桌面侧栏不可见（64rem~80rem 窄视口 / 全屏等）时，
+                    // 展开目录直接打开抽屉，而不是只亮出悬浮球等二次点击
+                    if (!desktopTocVisible) setShowTocMobile(true);
+                  }
+                }}
                 title={showTocState ? "隐藏目录" : "显示目录"}
                 aria-label={showTocState ? "隐藏目录" : "显示目录"}
                 aria-pressed={showTocState}
@@ -1460,13 +1480,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           </Suspense>
         )}
 
-        {pasteTip && (
-          <div className="fixed right-6 top-6 z-[10000] max-w-md rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-700 shadow-lg">
-            {pasteTip}
-          </div>
-        )}
-
-        {/* 全局 toast 由宿主经 onToast 回调渲染，本包不再内置渲染宿主 */}
+        {/* 全局 toast：宿主经 onToast 回调自定义；未接入时内置 @qingwu/toast 兜底渲染 */}
 
         {/* 编辑器主区域 */}
         {/* 编辑器主体 + 目录侧栏 */}
@@ -1502,7 +1516,8 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
         )}
 
         {/* 目录悬浮球 - 当桌面内联侧栏不可见（窄屏 / 浏览器放大 / 网页全屏 / 原生全屏）
-          且用户开启了 TOC 时出现，点击打开目录抽屉 */}
+          且用户开启了 TOC、目录抽屉未展开时出现，点击打开目录抽屉。
+          抽屉展开时目录已直接展示，悬浮球隐藏。 */}
         {fabVisible && (
           <button
             type="button"
@@ -1523,40 +1538,37 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           </button>
         )}
 
-        {/* 移动端目录抽屉 */}
+        {/* 移动端目录抽屉 - 不设遮罩层，避免遮挡编辑器内容；关闭走抽屉头 × / 面板收起按钮 */}
         {showToc && showTocMobile && (
-          <>
-            <div className="qingwu-toc-overlay" onClick={() => setShowTocMobile(false)} />
-            <div className="qingwu-toc-drawer toc-scroll">
-              <div className="qed-drawer-head">
-                <span className="qed-drawer-head__title">目录</span>
-                <button
-                  type="button"
-                  className="qed-drawer-head__close"
-                  onClick={() => setShowTocMobile(false)}
-                  aria-label="关闭目录"
+          <div className="qingwu-toc-drawer toc-scroll">
+            <div className="qed-drawer-head">
+              <span className="qed-drawer-head__title">目录</span>
+              <button
+                type="button"
+                className="qed-drawer-head__close"
+                onClick={() => setShowTocMobile(false)}
+                aria-label="关闭目录"
+              >
+                <svg
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  aria-hidden="true"
                 >
-                  <svg
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <TocPanel
-                editor={editor}
-                className="!p-3"
-                onClose={() => {
-                  setShowTocMobile(false);
-                  setShowTocState(false);
-                }}
-              />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-          </>
+            <TocPanel
+              editor={editor}
+              className="!p-3"
+              onClose={() => {
+                setShowTocMobile(false);
+                setShowTocState(false);
+              }}
+            />
+          </div>
         )}
       </div>
       {/* 桌面端目录 — 悬浮框（fixed 视口右侧，宽屏且非全屏时显示） */}

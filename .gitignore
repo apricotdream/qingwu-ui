@@ -35,3 +35,6 @@ Desktop.ini
 
 # 缓存
 .cache/
+
+# 本地记忆（不提交）
+.claude/memory/

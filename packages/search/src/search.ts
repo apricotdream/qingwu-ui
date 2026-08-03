@@ -5,7 +5,7 @@
    - 零框架依赖，纯 DOM + CSS
    ============================================================ */
 
-import type { SearchItem, SearchOptions } from "./types";
+import type { SearchFn, SearchItem, SearchOptions } from "./types";
 import { Typewriter } from "./typewriter";
 
 /* ---------- 运行时常量 ---------- */
@@ -64,6 +64,13 @@ export class SearchBox {
   private readonly staticMode: boolean;
   /** 是否渲染内置触发条（false 时宿主自定义入口，仅保留全局快捷键与 open()/close()） */
   private readonly withTrigger: boolean;
+  /** 异步搜索函数（服务端模式），提供时优先于本地 items 筛选 */
+  private readonly searchFn?: SearchFn;
+  private readonly debounceMs: number;
+  private readonly minQuery: number;
+  /** 加载态精灵图 URL 与帧数（缺省时加载态仅文案） */
+  private readonly spriteUrl?: string;
+  private readonly spriteFrames: number;
 
   /* ---- 运行时状态 ---- */
   private cat = "全部";
@@ -73,6 +80,11 @@ export class SearchBox {
   private returnFocus: HTMLElement | null = null;
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
   private wasEmpty = false;
+  /* 异步模式：防抖定时器 / 在途请求控制器 / 最近一次结果（供类别筛选复用） */
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private abortCtl: AbortController | null = null;
+  private lastResults: SearchItem[] = [];
+  private searchBusy = false;
 
   /* ---- DOM 引用 ---- */
   private trigger: HTMLButtonElement | null = null;
@@ -90,6 +102,7 @@ export class SearchBox {
   private empty!: HTMLElement;
   private emptyText!: HTMLElement;
   private emptySub!: HTMLElement;
+  private loading!: HTMLElement;
   private list!: HTMLUListElement;
   private toasts!: HTMLElement;
   private focusables: HTMLElement[] = [];
@@ -110,6 +123,11 @@ export class SearchBox {
     this.animate = opts.typewriter !== false;
     this.staticMode = !this.animate || PREFERS_REDUCED;
     this.withTrigger = opts.trigger !== false;
+    this.searchFn = opts.search;
+    this.debounceMs = opts.debounceMs ?? 200;
+    this.minQuery = Math.max(1, opts.minQuery ?? 1);
+    this.spriteUrl = opts.loadingSpriteUrl;
+    this.spriteFrames = Math.max(2, opts.loadingSpriteFrames ?? 5);
 
     this.cat = this.categories[0] ?? "全部";
 
@@ -204,11 +222,27 @@ export class SearchBox {
       '<div class="qs-empty-sub">TRY TYPING &laquo;中秋&raquo; OR &laquo;霜降&raquo;</div>';
     this.emptyText = qs(this.empty, ".qs-empty-text");
     this.emptySub = qs(this.empty, ".qs-empty-sub");
+
+    /* 加载态：精灵条 steps 帧动画（与博客列表页同款机制），无 URL 时降级为纯文案 */
+    this.loading = el("div", "qs-loading");
+    this.loading.hidden = true;
+    if (this.spriteUrl) {
+      const leaf = el("div", "qs-loading-leaf");
+      const frame = el("div", "qs-loading-frame");
+      const sprite = el("span", "qs-loading-sprite");
+      sprite.style.backgroundImage = `url(${this.spriteUrl})`;
+      sprite.style.setProperty("--qs-frames", String(this.spriteFrames));
+      frame.append(sprite);
+      leaf.append(frame);
+      this.loading.append(leaf);
+    }
+    this.loading.append(el("span", "qs-loading-status", "搜索中…"));
+
     this.list = el("ul", "qs-list") as HTMLUListElement;
     this.list.id = "qs-list";
     this.list.setAttribute("role", "listbox");
     this.list.hidden = true;
-    body.append(this.empty, this.list);
+    body.append(this.empty, this.loading, this.list);
 
     /* 底部快捷键栏 */
     const foot = el(
@@ -365,6 +399,8 @@ export class SearchBox {
     this.twTrigger?.destroy();
     this.twModal.destroy();
     if (this.closeTimer !== null) clearTimeout(this.closeTimer);
+    if (this.debounceTimer !== null) clearTimeout(this.debounceTimer);
+    this.abortCtl?.abort();
     if (this.docKey) document.removeEventListener("keydown", this.docKey, true);
     if (this.globalKey) document.removeEventListener("keydown", this.globalKey);
     this.overlay.remove();
@@ -440,7 +476,12 @@ export class SearchBox {
       this.filterChip.innerHTML = `${cat} <i aria-hidden="true">&times;</i>`;
       this.filterChip.setAttribute("aria-label", `清除筛选：${cat}`);
     }
-    this.renderResults();
+    /* 异步模式：复用最近一次结果按新类别过滤，避免重复请求 */
+    if (this.searchFn && this.lastResults.length && this.input.value.trim()) {
+      this.applyResults();
+    } else {
+      this.renderResults();
+    }
     if (this.isOpen) this.input.focus();
   }
 
@@ -482,41 +523,67 @@ export class SearchBox {
   }
 
   private renderResults(): void {
-    const q = this.input.value.trim().toLowerCase();
+    const raw = this.input.value.trim();
+    const q = raw.toLowerCase();
 
-    /* 无输入 → 空状态 */
+    /* 无输入 → 空状态（不发异步请求，并中止在途请求） */
     if (!q) {
-      this.list.hidden = true;
-      this.empty.hidden = false;
-      if (!this.wasEmpty) this.playEmptyEnter();
-      this.wasEmpty = true;
-      this.emptyText.innerHTML = "在找些什么？";
-      this.emptySub.textContent = "TRY TYPING «中秋» OR «霜降»";
-      this.input.setAttribute("aria-expanded", "false");
-      this.active = -1;
+      this.abortCtl?.abort();
+      this.showIdle();
       return;
     }
+    /* 异步模式：防抖后交服务端 */
+    if (this.searchFn) {
+      this.scheduleSearch(raw);
+      return;
+    }
+    /* 本地模式：items 内筛选 */
+    this.renderLocal(q);
+  }
 
+  /** 无查询空状态（空闲态） */
+  private showIdle(): void {
+    this.list.hidden = true;
+    this.loading.hidden = true;
+    this.empty.hidden = false;
+    if (!this.wasEmpty) this.playEmptyEnter();
+    this.wasEmpty = true;
+    this.emptyText.innerHTML = "在找些什么？";
+    this.emptySub.textContent = "TRY TYPING «中秋» OR «霜降»";
+    this.input.setAttribute("aria-expanded", "false");
+    this.active = -1;
+  }
+
+  /** 无结果空状态 */
+  private renderNoResults(q: string): void {
+    this.list.hidden = true;
+    this.loading.hidden = true;
+    this.empty.hidden = false;
+    if (!this.wasEmpty) this.playEmptyEnter();
+    this.wasEmpty = true;
+    this.emptyText.innerHTML = `没有匹配 <b>「${escapeHTML(q)}」</b> 的结果`;
+    this.emptySub.textContent =
+      this.cat !== this.categories[0] ? `FILTER · ${this.cat}` : "TRY ANOTHER KEYWORD";
+    this.input.setAttribute("aria-expanded", "false");
+    this.active = -1;
+  }
+
+  /** 本地模式：items 筛选 + 渲染 */
+  private renderLocal(q: string): void {
     this.visible = this.items.filter((it) => this.match(it, q));
-
-    /* 无结果 */
     if (this.visible.length === 0) {
-      this.list.hidden = true;
-      this.empty.hidden = false;
-      if (!this.wasEmpty) this.playEmptyEnter();
-      this.wasEmpty = true;
-      this.emptyText.innerHTML = `没有匹配 <b>「${escapeHTML(this.input.value.trim())}」</b> 的结果`;
-      this.emptySub.textContent =
-        this.cat !== this.categories[0] ? `FILTER · ${this.cat}` : "TRY ANOTHER KEYWORD";
-      this.input.setAttribute("aria-expanded", "false");
-      this.active = -1;
+      this.renderNoResults(q);
       return;
     }
+    this.renderList(q);
+  }
 
-    /* 有结果 → 渲染列表 */
+  /** 渲染结果列表（本地 / 异步共用） */
+  private renderList(q: string): void {
     const playStagger = this.wasEmpty;
     this.wasEmpty = false;
     this.empty.hidden = true;
+    this.loading.hidden = true;
     this.list.hidden = false;
     this.input.setAttribute("aria-expanded", "true");
     this.list.textContent = "";
@@ -546,6 +613,84 @@ export class SearchBox {
     });
     this.list.append(frag);
     this.setActive(0, false);
+  }
+
+  /* ============================================================
+     异步模式：防抖 → 请求 → loading / 结果 / 错误
+     ============================================================ */
+
+  /** 防抖：输入停顿 debounceMs 后才发起请求 */
+  private scheduleSearch(raw: string): void {
+    if (raw.length < this.minQuery) {
+      this.showIdle();
+      return;
+    }
+    if (this.debounceTimer !== null) clearTimeout(this.debounceTimer);
+    this.debounceTimer = setTimeout(() => {
+      this.debounceTimer = null;
+      this.doSearch(raw);
+    }, this.debounceMs);
+  }
+
+  /** 发起异步搜索：abort 旧请求，竞态安全（过期响应由 signal 丢弃） */
+  private doSearch(raw: string): void {
+    this.abortCtl?.abort();
+    const ctl = new AbortController();
+    this.abortCtl = ctl;
+    this.searchBusy = true;
+    this.renderSearching();
+
+    this.searchFn!(raw, ctl.signal)
+      .then((items) => {
+        if (ctl.signal.aborted) return;
+        this.searchBusy = false;
+        this.lastResults = items;
+        this.applyResults();
+      })
+      .catch(() => {
+        if (ctl.signal.aborted) return;
+        this.searchBusy = false;
+        this.renderSearchError(raw);
+      });
+  }
+
+  /** 请求在途加载态：精灵条 steps 帧动画（有 URL 时），无 URL 降级为纯文案 */
+  private renderSearching(): void {
+    this.list.hidden = true;
+    this.empty.hidden = true;
+    this.loading.hidden = false;
+    this.wasEmpty = true;
+    this.input.setAttribute("aria-expanded", "false");
+    this.active = -1;
+  }
+
+  /** 请求失败空态（保留输入，继续输入会重发请求） */
+  private renderSearchError(q: string): void {
+    this.list.hidden = true;
+    this.loading.hidden = true;
+    this.empty.hidden = false;
+    this.wasEmpty = true;
+    this.emptyText.innerHTML = `「${escapeHTML(q)}」搜索失败`;
+    this.emptySub.textContent = "请检查网络后重试";
+    this.input.setAttribute("aria-expanded", "false");
+    this.active = -1;
+  }
+
+  /** 应用异步结果：类别筛选 + 渲染（不再做 title/sub 匹配，匹配由服务端完成） */
+  private applyResults(): void {
+    const q = this.input.value.trim().toLowerCase();
+    if (!q) {
+      this.showIdle();
+      return;
+    }
+    this.visible = this.lastResults.filter(
+      (it) => this.cat === this.categories[0] || it.kind === this.cat,
+    );
+    if (this.visible.length === 0) {
+      this.renderNoResults(q);
+      return;
+    }
+    this.renderList(q);
   }
 
   private setActive(idx: number, scroll = true): void {

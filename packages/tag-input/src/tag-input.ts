@@ -49,10 +49,14 @@ export class TagInput {
   private readonly opts: TagInputOptions;
   private readonly controlledValue: boolean;
   private readonly controlledTags: boolean;
+  private readonly inline: boolean;
+  private readonly controlledSelected: boolean;
 
   /* ---- 运行时状态 ---- */
   private valueState: string;
   private tagsState: string[];
+  /** inline 模式已选标签数组（一等公民；null = 非 inline） */
+  private selectedState: string[] | null;
   private expanded = false;
   private disabled: boolean;
   private readOnly: boolean;
@@ -69,7 +73,11 @@ export class TagInput {
     this.opts = opts;
     this.controlledValue = opts.value !== undefined;
     this.controlledTags = opts.tags !== undefined;
-    this.valueState = opts.value ?? opts.defaultValue ?? "";
+    this.inline = opts.inline ?? false;
+    this.controlledSelected = opts.selected !== undefined;
+    /* inline 模式：已选 = 数组（selected/defaultSelected），input 只承载草稿，value 字符串不生效 */
+    this.valueState = this.inline ? "" : (opts.value ?? opts.defaultValue ?? "");
+    this.selectedState = this.inline ? (opts.selected ?? opts.defaultSelected ?? []) : null;
     this.tagsState = opts.tags ?? opts.defaultTags ?? [];
     this.disabled = opts.disabled ?? false;
     this.readOnly = opts.readOnly ?? false;
@@ -121,24 +129,39 @@ export class TagInput {
   private bind(): void {
     this.input.addEventListener("input", () => {
       const next = this.input.value;
-      if (!this.controlledValue) this.valueState = next;
-      this.opts.onChange?.(next);
+      if (this.inline) {
+        /* inline：input 只承载草稿，onChange 即草稿文本；逗号分段即时提交 */
+        this.opts.onChange?.(next);
+        this.commitCommaSegments();
+      } else {
+        if (!this.controlledValue) this.valueState = next;
+        this.opts.onChange?.(next);
+      }
       /* 标签显隐随输入值实时解析 */
       this.relayout();
     });
 
-    /* 回车：inline 模式加入已选标签；bar 模式 allowEnterCreate 时加入快捷栏 */
+    /* 回车：inline 模式提交草稿为已选；bar 模式 allowEnterCreate 时加入快捷栏 */
     this.input.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
       const text = this.input.value.trim();
       if (!text) return;
-      if (this.opts.inline) {
+      if (this.inline) {
         e.preventDefault();
-        this.addToValue(text);
+        /* 达上限时保留草稿等待用户处理，其余情况消费草稿（含重复） */
+        if (this.tryCommit(text) !== "full") this.input.value = "";
       } else if (this.opts.allowEnterCreate) {
         e.preventDefault();
         this.createTag(text);
       }
+    });
+
+    /* 失焦：inline 模式提交未完成的草稿 */
+    this.input.addEventListener("blur", () => {
+      if (!this.inline) return;
+      const text = this.input.value.trim();
+      if (!text) return;
+      if (this.tryCommit(text) !== "full") this.input.value = "";
     });
 
     /* 方向键在标签按钮间移动焦点（Enter 由按钮原生触发插入） */
@@ -176,9 +199,9 @@ export class TagInput {
     return (this.opts.parseTags ?? defaultParseTags)(value);
   }
 
-  /** 输入值中已存在的标签 */
+  /** 已选标签：inline 为一等数组，bar 模式为输入值字符串解析 */
   private activeTags(): string[] {
-    return this.parseTags(this.valueState);
+    return this.inline ? (this.selectedState ?? []) : this.parseTags(this.valueState);
   }
 
   /** 快捷栏可用标签 = 全部标签 - 已插入的标签 */
@@ -307,7 +330,7 @@ export class TagInput {
     insert.title = mode === "inline" ? `移除标签 ${tag}` : `插入标签 ${tag}`;
     insert.setAttribute("aria-label", insert.title);
     insert.addEventListener("click", () => {
-      if (mode === "inline") this.removeFromValue(tag);
+      if (mode === "inline") this.removeSelected(tag);
       else this.insertTag(tag);
     });
     wrap.append(insert);
@@ -320,7 +343,7 @@ export class TagInput {
       remove.title = mode === "inline" ? `移除标签 ${tag}` : `移除标签 ${tag}`;
       remove.setAttribute("aria-label", `移除标签 ${tag}`);
       remove.addEventListener("click", () => {
-        if (mode === "inline") this.removeFromValue(tag);
+        if (mode === "inline") this.removeSelected(tag);
         else this.removeTag(tag);
       });
       wrap.append(remove);
@@ -369,19 +392,40 @@ export class TagInput {
     return max > 0 && this.activeTags().length >= max;
   }
 
-  /** inline：把输入文本加入已选标签（输入值） */
-  private addToValue(text: string): void {
-    if (this.atMaxTags()) return;
-    if (this.activeTags().some((t) => this.norm(t) === this.norm(text))) return;
-    const cur = this.valueState;
-    const next = cur ? `${cur}, ${text}` : text;
-    this.setValue(next, true);
+  /** inline：提交一个草稿段 —— 入列 / 重复忽略 / 已达上限 */
+  private tryCommit(text: string): "added" | "dup" | "full" {
+    const tag = text.trim();
+    if (!tag) return "dup";
+    if (this.atMaxTags()) return "full";
+    if (this.activeTags().some((t) => this.norm(t) === this.norm(tag))) return "dup";
+    this.setSelected([...this.activeTags(), tag], true);
+    return "added";
   }
 
-  /** inline：从输入值移除一个已选标签 */
-  private removeFromValue(tag: string): void {
+  /** inline：草稿中出现逗号即分段提交；已消费的段剥离出草稿，尾段保留 */
+  private commitCommaSegments(): void {
+    const draft = this.input.value;
+    if (!draft.includes(",")) return;
+    const parts = draft.split(",");
+    const rest: string[] = [];
+    for (const p of parts.slice(0, -1)) {
+      /* 达上限的段保留在草稿（避免静默丢失），重复段与入列段一样被消费 */
+      if (this.tryCommit(p) === "full") rest.push(p);
+    }
+    this.input.value = [...rest, parts[parts.length - 1] ?? ""].join(",");
+  }
+
+  /** inline：从已选数组移除一个标签 */
+  private removeSelected(tag: string): void {
     const rest = this.activeTags().filter((t) => this.norm(t) !== this.norm(tag));
-    this.setValue(rest.join(", "), true);
+    this.setSelected(rest, true);
+  }
+
+  /** inline：更新已选数组（受控仅回调，非受控直接落内部） */
+  private setSelected(next: string[], emit: boolean): void {
+    if (!this.controlledSelected) this.selectedState = next;
+    if (emit) this.opts.onSelectedChange?.(next);
+    this.relayout();
   }
 
   /** inline：输入框内渲染已选标签 chip（插到输入框之前） */
@@ -397,9 +441,14 @@ export class TagInput {
      Public API
      ============================================================ */
 
-  /** 当前输入值 */
+  /** 当前输入值：inline 模式为草稿文本（input 当前内容），bar 模式为逗号拼接串 */
   get value(): string {
-    return this.valueState;
+    return this.inline ? this.input.value : this.valueState;
+  }
+
+  /** inline 模式已选标签数组（bar 模式返回空数组） */
+  get selected(): string[] {
+    return this.inline ? [...(this.selectedState ?? [])] : [];
   }
 
   /** 全部可用标签（含已插入的） */
@@ -416,9 +465,15 @@ export class TagInput {
     if (!normalized) return;
     if (this.activeTags().some((t) => this.norm(t) === this.norm(normalized))) return;
     if (this.atMaxTags()) return;
-    const cur = this.valueState;
-    const next = cur ? `${cur}, ${this.formatInsert(normalized)}` : this.formatInsert(normalized);
-    this.setValue(next, true);
+    if (this.inline) {
+      /* inline：点建议 = 提交已选，并清空未提交草稿 */
+      this.setSelected([...this.activeTags(), normalized], true);
+      this.input.value = "";
+    } else {
+      const cur = this.valueState;
+      const next = cur ? `${cur}, ${this.formatInsert(normalized)}` : this.formatInsert(normalized);
+      this.setValue(next, true);
+    }
     this.input.focus();
   }
 
@@ -428,6 +483,7 @@ export class TagInput {
    * 触发 onTagsChange
    */
   createTag(text: string): void {
+    if (this.inline) return; // 仅 bar 模式语义：新建快捷栏标签
     const normalized = text.trim();
     if (!normalized) return;
     /* 输入值中的其他标签（排除本次输入文本本身） */
@@ -451,8 +507,13 @@ export class TagInput {
   /**
    * 外部同步受控值。受控模式下用户操作仅回调，由调用方据此更新并调用本方法
    */
-  update(opts: { value?: string; tags?: string[] }): void {
-    if (opts.value !== undefined) {
+  update(opts: { value?: string; tags?: string[]; selected?: string[] }): void {
+    if (this.inline) {
+      /* inline：value 字符串不生效，已选只认 selected 数组（回灌后草稿不受影响） */
+      if (opts.selected !== undefined) {
+        this.selectedState = [...opts.selected];
+      }
+    } else if (opts.value !== undefined) {
       this.valueState = opts.value;
       this.syncInput();
     }

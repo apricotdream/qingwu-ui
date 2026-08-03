@@ -5,6 +5,8 @@
 
 /** 单个可搜索条目 */
 export interface SearchItem {
+  /** 业务主键（可选，透传给 onSelect 供宿主跳转/操作，不参与匹配与渲染） */
+  id?: string;
   /** 主标题（必填，用于全文匹配与渲染） */
   title: string;
   /** 副标题（可选，补充描述信息，参与搜索匹配） */
@@ -23,12 +25,32 @@ export interface SearchCategory {
   all?: boolean;
 }
 
+/**
+ * 异步搜索函数（服务端模式）。
+ * 由宿主实现（如请求后端接口），返回匹配条目；组件内部负责防抖、
+ * 竞态取消与 loading / 错误态渲染。signal 由组件创建：每次发起新请求
+ * 前会 abort 上一次请求，宿主应监听 signal 并丢弃过期响应。
+ */
+export type SearchFn = (query: string, signal: AbortSignal) => Promise<SearchItem[]>;
+
 /** 搜索框组件构造配置 */
 export interface SearchOptions {
   /** 占位提示轮播词列表（为空数组时无轮播仅静态） */
   placeholders?: string[];
-  /** 可搜索条目集 */
+  /** 可搜索条目集（本地模式；与 search 同时提供时 search 优先） */
   items?: SearchItem[];
+  /** 异步搜索函数（服务端模式）。提供时输入查询走防抖 + 该函数，结果直接
+      渲染、不再做本地 title/sub 匹配；类别筛选仍作用于返回结果 */
+  search?: SearchFn;
+  /** 异步搜索防抖间隔 ms，默认 200 */
+  debounceMs?: number;
+  /** 触发异步搜索的最小查询长度（trim 后），默认 1 */
+  minQuery?: number;
+  /** 加载态精灵图 URL（横向帧铺开的 sprite 图，如博客列表页同款）。
+      提供时请求在途显示精灵条 steps 帧动画；缺省降级为纯文案 */
+  loadingSpriteUrl?: string;
+  /** 精灵图横向帧数（默认 5），与 CSS 的 steps()/精灵条宽度一致 */
+  loadingSpriteFrames?: number;
   /** 筛选类别列表（首项建议为「全部」），默认 ["全部","节日","节气","功能","日期"] */
   categories?: string[];
   /** 用户选中某条目时回调 */

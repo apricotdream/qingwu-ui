@@ -181,18 +181,29 @@ function CollapseSection() {
 /* ── 5. chip-in-input 模式 ── */
 function InlineSection() {
   const ref = useRef<HTMLDivElement>(null);
+  const tiRef = useRef<TagInput | null>(null);
+  const [selected, setSelected] = useState(["前端", "组件库"]);
 
   useEffect(() => {
     if (!ref.current) return;
-    const ti = new TagInput(ref.current, {
-      defaultValue: "前端, 组件库",
+    tiRef.current = new TagInput(ref.current, {
+      selected,
       defaultTags: ["前端", "组件库", "React", "Vue", "Svelte"],
       inline: true,
       maxTags: 5,
-      placeholder: "输入标签，回车添加…",
+      placeholder: "输入标签，回车/逗号添加…",
+      onSelectedChange: (s) => setSelected(s),
     });
-    return () => ti.destroy();
+    return () => {
+      tiRef.current?.destroy();
+      tiRef.current = null;
+    };
   }, []);
+
+  /* 外部状态变化同步回组件 */
+  useEffect(() => {
+    tiRef.current?.update({ selected });
+  }, [selected]);
 
   return (
     <section>
@@ -200,8 +211,9 @@ function InlineSection() {
       <div className="qti-demo-basic">
         <div ref={ref} />
         <div className="qti-demo-state">
-          已选标签以 chip 内嵌输入框，× 删除即移除；回车添加新标签（<code>maxTags: 5</code>
-          上限，超出忽略）；下方快捷栏为可用标签建议
+          已选：<code>{selected.join(", ") || "（空）"}</code> · 已选以 chip 内嵌输入框，
+          × 删除即移除；草稿经 <code>Enter</code> / 逗号 / 失焦提交（<code>maxTags: 5</code>
+          上限，超出保留草稿）；下方快捷栏为可用标签建议
         </div>
       </div>
     </section>

@@ -196,38 +196,95 @@ describe("TagInput", () => {
     ti.destroy();
   });
 
-  test("inline 模式：已选标签以 chip 渲染在输入框内，× 删除从输入值移除", () => {
+  test("inline 模式：已选标签以 chip 渲染在输入框内，input 不回灌已选 join（红框回归），× 删除从已选数组移除", () => {
     const ti = new TagInput(root, {
       defaultTags: ["React", "Vue"],
-      defaultValue: "React, Vue",
+      defaultSelected: ["React", "Vue"],
       inline: true,
     });
-    /* 输入框内渲染 2 个已选 chip */
+    /* 输入框内渲染 2 个已选 chip；input 只承载草稿，不重复显示已选 */
     const wrap = root.querySelector<HTMLDivElement>(".qti-input-wrap")!;
     expect(wrap.querySelectorAll(".qti-tag").length).toBe(2);
+    expect(inputEl(root).value).toBe("");
     /* 点击 × 删除 "React" */
     const remove = wrap.querySelector<HTMLButtonElement>(".qti-tag-remove")!;
     remove.click();
-    expect(ti.value).toBe("Vue");
+    expect(ti.selected).toEqual(["Vue"]);
     expect(wrap.querySelectorAll(".qti-tag").length).toBe(1);
     ti.destroy();
   });
 
-  test("inline 模式：Enter 将输入文本加入已选标签（无需 allowEnterCreate，重复忽略）", () => {
+  test("inline 模式：Enter 将草稿提交为已选并清空输入（无需 allowEnterCreate，重复忽略）", () => {
     const ti = new TagInput(root, { defaultTags: ["React"], inline: true });
     const input = inputEl(root);
     input.value = "Vue";
     input.dispatchEvent(new Event("input"));
     input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    expect(ti.value).toBe("Vue");
-    /* 再按 Enter：输入已清空 → 无操作 */
-    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    expect(ti.value).toBe("Vue");
-    /* 重复标签被忽略 */
+    expect(ti.selected).toEqual(["Vue"]);
+    expect(input.value).toBe("");
+    /* 重复标签：未入列，草稿同样被消费 */
     input.value = "Vue";
     input.dispatchEvent(new Event("input"));
     input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    expect(ti.value).toBe("Vue");
+    expect(ti.selected).toEqual(["Vue"]);
+    expect(input.value).toBe("");
+    ti.destroy();
+  });
+
+  test("inline 模式：输入逗号即分段提交，草稿保留尾段", () => {
+    const ti = new TagInput(root, { inline: true });
+    const input = inputEl(root);
+    input.value = "a,b,c";
+    input.dispatchEvent(new Event("input"));
+    expect(ti.selected).toEqual(["a", "b"]);
+    expect(input.value).toBe("c");
+    ti.destroy();
+  });
+
+  test("inline 模式：失焦提交未完成的草稿", () => {
+    const ti = new TagInput(root, { inline: true });
+    const input = inputEl(root);
+    input.value = "Vue";
+    input.dispatchEvent(new Event("blur"));
+    expect(ti.selected).toEqual(["Vue"]);
+    expect(input.value).toBe("");
+    ti.destroy();
+  });
+
+  test("inline 受控：提交仅回调，update({ selected }) 回灌后 chip 同步", () => {
+    let sel: string[] = [];
+    const ti = new TagInput(root, {
+      selected: [],
+      defaultTags: ["Vue"],
+      inline: true,
+      onSelectedChange: (s) => (sel = s),
+    });
+    const input = inputEl(root);
+    input.value = "Vue";
+    input.dispatchEvent(new Event("input"));
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    expect(sel).toEqual(["Vue"]);
+    expect(ti.selected).toEqual([]); // 受控：内部不改，等 host 回灌
+    ti.update({ selected: ["Vue"] });
+    const wrap = root.querySelector<HTMLDivElement>(".qti-input-wrap")!;
+    expect(wrap.querySelectorAll(".qti-tag").length).toBe(1);
+    ti.destroy();
+  });
+
+  test("inline 模式：点建议 chip 提交已选并清空草稿", () => {
+    const ti = new TagInput(root, {
+      defaultTags: ["A", "B"],
+      defaultSelected: ["A"],
+      inline: true,
+    });
+    const input = inputEl(root);
+    input.value = "x";
+    input.dispatchEvent(new Event("input"));
+    /* 建议栏在 .qti-bar 内（inputWrap 内的是已选 chip，勿混淆） */
+    const suggestion = root.querySelector<HTMLButtonElement>(".qti-bar .qti-tag-insert")!;
+    suggestion.click(); // 建议 "B"
+    expect(ti.selected).toEqual(["A", "B"]);
+    expect(input.value).toBe("");
     ti.destroy();
   });
 
@@ -242,10 +299,10 @@ describe("TagInput", () => {
     ti.destroy();
   });
 
-  test("maxTags: inline 模式 Enter 达到上限后不添加，输入文本保留", () => {
+  test("maxTags: inline 模式 Enter 达到上限后不添加，草稿保留", () => {
     const ti = new TagInput(root, {
       defaultTags: ["A", "B", "C"],
-      defaultValue: "A, B",
+      defaultSelected: ["A", "B"],
       maxTags: 2,
       inline: true,
     });
@@ -253,9 +310,9 @@ describe("TagInput", () => {
     input.value = "C";
     input.dispatchEvent(new Event("input"));
     input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    /* 标签数未增加，输入文本未被清空（未提交） */
-    expect(ti.value).toBe("C");
-    expect(ti.tags).toEqual(["A", "B", "C"]);
+    /* 已选未增加，草稿保留等待用户处理 */
+    expect(ti.selected).toEqual(["A", "B"]);
+    expect(input.value).toBe("C");
     ti.destroy();
   });
 

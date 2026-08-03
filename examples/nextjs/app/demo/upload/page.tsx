@@ -1,10 +1,11 @@
 "use client";
 
-import type { OutputFormat, UploadFn } from "@qingwu/upload";
+import type { OutputFormat, UploadItem } from "@qingwu/upload";
 import { ImageUpload } from "@qingwu/upload";
 import { useCallback, useEffect, useRef, useState } from "react";
 import "@qingwu/upload/style.css";
 import DemoCard from "@/components/DemoCard";
+import { COMPONENT_SECTIONS } from "@/docs.config";
 
 /* ============================================================
    props 面板字段定义
@@ -78,7 +79,8 @@ const FIELDS: FieldDef[] = [
     key: "maxCount",
     label: "数量上限",
     type: "select",
-    defaultValue: "0",
+    // 默认单文件：容器承载大图预览（URL 导入入口在图片框内），多图能力可选
+    defaultValue: "1",
     options: [
       { label: "不限", value: "0" },
       { label: "1 张", value: "1" },
@@ -99,24 +101,47 @@ const FIELDS: FieldDef[] = [
     ],
   },
   {
-    key: "mode",
-    label: "上传方式",
+    key: "initial",
+    label: "编辑态回显",
     type: "select",
-    defaultValue: "mock",
+    defaultValue: "false",
     options: [
-      { label: "模拟进度（演示）", value: "mock" },
-      { label: "真实上传 /api/upload", value: "real" },
+      { label: "关闭（新建场景）", value: "false" },
+      { label: "开启（回显已存在封面）", value: "true" },
+    ],
+  },
+  {
+    key: "persist",
+    label: "持久化",
+    type: "select",
+    // 默认不开启：未完成的上传项（File）存 IndexedDB，刷新后恢复列表并自动重传
+    defaultValue: "off",
+    options: [
+      { label: "关闭", value: "off" },
+      { label: "标签页级（session）", value: "session" },
+      { label: "跨会话（local）", value: "local" },
+    ],
+  },
+  {
+    key: "previewFit",
+    label: "大图适配",
+    type: "select",
+    defaultValue: "cover",
+    options: [
+      { label: "铺满（裁切）", value: "cover" },
+      { label: "等比例缩小（完整显示）", value: "contain" },
+      { label: "自动（按尺寸选择）", value: "auto" },
     ],
   },
 ];
 
-/** 模拟上传：演示进度条动画（组件同样支持真实 XHR 进度） */
-const mockUpload: UploadFn = async (_file, onProgress) => {
-  for (let p = 0; p <= 100; p += 8 + Math.random() * 20) {
-    await new Promise((r) => setTimeout(r, 90 + Math.random() * 140));
-    onProgress(Math.min(100, Math.round(p)));
-  }
-};
+/* ============================================================
+   API 属性表（数据源：docs.config.ts → upload.api）
+   ============================================================ */
+
+const UPLOAD_API =
+  COMPONENT_SECTIONS.find((s) => s.id === "form")?.pages.find((p) => p.href === "/demo/upload")
+    ?.api ?? [];
 
 /* ============================================================ */
 
@@ -132,7 +157,25 @@ export default function UploadPage() {
     setLog((prev) => [...prev.slice(-19), `[${new Date().toLocaleTimeString()}] ${msg}`]);
   }, []);
 
-  /* 当前配置 → 组件选项 */
+  /** onProgress 日志节流：每 10% 记一条，附字节量证明为 XHR 真实进度 */
+  const lastLoggedRef = useRef<Map<string, number>>(new Map());
+  const handleProgress = useCallback(
+    (item: UploadItem) => {
+      if (item.progress >= 100) return; // 完成交给 onSuccess
+      const last = lastLoggedRef.current.get(item.id) ?? 0;
+      if (item.progress - last < 10) return;
+      lastLoggedRef.current.set(item.id, item.progress);
+      const sent = (item.size * item.progress) / 100;
+      const fmtBytes = (b: number) =>
+        b >= 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${(b / 1024).toFixed(1)} KB`;
+      addLog(
+        `进度 ${item.progress}% · ${fmtBytes(sent)} / ${fmtBytes(item.size)} ← ${item.name}（${item.format}）`,
+      );
+    },
+    [addLog],
+  );
+
+  /* 当前配置 → 组件选项（内置 XHR 上传，onProgress 为字节级真实进度） */
   const buildOptions = (current: Record<string, string>) => {
     const formatMap: Record<string, OutputFormat[]> = {
       all: ["original", "webp", "avif"],
@@ -149,8 +192,12 @@ export default function UploadPage() {
       maxCount: Number(current.maxCount) > 0 ? Number(current.maxCount) : undefined,
       supportedFormats:
         current.supportedFormats === "all" ? undefined : current.supportedFormats.split(","),
-      url: current.mode === "real" ? "/api/upload" : undefined,
-      uploadFn: current.mode === "mock" ? mockUpload : undefined,
+      url: "/api/upload",
+      initialUrls: current.initial === "true" ? ["/logo.png"] : undefined, // 编辑态回显演示
+      persist: (current.persist === "off" ? "off" : current.persist) as "off" | "session" | "local",
+      previewFit: (current.previewFit === "contain" || current.previewFit === "auto"
+        ? current.previewFit
+        : "cover") as "cover" | "contain" | "auto",
     };
   };
 
@@ -169,6 +216,7 @@ export default function UploadPage() {
       uploaderRef.current = new ImageUpload(el, {
         ...opts,
         onStart: (item) => addLog(`开始上传 → ${item.name}（${item.format}）`),
+        onProgress: handleProgress,
         onSuccess: (item) =>
           addLog(`完成 → ${item.name}（${item.format}，${(item.size / 1024).toFixed(1)} KB）`),
         onError: (item, e) => addLog(`失败 → ${item.name}（${item.format}）：${e.message}`),
@@ -214,9 +262,16 @@ export default function UploadPage() {
     if (props.maxCount !== "0") lines.push(`  maxCount: ${props.maxCount},       // 数量上限`);
     if (props.supportedFormats !== "all")
       lines.push(`  supportedFormats: ["${props.supportedFormats.split(",").join('", "')}"], // 图片格式白名单`);
-    if (props.mode === "real")
-      lines.push('  url: "/api/upload",        // 内置 XHR 上传（真实进度）');
-    else lines.push("  // uploadFn: 自定义上传函数（未传 url 时仅压缩不上传）");
+    if (props.initial === "true")
+      lines.push('  initialUrls: ["/logo.png"],  // 编辑态回显：已存在封面渲染为成功项');
+    if (props.persist !== "off")
+      lines.push(`  persist: "${props.persist}",  // 未完成项持久化（刷新恢复并自动重传）`);
+    if (props.previewFit !== "cover")
+      lines.push(
+        `  previewFit: "${props.previewFit}",   // 大图适配：contain 完整显示 / auto 按尺寸自动选择（默认 cover 铺满）`,
+      );
+    lines.push('  url: "/api/upload",        // 内置 XHR 上传（字节级真实进度）');
+    lines.push("  onProgress: (item) => console.log(item.progress), // 每项上传进度回调");
     return lines;
   };
 
@@ -290,7 +345,7 @@ export default function UploadPage() {
     <div className="demo-grid">
       <DemoCard
         title="Upload 图片上传"
-        desc="拖拽区 / 按钮两种触发形态，客户端压缩为原图 / WebP / AVIF 多份输出，每项独立进度条。"
+        desc="拖拽区 / 按钮两种触发形态，客户端压缩为原图 / WebP / AVIF 多份输出，内置 XHR 字节级真实上传进度，onProgress 实时回调。单文件限制（maxCount: 1）时拖拽容器承载大图预览，URL 导入入口在图片框内，右上角 ✕ 一键清空全部上传项。"
         full
         snippets={snippets}
       >
@@ -340,6 +395,41 @@ export default function UploadPage() {
           </div>
         </div>
       </DemoCard>
+
+      {/* API 属性表 */}
+      <div className="api-section">
+        {UPLOAD_API.map((group) => (
+          <section key={group.title}>
+            <h3>{group.title}</h3>
+            <table className="api-table">
+              <thead>
+                <tr>
+                  <th>属性</th>
+                  <th>说明</th>
+                  <th>类型</th>
+                  <th>默认值</th>
+                </tr>
+              </thead>
+              <tbody>
+                {group.props.map((p) => (
+                  <tr key={p.name}>
+                    <td>
+                      <code>{p.name}</code>
+                    </td>
+                    <td>{p.desc}</td>
+                    <td>
+                      <code>{p.type}</code>
+                    </td>
+                    <td>
+                      <code>{p.default}</code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        ))}
+      </div>
     </div>
   );
 }

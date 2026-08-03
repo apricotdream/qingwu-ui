@@ -2,10 +2,6 @@
 
 > A smart rich-text editor for Chinese users, built on Tiptap + React, with DeepSeek, Qwen, OpenAI and other LLM integrations.
 
-<p align="center">
-  <img src="./public/logo.png" width="80" alt="QingWu Logo" />
-</p>
-
 ---
 
 ## Features

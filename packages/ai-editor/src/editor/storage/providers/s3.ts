@@ -14,6 +14,11 @@ export interface S3StorageOptions {
   /** 自定义访问域名（CDN），用于返回可访问的资源 URL */
   customDomain?: string;
   uploadPrefix?: string;
+  /**
+   * 对象键文件名模板，留空默认「{ts}{tz}_{src}_{name}_{rand}{ext}」。
+   * 占位符：{ts}=时间戳、{tz}=时区(如 +0800)、{src}=出处(editor/cover)、
+   * {name}=原名(去扩展名)、{ext}=扩展名(含点，如 .jpg)、{rand}=随机串
+   */
   nameTemplate?: string;
 }
 
@@ -150,10 +155,12 @@ export function createS3Storage(config: S3StorageOptions): StorageProvider {
     name: `S3 (${config.bucket})`,
     type: "s3",
 
-    async upload(file: File): Promise<string> {
-      const ext = file.name.split(".").pop() || "bin";
+    async upload(file: File, source: string = "editor"): Promise<string> {
+      /* {ext} 含点号（如 ".jpg"），默认模板「{ts}{tz}_{src}_{name}_{rand}{ext}」直接可用 */
+      const ext = `.${file.name.split(".").pop() || "bin"}`;
       const prefix = config.uploadPrefix || "qingwu";
-      const template = config.nameTemplate || "{timestamp}-{timezone}-{filename}.{ext}";
+      /* 默认「{ts}{tz}_{src}_{name}_{rand}{ext}」；留空模板也走默认 */
+      const template = config.nameTemplate || "{ts}{tz}_{src}_{name}_{rand}{ext}";
       const ts = Date.now();
       const rnd = Math.random().toString(36).slice(2);
       const fname = file.name.replace(/\.[^.]+$/, "");
@@ -162,11 +169,12 @@ export function createS3Storage(config: S3StorageOptions): StorageProvider {
       const absMin = Math.abs(offsetMin);
       const tz = `${sign}${String(Math.floor(absMin / 60)).padStart(2, "0")}${String(absMin % 60).padStart(2, "0")}`;
       const keyName = template
-        .replace("{timestamp}", String(ts))
-        .replace("{timezone}", tz)
-        .replace("{random}", rnd)
+        .replace("{ts}", String(ts))
+        .replace("{tz}", tz)
+        .replace("{src}", source)
+        .replace("{name}", fname)
         .replace("{ext}", ext)
-        .replace("{filename}", fname);
+        .replace("{rand}", rnd);
       const objectKey = `${prefix}/${keyName}`;
       const uploadUrl = `${apiBase}/${objectKey}`;
       const body = new Uint8Array(await file.arrayBuffer());

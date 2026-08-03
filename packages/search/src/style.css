@@ -523,6 +523,75 @@
   animation: qs-pop-in 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ---- 加载态（异步服务端搜索）----
+   精灵条 steps 帧动画：与博客列表页 loading-sprite 同款机制——
+   transform 步进（仅合成层，零重绘），帧数经 --qs-frames 派生。
+   宿主传入 loadingSpriteUrl 即渲染精灵；缺省时仅显示文案。 */
+.qs-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+}
+.qs-loading[hidden] {
+  display: none;
+}
+@keyframes qs-spriteRead {
+  to {
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+.qs-loading-leaf {
+  position: relative;
+  width: clamp(4.5rem, 10vw, 6rem);
+  aspect-ratio: 1;
+  pointer-events: none;
+  user-select: none;
+  transform-origin: 50% 90%;
+  will-change: transform, opacity;
+}
+/* 静态暖光晕：径向渐变、不参与换帧，零每帧开销 */
+.qs-loading-leaf::before {
+  content: '';
+  position: absolute;
+  inset: -24%;
+  background: radial-gradient(
+    circle at 50% 58%,
+    color-mix(in srgb, var(--qs-amber) 30%, transparent),
+    color-mix(in srgb, var(--qs-amber) 12%, transparent) 52%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
+/* 单帧裁剪窗：溢出裁剪出当前帧 */
+.qs-loading-frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+/* 内层精灵条：N 帧横向铺开，transform 步进播放（GPU 合成） */
+.qs-loading-sprite {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--qs-frames, 5) * 100%);
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  animation: qs-spriteRead 1.6s steps(var(--qs-frames, 5)) infinite;
+  will-change: transform;
+}
+.qs-loading-status {
+  font-size: 12px;
+  color: var(--qs-ink-2);
+  letter-spacing: 0.08em;
+}
+
 /* 空状态插画配色 */
 .qs-art-shadow {
   fill: color-mix(in srgb, var(--qs-ink) 6%, transparent);
@@ -640,8 +709,12 @@
 .qs-opt-main {
   flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
 }
+/* title / sub 必须是块级：inline 元素上 text-overflow/overflow 不生效，
+   否则两段文本会同行的 inline 流里连续排布并溢出 main，压住右侧 kind 标签 */
 .qs-opt-title {
+  display: block;
   font-size: 13.5px;
   font-weight: 600;
   color: var(--qs-ink);
@@ -650,6 +723,7 @@
   text-overflow: ellipsis;
 }
 .qs-opt-sub {
+  display: block;
   font-size: 11px;
   color: var(--qs-ink-3);
   margin-top: 2px;
@@ -657,12 +731,18 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.qs-opt-sub:empty {
+  display: none;
+}
+/* 兜底药丸：未命名类别也有底色，避免裸字；命名类别在下方各自覆盖 */
 .qs-opt-kind {
   flex: none;
   font-family: var(--qs-font-mono);
   font-size: 9.5px;
   padding: 2.5px 7px;
   border-radius: 999px;
+  background: color-mix(in srgb, var(--qs-ink) 7%, transparent);
+  color: var(--qs-ink-2);
 }
 .qs-opt mark {
   background: color-mix(in srgb, var(--qs-amber) 26%, transparent);
@@ -695,6 +775,10 @@
 .kind-干支 {
   background: color-mix(in srgb, var(--qs-teal) 13%, var(--qs-ink) 5%, transparent);
   color: color-mix(in srgb, var(--qs-teal) 55%, var(--qs-ink));
+}
+.kind-文章 {
+  background: color-mix(in srgb, var(--qs-amber) 16%, transparent);
+  color: var(--qs-amber);
 }
 
 /* ============================================================

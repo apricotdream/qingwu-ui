@@ -314,3 +314,140 @@
 .qw-upload-item.is-error .qw-upload-status {
   color: #e5484d;
 }
+
+/* ---- 按钮形态：内嵌进度（进度条为半透明白，叠在主色按钮上） ---- */
+.qw-upload-btn {
+  position: relative;
+  overflow: hidden;
+}
+.qw-upload-btn .qw-upload-btn-label {
+  position: relative;
+  z-index: 1;
+}
+.qw-upload-btn .qw-upload-btn-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.28);
+  transition: width 0.15s linear;
+}
+
+/* ---- 单文件模式：容器大图预览 ---- */
+.qw-upload-dropzone.is-preview {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  /* 大图为 absolute 定位不撑高容器，必须显式给高度，否则塌陷为 0 */
+  min-height: 200px;
+}
+.qw-upload-dropzone.is-preview .qw-upload-dropzone-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.qw-upload-dropzone.is-preview .qw-upload-dropzone-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(10, 14, 14, 0);
+  opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+.qw-upload-dropzone.is-preview:hover .qw-upload-dropzone-mask {
+  opacity: 1;
+  background: rgba(10, 14, 14, 0.45);
+}
+.qw-upload-dropzone.is-preview .qw-upload-dropzone-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+}
+.qw-upload-dropzone.is-preview .qw-upload-dropzone-progress i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #2ba8fb, #6fc5ff);
+  transition: width 0.15s linear;
+}
+
+/* ---- 容器稳定子区（状态切换只切 hidden，不重建容器） ---- */
+.qw-upload-dropzone-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.qw-upload-dropzone-preview-box {
+  position: absolute;
+  inset: 0;
+}
+/* URL 入口在图片框内：置于底部 */
+.qw-upload-dropzone .qw-upload-urlbar {
+  margin-top: auto;
+  padding-top: 6px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- 单文件大图模式：右上角移除按钮 + 点击预览（lightbox） ---- */
+.qw-upload-dropzone.is-preview .qw-upload-dropzone-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(10, 14, 14, 0.5);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+.qw-upload-dropzone.is-preview .qw-upload-dropzone-remove:hover {
+  background: rgba(10, 14, 14, 0.78);
+}
+.qw-upload-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(10, 14, 14, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  animation: qwFadeIn 0.2s ease-out;
+}
+.qw-upload-lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+@keyframes qwFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---- 单文件大图适配：contain 等比例缩小完整显示（自适应留白） ----
+   选择器特异性必须高于上方 cover 规则（.is-preview .preview = 0,3,0），否则 is-contain 永远被覆盖 */
+.qw-upload-dropzone.is-preview .qw-upload-dropzone-preview.is-contain {
+  object-fit: contain;
+  background: #f1f4f7;
+}
