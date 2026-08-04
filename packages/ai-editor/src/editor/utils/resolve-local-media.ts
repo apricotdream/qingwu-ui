@@ -19,7 +19,12 @@ import { toast } from "../../components/toast";
 import { getEditorAttachmentLimits, validateAttachmentFile } from "../attachment-limits";
 import { uploadPlaceholder } from "../extensions/image-upload";
 import { getStorageProvider } from "../storage";
-import { type FsDirectoryHandle, findFileInDirectory, type LocalMediaRef } from "./local-media";
+import {
+  type FsDirectoryHandle,
+  findFileInDirectory,
+  type LocalMediaRef,
+  pickLocalFiles,
+} from "./local-media";
 
 /** 单个引用的解析结果 */
 export type ResolveOutcome = "uploaded" | "sessionOnly" | "limitRejected";
@@ -29,10 +34,12 @@ export interface ResolveReport {
   sessionOnly: number;
   limitRejected: number;
   missing: LocalMediaRef[];
+  /** 在目录里找到了同名文件，但读不出字节（云同步占位文件等） */
+  readFailed: LocalMediaRef[];
 }
 
 export function createEmptyReport(): ResolveReport {
-  return { uploaded: 0, sessionOnly: 0, limitRejected: 0, missing: [] };
+  return { uploaded: 0, sessionOnly: 0, limitRejected: 0, missing: [], readFailed: [] };
 }
 
 export function mergeReports(target: ResolveReport, src: ResolveReport): void {
@@ -40,6 +47,7 @@ export function mergeReports(target: ResolveReport, src: ResolveReport): void {
   target.sessionOnly += src.sessionOnly;
   target.limitRejected += src.limitRejected;
   target.missing.push(...src.missing);
+  target.readFailed.push(...src.readFailed);
 }
 
 /** 将文档中 src === matchSrc 的媒体节点换成 newSrc（同时记录文件大小） */
@@ -151,7 +159,7 @@ export function matchClipboardFiles(
   return { matched, unmatched };
 }
 
-/** 在已授权的目录里逐个找回引用对应的文件并上传换链；找不到的记入 missing。 */
+/** 在已授权的目录里逐个找回引用对应的文件并上传换链；找不到的记入 missing，读不出的记入 readFailed。 */
 export async function resolveRefsFromDirectory(
   view: any,
   editor: any,
@@ -160,9 +168,15 @@ export async function resolveRefsFromDirectory(
 ): Promise<ResolveReport> {
   const report = createEmptyReport();
   for (const ref of refs) {
-    const file = await findFileInDirectory(dir, ref.src);
+    const { file, readError } = await findFileInDirectory(dir, ref.src);
     if (!file) {
-      report.missing.push(ref);
+      if (readError) {
+        console.warn(`本地文件「${ref.basename}」在所选文件夹中找到但读取失败:`, readError);
+        report.readFailed.push(ref);
+      } else {
+        console.warn(`本地文件「${ref.basename}」未在所选文件夹「${dir.name}」中找到`);
+        report.missing.push(ref);
+      }
       continue;
     }
     const outcome = await processResolvedFile(view, editor, ref, file);
@@ -177,7 +191,7 @@ function namesSummary(refs: LocalMediaRef[]): string {
   return `${names.slice(0, 3).join("、")} 等 ${names.length} 个文件`;
 }
 
-/** 汇总 toast：上传成功 / 仅本次可见 / 未找到，全部说清楚 */
+/** 汇总 toast：上传成功 / 仅本次可见 / 读取失败 / 未找到，全部说清楚 */
 export function reportResolveResult(report: ResolveReport): void {
   const parts: string[] = [];
   if (report.uploaded > 0) parts.push(`${report.uploaded} 个已上传至存储`);
@@ -185,13 +199,23 @@ export function reportResolveResult(report: ResolveReport): void {
     parts.push(`${report.sessionOnly} 个仅本次会话可见（未配置存储或上传失败）`);
   }
   if (report.limitRejected > 0) parts.push(`${report.limitRejected} 个超出大小限制`);
+  if (report.readFailed.length > 0) {
+    parts.push(
+      `${report.readFailed.length} 个找到但读取失败：${namesSummary(report.readFailed)}` +
+        "（若在 OneDrive / WPS 云盘等同步目录，请右键文件选择「始终保留在此设备」后重试）",
+    );
+  }
   if (report.missing.length > 0) {
-    parts.push(`${report.missing.length} 个未找到：${namesSummary(report.missing)}`);
+    parts.push(
+      `${report.missing.length} 个未能获取：${namesSummary(report.missing)}` +
+        "（可把文件直接拖进编辑器上传）",
+    );
   }
   if (parts.length === 0) return;
 
-  const type = report.uploaded > 0 && report.missing.length === 0 ? "success" : "info";
-  toast(`本地文件解析完成：${parts.join("；")}`, type);
+  const allGood =
+    report.uploaded > 0 && report.missing.length === 0 && report.readFailed.length === 0;
+  toast(`本地文件解析完成：${parts.join("；")}`, allGood ? "success" : "info");
 }
 
 /**
@@ -220,8 +244,9 @@ export function openDirectoryConsentDialog(count: number): Promise<"pick" | "can
       "text-xs text-default-500 dark:text-zinc-400 mb-4 whitespace-pre-line leading-relaxed";
     msg.textContent =
       `检测到 ${count} 个本地图片/附件使用相对路径，粘贴时文件本体没有跟过来。\n` +
-      "浏览器不能直接读取你的磁盘。选择它们所在的文件夹（如 Obsidian 库、文档目录）后，" +
-      "编辑器会按路径读取并上传到你的存储。\n" +
+      "浏览器不能直接读取你的磁盘。请选择一个包含这些文件的文件夹" +
+      "（推荐 Obsidian 库根目录，它会连同子目录一起查找），" +
+      "编辑器读取后会上传到你的存储。\n" +
       "也可以选择稍后把文件直接拖进编辑器。";
 
     const btnRow = document.createElement("div");
@@ -307,4 +332,99 @@ export function openDragHintDialog(count: number): void {
   overlay.appendChild(panel);
   document.addEventListener("keydown", onKey);
   document.body.appendChild(overlay);
+}
+
+/**
+ * 兜底弹窗：文件夹解析失败的引用，引导用户直接用系统文件选择器选文件。
+ * 系统对话框走 OS 外壳，云同步占位文件 / 文件夹名匹配不上都能绕过。
+ */
+export function openPickFilesDialog(names: string[]): Promise<"pick" | "cancel"> {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.className =
+      "fixed inset-0 z-[10001] flex items-center justify-center bg-black/40 backdrop-blur-sm select-none";
+
+    const panel = document.createElement("div");
+    panel.className =
+      "bg-white dark:bg-zinc-800 rounded-xl p-6 shadow-xl max-w-md w-full mx-4 border border-default-200 dark:border-zinc-700 relative overflow-hidden";
+
+    const title = document.createElement("div");
+    title.className = "text-sm font-medium text-default-800 dark:text-zinc-100 mb-2";
+    title.textContent = "选择文件直接上传";
+
+    const msg = document.createElement("div");
+    msg.className =
+      "text-xs text-default-500 dark:text-zinc-400 mb-4 whitespace-pre-line leading-relaxed";
+    msg.textContent =
+      `还有 ${names.length} 个本地文件无法从所选文件夹读取：${names.join("、")}。\n` +
+      "点击「选择文件…」后在系统对话框里选中这些文件（可多选），将直接上传到存储。" +
+      "若它们位于云同步目录（OneDrive / 绿联云等），选中后会自动取回本地内容。";
+
+    const btnRow = document.createElement("div");
+    btnRow.className = "flex justify-end gap-2";
+
+    const close = (value: "pick" | "cancel") => {
+      document.removeEventListener("keydown", onKey);
+      overlay.remove();
+      resolve(value);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close("cancel");
+    };
+    overlay.addEventListener("mousedown", (e) => {
+      if (e.target === overlay) close("cancel");
+    });
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className =
+      "px-3 py-1.5 text-xs rounded-lg border border-default-200 hover:bg-default-100 text-default-700 dark:text-zinc-300 dark:border-zinc-600 dark:hover:bg-zinc-700";
+    cancelBtn.textContent = "稍后处理";
+    cancelBtn.addEventListener("click", () => close("cancel"));
+
+    const pickBtn = document.createElement("button");
+    pickBtn.type = "button";
+    pickBtn.className = "px-3 py-1.5 text-xs rounded-lg bg-blue-500 hover:bg-blue-600 text-white";
+    pickBtn.textContent = "选择文件…";
+    pickBtn.addEventListener("click", () => close("pick"));
+
+    btnRow.append(cancelBtn, pickBtn);
+    panel.append(title, msg, btnRow);
+    overlay.appendChild(panel);
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(overlay);
+  });
+}
+
+/**
+ * 兜底：从系统文件选择器选中的真实文件，按 basename 匹配引用后上传换链；
+ * 用户取消或选了但仍有未匹配的引用，记入 missing（交给汇总 toast 说明）。
+ */
+export async function resolveRefsByFilePicker(
+  view: any,
+  editor: any,
+  refs: LocalMediaRef[],
+): Promise<ResolveReport> {
+  const report = createEmptyReport();
+  const files = await pickLocalFiles();
+  if (!files) {
+    // 取消/失败：全部留在占位状态，交汇总 toast 说明
+    report.missing.push(...refs);
+    return report;
+  }
+
+  const byName = new Map(files.map((f) => [f.name.toLowerCase(), f] as const));
+  const unmatched: LocalMediaRef[] = [];
+  for (const ref of refs) {
+    const file = byName.get(ref.basename);
+    if (!file) {
+      unmatched.push(ref);
+      continue;
+    }
+    byName.delete(ref.basename);
+    const outcome = await processResolvedFile(view, editor, ref, file);
+    report[outcome]++;
+  }
+  report.missing.push(...unmatched);
+  return report;
 }

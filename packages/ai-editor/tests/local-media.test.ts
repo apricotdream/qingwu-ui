@@ -1,12 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   basenameOf,
   collectLocalMediaRefs,
   type FsDirectoryHandle,
+  filePickerSupported,
   findFileInDirectory,
   isLocalMediaSrc,
   type LocalMediaRef,
   normalizeLocalSrc,
+  pickLocalFiles,
   textHasLocalMediaRefs,
 } from "../src/editor/utils/local-media";
 
@@ -65,7 +67,18 @@ describe("textHasLocalMediaRefs", () => {
 interface FakeEntry {
   name: string;
   file?: File;
+  /** 模拟云同步占位文件：句柄存在但 getFile() 抛错 */
+  failRead?: boolean;
   children?: FakeEntry[];
+}
+
+function makeFileHandle(entry: FakeEntry): { getFile(): Promise<File> } {
+  return {
+    getFile: async () => {
+      if (entry.failRead) throw new Error("cloud placeholder file");
+      return entry.file as File;
+    },
+  };
 }
 
 function buildHandle(entry: FakeEntry): FsDirectoryHandle {
@@ -80,13 +93,12 @@ function buildHandle(entry: FakeEntry): FsDirectoryHandle {
     async getFileHandle(name: string) {
       const child = children.find((c) => c.file && c.name === name);
       if (!child || !child.file) throw new Error("NotFoundError");
-      const file = child.file;
-      return { getFile: async () => file };
+      return makeFileHandle(child);
     },
     values() {
       const items = children.map((c) =>
         c.file
-          ? ({ kind: "file", name: c.name, getFile: async () => c.file as File } as const)
+          ? ({ kind: "file", name: c.name, ...makeFileHandle(c) } as const)
           : ({ kind: "directory", name: c.name } as const),
       );
       return (async function* () {
@@ -123,25 +135,67 @@ function vault(): FsDirectoryHandle {
   });
 }
 
+describe("pickLocalFiles", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("选中文件后返回真实 File 列表", async () => {
+    const files = [new File(["a"], "a.png"), new File(["b"], "b.png")];
+    vi.stubGlobal("window", {
+      isSecureContext: true,
+      showOpenFilePicker: async () => files.map((f) => ({ getFile: async () => f })),
+    });
+    expect(await pickLocalFiles()).toEqual(files);
+  });
+
+  it("用户取消（AbortError）返回 null", async () => {
+    vi.stubGlobal("window", {
+      isSecureContext: true,
+      showOpenFilePicker: async () => {
+        throw new Error("AbortError");
+      },
+    });
+    expect(await pickLocalFiles()).toBeNull();
+  });
+
+  it("非安全上下文不支持文件选择器", () => {
+    vi.stubGlobal("window", { isSecureContext: false });
+    expect(filePickerSupported()).toBe(false);
+    expect(pickLocalFiles()).resolves.toBeNull();
+  });
+});
+
 describe("findFileInDirectory", () => {
   it("精确相对路径命中", async () => {
-    const file = await findFileInDirectory(vault(), "./attachments/a.png");
+    const { file } = await findFileInDirectory(vault(), "./attachments/a.png");
     expect(file).toBe(fileA);
   });
 
   it("完整路径去掉开头段后命中（用户授权的是子目录）", async () => {
-    const file = await findFileInDirectory(vault(), "/Users/x/vault/attachments/b.pdf");
+    const { file } = await findFileInDirectory(vault(), "/Users/x/vault/attachments/b.pdf");
     expect(file).toBe(fileB);
   });
 
   it("basename 兜底查找（Obsidian 最短路径写法）", async () => {
-    const file = await findFileInDirectory(vault(), "a.png");
+    const { file } = await findFileInDirectory(vault(), "a.png");
     expect(file).toBe(fileA);
   });
 
-  it("找不到返回 null", async () => {
-    const file = await findFileInDirectory(vault(), "not-exist.png");
+  it("找不到返回 null 且无 readError", async () => {
+    const { file, readError } = await findFileInDirectory(vault(), "not-exist.png");
     expect(file).toBeNull();
+    expect(readError).toBeUndefined();
+  });
+
+  it("找到但读取失败（云同步占位文件）返回 readError", async () => {
+    const dir = buildHandle({
+      name: "onedrive",
+      children: [{ name: "cloud.png", file: fileA, failRead: true }],
+    });
+    const { file, readError } = await findFileInDirectory(dir, "cloud.png");
+    expect(file).toBeNull();
+    expect(readError).toBeDefined();
   });
 });
 
