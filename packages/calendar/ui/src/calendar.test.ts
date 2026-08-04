@@ -101,15 +101,15 @@ describe("Calendar · popover 形态", () => {
     cal.destroy();
   });
 
-  it("popover 形态不渲染取消/确认按钮", () => {
+  it("popover 也渲染取消/确认按钮（两种形态统一提交制）", () => {
     const cal = new Calendar(mount(), { mode: "popover", selected: "2026-08-01" });
     cal.open();
-    expect(document.querySelector(".qw-cal-confirm-btn")).toBeNull();
-    expect(document.querySelector(".qw-cal-cancel-btn")).toBeNull();
+    expect(document.querySelector(".qw-cal-confirm-btn")).not.toBeNull();
+    expect(document.querySelector(".qw-cal-cancel-btn")).not.toBeNull();
     cal.destroy();
   });
 
-  it("popover 点日期：面板保持打开 + 详情内嵌更新 + onChange 回发完整 datetime", () => {
+  it("popover 点日期不收起不回发；确认才回发完整 datetime 并收起", () => {
     vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
       cb(0);
       return 0;
@@ -129,28 +129,142 @@ describe("Calendar · popover 形态", () => {
     const cell = grid.querySelector<HTMLElement>('[data-date="2026-08-15"]');
     cell?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith("2026-08-15 00:00:00");
-    /* 面板保持打开（不收起） */
+    /* 提交制：点日期只更新面板，不回发、不收起 */
+    expect(onChange).not.toHaveBeenCalled();
     const overlay = document.querySelector(".qw-cal-overlay--popover") as HTMLElement;
     expect(overlay.classList.contains("is-open")).toBe(true);
     /* 详情内嵌仍激活 */
     expect(side.classList.contains("is-active")).toBe(true);
+
+    document
+      .querySelector<HTMLButtonElement>(".qw-cal-confirm-btn")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith("2026-08-15 00:00:00");
+    expect(overlay.classList.contains("is-open")).toBe(false);
     cal.destroy();
   });
 
-  it("popover 点外部收起；destroy 清理", () => {
+  it("popover 面板内 mousedown 不误收起（浮层挂 body，docClick 需排除 overlay）", () => {
     vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
       cb(0);
       return 0;
     });
     const cal = new Calendar(mount(), { mode: "popover", selected: "2026-08-01" });
     cal.open();
+    document
+      .querySelector(".qw-cal-panel")!
+      .dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
     const overlay = document.querySelector(".qw-cal-overlay--popover") as HTMLElement;
     expect(overlay.classList.contains("is-open")).toBe(true);
+    cal.destroy();
+  });
 
-    /* 外部点击收起 */
+  it("取消回滚到打开前状态且不回发", () => {
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
+    const onChange = vi.fn();
+    const cal = new Calendar(mount(), { mode: "popover", selected: "2026-08-01", onChange });
+    cal.open();
+    const input = document.querySelector<HTMLInputElement>(".qw-cal-input")!;
+    expect(input.value).toBe("2026-08-01 00:00:00");
+
+    /* 点新日期：输入框实时更新为待定值 */
+    document
+      .querySelector(".qw-cal-grid")!
+      .querySelector<HTMLElement>('[data-date="2026-08-15"]')!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(input.value).toBe("2026-08-15 00:00:00");
+
+    document
+      .querySelector<HTMLButtonElement>(".qw-cal-cancel-btn")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(input.value).toBe("2026-08-01 00:00:00");
+    const overlay = document.querySelector(".qw-cal-overlay--popover") as HTMLElement;
+    expect(overlay.classList.contains("is-open")).toBe(false);
+    cal.destroy();
+  });
+
+  it("Esc 与点外部等同取消：收起 + 回滚 + 不回发", () => {
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
+    const onChange = vi.fn();
+    const cal = new Calendar(mount(), { mode: "popover", selected: "2026-08-01", onChange });
+    cal.open();
+    const input = document.querySelector<HTMLInputElement>(".qw-cal-input")!;
+
+    document
+      .querySelector(".qw-cal-grid")!
+      .querySelector<HTMLElement>('[data-date="2026-08-15"]')!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    /* Esc */
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    const overlay = document.querySelector(".qw-cal-overlay--popover") as HTMLElement;
+    expect(overlay.classList.contains("is-open")).toBe(false);
+    expect(input.value).toBe("2026-08-01 00:00:00");
+    expect(onChange).not.toHaveBeenCalled();
+
+    /* 再开，点外部 mousedown 同样回滚 */
+    cal.open();
+    document
+      .querySelector(".qw-cal-grid")!
+      .querySelector<HTMLElement>('[data-date="2026-08-20"]')!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
     document.body.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    expect(overlay.classList.contains("is-open")).toBe(false);
+    expect(input.value).toBe("2026-08-01 00:00:00");
+    expect(onChange).not.toHaveBeenCalled();
+    cal.destroy();
+  });
+
+  it("Enter 等同确认（焦点不在按钮上时）", () => {
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
+    const onChange = vi.fn();
+    const cal = new Calendar(mount(), { mode: "popover", selected: "2026-08-01", onChange });
+    cal.open();
+    document
+      .querySelector(".qw-cal-grid")!
+      .querySelector<HTMLElement>('[data-date="2026-08-15"]')!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith("2026-08-15 00:00:00");
+    cal.destroy();
+  });
+});
+
+describe("Calendar · modal 提交制", () => {
+  it("modal 点日期不回发；确认回发完整 datetime 并收起", () => {
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
+    const onChange = vi.fn();
+    const cal = new Calendar(mount(), { selected: "2026-08-01", onChange });
+    cal.open();
+
+    document
+      .querySelector(".qw-cal-grid")!
+      .querySelector<HTMLElement>('[data-date="2026-08-15"]')!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(onChange).not.toHaveBeenCalled();
+
+    document
+      .querySelector<HTMLButtonElement>(".qw-cal-confirm-btn")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith("2026-08-15 00:00:00");
+    const overlay = document.querySelector(".qw-cal-overlay") as HTMLElement;
     expect(overlay.classList.contains("is-open")).toBe(false);
     cal.destroy();
   });

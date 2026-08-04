@@ -29,7 +29,7 @@ export interface CalendarUiOptions {
   placeholder?: string;
   /** 输入框名称 */
   inputName?: string;
-  /** 日期变更回调 */
+  /** 确认提交回调：点「确认」（或 Enter）时回发完整 `YYYY-MM-DD HH:mm:ss`；点日期/改时间只更新面板不回发，取消 / Esc / 点外部 / 滚动收起均回滚且不回发 */
   onChange?: (date: string) => void;
   /** 日历面板打开/关闭回调 */
   onOpenChange?: (open: boolean) => void;

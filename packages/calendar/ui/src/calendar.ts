@@ -85,6 +85,13 @@ export class Calendar {
   private scrollTargets: Array<Window | HTMLElement> = [];
   private readonly popoverMinWidth = 320;
 
+  /* ---- 提交制快照：open 时记录已确认状态，取消/被动收起时回滚 ---- */
+  private snapshot: {
+    selected: Date;
+    time: { hour: number; minute: number; second: number };
+    inputValue: string;
+  } | null = null;
+
   /* ---- DOM 引用 ---- */
   private triggerWrap!: HTMLElement;
   private input!: HTMLInputElement;
@@ -281,18 +288,16 @@ export class Calendar {
     );
     this.mainArea.append(this.timeRow);
 
-    /* 底部操作栏（面板级 footer，贯通全宽；popover 形态点日期即选中收起，无确认/取消） */
-    if (this.mode === "modal") {
-      const actions = el("div", "qw-cal-actions");
-      const cancelBtn = el("button", "qw-cal-cancel-btn", "取消") as HTMLButtonElement;
-      cancelBtn.type = "button";
-      cancelBtn.addEventListener("click", () => this.close());
-      this.confirmBtn = el("button", "qw-cal-confirm-btn", "确认") as HTMLButtonElement;
-      this.confirmBtn.type = "button";
-      this.confirmBtn.addEventListener("click", () => this.confirm());
-      actions.append(cancelBtn, this.confirmBtn);
-      this.mainArea.append(actions);
-    }
+    /* 底部操作栏（modal / popover 统一提交制：点日期只更新面板，确认才回发 onChange） */
+    const actions = el("div", "qw-cal-actions");
+    const cancelBtn = el("button", "qw-cal-cancel-btn", "取消") as HTMLButtonElement;
+    cancelBtn.type = "button";
+    cancelBtn.addEventListener("click", () => this.cancel());
+    this.confirmBtn = el("button", "qw-cal-confirm-btn", "确认") as HTMLButtonElement;
+    this.confirmBtn.type = "button";
+    this.confirmBtn.addEventListener("click", () => this.confirm());
+    actions.append(cancelBtn, this.confirmBtn);
+    this.mainArea.append(actions);
 
     /* 详情面板 */
     this.detailPanel = el("div", "qw-cal-side");
@@ -326,7 +331,7 @@ export class Calendar {
     this.iconBtn.addEventListener("click", () => this.open());
 
     this.overlay.addEventListener("mousedown", (e) => {
-      if (e.target === this.overlay) this.close();
+      if (e.target === this.overlay) this.cancel();
     });
 
     /* 时间输入变更 */
@@ -392,7 +397,12 @@ export class Calendar {
       if (!this.isOpen) return;
       if (e.key === "Escape") {
         e.preventDefault();
-        this.close();
+        this.cancel();
+      }
+      /* Enter=确认；焦点在按钮上时交给原生 click（今天/取消/确认/月年格） */
+      if (e.key === "Enter" && (e.target as HTMLElement | null)?.tagName !== "BUTTON") {
+        e.preventDefault();
+        this.confirm();
       }
       if (e.key === "ArrowLeft" && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
@@ -408,8 +418,9 @@ export class Calendar {
     this.docClick = (e) => {
       if (!this.isOpen) return;
       const target = e.target as HTMLElement;
-      if (!this.root.contains(target)) {
-        this.close();
+      /* popover 浮层挂在 body 上、不在 root 内，需一并排除，否则点面板内任意处会误收起 */
+      if (!this.root.contains(target) && !this.overlay.contains(target)) {
+        this.cancel();
       }
     };
     document.addEventListener("mousedown", this.docClick);
@@ -437,6 +448,13 @@ export class Calendar {
       hour: this.selected.getHours(),
       minute: this.selected.getMinutes(),
       second: this.selected.getSeconds(),
+    };
+
+    /* 提交制快照：取消 / Esc / 点外部 / 滚动收起时回滚到此状态 */
+    this.snapshot = {
+      selected: new Date(this.selected),
+      time: { ...this.selectedTime },
+      inputValue: this.input.value,
     };
 
     this.overlay.hidden = false;
@@ -506,8 +524,9 @@ export class Calendar {
     this.onOpenChangeCb?.(false);
   }
 
-  /** 确认选中：将面板内的时间同步到 selected，再关闭 */
+  /** 确认选中：提交面板内状态（日期+时间），回发 onChange 后收起 */
   private confirm(): void {
+    if (!this.isOpen) return;
     this.selected = new Date(
       this.selected.getFullYear(),
       this.selected.getMonth(),
@@ -518,6 +537,19 @@ export class Calendar {
     );
     this.syncInput();
     this.onChangeCb?.(this.getSelectedDate());
+    this.close();
+  }
+
+  /** 取消：回滚到打开前的已确认状态（不回发 onChange），再收起 */
+  private cancel(): void {
+    if (!this.isOpen) return;
+    if (this.snapshot) {
+      this.selected = new Date(this.snapshot.selected);
+      this.selectedTime = { ...this.snapshot.time };
+      /* 输入框按快照原样恢复（宿主可能以空值表达"未设置"，不能经 syncInput 覆写） */
+      this.input.value = this.snapshot.inputValue;
+      this.snapshot = null;
+    }
     this.close();
   }
 
@@ -594,7 +626,8 @@ export class Calendar {
       }
       node = node.parentElement;
     }
-    const onScroll = () => this.close();
+    /* 滚动属被动收起，等同取消：未确认的选择不回发 */
+    const onScroll = () => this.cancel();
     for (const s of scrollables) {
       s.addEventListener("scroll", onScroll, { passive: true });
     }
@@ -850,12 +883,7 @@ export class Calendar {
 
     this.syncInput();
     if (this.showDetailPanel) this.showDetail(date);
-    if (this.mode === "popover") {
-      /* popover：点日期只更新选中与详情、不收起（点外部/Esc 收起）；onChange 实时回发完整 datetime */
-      this.onChangeCb?.(this.getSelectedDate());
-    } else {
-      this.onChangeCb?.(formatDate(this.selected));
-    }
+    /* 提交制：点日期只更新面板内选中与详情、不收起；确认时才经 confirm() 回发 onChange */
   }
 
   private showDetail(date: Date): void {
