@@ -1,5 +1,11 @@
 # @qingwu/calendar
 
+## 0.7.2
+
+### Patch Changes
+
+- popover 形态详情改为**面板右侧内嵌**（复用 `qw-cal-side` 详情栏，窄版 240px），删除第二层 `qw-cal-detail-pop` 悬浮浮层。交互变更：打开即展示当前选中日期详情，点日期只更新选中与详情**不收起**（点外部 / Esc 收起），`onChange` 实时回发完整 `YYYY-MM-DD HH:mm:ss`。面板宽度 = 触发区宽 + 详情栏宽（激活时），日期格保持原尺寸不被挤占；移动端（≤700px）详情栏收起，保持窄面板。
+
 ## 0.7.1
 
 ### Patch Changes

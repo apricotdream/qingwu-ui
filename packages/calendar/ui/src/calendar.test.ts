@@ -11,6 +11,7 @@ function mount(): HTMLElement {
 afterEach(() => {
   document.body.textContent = "";
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 describe("Calendar · 内置 Provider 默认注册", () => {
@@ -108,7 +109,11 @@ describe("Calendar · popover 形态", () => {
     cal.destroy();
   });
 
-  it("popover 点日期：面板收起 + 详情浮层弹出 + onChange 回发完整 datetime", () => {
+  it("popover 点日期：面板保持打开 + 详情内嵌更新 + onChange 回发完整 datetime", () => {
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
     const onChange = vi.fn();
     const cal = new Calendar(mount(), {
       mode: "popover",
@@ -116,38 +121,38 @@ describe("Calendar · popover 形态", () => {
       onChange,
     });
     cal.open();
+    /* 打开即激活内嵌详情栏（当前选中日期） */
+    const side = document.querySelector(".qw-cal-side")!;
+    expect(side.classList.contains("is-active")).toBe(true);
+
     const grid = document.querySelector(".qw-cal-grid")!;
     const cell = grid.querySelector<HTMLElement>('[data-date="2026-08-15"]');
     cell?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith("2026-08-15 00:00:00");
-    /* 面板收起（is-open 移除；hidden 由动画计时器延迟设置） */
+    /* 面板保持打开（不收起） */
     const overlay = document.querySelector(".qw-cal-overlay--popover") as HTMLElement;
-    expect(overlay.classList.contains("is-open")).toBe(false);
-    /* 详情浮层弹出 */
-    expect(document.querySelector(".qw-cal-detail-pop")).not.toBeNull();
+    expect(overlay.classList.contains("is-open")).toBe(true);
+    /* 详情内嵌仍激活 */
+    expect(side.classList.contains("is-active")).toBe(true);
     cal.destroy();
   });
 
-  it("popover 详情浮层可被外部点击 / destroy 关闭", () => {
+  it("popover 点外部收起；destroy 清理", () => {
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
     const cal = new Calendar(mount(), { mode: "popover", selected: "2026-08-01" });
     cal.open();
-    const grid = document.querySelector(".qw-cal-grid")!;
-    const cell = grid.querySelector<HTMLElement>('[data-date="2026-08-10"]');
-    cell?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(document.querySelector(".qw-cal-detail-pop")).not.toBeNull();
+    const overlay = document.querySelector(".qw-cal-overlay--popover") as HTMLElement;
+    expect(overlay.classList.contains("is-open")).toBe(true);
 
-    /* 外部点击关闭 */
+    /* 外部点击收起 */
     document.body.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-    expect(document.querySelector(".qw-cal-detail-pop")).toBeNull();
-
-    /* 再选中一次，destroy 时清理 */
-    cal.open();
-    const cell2 = grid.querySelector<HTMLElement>('[data-date="2026-08-12"]');
-    cell2?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(overlay.classList.contains("is-open")).toBe(false);
     cal.destroy();
-    expect(document.querySelector(".qw-cal-detail-pop")).toBeNull();
   });
 });
 
