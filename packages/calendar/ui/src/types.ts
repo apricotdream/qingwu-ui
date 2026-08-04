@@ -12,8 +12,13 @@ export interface HolidayConfig {
   workdays?: string[];
 }
 
+/** 展示形态：modal（默认，全屏居中弹窗）/ popover（紧凑浮层，锚定输入框下方） */
+export type CalendarMode = "modal" | "popover";
+
 /** 日历组件选项 */
 export interface CalendarUiOptions {
+  /** 展示形态：modal（默认，全屏居中弹窗）/ popover（紧凑浮层，锚定输入框下方） */
+  mode?: CalendarMode;
   /** 初始选中日期 */
   selected?: Date | string;
   /** 最小可选日期 */

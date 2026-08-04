@@ -1,5 +1,17 @@
 # @qingwu/calendar
 
+## 0.7.1
+
+### Patch Changes
+
+- 修复 popover 形态浮层被宿主 `overflow`/`transform` 容器裁剪的问题：浮层改为 `position: fixed` 挂到 `document.body`，锚定与向上翻由 JS 按输入框位置计算（width 跟随输入框、左缘对齐、空间不足向上翻）。滚动即收起逻辑不变。
+
+## 0.7.0
+
+### Minor Changes
+
+- 新增 `mode: 'popover'` 形态：锚定输入框下方的紧凑浮层（无遮罩、不锁 body 滚动、宽度跟随输入框；下方空间不足自动向上翻；滚动即收起）。popover 下点日期即选中并收起，`onChange` 回发完整 `YYYY-MM-DD HH:mm:ss`；配合 `showDetailPanel` 时，选中后弹出第二层详情浮层展示该日黄历信息。`mode` 缺省保持 `'modal'` 全屏弹窗原行为。
+
 ## 0.6.0
 
 ### Patch Changes

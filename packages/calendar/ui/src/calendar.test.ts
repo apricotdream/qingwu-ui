@@ -90,6 +90,67 @@ describe("Calendar · 焦点管理（最小档）", () => {
   });
 });
 
+describe("Calendar · popover 形态", () => {
+  it("open 后 overlay 带 --popover 类，且不锁 body 滚动", () => {
+    const cal = new Calendar(mount(), { mode: "popover", selected: "2026-08-01" });
+    cal.open();
+    const overlay = document.querySelector(".qw-cal-overlay--popover");
+    expect(overlay).not.toBeNull();
+    expect(document.body.style.overflow).toBe("");
+    cal.destroy();
+  });
+
+  it("popover 形态不渲染取消/确认按钮", () => {
+    const cal = new Calendar(mount(), { mode: "popover", selected: "2026-08-01" });
+    cal.open();
+    expect(document.querySelector(".qw-cal-confirm-btn")).toBeNull();
+    expect(document.querySelector(".qw-cal-cancel-btn")).toBeNull();
+    cal.destroy();
+  });
+
+  it("popover 点日期：面板收起 + 详情浮层弹出 + onChange 回发完整 datetime", () => {
+    const onChange = vi.fn();
+    const cal = new Calendar(mount(), {
+      mode: "popover",
+      selected: "2026-08-01",
+      onChange,
+    });
+    cal.open();
+    const grid = document.querySelector(".qw-cal-grid")!;
+    const cell = grid.querySelector<HTMLElement>('[data-date="2026-08-15"]');
+    cell?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith("2026-08-15 00:00:00");
+    /* 面板收起（is-open 移除；hidden 由动画计时器延迟设置） */
+    const overlay = document.querySelector(".qw-cal-overlay--popover") as HTMLElement;
+    expect(overlay.classList.contains("is-open")).toBe(false);
+    /* 详情浮层弹出 */
+    expect(document.querySelector(".qw-cal-detail-pop")).not.toBeNull();
+    cal.destroy();
+  });
+
+  it("popover 详情浮层可被外部点击 / destroy 关闭", () => {
+    const cal = new Calendar(mount(), { mode: "popover", selected: "2026-08-01" });
+    cal.open();
+    const grid = document.querySelector(".qw-cal-grid")!;
+    const cell = grid.querySelector<HTMLElement>('[data-date="2026-08-10"]');
+    cell?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(document.querySelector(".qw-cal-detail-pop")).not.toBeNull();
+
+    /* 外部点击关闭 */
+    document.body.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    expect(document.querySelector(".qw-cal-detail-pop")).toBeNull();
+
+    /* 再选中一次，destroy 时清理 */
+    cal.open();
+    const cell2 = grid.querySelector<HTMLElement>('[data-date="2026-08-12"]');
+    cell2?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    cal.destroy();
+    expect(document.querySelector(".qw-cal-detail-pop")).toBeNull();
+  });
+});
+
 describe("Calendar · 销毁清理", () => {
   it("destroy 调用所有 Provider 的 destroy 钩子", () => {
     const dmDestroy = vi.fn();
