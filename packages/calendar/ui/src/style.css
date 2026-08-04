@@ -151,6 +151,9 @@
   background: rgba(0, 0, 0, 0.2);
   opacity: 0;
   transition: opacity 0.2s;
+  /* 兜底滚动：100vh 在移动端动态工具栏下可能大于可视 viewport，
+     钳制之外仍有溢出时遮罩自身可滚，面板底部不至不可达 */
+  overflow-y: auto;
 }
 
 .qw-cal-overlay[hidden] {
@@ -179,7 +182,10 @@
   opacity: 0;
   min-width: 620px;
   max-width: 780px;
-  min-height: 540px;
+  /* 钳制进视口（overlay padding-top 60 + 底部余量 24 = 84）：矮窗口下面板整体可达，
+     超出部分由 .qw-cal-main / .qw-cal-detail 内部滚动；popover 形态另行覆盖 */
+  min-height: min(540px, calc(100vh - 84px));
+  max-height: calc(100vh - 84px);
 }
 
 .qw-cal-panel.is-open {
@@ -191,6 +197,9 @@
 .qw-cal-main {
   flex: 1;
   min-width: 0;
+  min-height: 0;
+  /* 面板被视口钳制时主区（网格+时间+操作栏）整体可滚 */
+  overflow-y: auto;
   padding: 20px 22px 22px;
 }
 
@@ -686,6 +695,9 @@
   background: var(--qw-paper);
   transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   flex: none;
+  /* 列布局让详情栏在面板被视口钳制时可随高度收缩 */
+  display: flex;
+  flex-direction: column;
 }
 
 .qw-cal-side.is-active {
@@ -698,6 +710,9 @@
   max-height: 500px;
   overflow-y: auto;
   position: relative;
+  /* max-height 为内容上限；面板被钳制到更矮时随侧栏收缩，不被 overflow: hidden 裁掉 */
+  flex: 1;
+  min-height: 0;
 }
 
 .qw-cal-side-close {
@@ -848,6 +863,8 @@
   min-width: 0;
   width: 100%;
   min-height: 0;
+  /* popover 的高度钳制由 placePopover() 按视口空间以内联 max-height 施加，CSS 层不设上限 */
+  max-height: none;
   border-radius: 10px;
   transform: translateY(6px);
   opacity: 0;
@@ -921,6 +938,9 @@
     max-width: 100vw;
     border-radius: var(--qw-radius) var(--qw-radius) 0 0;
     transform: translateY(20px) scale(0.92);
+    /* 底部 sheet 无 padding-top，钳制上界放宽到 24px 边距 */
+    min-height: 0;
+    max-height: calc(100vh - 24px);
   }
 
   .qw-cal-panel.is-open {

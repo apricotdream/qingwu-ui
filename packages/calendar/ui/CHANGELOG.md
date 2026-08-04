@@ -1,5 +1,15 @@
 # @qingwu/calendar
 
+## 0.7.4
+
+### Patch Changes
+
+- 面板高度全面钳制进视口，**内容溢出时内部可滚**，任何视口尺寸下面板不再有不可达区域：
+  - **popover**：锚定算法升级——下方放不下上翻；两侧都放不下时选空间更大的一侧，并以内联 `max-height` 钳制面板高度（原先上翻后 top 钳制在 8px，面板底部被视口裁切不可达）。
+  - **modal**：面板新增 `max-height: calc(100vh - 84px)`（移动端底部 sheet 放宽至 `calc(100vh - 24px)`），遮罩增加兜底 `overflow-y: auto`（应对移动端 `100vh` 大于可视 viewport 的情形）。
+  - 被钳制时主区（网格+时间+操作栏）`.qw-cal-main` 整体可滚；详情栏 `.qw-cal-detail` 原已 `overflow-y: auto`，现可随面板高度收缩（侧栏改列向 flex，`min-height: 0`），不再被 `overflow: hidden` 裁掉。
+  - 无 API 变更；详情栏既有的 `max-height`（modal 500px / popover 480px / 移动端 300px）保留为内容上限。
+
 ## 0.7.3
 
 ### Patch Changes

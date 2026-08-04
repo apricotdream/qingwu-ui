@@ -596,14 +596,13 @@ export class Calendar {
      popover 形态辅助
      ============================================================ */
 
-  /** popover 锚定（fixed）：宽度 = 触发区宽 + 详情栏宽（激活时），左缘对齐；下方空间不足向上翻 */
+  /** popover 锚定（fixed）：宽度 = 触发区宽 + 详情栏宽（激活时），左缘对齐；
+   *  下方放不下向上翻，两侧都放不下选空间大的一侧，并以 max-height 钳制面板高度
+   *  （.qw-cal-main / .qw-cal-detail 内部滚动），保证面板永不被视口裁切到不可达 */
   private placePopover(): void {
     const ir = this.input.getBoundingClientRect();
-    const pr = this.panel.getBoundingClientRect();
     const vh = window.innerHeight || 0;
-    /* 面板高 + 8px 间距放不进下方 → 向上翻 */
-    const flip = vh > 0 && ir.bottom + 8 + pr.height > vh;
-    this.overlay.classList.toggle("is-flip", flip);
+    const gap = 8;
     const base = ir.width > 0 ? ir.width : this.popoverMinWidth;
     const sideW =
       this.showDetailPanel && this.detailPanel.classList.contains("is-active")
@@ -611,9 +610,24 @@ export class Calendar {
         : 0;
     this.overlay.style.width = `${base + sideW}px`;
     this.overlay.style.left = `${ir.left}px`;
-    this.overlay.style.top = flip
-      ? `${Math.max(8, ir.top - pr.height - 8)}px`
-      : `${ir.bottom + 8}px`;
+
+    /* 复位钳制后测量自然高度 */
+    this.panel.style.maxHeight = "";
+    const natural = this.panel.offsetHeight;
+    const spaceBelow = vh - ir.bottom - gap * 2;
+    const spaceAbove = ir.top - gap * 2;
+
+    let flip = false;
+    if (vh > 0 && natural > spaceBelow) {
+      flip = spaceAbove > spaceBelow; /* 翻向空间更大的一侧 */
+      const avail = flip ? spaceAbove : spaceBelow;
+      /* 选中侧仍放不下 → 钳制高度，面板内部滚动 */
+      if (avail > 0 && natural > avail) this.panel.style.maxHeight = `${avail}px`;
+    }
+
+    const h = this.panel.offsetHeight;
+    this.overlay.classList.toggle("is-flip", flip);
+    this.overlay.style.top = flip ? `${Math.max(gap, ir.top - h - gap)}px` : `${ir.bottom + gap}px`;
   }
 
   /** popover 滚动即收起：监听 window 与输入框所有可滚动祖先的 scroll */

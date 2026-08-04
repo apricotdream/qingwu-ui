@@ -243,6 +243,72 @@ describe("Calendar · popover 形态", () => {
   });
 });
 
+describe("Calendar · popover 视口钳制（溢出可滚）", () => {
+  /** 输入框视口位置 */
+  function stubInputRect(input: HTMLElement, top: number, bottom: number): void {
+    input.getBoundingClientRect = () =>
+      ({ top, bottom, left: 40, right: 360, width: 320, height: bottom - top }) as DOMRect;
+  }
+  /** 面板自然高 naturalH；施加 max-height 后实际高度跟随钳制值 */
+  function stubPanelHeight(panel: HTMLElement, naturalH: number): void {
+    Object.defineProperty(panel, "offsetHeight", {
+      configurable: true,
+      get() {
+        const mh = parseInt(this.style.maxHeight, 10);
+        return Number.isFinite(mh) && mh > 0 ? Math.min(naturalH, mh) : naturalH;
+      },
+    });
+  }
+  function setup(vh: number, top: number, bottom: number, naturalH: number) {
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
+    vi.stubGlobal("innerHeight", vh);
+    const cal = new Calendar(mount(), { mode: "popover", selected: "2026-08-01" });
+    const input = document.querySelector<HTMLElement>(".qw-cal-input")!;
+    const panel = document.querySelector<HTMLElement>(".qw-cal-panel")!;
+    stubInputRect(input, top, bottom);
+    stubPanelHeight(panel, naturalH);
+    return { cal, panel, overlay: document.querySelector<HTMLElement>(".qw-cal-overlay--popover")! };
+  }
+
+  it("下方空间充足：不钳制，锚定输入框下方", () => {
+    const { cal, panel, overlay } = setup(800, 100, 142, 500);
+    cal.open();
+    expect(panel.style.maxHeight).toBe("");
+    expect(overlay.style.top).toBe("150px"); /* 142 + 8 */
+    cal.destroy();
+  });
+
+  it("下方不足而上方充足：上翻且不钳制", () => {
+    const { cal, panel, overlay } = setup(700, 550, 592, 500);
+    cal.open();
+    expect(overlay.classList.contains("is-flip")).toBe(true);
+    expect(panel.style.maxHeight).toBe("");
+    expect(overlay.style.top).toBe("42px"); /* 550 - 500 - 8 */
+    cal.destroy();
+  });
+
+  it("两侧都放不下：留在空间更大的下方并钳制高度", () => {
+    const { cal, panel, overlay } = setup(500, 200, 242, 500);
+    cal.open();
+    expect(overlay.classList.contains("is-flip")).toBe(false);
+    expect(panel.style.maxHeight).toBe("242px"); /* 500 - 242 - 16 */
+    expect(overlay.style.top).toBe("250px"); /* 242 + 8 */
+    cal.destroy();
+  });
+
+  it("两侧都放不下且上方更大：上翻并钳制高度", () => {
+    const { cal, panel, overlay } = setup(500, 300, 342, 500);
+    cal.open();
+    expect(overlay.classList.contains("is-flip")).toBe(true);
+    expect(panel.style.maxHeight).toBe("284px"); /* 300 - 16 */
+    expect(overlay.style.top).toBe("8px"); /* 300 - 284 - 8，钳制底部 */
+    cal.destroy();
+  });
+});
+
 describe("Calendar · modal 提交制", () => {
   it("modal 点日期不回发；确认回发完整 datetime 并收起", () => {
     vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
