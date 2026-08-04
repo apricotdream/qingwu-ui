@@ -9,7 +9,7 @@
 import { getYearGanzhi } from "./lunar";
 import type { DayMetaProvider, PanelProvider } from "./providers";
 import { DetailPanelProvider, HolidayBadgeProvider, LunarDayMetaProvider } from "./providers";
-import type { CalendarUiOptions, HolidayConfig } from "./types";
+import type { CalendarMode, CalendarUiOptions, HolidayConfig } from "./types";
 
 /* ---------- 运行时常量 ---------- */
 
@@ -57,6 +57,7 @@ function formatDate(date: Date): string {
 export class Calendar {
   /* ---- 配置 ---- */
   private root: HTMLElement;
+  private readonly mode: CalendarMode;
   private selected: Date;
   private viewDate: Date; // 当前视图的年月
   private minDate: Date | null;
@@ -78,6 +79,14 @@ export class Calendar {
   /* ---- 状态 ---- */
   private isOpen = false;
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /* ---- popover 专属 ---- */
+  private detailPopover: HTMLElement | null = null;
+  private scrollListener: (() => void) | null = null;
+  private scrollTargets: Array<Window | HTMLElement> = [];
+  private docKeyPop: ((e: KeyboardEvent) => void) | null = null;
+  private docClickPop: ((e: MouseEvent) => void) | null = null;
+  private readonly popoverMinWidth = 320;
 
   /* ---- DOM 引用 ---- */
   private triggerWrap!: HTMLElement;
@@ -107,6 +116,7 @@ export class Calendar {
 
   constructor(root: HTMLElement, opts: CalendarUiOptions = {}) {
     this.root = root;
+    this.mode = opts.mode ?? "modal";
     this.selected = toDate(opts.selected) ?? new Date();
     this.viewDate = new Date(this.selected);
     this.viewDate.setDate(1);
@@ -179,8 +189,11 @@ export class Calendar {
 
     this.triggerWrap.append(this.input, this.iconBtn);
 
-    /* 遮罩 + 面板 */
-    this.overlay = el("div", "qw-cal-overlay");
+    /* 遮罩 + 面板（popover 形态为锚定输入框的紧凑浮层，无全屏遮罩） */
+    this.overlay = el(
+      "div",
+      this.mode === "popover" ? "qw-cal-overlay qw-cal-overlay--popover" : "qw-cal-overlay",
+    );
     this.overlay.hidden = true;
 
     this.panel = el("div", "qw-cal-panel");
@@ -271,15 +284,18 @@ export class Calendar {
     );
     this.mainArea.append(this.timeRow);
 
-    /* 底部操作栏（面板级 footer，贯通全宽） */
-    const actions = el("div", "qw-cal-actions");
-    const cancelBtn = el("button", "qw-cal-cancel-btn", "取消") as HTMLButtonElement;
-    cancelBtn.type = "button";
-    cancelBtn.addEventListener("click", () => this.close());
-    this.confirmBtn = el("button", "qw-cal-confirm-btn", "确认") as HTMLButtonElement;
-    this.confirmBtn.type = "button";
-    this.confirmBtn.addEventListener("click", () => this.confirm());
-    actions.append(cancelBtn, this.confirmBtn);
+    /* 底部操作栏（面板级 footer，贯通全宽；popover 形态点日期即选中收起，无确认/取消） */
+    if (this.mode === "modal") {
+      const actions = el("div", "qw-cal-actions");
+      const cancelBtn = el("button", "qw-cal-cancel-btn", "取消") as HTMLButtonElement;
+      cancelBtn.type = "button";
+      cancelBtn.addEventListener("click", () => this.close());
+      this.confirmBtn = el("button", "qw-cal-confirm-btn", "确认") as HTMLButtonElement;
+      this.confirmBtn.type = "button";
+      this.confirmBtn.addEventListener("click", () => this.confirm());
+      actions.append(cancelBtn, this.confirmBtn);
+      this.mainArea.append(actions);
+    }
 
     /* 详情面板 */
     this.detailPanel = el("div", "qw-cal-side");
@@ -293,10 +309,15 @@ export class Calendar {
     this.detailContent.append(sideCloseBtn);
     this.detailPanel.append(this.detailContent);
 
-    this.mainArea.append(actions);
     this.panel.append(this.mainArea, this.detailPanel);
     this.overlay.append(this.panel);
-    this.root.append(this.triggerWrap, this.overlay);
+    this.root.append(this.triggerWrap);
+    /* popover 浮层挂到 body：fixed 定位脱离宿主 overflow/transform 裁剪 */
+    if (this.mode === "popover") {
+      document.body.appendChild(this.overlay);
+    } else {
+      this.root.append(this.overlay);
+    }
   }
 
   /* ============================================================
@@ -422,15 +443,20 @@ export class Calendar {
     };
 
     this.overlay.hidden = false;
-    document.body.style.overflow = "hidden";
 
-    /* 锚定动画：transform-origin 指向输入框位置（视觉从输入框弱出） */
-    const ir = this.input.getBoundingClientRect();
-    const pr = this.panel.getBoundingClientRect();
-    if (pr.width > 0 && pr.height > 0) {
-      const ox = ((ir.left + ir.width / 2 - pr.left) / pr.width) * 100;
-      const oy = ((ir.top + ir.height / 2 - pr.top) / pr.height) * 100;
-      this.panel.style.transformOrigin = `${ox.toFixed(1)}% ${oy.toFixed(1)}%`;
+    if (this.mode === "popover") {
+      /* popover：不锁 body 滚动，不设 transform-origin（由 CSS 负责轻量位移动画） */
+      this.bindPopoverScroll();
+    } else {
+      document.body.style.overflow = "hidden";
+      /* 锚定动画：transform-origin 指向输入框位置（视觉从输入框弱出） */
+      const ir = this.input.getBoundingClientRect();
+      const pr = this.panel.getBoundingClientRect();
+      if (pr.width > 0 && pr.height > 0) {
+        const ox = ((ir.left + ir.width / 2 - pr.left) / pr.width) * 100;
+        const oy = ((ir.top + ir.height / 2 - pr.top) / pr.height) * 100;
+        this.panel.style.transformOrigin = `${ox.toFixed(1)}% ${oy.toFixed(1)}%`;
+      }
     }
 
     if (this.animate) {
@@ -444,12 +470,14 @@ export class Calendar {
     }
 
     this.render();
+    /* popover 形态：render 后测量面板高度做下方/上方锚定 */
+    if (this.mode === "popover") this.placePopover();
     /* 焦点移入面板首个高频可交互元素（今天按钮；不可用时聚焦面板） */
     this.panel.tabIndex = -1;
     const focusTarget = this.todayBtn.classList.contains("is-hidden") ? this.panel : this.todayBtn;
     focusTarget.focus();
-    /* 详情面板：打开时渲染一次当前选中日期（Provider 重渲时机 = 选中变化） */
-    if (this.showDetailPanel) {
+    /* 详情面板：modal 渲染右侧详情栏；popover 点日期后才弹第二层浮层，打开时不预渲 */
+    if (this.mode === "modal" && this.showDetailPanel) {
       this.showDetail(this.selected);
     } else {
       this.hideDetail();
@@ -464,7 +492,8 @@ export class Calendar {
 
     this.overlay.classList.remove("is-open");
     this.panel.classList.remove("is-open");
-    document.body.style.overflow = "";
+    if (this.mode === "modal") document.body.style.overflow = "";
+    if (this.mode === "popover") this.unbindPopoverScroll();
 
     const finish = () => {
       this.overlay.hidden = true;
@@ -526,9 +555,118 @@ export class Calendar {
     if (this.closeTimer !== null) clearTimeout(this.closeTimer);
     if (this.docKey) document.removeEventListener("keydown", this.docKey, true);
     if (this.docClick) document.removeEventListener("mousedown", this.docClick);
+    this.unbindPopoverScroll();
+    this.hideDetailPopover();
     for (const p of this.dayMetaProviders) p.destroy?.();
     for (const p of this.panelProviders) p.destroy?.();
     this.root.textContent = "";
+    /* popover 浮层挂在 body 上，需独立移除 */
+    this.overlay.remove();
+  }
+
+  /* ============================================================
+     popover 形态辅助
+     ============================================================ */
+
+  /** popover 锚定（fixed）：面板宽跟随输入框、左缘对齐；下方空间不足向上翻 */
+  private placePopover(): void {
+    const ir = this.input.getBoundingClientRect();
+    const pr = this.panel.getBoundingClientRect();
+    const vh = window.innerHeight || 0;
+    /* 面板高 + 8px 间距放不进下方 → 向上翻 */
+    const flip = vh > 0 && ir.bottom + 8 + pr.height > vh;
+    this.overlay.classList.toggle("is-flip", flip);
+    const width = ir.width > 0 ? ir.width : this.popoverMinWidth;
+    this.overlay.style.width = `${width}px`;
+    this.overlay.style.left = `${ir.left}px`;
+    this.overlay.style.top = flip
+      ? `${Math.max(8, ir.top - pr.height - 8)}px`
+      : `${ir.bottom + 8}px`;
+  }
+
+  /** popover 滚动即收起：监听 window 与输入框所有可滚动祖先的 scroll */
+  private bindPopoverScroll(): void {
+    const scrollables: Array<Window | HTMLElement> = [window];
+    let node = this.root.parentElement;
+    while (node) {
+      if (node.scrollHeight > node.clientHeight || node.scrollWidth > node.clientWidth) {
+        scrollables.push(node);
+      }
+      node = node.parentElement;
+    }
+    const onScroll = () => this.close();
+    for (const s of scrollables) {
+      s.addEventListener("scroll", onScroll, { passive: true });
+    }
+    this.scrollTargets = scrollables;
+    this.scrollListener = onScroll;
+  }
+
+  private unbindPopoverScroll(): void {
+    if (!this.scrollListener) return;
+    for (const s of this.scrollTargets) {
+      s.removeEventListener("scroll", this.scrollListener);
+    }
+    this.scrollTargets = [];
+    this.scrollListener = null;
+  }
+
+  /** popover 第二层详情浮层：点日期选中后，在输入框旁展示该日黄历信息 */
+  private showDetailPopover(date: Date): void {
+    this.hideDetailPopover();
+
+    const pop = el("div", "qw-cal-detail-pop");
+    const content = el("div", "qw-cal-detail");
+    const closeBtn = el("button", "qw-cal-side-close", "×") as HTMLButtonElement;
+    closeBtn.type = "button";
+    closeBtn.setAttribute("aria-label", "关闭详情");
+    closeBtn.addEventListener("click", () => this.hideDetailPopover());
+    content.append(closeBtn);
+
+    for (const p of this.panelProviders) {
+      const out = p.render(date);
+      if (out == null) continue;
+      if (typeof out === "string") {
+        content.insertAdjacentHTML("beforeend", out);
+      } else {
+        content.append(out);
+      }
+    }
+    pop.append(content);
+    document.body.append(pop);
+    this.detailPopover = pop;
+
+    /* 锚定输入框：优先下方，空间不足向上翻 */
+    const ir = this.input.getBoundingClientRect();
+    const ph = pop.offsetHeight;
+    const vh = window.innerHeight || 0;
+    pop.classList.add("is-open");
+    if (ir.width > 0) pop.style.width = `${ir.width}px`;
+    if (vh > 0 && ir.bottom + 8 + ph > vh) {
+      pop.style.top = `${Math.max(8, ir.top - ph - 8)}px`;
+    } else {
+      pop.style.top = `${ir.bottom + 8}px`;
+    }
+
+    /* 点外部 / Esc 关闭（input 也视为外部：点它即收起详情重新开日历） */
+    this.docClickPop = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (!pop.contains(t)) this.hideDetailPopover();
+    };
+    this.docKeyPop = (e: KeyboardEvent) => {
+      if (e.key === "Escape") this.hideDetailPopover();
+    };
+    document.addEventListener("mousedown", this.docClickPop);
+    document.addEventListener("keydown", this.docKeyPop, true);
+  }
+
+  private hideDetailPopover(): void {
+    if (this.docClickPop) document.removeEventListener("mousedown", this.docClickPop);
+    if (this.docKeyPop) document.removeEventListener("keydown", this.docKeyPop, true);
+    this.docClickPop = null;
+    this.docKeyPop = null;
+    this.detailPopover?.remove();
+    this.detailPopover = null;
   }
 
   /* ============================================================
@@ -769,8 +907,15 @@ export class Calendar {
     }
 
     this.syncInput();
-    if (this.showDetailPanel) this.showDetail(date);
-    this.onChangeCb?.(formatDate(this.selected));
+    if (this.mode === "popover") {
+      /* popover：点日期即选中收起；onChange 回发完整 datetime（无确认按钮，时间只能随此带出） */
+      if (this.showDetailPanel) this.showDetailPopover(date);
+      this.close();
+      this.onChangeCb?.(this.getSelectedDate());
+    } else {
+      if (this.showDetailPanel) this.showDetail(date);
+      this.onChangeCb?.(formatDate(this.selected));
+    }
   }
 
   private showDetail(date: Date): void {

@@ -817,6 +817,80 @@
 }
 
 /* ============================================================
+   popover 形态（mode: 'popover'）
+   锚定输入框下方的紧凑浮层：无遮罩、不锁滚动、宽度跟随输入框
+   ============================================================ */
+
+.qw-cal-overlay--popover {
+  position: fixed;
+  inset: auto;
+  top: 0;
+  left: 0;
+  width: 320px;
+  padding-top: 0;
+  align-items: flex-start;
+  justify-content: flex-start;
+  background: none;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s;
+}
+
+.qw-cal-overlay--popover[hidden] {
+  display: none;
+}
+
+.qw-cal-overlay--popover.is-open {
+  opacity: 1;
+}
+
+.qw-cal-overlay--popover .qw-cal-panel {
+  min-width: 0;
+  width: 100%;
+  min-height: 0;
+  border-radius: 10px;
+  transform: translateY(6px);
+  opacity: 0;
+  pointer-events: auto;
+  transition:
+    transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.16s;
+}
+
+.qw-cal-overlay--popover.is-open .qw-cal-panel {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* 第二层详情浮层：选中日期后展示该日黄历信息（锚定输入框旁） */
+.qw-cal-detail-pop {
+  position: fixed;
+  z-index: 10000;
+  max-height: 340px;
+  overflow-y: auto;
+  background: var(--qw-card);
+  border: 1px solid var(--qw-line);
+  border-radius: 10px;
+  box-shadow: var(--qw-shadow-pop);
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.16s;
+  pointer-events: auto;
+}
+
+.qw-cal-detail-pop.is-open {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.qw-cal-detail-pop .qw-cal-detail {
+  max-height: 300px;
+  padding: 20px 18px 14px;
+}
+
+/* ============================================================
    响应式
    ============================================================ */
 
@@ -824,6 +898,22 @@
   .qw-cal-overlay {
     align-items: flex-end;
     padding-top: 0;
+  }
+
+  /* popover 保持锚定浮层，不降级为底部 sheet */
+  .qw-cal-overlay--popover {
+    align-items: flex-start;
+    padding-top: 0;
+  }
+  .qw-cal-overlay--popover .qw-cal-panel {
+    min-width: 0;
+    max-width: none;
+    flex-direction: row;
+    border-radius: 10px;
+    transform: translateY(6px);
+  }
+  .qw-cal-overlay--popover.is-open .qw-cal-panel {
+    transform: translateY(0);
   }
 
   .qw-cal-panel {
