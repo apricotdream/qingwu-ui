@@ -862,32 +862,14 @@
   opacity: 1;
 }
 
-/* 第二层详情浮层：选中日期后展示该日黄历信息（锚定输入框旁） */
-.qw-cal-detail-pop {
-  position: fixed;
-  z-index: 10000;
-  max-height: 340px;
-  overflow-y: auto;
-  background: var(--qw-card);
-  border: 1px solid var(--qw-line);
-  border-radius: 10px;
-  box-shadow: var(--qw-shadow-pop);
-  opacity: 0;
-  transform: translateY(6px);
-  transition:
-    transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.16s;
-  pointer-events: auto;
+/* popover 内嵌详情栏：窄版（日期格保持原尺寸，详情栏额外加宽面板） */
+.qw-cal-overlay--popover .qw-cal-side.is-active {
+  width: 240px;
 }
 
-.qw-cal-detail-pop.is-open {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.qw-cal-detail-pop .qw-cal-detail {
-  max-height: 300px;
-  padding: 20px 18px 14px;
+.qw-cal-overlay--popover .qw-cal-detail {
+  width: 240px;
+  max-height: 480px;
 }
 
 /* ============================================================
@@ -914,6 +896,10 @@
   }
   .qw-cal-overlay--popover.is-open .qw-cal-panel {
     transform: translateY(0);
+  }
+  /* 移动端 popover 内嵌详情栏收起：保持窄面板，日期格可正常选择 */
+  .qw-cal-overlay--popover .qw-cal-side.is-active {
+    width: 0;
   }
 
   .qw-cal-panel {
