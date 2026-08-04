@@ -1,5 +1,12 @@
 # @qingwu/calendar
 
+## 0.7.3
+
+### Patch Changes
+
+- 确认/取消改为**统一提交制**（modal 与 popover 语义拉齐）：点日期 / 改时间只更新面板内部状态，**点「确认」（或 Enter）才回发 `onChange`**（完整 `YYYY-MM-DD HH:mm:ss`）并收起；「取消」/ Esc / 点面板外部 / 滚动收起（popover）一律回滚到打开前状态且不回发。popover 形态因此也渲染底部「取消 / 确认」操作栏（紧凑尺寸）。**行为变更提示**：modal 原点日期实时回发 date-only `onChange` 的行为取消；popover 原点日期实时回发 datetime 的行为取消。
+- 修复 popover 形态点面板内任意处（日期格、时间框、按钮等）会误收起的问题：文档级 mousedown 外部点击判定此前只排除了触发区 `root`，未排除挂在 `document.body` 上的浮层本体。
+
 ## 0.7.2
 
 ### Patch Changes

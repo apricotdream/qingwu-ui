@@ -872,6 +872,19 @@
   max-height: 480px;
 }
 
+/* popover 提交制操作栏：紧凑尺寸，极窄触发区允许换行 */
+.qw-cal-overlay--popover .qw-cal-actions {
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+.qw-cal-overlay--popover .qw-cal-confirm-btn,
+.qw-cal-overlay--popover .qw-cal-cancel-btn {
+  height: 32px;
+  padding: 0 18px;
+}
+
 /* ============================================================
    响应式
    ============================================================ */
