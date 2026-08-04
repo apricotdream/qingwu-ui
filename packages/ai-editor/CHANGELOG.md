@@ -1,5 +1,17 @@
 # @qingwu/ai-editor
 
+## Unreleased
+
+### Minor Changes
+
+- 新增：粘贴外部 Markdown（Obsidian / Typora 等）时，**本地相对路径图片/附件自动检测与解析**（新增 `RelativeMedia` 扩展，随 `getEditorExtensions` 默认启用）：
+  - 剪贴板随文本带入的文件按文件名匹配后直接上传换链，无需用户操作；
+  - 剪贴板没有文件时弹窗说明原因，用户同意后通过系统文件夹选择器按相对路径读取（File System Access API，Chrome / Edge；精确路径 → 去头段 → basename 兜底）；
+  - 不支持文件夹读取的浏览器（Safari / Firefox）降级为"拖拽文件进编辑器"引导弹窗；
+  - 每个文件先过附件限额校验，完成后 toast 汇总"已上传 / 仅本次可见 / 未找到清单"，不再留下无声碎图
+- 重构：Obsidian `[[wiki]]` 粘贴不再把剪贴板文件转 base64 dataURL 内联进文档（一次性且膨胀文档），统一走"objectURL 占位预览 → 上传 → 换持久 URL"管线
+- 移除：已无调用的手写 Markdown 兜底解析器（`_obsidianToFragment` 及关联约 450 行死代码）
+
 ## 0.7.0
 
 ### Minor Changes

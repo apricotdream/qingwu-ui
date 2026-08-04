@@ -1,9 +1,19 @@
 import type { Editor } from "@tiptap/core";
 
-import { Fragment, DOMParser as PmDOMParser, Slice } from "@tiptap/pm/model";
+import { type Fragment, DOMParser as PmDOMParser, Slice } from "@tiptap/pm/model";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
-import { type FC, lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  type FC,
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { SearchBar } from "../components/search-bar";
 import type { ToastOptions, ToastType } from "../components/toast";
 import { subscribeToast, toast } from "../components/toast";
@@ -12,21 +22,11 @@ import { AISelector } from "./ai/components/ai-selector";
 import { formatBytes, getDocAttachmentTotal, validateAttachmentFile } from "./attachment-limits";
 import { getEditorExtensions } from "./extensions";
 import { type BubbleMenuAction, getBubbleMenuActions } from "./extensions/bubble-menu";
-import { MoreIcon, SparklesIcon } from "./icons";
 import { TableToolbar } from "./extensions/table-toolbar";
 import { t } from "./i18n";
+import { MoreIcon, SparklesIcon } from "./icons";
 import { sanitizeHtml } from "./utils/sanitize";
 
-type InlineToken =
-  | { type: "text"; text: string }
-  | { type: "link"; href: string; text: string }
-  | { type: "image"; src: string; alt: string }
-  | { type: "video"; src: string }
-  | { type: "audio"; src: string };
-
-const IMAGE_EXT_RE = /\.(png|jpe?g|gif|webp|bmp|svg|avif)(\?|#|$)/i;
-const VIDEO_EXT_RE = /\.(mp4|m3u8|webm|ogg|flv|mkv|mov|avi|wmv|ts|m4v|3gp|f4v|rmvb)(\?|#|$)/i;
-const AUDIO_EXT_RE = /\.(mp3|wav|ogg|flac|aac|m4a|wma|opus)(\?|#|$)/i;
 type FloatingPoint = { top: number; left: number; width: number };
 /** 气泡菜单强调色预设 */
 const HIGHLIGHT_COLORS = [
@@ -93,462 +93,6 @@ function layoutAIPanel(anchor: FloatingPoint, measuredHeight?: number): AIPanelL
     placement,
     arrowLeft,
   };
-}
-
-function attachmentLabel(path: string, alias?: string): string {
-  const text = alias?.trim();
-  if (text) return text;
-
-  const normalized = path.trim().replace(/\\/g, "/");
-  return normalized.split("/").pop() || normalized;
-}
-
-function pathBasename(path: string): string {
-  return (
-    path
-      .trim()
-      .replace(/^Open:\s*/i, "")
-      .replace(/\\/g, "/")
-      .split("/")
-      .pop()
-      ?.toLowerCase() || ""
-  );
-}
-
-function resolveClipboardResource(
-  path: string,
-  alias: string | undefined,
-  resourceUrls?: Map<string, string>,
-): string | null {
-  return (
-    resourceUrls?.get(pathBasename(path)) ||
-    (alias ? resourceUrls?.get(pathBasename(alias)) : null) ||
-    null
-  );
-}
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error("读取粘贴文件失败"));
-    reader.readAsDataURL(file);
-  });
-}
-
-async function collectClipboardResourceUrls(cb: DataTransfer): Promise<Map<string, string>> {
-  const files = Array.from(cb.files || []);
-  const entries = await Promise.all(
-    files.map(async (file) => [file.name.toLowerCase(), await fileToDataUrl(file)] as const),
-  );
-  return new Map(entries);
-}
-
-function hasLocalMediaRefs(text: string): boolean {
-  return /!\[\[[^\]]+\.(png|jpe?g|gif|webp|bmp|svg|avif|mp4|m3u8|webm|ogg|flv|mkv|mov|avi|wmv|ts|m4v|3gp|f4v|rmvb|mp3|wav|flac|aac|m4a|wma|opus)(?:\|[^\]]*)?\]\]/i.test(
-    text,
-  );
-}
-/** 将文本中 [[path]]/![[path]] 的 path 按剪贴板资源映射替换为 dataURL */
-function applyResourceUrls(text: string, resourceUrls?: Map<string, string>): string {
-  if (!resourceUrls || resourceUrls.size === 0) return text;
-  return text.replace(/(!?)\[\[([^\]|]+)(\|[^\]]*)?\]\]/g, (full, bang, path, alias) => {
-    const dataUrl = resourceUrls.get(pathBasename(path));
-    return dataUrl ? `${bang}[[${dataUrl}${alias || ""}]]` : full;
-  });
-}
-
-function pushMediaToken(
-  tokens: InlineToken[],
-  path: string,
-  alias?: string,
-  resourceUrls?: Map<string, string>,
-) {
-  const rawSrc = path.trim();
-  const src = resolveClipboardResource(rawSrc, alias, resourceUrls) || rawSrc;
-  const label = attachmentLabel(rawSrc, alias);
-
-  if (IMAGE_EXT_RE.test(rawSrc) || /^data:image\//i.test(src)) {
-    tokens.push({ type: "image", src, alt: label });
-  } else if (VIDEO_EXT_RE.test(rawSrc) || /^data:video\//i.test(src)) {
-    tokens.push({ type: "video", src });
-  } else if (AUDIO_EXT_RE.test(rawSrc) || /^data:audio\//i.test(src)) {
-    tokens.push({ type: "audio", src });
-  } else {
-    tokens.push({ type: "link", href: src, text: label });
-  }
-}
-
-/** 安全创建 text node（PM 不允许空字符串） */
-function tokenizeObsidianInline(line: string, resourceUrls?: Map<string, string>): InlineToken[] {
-  const tokens: InlineToken[] = [];
-  const re =
-    /!\[\[([^\]|]+)(?:\|([^\]]+))?\]\]|\[\[([^\]|]+)(?:\|([^\]]+))?\]\]|!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]+)\]\(([^)]+)\)/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = re.exec(line))) {
-    if (match.index > lastIndex) {
-      tokens.push({ type: "text", text: line.slice(lastIndex, match.index) });
-    }
-
-    if (match[1]) {
-      pushMediaToken(tokens, match[1], match[2], resourceUrls);
-    } else if (match[3]) {
-      const href = match[3].trim();
-      tokens.push({ type: "link", href, text: attachmentLabel(href, match[4]) });
-    } else if (match[6]) {
-      pushMediaToken(tokens, match[6], match[5], resourceUrls);
-    } else if (match[8]) {
-      tokens.push({ type: "link", href: match[8].trim(), text: match[7] });
-    }
-
-    lastIndex = re.lastIndex;
-  }
-
-  if (lastIndex < line.length) {
-    tokens.push({ type: "text", text: line.slice(lastIndex) });
-  }
-
-  return tokens;
-}
-
-function safeText(schema: any, text: string, marks?: any[]): any {
-  if (!text) return null;
-  try {
-    return schema.text(text, marks);
-  } catch {
-    return null;
-  }
-}
-
-function parseAttr(text: string, name: string): string | null {
-  const match = text.match(new RegExp(`${name}=["']([^"']*)["']`, "i"));
-  return match?.[1] ?? null;
-}
-
-function markdownTextNodes(schema: any, text: string, baseMarks: any[] = []): any[] {
-  const result: any[] = [];
-  const re = /(`[^`\n]+`|\*\*[^*\n]+\*\*|__[^_\n]+__|~~[^~\n]+~~|\*[^*\n]+\*|_[^_\n]+_)/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  const push = (value: string, extraMarks: any[] = []) => {
-    const node = safeText(schema, value, [...baseMarks, ...extraMarks].filter(Boolean));
-    if (node) result.push(node);
-  };
-
-  while ((match = re.exec(text))) {
-    if (match.index > lastIndex) push(text.slice(lastIndex, match.index));
-    const raw = match[0];
-    if (raw.startsWith("`")) push(raw.slice(1, -1), [schema.marks.code?.create()]);
-    else if (raw.startsWith("**") || raw.startsWith("__"))
-      push(raw.slice(2, -2), [schema.marks.bold?.create()]);
-    else if (raw.startsWith("~~")) push(raw.slice(2, -2), [schema.marks.strike?.create()]);
-    else push(raw.slice(1, -1), [schema.marks.italic?.create()]);
-    lastIndex = re.lastIndex;
-  }
-
-  if (lastIndex < text.length) push(text.slice(lastIndex));
-  return result;
-}
-
-/** 从 token 数组构建行内 content（ProseMirror text nodes + marks） */
-function buildInline(schema: any, tokens: InlineToken[]): any[] {
-  const result: any[] = [];
-  const linkMark = schema.marks.link;
-  for (const t of tokens) {
-    if (t.type === "text") {
-      result.push(...markdownTextNodes(schema, t.text));
-    } else if (t.type === "link" && linkMark) {
-      result.push(
-        ...markdownTextNodes(schema, t.text || t.href, [linkMark.create({ href: t.href || "" })]),
-      );
-    } else if (t.type === "image") {
-      const imgType = schema.nodes.image;
-      if (imgType) {
-        try {
-          result.push(imgType.create({ src: t.src, alt: t.alt || "" }));
-        } catch {
-          /* skip */
-        }
-      }
-    }
-  }
-  return result;
-}
-
-/** 将一行 Obsidian markdown 转为若干 ProseMirror block 节点 */
-function parseLineBlocks(schema: any, raw: string, resourceUrls?: Map<string, string>): any[] {
-  const blocks: any[] = [];
-  const line = raw;
-
-  // 标题
-  const hMatch = line.match(/^(#{1,6})\s/);
-  if (hMatch) {
-    const level = hMatch[1].length;
-    const content = line.replace(/^#{1,6}\s/, "");
-    const tokens = tokenizeObsidianInline(content, resourceUrls).filter(
-      (t) => t.type !== "image" && t.type !== "video" && t.type !== "audio",
-    );
-    blocks.push(schema.nodes.heading.create({ level }, buildInline(schema, tokens)));
-    return blocks;
-  }
-
-  const htmlImgMatch = line.trim().match(/^<img\s+[^>]*src=["'][^"']+["'][^>]*\/?>$/i);
-  if (htmlImgMatch) {
-    const src = parseAttr(line, "src");
-    const alt = parseAttr(line, "alt") || "";
-    const width = parseAttr(line, "width");
-    const imgType = schema.nodes.image;
-    if (imgType && src) {
-      try {
-        blocks.push(imgType.create({ src, alt, width }));
-      } catch {
-        /* skip */
-      }
-    }
-    return blocks.length ? blocks : [schema.nodes.paragraph.create()];
-  }
-
-  if (/^\s*([-*_])(?:\s*\1){2,}\s*$/.test(line)) {
-    blocks.push(schema.nodes.horizontalRule.create());
-    return blocks;
-  }
-
-  const quoteMatch = line.match(/^>\s?(.*)$/);
-  if (quoteMatch) {
-    const content = quoteMatch[1] || "";
-    // 引用内的分割线：> --- / > *** / > ___
-    if (/^\s*([-*_])(?:\s*\1){2,}\s*$/.test(content)) {
-      blocks.push(schema.nodes.blockquote.create(null, schema.nodes.horizontalRule.create()));
-    } else {
-      const paragraph = schema.nodes.paragraph.create(
-        null,
-        buildInline(schema, tokenizeObsidianInline(content, resourceUrls)),
-      );
-      blocks.push(schema.nodes.blockquote.create(null, paragraph));
-    }
-    return blocks;
-  }
-
-  const bulletMatch = line.match(/^\s*[-*+]\s+(.*)$/);
-  if (bulletMatch) {
-    const paragraph = schema.nodes.paragraph.create(
-      null,
-      buildInline(schema, tokenizeObsidianInline(bulletMatch[1], resourceUrls)),
-    );
-    blocks.push(
-      schema.nodes.bulletList.create(null, schema.nodes.listItem.create(null, paragraph)),
-    );
-    return blocks;
-  }
-
-  const orderedMatch = line.match(/^\s*\d+[.)]\s+(.*)$/);
-  if (orderedMatch) {
-    const paragraph = schema.nodes.paragraph.create(
-      null,
-      buildInline(schema, tokenizeObsidianInline(orderedMatch[1], resourceUrls)),
-    );
-    blocks.push(
-      schema.nodes.orderedList.create(null, schema.nodes.listItem.create(null, paragraph)),
-    );
-    return blocks;
-  }
-
-  if (!line.trim()) {
-    blocks.push(schema.nodes.paragraph.create());
-    return blocks;
-  }
-
-  const tokens = tokenizeObsidianInline(line, resourceUrls);
-  const mediaTokens = tokens.filter(
-    (t) => t.type === "image" || t.type === "video" || t.type === "audio",
-  );
-  const textTokens = tokens.filter(
-    (t) => t.type !== "image" && t.type !== "video" && t.type !== "audio",
-  );
-
-  if (textTokens.some((t) => (t.type === "text" ? t.text.trim() : true))) {
-    blocks.push(schema.nodes.paragraph.create(null, buildInline(schema, textTokens)));
-  }
-  for (const media of mediaTokens) {
-    if (media.type === "image") {
-      const imgType = schema.nodes.image;
-      if (imgType) {
-        try {
-          blocks.push(imgType.create({ src: media.src, alt: media.alt || "" }));
-        } catch {
-          /* skip */
-        }
-      }
-    } else if (media.type === "video") {
-      const videoType = schema.nodes.videoEmbed;
-      if (videoType) {
-        try {
-          blocks.push(videoType.create({ src: media.src, source: "direct" }));
-        } catch {
-          /* skip */
-        }
-      }
-    } else if (media.type === "audio") {
-      const audioType = schema.nodes.audioEmbed;
-      if (audioType) {
-        try {
-          blocks.push(audioType.create({ src: media.src }));
-        } catch {
-          /* skip */
-        }
-      }
-    }
-  }
-
-  if (blocks.length === 0) {
-    blocks.push(schema.nodes.paragraph.create());
-  }
-
-  return blocks;
-}
-
-const TABLE_SEPARATOR_RE = /^\|?[\s:]*-{1,}[\s:]*(\|[\s:]*-{1,}[\s:]*)*\|?$/;
-
-function splitTableRow(line: string): string[] {
-  let s = line.trim();
-  if (s.startsWith("|")) s = s.slice(1);
-  if (s.endsWith("|")) s = s.slice(0, -1);
-  return s.split("|").map((c) => c.trim());
-}
-
-/** 将多行 markdown 表格构建为 TipTap table 节点 */
-function parseTableBlock(
-  schema: any,
-  tableLines: string[],
-  resourceUrls?: Map<string, string>,
-): any | null {
-  const tableType = schema.nodes.table;
-  const rowType = schema.nodes.tableRow;
-  const headerType = schema.nodes.tableHeader;
-  const cellType = schema.nodes.tableCell;
-  if (!tableType || !rowType || !headerType || !cellType) return null;
-
-  try {
-    const headerCells = splitTableRow(tableLines[0]);
-    const headerRow = rowType.create(
-      null,
-      headerCells.map((text) =>
-        headerType.create(
-          null,
-          schema.nodes.paragraph.create(
-            null,
-            buildInline(schema, tokenizeObsidianInline(text, resourceUrls)),
-          ),
-        ),
-      ),
-    );
-
-    const dataRows: any[] = [];
-    for (let i = 2; i < tableLines.length; i++) {
-      if (!tableLines[i].trim()) break;
-      const cells = splitTableRow(tableLines[i]);
-      dataRows.push(
-        rowType.create(
-          null,
-          cells.map((text) =>
-            cellType.create(
-              null,
-              schema.nodes.paragraph.create(
-                null,
-                buildInline(schema, tokenizeObsidianInline(text, resourceUrls)),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return tableType.create(null, [headerRow, ...dataRows]);
-  } catch {
-    return null;
-  }
-}
-
-/** 将 Obsidian markdown 文本直接构建为 ProseMirror Fragment */
-function _obsidianToFragment(schema: any, text: string, resourceUrls?: Map<string, string>): any {
-  const lines = text.split("\n");
-  const blocks: any[] = [];
-  let inCode = false;
-  let codeLang = "";
-  let codeLines: string[] = [];
-
-  for (let i = 0; i < lines.length; i++) {
-    const raw = lines[i];
-    if (/^```/.test(raw)) {
-      if (inCode) {
-        const lang = codeLang || null;
-        blocks.push(
-          schema.nodes.codeBlock.create(
-            lang ? { language: lang } : {},
-            codeLines.length ? schema.text(codeLines.join("\n")) : undefined,
-          ),
-        );
-        codeLines = [];
-        inCode = false;
-      } else {
-        codeLang = raw.slice(3).trim();
-        inCode = true;
-      }
-      continue;
-    }
-    if (inCode) {
-      codeLines.push(raw);
-      continue;
-    }
-
-    // 表格检测：当前行含 |，下一行是分隔行
-    if (raw.includes("|") && i + 1 < lines.length && TABLE_SEPARATOR_RE.test(lines[i + 1].trim())) {
-      const tableLines: string[] = [raw];
-      let j = i + 1;
-      // 收集分隔行 + 后续数据行
-      while (j < lines.length && (j === i + 1 || (lines[j].includes("|") && lines[j].trim()))) {
-        tableLines.push(lines[j]);
-        j++;
-      }
-      const tableNode = parseTableBlock(schema, tableLines, resourceUrls);
-      if (tableNode) {
-        blocks.push(tableNode);
-        i = j - 1;
-        continue;
-      }
-    }
-
-    if (!raw.trim()) continue;
-    blocks.push(...parseLineBlocks(schema, raw, resourceUrls));
-  }
-
-  if (inCode) {
-    try {
-      const lang = codeLang || null;
-      const text = codeLines.length ? safeText(schema, codeLines.join("\n")) : null;
-      blocks.push(schema.nodes.codeBlock.create(lang ? { language: lang } : {}, text ?? undefined));
-    } catch {
-      /* skip broken code block */
-    }
-  }
-
-  // 过滤掉 null 节点
-  const valid = blocks.filter(Boolean);
-
-  if (valid.length === 0) {
-    valid.push(schema.nodes.paragraph.create());
-  }
-
-  try {
-    return Fragment.from(valid);
-  } catch {
-    // 极端兜底：返回纯文本段落
-    const para = schema.nodes.paragraph.create();
-    return Fragment.from(para);
-  }
 }
 
 function looksLikeMarkdown(text: string): boolean {
@@ -868,32 +412,27 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
 
         event.preventDefault();
 
-        void (async () => {
-          try {
-            const resourceUrls = await collectClipboardResourceUrls(cb);
-            if (resourceUrls.size === 0 && hasLocalMediaRefs(text)) {
-              // 走 toast 通道：默认内置 @qingwu/toast 渲染（常驻 + 完整显示），宿主可经 onToast/setToastProvider 自定义
-              toast(
-                "检测到本地相对路径图片/视频，但剪贴板没有对应文件；浏览器无法直接读取，请同时复制附件文件，或先上传后使用 URL。",
-                "info",
-              );
-            }
-            const processed = applyResourceUrls(text, resourceUrls);
-            const fragment = editorRef.current
-              ? markdownToFragment(editorRef.current, processed)
-              : null;
-            if (fragment) {
-              const slice = new Slice(fragment, 0, 0);
-              view.dispatch(view.state.tr.replaceSelection(slice).scrollIntoView());
-            } else {
-              view.dispatch(view.state.tr.insertText(text).scrollIntoView());
-            }
-          } catch (e) {
-            console.warn("Obsidian paste fallback:", e);
-            view.dispatch(view.state.tr.insertText(text).scrollIntoView());
-          }
-        })();
+        // 剪贴板若带文件（Obsidian 复制嵌入等场景），暂存给 RelativeMedia：
+        // 插入完成后由它按文件名匹配、上传换链；匹配不到的走目录授权解析
+        const relStorage = (
+          editorRef.current?.storage as
+            | { relativeMedia?: { clipboardFiles: Map<string, File> } }
+            | undefined
+        )?.relativeMedia;
+        if (relStorage) {
+          relStorage.clipboardFiles = new Map(
+            Array.from(cb.files ?? []).map((f) => [f.name.toLowerCase(), f] as const),
+          );
+        }
 
+        // 按原始相对路径插入；本地引用的解析与上传统一由 RelativeMedia 扩展兜底
+        const fragment = editorRef.current ? markdownToFragment(editorRef.current, text) : null;
+        if (fragment) {
+          const slice = new Slice(fragment, 0, 0);
+          view.dispatch(view.state.tr.replaceSelection(slice).scrollIntoView());
+        } else {
+          view.dispatch(view.state.tr.insertText(text).scrollIntoView());
+        }
         return true;
       },
     },
