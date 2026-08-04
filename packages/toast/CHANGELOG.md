@@ -1,5 +1,15 @@
 # @qingwu/toast
 
+## 0.7.0
+
+### Minor Changes
+
+- 新增 `persist` 选项：常驻不自动消失（等价 `duration: 0`），受 `persistMaxVisible`（默认 3，按容器位置独立）数量上限约束，超限按 FIFO 挤掉最老的常驻 toast
+- 默认不再按行数截断（原默认 `maxLines: 2`）：长文本完整显示、内容自适应；`maxLines` 保留为显式截断选项；无截断模式下行省略号彻底禁用（`qt-truncate` 门控 `text-overflow`），只截断不加 `…`
+- 文本区域增加 `overflow-wrap: break-word`，长不可断行 token（URL/文件名）强制断词，防止撑破容器宽度上限
+- 修复：排队（超出 `maxVisible`）的 toast 出队时丢失单条 `duration`、被全局默认覆盖（`_dequeue` 改读条目自身时长）
+- `promise()` 终态（success/error）强制自动消失，不跟随 `persist`（避免「保存成功」永久挂屏）
+
 ## 0.6.0
 
 ### Patch Changes

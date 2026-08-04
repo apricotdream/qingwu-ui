@@ -1,12 +1,28 @@
 import type { Editor } from "@tiptap/core";
 import { Extension } from "@tiptap/core";
+import type { ReactNode } from "react";
+import {
+  BoldIcon,
+  CodeIcon,
+  CopyIcon,
+  HighlightIcon,
+  ItalicIcon,
+  LinkIcon,
+  SearchIcon,
+  SparklesIcon,
+  StrikethroughIcon,
+  TableIcon,
+  UnderlineIcon,
+} from "../icons";
 
 export interface BubbleMenuAction {
   key: string;
   label: string;
-  icon: string;
+  icon: ReactNode;
   isActive: (editor: Editor) => boolean;
   command: (editor: Editor) => void;
+  /** true 时折叠进「⋯」二级菜单，主行保持紧凑单行 */
+  more?: boolean;
 }
 
 /** 搜索引擎 URL 模板，{query} 会被替换为选中文本 */
@@ -28,52 +44,67 @@ export function getSearchEngine(): string {
 
 export function getBubbleMenuActions(t: (key: string) => string): BubbleMenuAction[] {
   return [
+    // ---- 排版组：主行常驻 ----
     {
       key: "bold",
       label: t("editor.bubble.bold"),
-      icon: "B",
+      icon: <BoldIcon />,
       isActive: (editor) => editor.isActive("bold"),
       command: (editor) => editor.isEditable && editor.chain().focus().toggleBold().run(),
     },
     {
       key: "italic",
       label: t("editor.bubble.italic"),
-      icon: "I",
+      icon: <ItalicIcon />,
       isActive: (editor) => editor.isActive("italic"),
       command: (editor) => editor.isEditable && editor.chain().focus().toggleItalic().run(),
     },
     {
       key: "underline",
       label: t("editor.bubble.underline"),
-      icon: "U",
+      icon: <UnderlineIcon />,
       isActive: (editor) => editor.isActive("underline"),
       command: (editor) => editor.isEditable && editor.chain().focus().toggleUnderline().run(),
     },
     {
       key: "strikethrough",
       label: t("editor.bubble.strikethrough"),
-      icon: "S",
+      icon: <StrikethroughIcon />,
       isActive: (editor) => editor.isActive("strike"),
       command: (editor) => editor.isEditable && editor.chain().focus().toggleStrike().run(),
     },
     {
       key: "code",
       label: t("editor.bubble.emphasis"),
-      icon: "`",
+      icon: <CodeIcon />,
       isActive: (editor) => editor.isActive("code"),
       command: (editor) => editor.isEditable && editor.chain().focus().toggleCode().run(),
     },
+
+    // ---- 操作组：折叠进「⋯」二级菜单 ----
     {
       key: "highlight",
       label: t("editor.bubble.highlight"),
-      icon: "A",
+      icon: <HighlightIcon />,
+      more: true,
       isActive: (editor) => editor.isActive("highlight"),
-      command: (editor) => editor.isEditable && editor.chain().focus().toggleHighlight().run(),
+      // 高亮色板由 QingWuAIEditor 组件的自定义浮层处理
+      command: () => {},
+    },
+    {
+      key: "link",
+      label: t("editor.bubble.link"),
+      icon: <LinkIcon />,
+      more: true,
+      isActive: (editor) => editor.isActive("link"),
+      // link 操作由 QingWuAIEditor 组件的自定义浮层处理
+      command: () => {},
     },
     {
       key: "copy",
       label: t("editor.bubble.copy"),
-      icon: "⧉",
+      icon: <CopyIcon />,
+      more: true,
       isActive: () => false,
       command: (editor) => {
         const { from, to } = editor.state.selection;
@@ -85,7 +116,8 @@ export function getBubbleMenuActions(t: (key: string) => string): BubbleMenuActi
     {
       key: "search",
       label: t("editor.bubble.search"),
-      icon: "🔍",
+      icon: <SearchIcon />,
+      more: true,
       isActive: () => false,
       command: (editor) => {
         // 已在表格内则跳过，避免嵌套
@@ -98,18 +130,10 @@ export function getBubbleMenuActions(t: (key: string) => string): BubbleMenuActi
       },
     },
     {
-      key: "link",
-      label: t("editor.bubble.link"),
-      icon: "🔗",
-      isActive: (editor) => editor.isActive("link"),
-      command: () => {
-        // link 操作由 QingWuAIEditor 组件的自定义浮层处理
-      },
-    },
-    {
       key: "table",
       label: t("editor.bubble.table"),
-      icon: "▦",
+      icon: <TableIcon />,
+      more: true,
       isActive: (editor) => editor.isActive("table"),
       command: (editor) => {
         if (!editor.isEditable) return;
@@ -124,10 +148,12 @@ export function getBubbleMenuActions(t: (key: string) => string): BubbleMenuActi
         chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).scrollIntoView().run();
       },
     },
+
+    // ---- AI：品牌色专属 ----
     {
       key: "ai",
       label: t("editor.ai.trigger"),
-      icon: "✨",
+      icon: <SparklesIcon />,
       isActive: () => false,
       command: (editor) => {
         if (!editor.isEditable) return;

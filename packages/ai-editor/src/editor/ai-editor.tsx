@@ -3,15 +3,16 @@ import type { Editor } from "@tiptap/core";
 import { Fragment, DOMParser as PmDOMParser, Slice } from "@tiptap/pm/model";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
-import { type FC, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type FC, lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { SearchBar } from "../components/search-bar";
-import type { ToastType } from "../components/toast";
+import type { ToastOptions, ToastType } from "../components/toast";
 import { subscribeToast, toast } from "../components/toast";
 import { TocPanel } from "../components/toc";
 import { AISelector } from "./ai/components/ai-selector";
 import { formatBytes, getDocAttachmentTotal, validateAttachmentFile } from "./attachment-limits";
 import { getEditorExtensions } from "./extensions";
-import { getBubbleMenuActions } from "./extensions/bubble-menu";
+import { type BubbleMenuAction, getBubbleMenuActions } from "./extensions/bubble-menu";
+import { MoreIcon, SparklesIcon } from "./icons";
 import { TableToolbar } from "./extensions/table-toolbar";
 import { t } from "./i18n";
 import { sanitizeHtml } from "./utils/sanitize";
@@ -36,6 +37,63 @@ const HIGHLIGHT_COLORS = [
   { color: "#fed7aa", name: "橙" },
   { color: "#ddd6fe", name: "紫" },
 ];
+
+/** AI 面板固定宽度（与 AISelector 内部一致，避免测量偏差） */
+const AI_PANEL_WIDTH = 288;
+/** 翻转判断用面板高度估算，渲染后 useLayoutEffect 会用真实高度校正 */
+const AI_PANEL_HEIGHT_ESTIMATE = 320;
+
+type AIPanelPlacement = "below" | "above";
+
+interface AIPanelLayout {
+  style: React.CSSProperties;
+  placement: AIPanelPlacement;
+  /** 箭头在面板内的水平位置（百分比 0-100） */
+  arrowLeft: number;
+}
+
+/** 计算 AI 面板 fixed 定位。调用方必须同步 setState，保证首帧即 fixed，
+ *  避免面板先以静态块级元素渲染撑高编辑器导致页面滚动跳变。 */
+function layoutAIPanel(anchor: FloatingPoint, measuredHeight?: number): AIPanelLayout {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const pw = Math.min(AI_PANEL_WIDTH, vw - 32);
+  const ph = Math.max(measuredHeight || AI_PANEL_HEIGHT_ESTIMATE, 160);
+
+  // 移动端：顶部居中全宽
+  if (vw < 640) {
+    return {
+      style: {
+        position: "fixed",
+        top: Math.max(8, Math.min(anchor.top + 10, vh - 420)),
+        left: 8,
+        right: 8,
+        width: "auto",
+        zIndex: 9999,
+      },
+      placement: "below",
+      arrowLeft: 50,
+    };
+  }
+
+  const anchorCenter = anchor.left + anchor.width / 2;
+  let left = anchorCenter - pw / 2;
+  const spaceBelow = vh - anchor.top - 16;
+  const spaceAbove = anchor.top - 16;
+  const placement: AIPanelPlacement =
+    spaceBelow < ph + 12 && spaceAbove >= ph + 12 ? "above" : "below";
+  let top = placement === "below" ? anchor.top + 10 : anchor.top - ph - 10;
+  top = Math.max(16, Math.min(top, vh - ph - 16));
+  left = Math.max(16, Math.min(left, vw - pw - 16));
+  // 箭头尽量贴近选区中心，同时夹在面板内避免溢出
+  const arrowLeft = Math.max(14, Math.min(((anchorCenter - left) / pw) * 100, 86));
+
+  return {
+    style: { position: "fixed", top, left, width: pw, zIndex: 9999 },
+    placement,
+    arrowLeft,
+  };
+}
 
 function attachmentLabel(path: string, alias?: string): string {
   const text = alias?.trim();
@@ -587,8 +645,9 @@ export interface QingWuAIEditorProps {
    * 全局提示回调（附件超限拦截 / 文档附件超限警告等）。
    * 由宿主接入自己的 Toast 组件（如 @qingwu/toast）；不传时回退到内置
    * @qingwu/toast 默认渲染，也可通过 setToastProvider() 全局替换。
+   * 第三参 options 透传展示选项（persist/maxLines/duration）；旧签名自动兼容。
    */
-  onToast?: (message: string, type: ToastType) => void;
+  onToast?: (message: string, type: ToastType, options?: ToastOptions) => void;
 }
 
 export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
@@ -619,12 +678,18 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   );
   const [showAI, setShowAI] = useState(false);
   const [aiPanelStyle, setAiPanelStyle] = useState<React.CSSProperties>({});
+  /** AI 面板相对选区的方位（智能翻转用） */
+  const [aiPlacement, setAiPlacement] = useState<"below" | "above">("below");
+  /** 箭头在面板内的水平位置（百分比），默认居中 */
+  const [aiArrowLeft, setAiArrowLeft] = useState(50);
+  const aiPanelRef = useRef<HTMLDivElement | null>(null);
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [showVideoDialog, setShowVideoDialog] = useState(false);
   const [showStorageSettings, setShowStorageSettings] = useState(false);
   const [showExport, setShowExport] = useState(false);
-  const [showLinkInput, setShowLinkInput] = useState(false);
-  const [showHighlightColors, setShowHighlightColors] = useState(false);
+  // 气泡子面板（高亮色板 / 链接输入）独立浮层，不叠加进气泡内增高气泡
+  const [subPanel, setSubPanel] = useState<"none" | "highlight" | "link">("none");
+  const [subPanelStyle, setSubPanelStyle] = useState<React.CSSProperties>({});
 
   const [linkUrl, setLinkUrl] = useState("");
   const [mdDialog, setMdDialog] = useState<{
@@ -649,6 +714,9 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   const savedScrollYRef = useRef<number>(0);
   const aiAnchorRef = useRef<FloatingPoint | null>(null);
   const editorRef = useRef<Editor | null>(null);
+  // 气泡菜单：主行容器 ref（子面板定位锚点）+ 「⋯」二级菜单开关
+  const bubbleBoxRef = useRef<HTMLDivElement | null>(null);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [editorWebFS, setEditorWebFS] = useState(false);
   const [editorNativeFS, setEditorNativeFS] = useState(false);
 
@@ -804,11 +872,10 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           try {
             const resourceUrls = await collectClipboardResourceUrls(cb);
             if (resourceUrls.size === 0 && hasLocalMediaRefs(text)) {
-              // 走 toast 通道：默认内置 @qingwu/toast 渲染，宿主可经 onToast/setToastProvider 自定义
+              // 走 toast 通道：默认内置 @qingwu/toast 渲染（常驻 + 完整显示），宿主可经 onToast/setToastProvider 自定义
               toast(
                 "检测到本地相对路径图片/视频，但剪贴板没有对应文件；浏览器无法直接读取，请同时复制附件文件，或先上传后使用 URL。",
                 "info",
-                { maxLines: 3, duration: 6000 },
               );
             }
             const processed = applyResourceUrls(text, resourceUrls);
@@ -843,12 +910,13 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     onEditorReady(editor);
   }, [editor, onEditorReady]);
 
-  // 选区为空时收起强调色面板，避免残留
+  // 选区为空（气泡隐藏）时收起子面板与「⋯」菜单，避免残留
   useEffect(() => {
     if (!editor) return;
     const handler = () => {
       if (editor.state.selection.empty) {
-        setShowHighlightColors(false);
+        setSubPanel("none");
+        setShowMoreMenu(false);
       }
     };
     editor.on("selectionUpdate", handler);
@@ -919,7 +987,60 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     storage.limits = { maxAttachmentSize, maxTotalAttachmentSize };
   }, [editor, maxAttachmentSize, maxTotalAttachmentSize]);
 
+  // 打开高亮色板 / 链接输入独立浮层：锚定气泡菜单当前矩形，浮层不叠进气泡内
+  const openSubPanel = useCallback((panel: "highlight" | "link") => {
+    const anchor = bubbleBoxRef.current?.getBoundingClientRect();
+    setSubPanel(panel);
+    setShowMoreMenu(false);
+    setSubPanelStyle({
+      position: "fixed",
+      top: anchor ? anchor.bottom + 8 : undefined,
+      left: anchor ? Math.max(8, Math.min(anchor.left, window.innerWidth - 240)) : 8,
+      zIndex: 9999,
+    });
+  }, []);
+
   const bubbleActions = getBubbleMenuActions((key) => t(key));
+  // 主行紧凑展示高频键，低频键折叠进「⋯」二级菜单，避免气泡换行增高。
+  // 主行 = 排版组（B/I/U/S/代码）+ AI 专属 + ⋯；高亮/链接/表格/复制/搜索 进 ⋯ 下拉。
+  const mainActions = bubbleActions.filter((action) => !action.more);
+  const moreActions = bubbleActions.filter((action) => action.more);
+  const formatActions = mainActions.filter((action) => action.key !== "ai");
+  const aiAction = mainActions.find((action) => action.key === "ai");
+
+  // 气泡按钮统一点击处理：链接/高亮走二级浮层，其余执行命令
+  const handleBubbleAction = useCallback(
+    (action: BubbleMenuAction) => {
+      if (!editor) return;
+      setShowMoreMenu(false);
+      if (action.key === "link") {
+        if (editor.isActive("link")) {
+          editor.chain().focus().unsetLink().run();
+        } else {
+          const href = editor.getAttributes("link").href || "";
+          setLinkUrl(href);
+          openSubPanel("link");
+        }
+      } else if (action.key === "highlight") {
+        if (subPanel === "highlight") setSubPanel("none");
+        else openSubPanel("highlight");
+      } else {
+        action.command(editor);
+      }
+    },
+    [editor, subPanel, openSubPanel],
+  );
+
+  const isMoreActionActive = useCallback(
+    (action: BubbleMenuAction) => {
+      if (!editor) return false;
+      if (action.key === "highlight") return subPanel === "highlight";
+      if (action.key === "link") return editor.isActive("link");
+      return action.isActive(editor);
+    },
+    [editor, subPanel],
+  );
+
   // 字数统计：仅订阅 editor 事务时刷新，避免每次重渲染都调用
   const [charTick, setCharTick] = useState(0);
   useEffect(() => {
@@ -956,19 +1077,25 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
 
   // 打开写作助手面板 — 工具栏「AI 编写」按钮与扩展（slash / 气泡菜单）共用。
   // 有选区时锚定选区下沿，无选区时锚定光标坐标；二者皆无则用默认位置。
+  // 关键：同步算好 fixed 坐标与 showAI 一起 setState，首帧即 fixed，
+  // 从源头消除「面板先以静态块级元素渲染撑高编辑器 → 页面滚动跳变」的问题。
   const openAIPanel = useCallback(() => {
     if (!editor?.isEditable) return;
-    savedScrollYRef.current = window.scrollY;
     const domSel = window.getSelection();
+    let anchor: FloatingPoint;
     if (domSel && domSel.rangeCount > 0 && !domSel.isCollapsed) {
       const rect = domSel.getRangeAt(0).getBoundingClientRect();
-      aiAnchorRef.current = { top: rect.bottom, left: rect.left, width: rect.width };
+      anchor = { top: rect.bottom, left: rect.left, width: rect.width };
     } else {
       const coords = editor.view.coordsAtPos(editor.state.selection.from);
-      aiAnchorRef.current = { top: coords.bottom, left: coords.left, width: 0 };
+      anchor = { top: coords.bottom, left: coords.left, width: 0 };
     }
+    aiAnchorRef.current = anchor;
+    const layout = layoutAIPanel(anchor);
     setShowAI(true);
-    requestAnimationFrame(() => window.scrollTo(0, savedScrollYRef.current));
+    setAiPanelStyle(layout.style);
+    setAiPlacement(layout.placement);
+    setAiArrowLeft(layout.arrowLeft);
   }, [editor]);
 
   // 注册全局回调（供 slash 命令和代码块等触发）
@@ -1008,46 +1135,34 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     };
   }, [editor, openAIPanel]);
 
-  // 写作助手面板定位 - 基于选区位置，移动端全宽
+  // 写作助手面板定位校正：渲染后用真实高度做智能翻转 + 箭头定位。
+  // 用 useLayoutEffect（绘制前执行），配合 openAIPanel 里同步写入的初始 fixed 样式，
+  // 全程面板都是 fixed，不会以静态元素撑高编辑器 → 无滚动跳变。
+  useLayoutEffect(() => {
+    if (!showAI || !editor) return;
+    const anchor = aiAnchorRef.current;
+    if (!anchor) return;
+    const panel = aiPanelRef.current;
+    const layout = layoutAIPanel(anchor, panel?.offsetHeight || undefined);
+    setAiPlacement(layout.placement);
+    setAiArrowLeft(layout.arrowLeft);
+    setAiPanelStyle(layout.style);
+  }, [showAI, editor]);
+
+  // 面板打开期间窗口尺寸变化时重新定位
   useEffect(() => {
     if (!showAI || !editor) return;
-
-    const isMobile = window.innerWidth < 640;
-    const anchor = aiAnchorRef.current;
-    let top = 120;
-
-    if (isMobile) {
-      // 移动端：顶部居中全宽
-      if (anchor) top = anchor.top + 10;
-      setAiPanelStyle({
-        position: "fixed",
-        top: Math.max(8, Math.min(top, window.innerHeight - 420)),
-        left: 8,
-        right: 8,
-        width: "auto",
-        zIndex: 9999,
-      });
-      return;
-    }
-
-    let left = window.innerWidth / 2 - 200;
-    if (anchor) {
-      top = anchor.top + 10;
-      left = anchor.left + anchor.width / 2 - 200;
-    } else {
-      const coords = editor.view.coordsAtPos(editor.state.selection.from);
-      top = coords.bottom + 10;
-      left = coords.left;
-    }
-
-    const pw = Math.min(400, window.innerWidth - 32);
-    const ph = 360;
-    setAiPanelStyle({
-      position: "fixed",
-      top: Math.max(16, Math.min(top, window.innerHeight - ph - 16)),
-      left: Math.max(16, Math.min(left, window.innerWidth - pw - 16)),
-      zIndex: 9999,
-    });
+    const onResize = () => {
+      const anchor = aiAnchorRef.current;
+      if (!anchor) return;
+      const panel = aiPanelRef.current;
+      const layout = layoutAIPanel(anchor, panel?.offsetHeight || undefined);
+      setAiPlacement(layout.placement);
+      setAiArrowLeft(layout.arrowLeft);
+      setAiPanelStyle(layout.style);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, [showAI, editor]);
 
   useEffect(() => {
@@ -1284,62 +1399,128 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
               if (state.selection.empty) return false;
               return true;
             }}
-            options={{ placement: "bottom", offset: 8 }}
-            className="bg-background border border-default-200 rounded-xl p-1 shadow-lg"
+            options={{ placement: "bottom", offset: 8, flip: true }}
+            className="bubble-menu-pop bg-background border border-default-200 rounded-xl p-1 shadow-lg"
           >
             <div
-              className="bubble-menu-items flex flex-col gap-1"
+              ref={bubbleBoxRef}
+              className="bubble-menu-items relative flex items-center gap-0.5"
               onPointerDown={(e) => {
                 if ((e.target as HTMLElement).closest("button")) e.preventDefault();
               }}
             >
-              <div className="bubble-actions-row flex items-center gap-0.5 flex-wrap justify-center">
-                {bubbleActions.map((action) => (
-                  <button
-                    key={action.key}
-                    type="button"
-                    className={`px-2 py-1 text-xs rounded-lg transition-colors ${
-                      action.isActive(editor)
-                        ? "bg-default-200 text-default-900"
-                        : action.key === "ai"
-                          ? "text-primary hover:bg-primary/10"
-                          : action.key === "link"
-                            ? editor.isActive("link")
-                              ? "bg-primary/10 text-primary"
-                              : "text-default-600 hover:bg-default-100"
-                            : "text-default-600 hover:bg-default-100"
-                    }`}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      if (action.key === "link") {
-                        if (editor.isActive("link")) {
-                          editor.chain().focus().unsetLink().run();
-                        } else {
-                          const href = editor.getAttributes("link").href || "";
-                          setLinkUrl(href);
-                          setShowLinkInput(true);
-                        }
-                      } else if (action.key === "highlight") {
-                        setShowHighlightColors((v) => !v);
-                      } else if (action.key === "ai") {
-                        const scrollY = window.scrollY;
-                        action.command(editor);
-                        requestAnimationFrame(() => window.scrollTo(0, scrollY));
-                      } else {
-                        action.command(editor);
-                      }
-                    }}
-                    title={action.label}
-                  >
-                    {action.icon}
-                  </button>
-                ))}
-              </div>
+              {/* 排版组：B / I / U / S / 代码 */}
+              {formatActions.map((action) => (
+                <button
+                  key={action.key}
+                  type="button"
+                  className={`flex items-center justify-center w-7 h-7 rounded-lg transition-colors ${
+                    action.isActive(editor)
+                      ? "bg-primary/10 text-primary"
+                      : "text-default-600 hover:bg-default-100"
+                  }`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    handleBubbleAction(action);
+                  }}
+                  title={action.label}
+                  aria-label={action.label}
+                >
+                  {action.icon}
+                </button>
+              ))}
 
-              {/* 链接编辑浮层 */}
-              {/* 强调色选择浮层 */}
-              {showHighlightColors && (
-                <div className="flex items-center gap-1 pt-1 border-t border-default-100 flex-wrap">
+              {/* 分隔线 */}
+              <span className="w-px h-4 bg-default-200 mx-0.5 shrink-0" aria-hidden="true" />
+
+              {/* AI 专属 - 品牌色 */}
+              <button
+                type="button"
+                className={`flex items-center justify-center w-7 h-7 rounded-lg transition-colors ${
+                  showAI ? "bg-primary/15 text-primary" : "text-primary hover:bg-primary/10"
+                }`}
+                onClick={(event) => {
+                  event.preventDefault();
+                  setShowMoreMenu(false);
+                  // openAIPanel 内部已同步算好 fixed 定位，首帧即 fixed，不再需要 RAF 滚动救场
+                  aiAction?.command(editor);
+                }}
+                title={aiAction?.label}
+                aria-label={aiAction?.label}
+              >
+                <SparklesIcon />
+              </button>
+
+              {/* 分隔线 */}
+              <span className="w-px h-4 bg-default-200 mx-0.5 shrink-0" aria-hidden="true" />
+
+              {/* 「⋯」低频操作入口 - 展开竖向下拉 */}
+              <button
+                type="button"
+                aria-expanded={showMoreMenu}
+                className={`flex items-center justify-center w-7 h-7 rounded-lg transition-colors ${
+                  showMoreMenu
+                    ? "bg-default-100 text-default-900"
+                    : "text-default-600 hover:bg-default-100"
+                }`}
+                onClick={(event) => {
+                  event.preventDefault();
+                  setShowMoreMenu((v) => !v);
+                }}
+                title={t("editor.bubble.more")}
+                aria-label={t("editor.bubble.more")}
+              >
+                <MoreIcon />
+              </button>
+
+              {/* 「⋯」竖向二级菜单 - 图标 + 文字，宽度贴合最长字段，独立浮层不增高气泡 */}
+              {showMoreMenu && (
+                <div
+                  role="menu"
+                  className="bubble-more-menu absolute right-0 top-full z-[9999] mt-1 w-max max-h-[70vh] overflow-y-auto flex-col gap-1 rounded-xl border border-default-200 bg-background p-1.5 shadow-xl"
+                  onPointerDown={(e) => {
+                    if ((e.target as HTMLElement).closest("button")) e.preventDefault();
+                  }}
+                >
+                  {moreActions.map((action) => (
+                    <button
+                      key={action.key}
+                      type="button"
+                      role="menuitem"
+                      className={`flex items-center gap-2 w-full whitespace-nowrap px-3 py-1.5 text-xs rounded-md transition-colors ${
+                        isMoreActionActive(action)
+                          ? "bg-primary/10 text-primary"
+                          : "text-default-600 hover:bg-default-100"
+                      }`}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        handleBubbleAction(action);
+                      }}
+                      title={action.label}
+                    >
+                      <span className="w-4 h-4 flex items-center justify-center shrink-0">
+                        {action.icon}
+                      </span>
+                      <span className="tracking-wide">{action.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </BubbleMenu>
+        )}
+
+        {/* 高亮色板 / 链接输入 - 独立浮层，不叠加进气泡内增高气泡 */}
+        {editor && subPanel !== "none" && (
+          <>
+            <div className="fixed inset-0 z-[9998]" onClick={() => setSubPanel("none")} />
+            <div
+              style={subPanelStyle}
+              className="bg-background border border-default-200 rounded-xl shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {subPanel === "highlight" ? (
+                <div className="flex items-center gap-1 p-1.5 flex-wrap">
                   {HIGHLIGHT_COLORS.map((c) => (
                     <button
                       key={c.color}
@@ -1349,7 +1530,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                       title={c.name}
                       onClick={() => {
                         editor.chain().focus().setHighlight({ color: c.color }).run();
-                        setShowHighlightColors(false);
+                        setSubPanel("none");
                       }}
                     />
                   ))}
@@ -1359,17 +1540,17 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                     title="清除高亮"
                     onClick={() => {
                       editor.chain().focus().unsetHighlight().run();
-                      setShowHighlightColors(false);
+                      setSubPanel("none");
                     }}
                   >
                     ✕{" "}
                   </button>
                 </div>
-              )}
-              {showLinkInput && (
-                <div className="flex items-center gap-1.5 pt-1 border-t border-default-100">
+              ) : (
+                <div className="flex items-center gap-1.5 p-1.5">
                   <input
                     type="url"
+                    autoFocus
                     className="flex-1 px-2 py-1 text-xs rounded-md border border-default-200 bg-background focus:outline-none focus:border-primary"
                     placeholder="https://..."
                     value={linkUrl}
@@ -1379,9 +1560,9 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                         if (linkUrl.trim()) {
                           editor.chain().focus().setLink({ href: linkUrl.trim() }).run();
                         }
-                        setShowLinkInput(false);
+                        setSubPanel("none");
                       } else if (e.key === "Escape") {
-                        setShowLinkInput(false);
+                        setSubPanel("none");
                       }
                     }}
                   />
@@ -1392,7 +1573,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                       if (linkUrl.trim()) {
                         editor.chain().focus().setLink({ href: linkUrl.trim() }).run();
                       }
-                      setShowLinkInput(false);
+                      setSubPanel("none");
                     }}
                   >
                     确定
@@ -1400,7 +1581,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                 </div>
               )}
             </div>
-          </BubbleMenu>
+          </>
         )}
 
         {/* 写作助手面板 - 浮动在选中区域下方，点击外部关闭 */}
@@ -1408,10 +1589,19 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           <>
             <div className="fixed inset-0 z-[9998]" onClick={() => setShowAI(false)} />
             <div
+              ref={aiPanelRef}
               style={aiPanelStyle}
-              className="bg-background border border-default-200 rounded-xl shadow-xl"
+              className={`ai-panel relative bg-background border border-default-200 rounded-xl shadow-xl${
+                aiPlacement === "above" ? " ai-panel--above" : ""
+              }`}
               onClick={(e) => e.stopPropagation()}
             >
+              {/* 锚点箭头 - 面板在选区下方时指向上，翻转后指向下 */}
+              <span
+                className="ai-panel__arrow"
+                style={{ left: `${aiArrowLeft}%` }}
+                aria-hidden="true"
+              />
               <AISelector editor={editor} onClose={() => setShowAI(false)} />
             </div>
           </>

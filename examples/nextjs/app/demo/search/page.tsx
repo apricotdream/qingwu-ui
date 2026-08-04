@@ -1,6 +1,7 @@
 "use client";
 
 import { SearchBox } from "@qingwu/search";
+import "@qingwu/button/style.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DemoCard from "@/components/DemoCard";
 

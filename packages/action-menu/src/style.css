@@ -1,0 +1,228 @@
+/* ============================================================
+   青梧UI · 扇形动作菜单样式（ActionMenu）
+   零依赖 · CSS 自定义属性驱动 · 明暗双主题 · reduced-motion 友好
+
+   使用方式：
+     import "@qingwu/action-menu/style.css"
+
+   令牌覆盖：--qam-* 可被宿主覆盖；复用宿主已定义的
+   --paper / --card / --ink / --teal / --vermilion / --amber / --line
+   若宿主未提供则使用本文件默认值。
+   ============================================================ */
+
+/* ============================================================
+   ① 设计令牌（可在宿主层覆盖）
+   ============================================================ */
+:root {
+  --qam-card: var(--card, #fdfdfb);
+  --qam-ink: var(--ink, #1d2b2c);
+  --qam-ink-2: var(--ink-2, #47585a);
+  --qam-ink-3: var(--ink-3, #84928f);
+  --qam-line: var(--line, #dcdfd6);
+  --qam-teal: var(--teal, #1e605a);
+  --qam-hover: var(--hover, rgba(30, 96, 90, 0.07));
+  --qam-shadow: var(--shadow, 0 1px 2px rgba(29, 43, 44, 0.05));
+  --qam-shadow-pop: var(--shadow-pop, 0 24px 60px -28px rgba(29, 43, 44, 0.42));
+  --qam-font-ui: var(--font-ui, "Microsoft YaHei", "PingFang SC", system-ui, sans-serif);
+}
+
+/* 暗色主题：兼容 <html data-theme="dark"> 与 .dark 类两种宿主约定 */
+.dark,
+[data-theme="dark"] {
+  --qam-card: #1a2022;
+  --qam-ink: #e6ebe7;
+  --qam-ink-2: #a8b4b2;
+  --qam-ink-3: #6f7f7d;
+  --qam-line: #2a3234;
+  --qam-teal: #57a89e;
+  --qam-hover: rgba(255, 255, 255, 0.06);
+  --qam-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --qam-shadow-pop: 0 24px 60px -28px rgba(0, 0, 0, 0.7);
+}
+
+/* ============================================================
+   ② 基础复位（限定在组件范围内，不污染宿主）
+   ============================================================ */
+.qam-root,
+.qam-root *,
+.qam-fan,
+.qam-fan * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+.qam-root {
+  font-family: var(--qam-font-ui);
+  color: var(--qam-ink);
+}
+
+/* ============================================================
+   ③ 触发器
+   ============================================================ */
+.qam-trigger {
+  cursor: pointer;
+}
+.qam-trigger-fab {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--qam-line);
+  background: var(--qam-card);
+  color: var(--qam-teal);
+  box-shadow: var(--qam-shadow-pop);
+  cursor: pointer;
+  transition:
+    transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.18s ease;
+}
+.qam-trigger-fab:hover,
+.qam-root.is-open .qam-trigger-fab {
+  transform: scale(1.06);
+}
+.qam-trigger-fab:focus-visible {
+  outline: 2px solid var(--qam-teal);
+  outline-offset: 2px;
+}
+.qam-trigger-ico {
+  display: grid;
+  place-items: center;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.qam-root.is-open .qam-trigger-ico {
+  transform: rotate(45deg);
+}
+.qam-trigger-ico svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ============================================================
+   ④ 扇形面板（position: fixed 挂 body）
+   ============================================================ */
+.qam-fan {
+  position: fixed;
+  z-index: 300;
+  pointer-events: none;
+}
+.qam-fan[hidden] {
+  display: none;
+}
+/* 扇区热区：覆盖整个扇形盒，负责「离开即收起」；
+   同时也承接扇区图标的点击（.qam-item-ico / .qam-item-label 各自 pointer-events: auto） */
+.qam-items {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+}
+
+/* ============================================================
+   ⑤ 扇区
+   ============================================================ */
+.qam-item {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+  /* transform: translate(x, y) 由 JS 按几何写入 */
+}
+.qam-item-ico {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--qam-card);
+  border: 1px solid var(--qam-line);
+  box-shadow: var(--qam-shadow);
+  color: var(--qam-ink-2);
+  cursor: pointer;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: qam-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+.qam-item-ico svg {
+  width: 20px;
+  height: 20px;
+}
+/* 当前高亮扇区：黛青描边 + 轻微放大 */
+.qam-item.is-active .qam-item-ico {
+  border-color: var(--qam-teal);
+  color: var(--qam-teal);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--qam-teal) 15%, transparent);
+  transform: translate(-50%, -50%) scale(1.08);
+}
+/* 禁用扇区 */
+.qam-item[aria-disabled="true"] .qam-item-ico {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.qam-item[aria-disabled="true"].is-active .qam-item-ico {
+  border-color: var(--qam-line);
+  color: var(--qam-ink-3);
+  box-shadow: none;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* 切向 label：两段式披露——扇形打开仅图标，hover 扇区时该扇区 label 沿切向伸出；
+   移出整个扇区热区才收起，移出图标不闪断（hover label 本身也能保持展开） */
+.qam-item-label {
+  position: absolute;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--qam-card);
+  border: 1px solid var(--qam-line);
+  box-shadow: var(--qam-shadow);
+  color: var(--qam-ink);
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: auto;
+  cursor: pointer;
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(var(--qam-rot, 0deg)) scaleX(0);
+  transform-origin: center;
+  transition:
+    opacity 0.16s ease,
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.qam-item.is-active .qam-item-label {
+  opacity: 1;
+  transform: translate(-50%, -50%) rotate(var(--qam-rot, 0deg)) scaleX(1);
+}
+
+/* ============================================================
+   ⑥ 入场关键帧
+   ============================================================ */
+@keyframes qam-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+/* ============================================================
+   ⑦ prefers-reduced-motion：全部动画熔断
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .qam-root *,
+  .qam-root *::before,
+  .qam-root *::after,
+  .qam-fan *,
+  .qam-fan *::before,
+  .qam-fan *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

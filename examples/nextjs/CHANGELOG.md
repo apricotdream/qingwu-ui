@@ -1,5 +1,13 @@
 # qingwu-nextjs-example
 
+## 0.1.5
+
+### Patch Changes
+
+- Updated dependencies
+  - @qingwu/ai-editor@0.6.1
+  - @qingwu/upload@0.6.1
+
 ## 0.1.4
 
 ### Patch Changes

@@ -365,7 +365,12 @@ export default function App() {
         editor.commands.insertContent(sep + clip.markdown);
       },
     });
-    return () => receiver.close();
+    // 通知扩展：接收器已挂上（与 echo-diary 创作页同一握手协议），扩展据此避免竞态丢消息
+    (window as unknown as Record<string, boolean>).__qingwuReady = true;
+    return () => {
+      (window as unknown as Record<string, boolean>).__qingwuReady = false;
+      receiver.close();
+    };
   }, [clipperEnabled, clipperUrl]);
 
   const toggleLocale = useCallback(() => {

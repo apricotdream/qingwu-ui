@@ -1,5 +1,11 @@
 # @qingwu/tag-input
 
+## 0.6.2
+
+### Patch Changes
+
+- 修复 inline 模式下已选 chip 的零边距规则误伤快捷栏：`margin: 0` 收敛到 `.qti-inline .qti-input-wrap .qti-tag`，避免 `.qti-bar` 的快捷 chip 被清掉 margin 贴死在一起
+
 ## 0.6.0
 
 ### Minor Changes

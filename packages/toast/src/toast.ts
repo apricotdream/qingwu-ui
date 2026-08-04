@@ -83,17 +83,23 @@ interface ToastEntry {
   dismissible: boolean;
   /** 创建时的定位（出队/挂载时保持，不被全局默认覆盖） */
   position: ToastPosition;
+  /** 单条时长（persist 时强制 0）；出队时保持，不被全局默认覆盖 */
+  duration: number;
+  /** 创建序号，用于常驻上限的 FIFO 挤掉最老 */
+  order: number;
   element: HTMLElement;
   /** auto-dismiss 定时器 */
   timer: ReturnType<typeof setTimeout> | null;
 }
 
-const DEFAULT_OPTS: Required<ToasterOptions> = {
-  type: "info",
-  position: "top-center" /* 默认顶部居中（EP/AntD 惯例） */,
+const DEFAULT_OPTS = {
+  type: "info" as ToastType,
+  position: "top-center" as ToastPosition /* 默认顶部居中（EP/AntD 惯例） */,
   duration: 4000,
   maxVisible: 5,
-  maxLines: 2,
+  persist: false,
+  persistMaxVisible: 3,
+  maxLines: undefined as number | undefined /* 默认不限行 → 内容完整显示 */,
   vibrate: true,
 };
 
@@ -117,6 +123,8 @@ export class Toaster {
   private opts = { ...DEFAULT_OPTS };
   private toasts = new Map<string, ToastEntry>();
   private queue: ToastEntry[] = [];
+  /** 单调递增序号，标记创建顺序（FIFO 挤掉最老用） */
+  private _seq = 0;
 
   constructor(opts?: ToasterOptions) {
     if (opts) Object.assign(this.opts, opts);
@@ -143,7 +151,8 @@ export class Toaster {
   show(message: string, options?: ToastOptions): string {
     const type = options?.type ?? this.opts.type;
     const position = options?.position ?? this.opts.position;
-    const duration = options?.duration ?? this.opts.duration;
+    const persist = options?.persist ?? this.opts.persist;
+    const duration = persist ? 0 : (options?.duration ?? this.opts.duration);
     const dismissible = options?.dismissible ?? true;
     const maxLines = options?.maxLines ?? this.opts.maxLines;
 
@@ -153,6 +162,8 @@ export class Toaster {
       type,
       dismissible,
       position,
+      duration,
+      order: ++this._seq,
       element: this.buildElement(id, message, type, dismissible, maxLines),
       timer: null,
     };
@@ -163,7 +174,7 @@ export class Toaster {
       return id;
     }
 
-    this.mount(entry, duration);
+    this.mount(entry);
     return id;
   }
 
@@ -202,14 +213,15 @@ export class Toaster {
           typeof messages.success === "function" ? messages.success(data) : messages.success;
         // 确保 loading toast 已完全移除后再显示 success
         requestAnimationFrame(() => {
-          this.success(msg, options);
+          // 终态强制自动消失，不跟随 persist（避免「保存成功」永远挂屏）
+          this.success(msg, { ...options, persist: false });
         });
       },
       (err) => {
         this.dismiss(id);
         const msg = typeof messages.error === "function" ? messages.error(err) : messages.error;
         requestAnimationFrame(() => {
-          this.error(msg, options);
+          this.error(msg, { ...options, persist: false });
         });
       },
     );
@@ -262,9 +274,11 @@ export class Toaster {
     message: string,
     type: ToastType,
     dismissible: boolean,
-    maxLines: number,
+    maxLines: number | undefined,
   ): HTMLElement {
-    const toastEl = el("div", `qt-toast qt-${type}`);
+    /* qt-truncate：仅显式 maxLines（截断模式）时启用，CSS 才允许行省略号兜底；
+       默认不限行（完整显示）时禁用 text-overflow，绝不出省略号 */
+    const toastEl = el("div", `qt-toast qt-${type}${maxLines != null ? " qt-truncate" : ""}`);
     toastEl.setAttribute("data-qt-id", id);
 
     /* 图标 */
@@ -280,7 +294,7 @@ export class Toaster {
       /* 单行：直接填充，CSS 单行省略作兜底 */
       renderLine(msgEl, message);
     } else {
-      /* 多行：每行独立 span，末行若被截断追加省略号 */
+      /* 多行：每行独立 span，末行若被截断追加省略号（默认不限行时 truncated 恒为 false） */
       result.lines.forEach((line, i) => {
         const span = el("span", "qt-line");
         let text = line.text;
@@ -320,7 +334,12 @@ export class Toaster {
     return toastEl;
   }
 
-  private mount(entry: ToastEntry, duration: number): void {
+  private mount(entry: ToastEntry): void {
+    /* 常驻数量上限：该位置常驻已达上限 → 挤掉最老的常驻（FIFO） */
+    if (entry.duration === 0) {
+      this.evictPersistIfNeeded(entry);
+    }
+
     const container = this.ensureContainer(entry.position);
     this.toasts.set(entry.id, entry);
     container.appendChild(entry.element);
@@ -337,9 +356,25 @@ export class Toaster {
       });
     });
 
-    /* 自动消失 */
-    if (duration > 0) {
-      entry.timer = setTimeout(() => this.dismiss(entry.id), duration);
+    /* 自动消失（persist / duration:0 常驻，不设定时器） */
+    if (entry.duration > 0) {
+      entry.timer = setTimeout(() => this.dismiss(entry.id), entry.duration);
+    }
+  }
+
+  /** 常驻上限挤掉最老：同 position 常驻条数 ≥ persistMaxVisible 时，FIFO 移除最老的 */
+  private evictPersistIfNeeded(entry: ToastEntry): void {
+    const cap = this.opts.persistMaxVisible;
+    if (cap <= 0) return;
+
+    const persistent = [...this.toasts.values()].filter(
+      (t) => t.position === entry.position && t.duration === 0,
+    );
+    while (persistent.length >= cap) {
+      persistent.sort((a, b) => a.order - b.order);
+      const oldest = persistent.shift();
+      if (!oldest) break;
+      this._exit(oldest);
     }
   }
 
@@ -377,9 +412,8 @@ export class Toaster {
     if (!this.queue.length) return;
     if (this.toasts.size >= this.opts.maxVisible) return;
 
-    /* 出队 toast 保持创建时的定位与时长 */
+    /* 出队 toast 保持创建时的定位与时长（不再被全局默认覆盖） */
     const next = this.queue.shift()!;
-    const duration = this.opts.duration;
-    this.mount(next, duration);
+    this.mount(next);
   }
 }

@@ -85,23 +85,41 @@ const PREVIEWS = [
   },
 ] as const;
 
+/* 与「长文本完整显示 / 长文本截断」两个场景共用的长消息 */
+const LONG_TEXT =
+  "这是一条用于演示 **text-layout** 内容自适应的长消息：默认不限行，文本完整显示、不截断、不加省略号；每一行都由排版引擎按 290px 精确断行，无论是中文、英文还是长 URL 都能优雅换行。";
+
 const SCENES = [
   {
     key: "persistent",
     label: "常驻通知",
-    desc: "不自动消失，点击关闭",
+    desc: "persist 常驻，点击关闭",
     action: (pos: string) =>
-      toast.info("点击此处或右侧 × 可关闭此通知", { position: pos as never, duration: 0 }),
+      toast.info("点击此处或右侧 × 可关闭此通知", { position: pos as never, persist: true }),
   },
   {
-    key: "long",
+    key: "full",
+    label: "长文本完整显示",
+    desc: "内容自适应，不截断不加省略号",
+    action: (pos: string) => toast.info(LONG_TEXT, { position: pos as never }),
+  },
+  {
+    key: "truncate",
     label: "长文本截断",
-    desc: "超长消息自动省略",
-    action: (pos: string) =>
-      toast.info(
-        "这条通知消息的文本内容非常长，用于验证文本在桌面端单行截断和移动端两行换行的显示效果",
-        { position: pos as never },
-      ),
+    desc: "显式 maxLines=2，超出追加省略号",
+    action: (pos: string) => toast.info(LONG_TEXT, { position: pos as never, maxLines: 2 }),
+  },
+  {
+    key: "persistEvict",
+    label: "常驻上限挤最老",
+    desc: "persistMaxVisible=3，FIFO 挤掉最老",
+    action: (pos: string) => {
+      for (let i = 1; i <= 4; i++) {
+        setTimeout(() => {
+          toast.info(`常驻消息 #${i}`, { position: pos as never, persist: true });
+        }, i * 250);
+      }
+    },
   },
   {
     key: "promise",
@@ -150,10 +168,19 @@ const SCENES = [
 const DEFAULT_TEXT =
   "这条通知消息的文本内容非常长，用于演示 **text-layout** 的自适应排版能力：一行放不下时自动换行，超过 maxLines 时按字符截断并追加省略号";
 
+/* 自适应文本的「最大行数」选项：不限（undefined）= 完整显示 */
+const MAX_LINES_OPTIONS: Array<{ label: string; value: number | undefined }> = [
+  { label: "不限", value: undefined },
+  { label: "1 行", value: 1 },
+  { label: "2 行", value: 2 },
+  { label: "3 行", value: 3 },
+  { label: "4 行", value: 4 },
+];
+
 export default function ToastPage() {
   const [position, setPosition] = useState<string>("top-center");
   const [text, setText] = useState<string>(DEFAULT_TEXT);
-  const [maxLines, setMaxLines] = useState<number>(2);
+  const [maxLines, setMaxLines] = useState<number | undefined>(undefined);
   const [log, setLog] = useState<string[]>([]);
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -211,7 +238,7 @@ export default function ToastPage() {
       return;
     }
     const id = toast.info(trimmed, { position: pos, maxLines });
-    addLog(`自适应文本 | 长度=${trimmed.length} | maxLines=${maxLines} | id=${id}`);
+    addLog(`自适应文本 | 长度=${trimmed.length} | maxLines=${maxLines ?? "不限"} | id=${id}`);
   };
 
   const snippets = (() => {
@@ -228,8 +255,12 @@ export default function ToastPage() {
       "});",
       "",
       "// 自适应文本（text-layout 精确排版）",
-      'toast.info("超长文本……自动截断", { maxLines: 2 });',
-      "toast.configure({ maxLines: 3 });",
+      'toast.info("内容自适应完整显示");', // 不传 maxLines → 完整显示，不加省略号
+      'toast.info("超长文本自动截断", { maxLines: 2 });',
+      "",
+      "// 常驻不自动消失",
+      'toast.info("常驻通知", { persist: true });',
+      "toast.configure({ persistMaxVisible: 3 });", // 常驻数量上限，超限 FIFO 挤掉最老
       "",
       "// Promise 链",
       "toast.promise(fetchUser(), {",
@@ -384,14 +415,14 @@ export default function ToastPage() {
               <div className="toast-text-controls">
                 <span className="toast-text-label">最大行数</span>
                 <div className="toast-type-row">
-                  {[1, 2, 3, 4].map((n) => (
+                  {MAX_LINES_OPTIONS.map((opt) => (
                     <button
-                      key={n}
-                      className={`toast-type-btn${maxLines === n ? " is-active" : ""}`}
+                      key={opt.label}
+                      className={`toast-type-btn${maxLines === opt.value ? " is-active" : ""}`}
                       type="button"
-                      onClick={() => setMaxLines(n)}
+                      onClick={() => setMaxLines(opt.value)}
                     >
-                      {n} 行
+                      {opt.label}
                     </button>
                   ))}
                 </div>

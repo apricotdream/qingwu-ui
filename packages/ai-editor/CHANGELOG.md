@@ -1,5 +1,29 @@
 # @qingwu/ai-editor
 
+## 0.7.0
+
+### Minor Changes
+
+- Toast 提示默认**常驻不自动消失**（`persist: true`）+ **内容完整显示**（不再按行截断）：`toast()` 通道统一生效，长提示完整展示
+- `onToast` 回调新增第三参 `options`（透传 `persist` / `maxLines` / `duration`）；旧二参签名自动兼容，宿主无需改动
+- 内置兜底 `@qingwu/toast` 同步升级 `^0.7.0`（`persist` / `persistMaxVisible` 数量上限 / 默认去截断）
+
+## 0.6.1
+
+### Patch Changes
+
+- **@qingwu/ai-editor**
+
+  - 修复：Toast 提示默认内置 `@qingwu/toast` 渲染（不再静默丢弃），新增 `setToastProvider()` 全局替换与 `onToast` 实例级覆盖，并支持 `maxLines` / `duration` 透传
+  - 新增：删除确认开放 `setConfirmProvider()` 覆盖接口，默认仍用内置项目 `DeleteConfirmDialog`，6 处删除流程（图片/视频/音频/附件/代码块/表格）统一生效
+  - 修复：MD 导入选择兜底由原生 `window.confirm` 改为内置项目风格弹窗（渲染/附加/取消），取消不再误附加
+  - 修复：Obsidian 粘贴本地路径图片/视频警告改走统一 toast 通道
+  - 新增：图片加载失败（本地路径/远程加载失败）占位支持右上角删除按钮（带确认弹窗）
+
+  **@qingwu/upload**
+
+  - 修复：依赖对齐 `@qingwu/button` `^0.5.0` → `^0.6.0`
+
 ## 0.6.0
 
 ### Patch Changes
