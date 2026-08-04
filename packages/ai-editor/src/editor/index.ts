@@ -53,6 +53,7 @@ export {
   createSlashCommandExtension,
   getEditorExtensions,
   ImageUpload,
+  RelativeMedia,
   SearchHighlight,
   VideoEmbed,
 } from "./extensions";

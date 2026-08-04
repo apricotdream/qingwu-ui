@@ -8,6 +8,7 @@ import {
 } from "../attachment-limits";
 import { getStorageProvider } from "../storage";
 import { openImportChoiceDialog } from "../utils/import-choice-dialog";
+import { textHasLocalMediaRefs } from "../utils/local-media";
 
 type MediaType = "image" | "video" | "audio" | "file" | "markdown";
 
@@ -239,6 +240,13 @@ export const ImageUpload = Extension.create<AttachmentLimits>({
           handlePaste(view, event) {
             const items = event.clipboardData?.items;
             if (!items) return false;
+
+            // 文本含本地媒体引用且剪贴板同时带文件（如 Obsidian 复制嵌入内容）：
+            // 让位给默认粘贴流程插入完整文本，本地文件交给 RelativeMedia 解析，
+            // 避免这里 preventDefault 后"只插入图片、丢失正文"
+            const plain = event.clipboardData?.getData("text/plain") || "";
+            const hasFiles = (event.clipboardData?.files?.length ?? 0) > 0;
+            if (hasFiles && textHasLocalMediaRefs(plain)) return false;
 
             for (const item of Array.from(items)) {
               if (

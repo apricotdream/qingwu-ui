@@ -54,6 +54,7 @@ import { CodeBlock } from "./code-block";
 import { ImageUpload } from "./image-upload";
 import { ObsidianMarkdown } from "./obsidian-markdown";
 import { QingwuUI } from "./qingwu-ui";
+import { RelativeMedia } from "./relative-media";
 import { SearchHighlight } from "./search-highlight";
 import { createSlashCommandExtension, getDefaultSlashCommands } from "./slash-command";
 
@@ -65,6 +66,7 @@ export {
   ImageUpload,
   ObsidianMarkdown,
   QingwuUI,
+  RelativeMedia,
   SearchHighlight,
   Table,
   TableCell,
@@ -127,6 +129,8 @@ export function getEditorExtensions(config: EditorExtensionsConfig = {}): AnyExt
       maxAttachmentSize: config.maxAttachmentSize,
       maxTotalAttachmentSize: config.maxTotalAttachmentSize,
     }),
+    // 粘贴外部 Markdown 后解析本地相对路径图片/附件（读盘需用户授权）
+    RelativeMedia,
     ObsidianMarkdown,
     SearchHighlight,
     QingwuUI,
