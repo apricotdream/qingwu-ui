@@ -1,0 +1,355 @@
+/* ============================================================
+   青梧UI · 下拉选择器样式（Select）
+   零依赖 · CSS 自定义属性驱动 · 明暗双主题 · reduced-motion 友好
+
+   使用方式：
+     import "@qingwu/select/style.css"
+
+   令牌覆盖：--qsel-* 可被宿主覆盖；复用宿主已定义的
+   --paper / --card / --ink / --teal / --vermilion / --amber / --line
+   若宿主未提供则使用本文件默认值。
+   ============================================================ */
+
+/* ============================================================
+   ① 设计令牌（可在宿主层覆盖）
+   ============================================================ */
+:root {
+  --qsel-card: var(--card, #fdfdfb);
+  --qsel-ink: var(--ink, #1d2b2c);
+  --qsel-ink-2: var(--ink-2, #47585a);
+  --qsel-ink-3: var(--ink-3, #84928f);
+  --qsel-line: var(--line, #dcdfd6);
+  --qsel-teal: var(--teal, #1e605a);
+  --qsel-vermilion: var(--vermilion, #c8402f);
+  --qsel-amber: var(--amber, #a86e23);
+  --qsel-hover: var(--hover, rgba(30, 96, 90, 0.07));
+  --qsel-shadow: var(--shadow, 0 1px 2px rgba(29, 43, 44, 0.05));
+  --qsel-shadow-pop: var(--shadow-pop, 0 24px 60px -28px rgba(29, 43, 44, 0.42));
+  --qsel-font-ui: var(--font-ui, "Microsoft YaHei", "PingFang SC", system-ui, sans-serif);
+  --qsel-font-kai: var(--font-kai, KaiTi, "STKaiti", "Kaiti SC", serif);
+}
+
+/* 暗色主题：兼容 <html data-theme="dark"> 与 .dark 类两种宿主约定 */
+.dark,
+[data-theme="dark"] {
+  --qsel-card: #1a2022;
+  --qsel-ink: #e6ebe7;
+  --qsel-ink-2: #a8b4b2;
+  --qsel-ink-3: #6f7f7d;
+  --qsel-line: #2a3234;
+  --qsel-teal: #57a89e;
+  --qsel-vermilion: #e2695a;
+  --qsel-amber: #d29a4d;
+  --qsel-hover: rgba(255, 255, 255, 0.06);
+  --qsel-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --qsel-shadow-pop: 0 24px 60px -28px rgba(0, 0, 0, 0.7);
+}
+
+/* ============================================================
+   ② 基础复位（限定在组件范围内，不污染宿主）
+   ============================================================ */
+.qsel,
+.qsel *,
+.qsel-panel,
+.qsel-panel * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+.qsel {
+  position: relative;
+  font-family: var(--qsel-font-ui);
+  color: var(--qsel-ink);
+}
+.qsel button {
+  font-family: inherit;
+  color: inherit;
+}
+.qsel-panel ul,
+.qsel-panel li {
+  list-style: none;
+}
+
+/* 通用焦点环 */
+.qsel-trigger:focus-visible {
+  outline: 2px solid var(--qsel-teal);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   ③ 触发器
+   ============================================================ */
+.qsel-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 1.5px solid var(--qsel-line);
+  border-radius: 12px;
+  background: var(--qsel-card);
+  color: var(--qsel-ink);
+  font-size: 14.5px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--qsel-shadow);
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s,
+    transform 0.12s;
+}
+.qsel-trigger:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--qsel-teal) 55%, var(--qsel-line));
+  box-shadow: var(--qsel-shadow-pop);
+}
+.qsel.is-open .qsel-trigger {
+  border-color: var(--qsel-teal);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--qsel-teal) 14%, transparent);
+}
+.qsel-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.qsel-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qsel-value.is-placeholder {
+  color: var(--qsel-ink-3);
+}
+.qsel-chevron {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--qsel-ink-3);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.qsel.is-open .qsel-chevron {
+  transform: rotate(180deg);
+}
+.qsel-chevron svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================================================
+   ④ 面板（position: fixed 挂 body，向上/向下自适应）
+   ============================================================ */
+.qsel-panel {
+  position: fixed;
+  z-index: 300;
+  background: var(--qsel-card);
+  border: 1px solid var(--qsel-line);
+  border-radius: 14px;
+  box-shadow: var(--qsel-shadow-pop);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+  transform-origin: top center;
+  transition:
+    opacity 0.16s ease,
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.qsel-panel[hidden] {
+  display: none;
+}
+.qsel-panel.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.qsel-panel.is-up {
+  transform: translateY(8px) scale(0.98);
+  transform-origin: bottom center;
+}
+.qsel-panel.is-up.is-open {
+  transform: translateY(0) scale(1);
+}
+
+/* ============================================================
+   ⑤ 选项列表
+   ============================================================ */
+.qsel-list {
+  padding: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.qsel-opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--qsel-ink);
+  transition:
+    background-color 0.12s,
+    transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.qsel-opt + .qsel-opt {
+  margin-top: 1px;
+}
+/* 悬浮反馈：底色 + 轻微上浮 + 右侧箭头（纯 :hover，跟手不粘滞） */
+.qsel-opt:hover {
+  background: var(--qsel-hover);
+  transform: translateY(-1px);
+}
+/* 键盘焦点态：左侧黛青色条 */
+.qsel-opt::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 3px;
+  height: 55%;
+  border-radius: 3px;
+  background: var(--qsel-teal);
+  transition: transform 0.16s ease;
+}
+.qsel-opt.is-active {
+  background: var(--qsel-hover);
+}
+.qsel-opt.is-active::before {
+  transform: translateY(-50%) scaleY(1);
+}
+/* 悬浮箭头：非选中项 hover 时浮现（选中项 hover 改为放大对勾，避免双指示器） */
+.qsel-opt::after {
+  content: "›";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  font-size: 17px;
+  line-height: 1;
+  color: var(--qsel-teal);
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.qsel-opt:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+.qsel-opt[aria-selected="true"]::after {
+  display: none;
+}
+.qsel-opt.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.qsel-opt.is-disabled::after {
+  display: none;
+}
+.qsel-opt.is-disabled:hover {
+  background: transparent;
+  transform: none;
+}
+.qsel-opt-ico {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  font-family: var(--qsel-font-kai);
+  font-size: 14px;
+  background: color-mix(in srgb, var(--qsel-ink) 5%, transparent);
+  color: var(--qsel-ink-2);
+}
+.qsel-opt-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.qsel-opt-label {
+  display: block;
+  font-size: 13.5px;
+  color: var(--qsel-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qsel-opt-hint {
+  display: block;
+  font-size: 11px;
+  color: var(--qsel-ink-3);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qsel-opt-hint:empty {
+  display: none;
+}
+.qsel-check {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--qsel-teal);
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity 0.14s ease,
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.qsel-opt[aria-selected="true"] .qsel-check {
+  opacity: 1;
+  transform: scale(1);
+}
+/* 选中项悬浮：放大对勾作为反馈（置于本段末尾，保持特异性递增） */
+.qsel-opt[aria-selected="true"]:hover .qsel-check {
+  transform: scale(1.2);
+}
+.qsel-check svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ============================================================
+   ⑥ 手风琴错峰关键帧（琴键逐项按下）
+   ============================================================ */
+@keyframes qsel-press {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scaleY(0.96);
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes qsel-press-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scaleY(0.96);
+  }
+  to {
+    opacity: 1;
+  }
+}
+.qsel-opt.is-enter {
+  animation: qsel-press 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.qsel-panel.is-up .qsel-opt.is-enter {
+  animation-name: qsel-press-up;
+}
+
+/* ============================================================
+   ⑦ prefers-reduced-motion：全部动画熔断
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .qsel *,
+  .qsel *::before,
+  .qsel *::after,
+  .qsel-panel *,
+  .qsel-panel *::before,
+  .qsel-panel *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

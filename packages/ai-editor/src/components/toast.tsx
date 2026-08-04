@@ -13,10 +13,12 @@ export type ToastType = "success" | "error" | "info";
 
 /** 透传给内置 @qingwu/toast 的展示选项；宿主自定义渲染器可自行决定是否采纳 */
 export interface ToastOptions {
-  /** 文本最大行数，超过后截断追加省略号 */
+  /** 文本最大行数，超过后截断追加省略号；默认不传 → 完整显示 */
   maxLines?: number;
   /** 自动消失毫秒数，0 表示常驻 */
   duration?: number;
+  /** 常驻不自动消失；ai-editor 通道默认开启 */
+  persist?: boolean;
 }
 
 export type ToastListener = (message: string, type: ToastType, options?: ToastOptions) => void;
@@ -37,18 +39,20 @@ export function setToastProvider(provider: ToastListener | null): void {
 
 /** 触发全局 toast（任意上下文可调用） */
 export function toast(message: string, type: ToastType = "error", options?: ToastOptions): void {
+  // ai-editor 通道默认常驻（不自动消失）+ 内容完整显示；调用方传 persist:false 可临时关闭
+  const opts: ToastOptions = { persist: true, ...options };
   if (listeners.size > 0) {
-    for (const listener of listeners) listener(message, type, options);
+    for (const listener of listeners) listener(message, type, opts);
     return;
   }
   if (customProvider) {
-    customProvider(message, type, options);
+    customProvider(message, type, opts);
     return;
   }
   // 内置默认：@qingwu/toast（随包内置，开箱即用）
-  if (type === "success") qwToast.success(message, options);
-  else if (type === "info") qwToast.info(message, options);
-  else qwToast.error(message, options);
+  if (type === "success") qwToast.success(message, opts);
+  else if (type === "info") qwToast.info(message, opts);
+  else qwToast.error(message, opts);
 }
 
 /** 订阅 toast 事件；返回取消订阅函数 */

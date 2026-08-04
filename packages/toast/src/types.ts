@@ -21,13 +21,18 @@ export interface ToastOptions {
   type?: ToastType;
   /** 容器定位，默认 "top-center" */
   position?: ToastPosition;
-  /** 自动消失毫秒数，0 表示常驻，默认 4000 */
+  /** 自动消失毫秒数，0 表示常驻，默认 4000；persist: true 时强制为 0 */
   duration?: number;
   /** 是否可点击关闭，默认 true */
   dismissible?: boolean;
   /**
-   * 文本最大行数（由 @qingwu/text-layout 精确排版），默认 2；
-   * 超过后按字符截断并追加省略号，文本宽度自适应
+   * 常驻不自动消失（等价 duration: 0），默认 false。
+   * 常驻 toast 受 ToasterOptions.persistMaxVisible 数量上限约束（按容器位置独立计算）。
+   */
+  persist?: boolean;
+  /**
+   * 文本最大行数（由 @qingwu/text-layout 精确排版），超过后按字符截断并追加省略号；
+   * 默认不限制 → 长文本完整显示（内容自适应），文本宽度自适应
    */
   maxLines?: number;
   /**
@@ -47,7 +52,11 @@ export interface ToasterOptions {
   duration?: number;
   /** 同时最多显示条数，超出排队，默认 5 */
   maxVisible?: number;
-  /** 默认文本最大行数，默认 2 */
+  /** 默认是否常驻不自动消失，默认 false */
+  persist?: boolean;
+  /** 单容器位置最多同时显示的常驻条数，超出后挤掉最老的常驻，默认 3 */
+  persistMaxVisible?: number;
+  /** 默认文本最大行数，默认不限（完整显示） */
   maxLines?: number;
   /** 错误类型默认是否震动，默认 true */
   vibrate?: boolean;

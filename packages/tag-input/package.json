@@ -1,6 +1,6 @@
 {
   "name": "@qingwu/tag-input",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Framework-agnostic tag quick-insert input for Qingwu UI — input + tag chip bar, click/Enter to insert, auto-hide inserted tags, layoutChips-powered expand/collapse",
   "type": "module",
   "license": "Apache-2.0",

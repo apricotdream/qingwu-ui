@@ -2,6 +2,7 @@ import type { Editor } from "@tiptap/core";
 import { Slice } from "@tiptap/pm/model";
 import { useCallback, useRef, useState } from "react";
 import { t } from "../../i18n";
+import { CloseIcon, SparklesIcon } from "../../icons";
 import { type AIMode, getAIProvider } from "../index";
 
 interface AISelectorProps {
@@ -136,126 +137,148 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
     setError(null);
   }, []);
 
-  // 显示模式选择
-  if (!selectedMode) {
-    return (
-      <div className="ai-selector p-2 w-64">
-        <div className="text-xs text-default-500 mb-2 px-2">{t("editor.ai.trigger")}</div>
+  return (
+    <div className="ai-selector w-full flex flex-col">
+      {/* 头部：标题 + 关闭 */}
+      <div className="flex items-center justify-between pl-3 pr-1.5 py-1.5 border-b border-default-100">
+        <span className="flex items-center gap-1.5 text-xs font-medium text-default-500">
+          <SparklesIcon className="text-primary" />
+          {t("editor.ai.trigger")}
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t("editor.ai.close")}
+          title={t("editor.ai.close")}
+          className="flex items-center justify-center w-6 h-6 rounded-md text-default-400 hover:bg-default-100 hover:text-default-700 transition-colors"
+        >
+          <CloseIcon />
+        </button>
+      </div>
+
+      {/* 模式横向胶囊 */}
+      <div className="grid grid-cols-4 gap-1.5 p-2">
         {AI_MODES.map(({ mode, labelKey, descKey, icon }) => (
           <button
             key={mode}
             type="button"
-            className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-default-100 transition-colors text-left"
+            className={`flex flex-col items-center gap-1 px-1 py-2 rounded-xl border transition-colors ${
+              selectedMode === mode
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-default-200 text-default-600 hover:bg-default-100 hover:text-default-900"
+            }`}
             onClick={() => handleModeSelect(mode)}
+            title={t(descKey)}
           >
-            <span className="text-lg w-6 text-center shrink-0">{icon}</span>
-            <div className="min-w-0">
-              <div className="text-sm font-medium">{t(labelKey)}</div>
-              <div className="text-xs text-default-400 truncate">{t(descKey)}</div>
-            </div>
+            <span className="text-base leading-none">{icon}</span>
+            <span className="text-[11px] leading-none truncate">{t(labelKey)}</span>
           </button>
         ))}
       </div>
-    );
-  }
 
-  // 显示 zap 自定义指令输入
-  if (selectedMode === "zap" && !isLoading && !streamingText && !error) {
-    return (
-      <div className="ai-selector p-3 w-72">
-        <div className="text-xs text-default-500 mb-2">{t("editor.ai.zapDesc")}</div>
-        <input
-          ref={inputRef}
-          className="w-full px-3 py-2 text-sm border border-default-200 rounded-lg focus:outline-none focus:border-primary bg-background"
-          placeholder={t("editor.ai.customPlaceholder")}
-          value={customInstruction}
-          onChange={(e) => setCustomInstruction(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && customInstruction.trim()) {
-              executeAI("zap");
-            }
-          }}
-        />
-        <div className="flex gap-2 mt-2">
-          <button
-            type="button"
-            className="px-3 py-1.5 text-xs bg-primary text-white rounded-lg disabled:opacity-50"
-            disabled={!customInstruction.trim()}
-            onClick={() => executeAI("zap")}
-          >
-            {t("editor.ai.confirm")}
-          </button>
-          <button
-            type="button"
-            className="px-3 py-1.5 text-xs border border-default-200 rounded-lg hover:bg-default-100"
-            onClick={() => setSelectedMode(null)}
-          >
-            {t("editor.ai.back")}
-          </button>
-        </div>
-      </div>
-    );
-  }
+      {/* 状态区 */}
+      <div className="px-3 pb-3 min-h-10">
+        {!selectedMode && (
+          <p className="text-[11px] text-default-400 leading-relaxed">
+            {t("editor.ai.triggerDesc")}
+          </p>
+        )}
 
-  // 加载或流式输出或错误
-  return (
-    <div className="ai-selector p-3 w-72 max-h-80 overflow-y-auto">
-      {isLoading && !streamingText && (
-        <div className="flex items-center gap-2 text-sm text-default-500">
-          <span className="animate-spin">⏳</span>
-          {t("editor.ai.thinking")}
-        </div>
-      )}
-
-      {streamingText && (
-        <>
-          <div className="text-sm whitespace-pre-wrap text-default-700 mb-3 max-h-48 overflow-y-auto">
-            {streamingText}
-            {isLoading && <span className="animate-pulse">▊</span>}
-          </div>
-          {!isLoading && (
-            <div className="flex gap-2">
+        {selectedMode === "zap" && !isLoading && !streamingText && !error && (
+          <div>
+            <input
+              ref={inputRef}
+              className="w-full px-3 py-2 text-sm border border-default-200 rounded-lg focus:outline-none focus:border-primary bg-background"
+              placeholder={t("editor.ai.customPlaceholder")}
+              value={customInstruction}
+              onChange={(e) => setCustomInstruction(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && customInstruction.trim()) {
+                  executeAI("zap");
+                }
+              }}
+            />
+            <div className="flex gap-2 mt-2">
               <button
                 type="button"
-                className="px-3 py-1.5 text-xs bg-primary text-white rounded-lg"
-                onClick={() => handleInsert("replace")}
+                className="px-3 py-1.5 text-xs bg-primary text-white rounded-lg disabled:opacity-50"
+                disabled={!customInstruction.trim()}
+                onClick={() => executeAI("zap")}
               >
-                {t("editor.ai.replace")}
+                {t("editor.ai.confirm")}
               </button>
               <button
                 type="button"
                 className="px-3 py-1.5 text-xs border border-default-200 rounded-lg hover:bg-default-100"
-                onClick={() => handleInsert("below")}
+                onClick={() => setSelectedMode(null)}
               >
-                {t("editor.ai.insert")}
-              </button>
-              <button
-                type="button"
-                className="px-3 py-1.5 text-xs text-danger"
-                onClick={handleDiscard}
-              >
-                {t("editor.ai.discard")}
+                {t("editor.ai.back")}
               </button>
             </div>
-          )}
-        </>
-      )}
+          </div>
+        )}
 
-      {error && (
-        <div className="text-sm text-danger">
-          <p>{error}</p>
-          <button
-            type="button"
-            className="mt-2 px-3 py-1 text-xs border border-default-200 rounded-lg hover:bg-default-100"
-            onClick={() => {
-              setError(null);
-              setSelectedMode(null);
-            }}
-          >
-            {t("editor.ai.back")}
-          </button>
-        </div>
-      )}
+        {(isLoading || streamingText || error) && (
+          <div className="max-h-56 overflow-y-auto">
+            {isLoading && !streamingText && (
+              <div className="flex items-center gap-2 text-sm text-default-500">
+                <span className="animate-spin">⏳</span>
+                {t("editor.ai.thinking")}
+              </div>
+            )}
+
+            {streamingText && (
+              <>
+                <div className="text-sm whitespace-pre-wrap text-default-700 mb-3">
+                  {streamingText}
+                  {isLoading && <span className="animate-pulse">▊</span>}
+                </div>
+                {!isLoading && (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 text-xs bg-primary text-white rounded-lg"
+                      onClick={() => handleInsert("replace")}
+                    >
+                      {t("editor.ai.replace")}
+                    </button>
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 text-xs border border-default-200 rounded-lg hover:bg-default-100"
+                      onClick={() => handleInsert("below")}
+                    >
+                      {t("editor.ai.insert")}
+                    </button>
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 text-xs text-danger"
+                      onClick={handleDiscard}
+                    >
+                      {t("editor.ai.discard")}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+
+            {error && (
+              <div className="text-sm text-danger">
+                <p>{error}</p>
+                <button
+                  type="button"
+                  className="mt-2 px-3 py-1 text-xs border border-default-200 rounded-lg hover:bg-default-100"
+                  onClick={() => {
+                    setError(null);
+                    setSelectedMode(null);
+                  }}
+                >
+                  {t("editor.ai.back")}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

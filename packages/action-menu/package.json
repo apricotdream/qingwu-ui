@@ -1,0 +1,75 @@
+{
+  "name": "@qingwu/action-menu",
+  "version": "0.7.0",
+  "description": "Framework-agnostic radial action menu for Qingwu UI — hover-expand fan, tangential labels, FAB or custom trigger, keyboard navigation, zero dependencies",
+  "type": "module",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "./dist/style.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./style.css": "./dist/style.css",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown && node -e \"require('fs').cpSync('src/style.css','dist/style.css')\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "size": "size-limit"
+  },
+  "devDependencies": {
+    "@qingwu/tsconfig": "workspace:*",
+    "@size-limit/preset-small-lib": "^13.0.1",
+    "happy-dom": "^20.11.1",
+    "size-limit": "^13.0.1",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.mjs",
+      "limit": "10 kB"
+    }
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apricotdream/qingwu-ui.git",
+    "directory": "packages/action-menu"
+  },
+  "homepage": "https://github.com/apricotdream/qingwu-ui#readme",
+  "bugs": "https://github.com/apricotdream/qingwu-ui/issues",
+  "keywords": [
+    "action-menu",
+    "radial-menu",
+    "pie-menu",
+    "fan-menu",
+    "context-menu",
+    "floating-button",
+    "fab",
+    "framework-agnostic",
+    "keyboard-navigation",
+    "a11y",
+    "ui-component",
+    "qingwu"
+  ],
+  "author": "Qingwu Team",
+  "engines": {
+    "node": ">=20"
+  }
+}

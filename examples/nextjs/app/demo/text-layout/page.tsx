@@ -11,9 +11,20 @@ import {
   prepare,
   truncateToLines,
 } from "@qingwu/text-layout";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import DemoCard from "@/components/DemoCard";
 import { COMPONENT_SECTIONS } from "@/docs.config";
+
+/**
+ * 测量类 demo 依赖 Canvas 宽度测量，SSR（Node，无 Canvas）走 estimateWidth 回退，
+ * 与客户端真实测量结果不同 → 首帧渲染值不一致会触发 React 水合报错。
+ * 故所有测量依赖的 demo 在挂载后才渲染（首次客户端渲染与 SSR 一致为「加载中」占位）。
+ */
+function useIsMounted(): boolean {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted;
+}
 
 const FONT = "15px system-ui, -apple-system, sans-serif";
 
@@ -632,15 +643,33 @@ function AlgorithmRules() {
 }
 
 export default function TextLayoutPage() {
+  const mounted = useIsMounted();
   return (
     <div className="demo-grid">
       <AlgorithmRules />
-      <EngineOverview />
-      <TruncateDemo />
-      <ChatBubbleDemo />
-      <ChipFlowDemo />
-      <TableColumnsDemo />
-      <VirtualScrollDemo />
+      {mounted ? (
+        <>
+          <EngineOverview />
+          <TruncateDemo />
+          <ChatBubbleDemo />
+          <ChipFlowDemo />
+          <TableColumnsDemo />
+          <VirtualScrollDemo />
+        </>
+      ) : (
+        <div
+          style={{
+            gridColumn: "1 / -1",
+            padding: "48px 24px",
+            textAlign: "center",
+            color: "var(--ink-3)",
+            border: "1px dashed var(--line)",
+            borderRadius: "var(--radius-lg)",
+          }}
+        >
+          测量引擎加载中…
+        </div>
+      )}
 
       {/* API 属性表 */}
       <div className="api-section">

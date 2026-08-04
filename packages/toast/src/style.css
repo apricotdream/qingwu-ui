@@ -304,15 +304,22 @@
     justify-content: center;
     overflow: hidden; /* 入场 max-width 动画期间裁剪文本 */
     white-space: nowrap;
+    /* 兜底：长不可断行 token（URL/文件名）超出测量宽度时强制断词，防止撑破容器上限 */
+    overflow-wrap: break-word;
+    word-break: break-word; /* Safari 兼容 */
     color: rgb(var(--qt-fg));
     font-weight: 500;
     letter-spacing: 0.01em;
   }
 
-  /* 多行时每行一个 span（宽度由 text-layout 保证不溢出） */
+  /* 多行时每行一个 span（宽度由 text-layout 保证不溢出）。
+     默认不限行（完整显示）不设 text-overflow，行溢出时也不显示省略号；
+     仅显式 maxLines 的截断模式（qt-truncate）允许 ellipsis 兜底。 */
   .qt-line {
     display: block;
     overflow: hidden;
+  }
+  .qt-toast.qt-truncate .qt-line {
     text-overflow: ellipsis;
   }
 

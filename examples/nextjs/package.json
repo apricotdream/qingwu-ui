@@ -1,6 +1,6 @@
 {
   "name": "qingwu-nextjs-example",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,7 +15,9 @@
     "@qingwu/tag-input": "workspace:*",
     "@qingwu/calendar": "workspace:*",
     "@qingwu/ai-editor": "workspace:*",
+    "@qingwu/action-menu": "workspace:*",
     "@qingwu/search": "workspace:*",
+    "@qingwu/select": "workspace:*",
     "@qingwu/toast": "workspace:*",
     "@qingwu/text-layout": "workspace:*",
     "@qingwu/upload": "workspace:*",

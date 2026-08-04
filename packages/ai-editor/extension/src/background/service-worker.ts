@@ -769,12 +769,31 @@ async function pushToEditor(
   async function fallbackBrowserPush(): Promise<
     { ok: true } | { ok: false; error: string; retryable: boolean }
   > {
-    const editorUrl = target.editorUrl ?? "http://localhost:5173";
+    let editorUrl = target.editorUrl ?? "http://localhost:5173";
+    // 追加 pending=clip 信号：宿主页据此显示「剪藏传入中」等待态，剪藏到达前给出反馈
+    try {
+      const u = new URL(editorUrl);
+      u.searchParams.set("pending", "clip");
+      editorUrl = u.toString();
+    } catch {
+      /* editorUrl 不是合法绝对 URL，保持原样 */
+    }
     try {
       const tab = await chrome.tabs.create({ url: editorUrl, active: true });
       if (!tab.id) return { ok: false, error: "无法打开编辑器页面", retryable: true };
-      // 等待页面加载完成（最多 8 秒）
+      // 等待页面加载完成（最多 8 秒；dev 冷启动首次编译可能较慢）
       await waitForTabComplete(tab.id, 8_000);
+      // 等页面接收器就绪（宿主页暴露 __qingwuReady）再投递，避免消息早于接收器注册而被丢弃；
+      // 缩短等待并失败透明：未就绪直接报错，不再「静默等满后盲目投递」
+      const pageReady = await waitForPageReady(tab.id, 4_000);
+      if (!pageReady) {
+        return {
+          ok: false,
+          error:
+            "编辑器页面未就绪（未检测到剪藏接收器）。请确认「编辑器地址」指向支持剪藏的页面（如 echo-diary 创作页），且该页面的剪藏开关已开启",
+          retryable: true,
+        };
+      }
       const clipPayload = {
         title: record.noteTitle,
         path: record.notePath,
@@ -785,6 +804,8 @@ async function pushToEditor(
       };
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
+        // 必须在主世界投递：隔离世界 postMessage 虽能达主世界，但主世界投递语义更直接
+        world: "MAIN",
         func: (payload) => {
           window.postMessage({ kind: "qingwu-clip", clip: payload }, "*");
         },
@@ -894,6 +915,28 @@ function waitForTabComplete(tabId: number, timeoutMs: number): Promise<void> {
       .catch(() => finish());
     const timer = setTimeout(finish, timeoutMs);
   });
+}
+
+// 等待宿主页面暴露 __qingwuReady 标志（表示剪藏接收器已注册），最多 timeoutMs；
+// 返回是否就绪：true=可安全投递；false=超时未就绪，由调用方决定失败方式（不再盲目投递）。
+async function waitForPageReady(tabId: number, timeoutMs: number): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const [res] = await chrome.scripting.executeScript({
+        target: { tabId },
+        // 必须在主世界读：页面在主世界设的 window.__qingwuReady，隔离世界读不到
+        world: "MAIN",
+        func: () =>
+          (window as unknown as Record<string, boolean>).__qingwuReady === true,
+      });
+      if (res?.result) return true;
+    } catch {
+      /* 页面未就绪或暂不可注入，进入下一轮重试 */
+    }
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  return false;
 }
 
 function sanitizeFilename(name: string): string {

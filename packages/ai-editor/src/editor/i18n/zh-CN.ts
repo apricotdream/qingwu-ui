@@ -69,10 +69,13 @@ export const zhCN = {
       copy: "复制",
       search: "搜索",
       table: "表格",
+      more: "更多",
     },
 
     ai: {
       trigger: "写作助手",
+      triggerDesc: "选中文字后选择 AI 操作，生成结果可替换或插入原文。",
+      close: "关闭",
       continue: "续写",
       continueDesc: "从当前位置继续写作",
       improve: "润色",

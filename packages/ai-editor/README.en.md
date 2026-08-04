@@ -228,7 +228,7 @@ In the extension sidebar "Settings":
 | `maxLength` | `number` | - | Max character limit |
 | `maxAttachmentSize` | `number` | **required** | Max size of a single uploaded file (bytes); oversize files are blocked and reported via `onToast` |
 | `maxTotalAttachmentSize` | `number` | **required** | Max total size of all attachments in the document (bytes); new uploads rejected when exceeded |
-| `onToast` | `(message: string, type: `"success"` \| `"error"` \| `"info"`) => void` | - | Global toast callback (attachment limit blocks / document oversize warnings). Wire it to your own toast component; **messages are silently dropped when omitted** |
+| `onToast` | `(message: string, type: `"success"` \| `"error"` \| `"info"`, options?) => void` | - | Global toast callback (attachment limit blocks / document oversize warnings). Wire it to your own toast component; third arg `options` passes display options (`persist`/`maxLines`/`duration`), old two-arg signature remains compatible |
 | `className` | `string` | `""` | Custom class name |
 | `style` | `React.CSSProperties` | - | Custom container style |
 | `borderless` | `boolean` | `false` | Hide editor outer border |

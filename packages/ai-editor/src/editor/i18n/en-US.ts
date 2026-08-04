@@ -69,10 +69,13 @@ export const enUS = {
       copy: "Copy",
       search: "Search",
       table: "Table",
+      more: "More",
     },
 
     ai: {
       trigger: "Writing Assistant",
+      triggerDesc: "Select text and pick an AI action. The result can replace or insert into the document.",
+      close: "Close",
       continue: "Continue",
       continueDesc: "Continue writing from here",
       improve: "Improve",

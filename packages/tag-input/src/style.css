@@ -137,7 +137,9 @@
   color: var(--qti-fg-muted);
 }
 
-.qti-inline .qti-tag {
+/* inline 模式已选 chip 零边距仅限输入框内（间距靠 .qti-input-wrap 的 gap）；
+   勿扩到快捷栏——否则 .qti-bar 的 chip 会被清掉 margin 而贴死在一起 */
+.qti-inline .qti-input-wrap .qti-tag {
   margin: 0;
 }
 
