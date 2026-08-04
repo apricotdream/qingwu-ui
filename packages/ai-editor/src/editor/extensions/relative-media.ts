@@ -15,8 +15,10 @@
  */
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { toast } from "../../components/toast";
 import {
   collectLocalMediaRefs,
+  filePickerSupported,
   fsAccessSupported,
   type LocalMediaRef,
   pickDirectory,
@@ -27,8 +29,10 @@ import {
   mergeReports,
   openDirectoryConsentDialog,
   openDragHintDialog,
+  openPickFilesDialog,
   processResolvedFile,
   reportResolveResult,
+  resolveRefsByFilePicker,
   resolveRefsFromDirectory,
 } from "../utils/resolve-local-media";
 
@@ -72,7 +76,23 @@ export const RelativeMedia = Extension.create({
             if (dir) {
               const dirReport = await resolveRefsFromDirectory(view, editor, unmatched, dir);
               mergeReports(report, dirReport);
+              // 兜底：文件夹方式仍有遗漏（云占位/文件夹不匹配）时，引导直接选文件
+              const stragglers = [...report.missing, ...report.readFailed];
+              if (stragglers.length > 0 && filePickerSupported()) {
+                const pickChoice = await openPickFilesDialog(stragglers.map((r) => r.basename));
+                if (pickChoice === "pick") {
+                  const pickReport = await resolveRefsByFilePicker(view, editor, stragglers);
+                  mergeReports(report, pickReport);
+                  // 原 missing/readFailed 已被兜底尝试过一轮，最终结果以 pickReport 为准
+                  report.missing = pickReport.missing;
+                  report.readFailed = [];
+                }
+              }
+            } else {
+              toast("没有选择文件夹。本地文件暂以占位显示，稍后可直接把文件拖进编辑器上传", "info");
             }
+          } else {
+            toast("已选择稍后处理。本地文件暂以占位显示，可直接把文件拖进编辑器上传", "info");
           }
         } else {
           openDragHintDialog(unmatched.length);

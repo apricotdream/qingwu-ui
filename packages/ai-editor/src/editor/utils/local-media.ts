@@ -112,22 +112,70 @@ export async function pickDirectory(): Promise<FsDirectoryHandle | null> {
   }
 }
 
-/** 按路径段逐级下钻取文件；任一段不存在则返回 null */
-async function tryExactPath(root: FsDirectoryHandle, parts: string[]): Promise<File | null> {
-  if (parts.length === 0) return null;
+/** 当前环境是否支持"系统文件选择器直接取文件"（File System Access API） */
+export function filePickerSupported(): boolean {
+  if (typeof window === "undefined") return false;
+  if (window.isSecureContext === false) return false;
+  return (
+    typeof (window as unknown as { showOpenFilePicker?: unknown }).showOpenFilePicker === "function"
+  );
+}
+
+/**
+ * 弹出系统文件选择器（可多选），返回真实 `File` 列表。
+ * 用户取消（AbortError）或 API 抛错时返回 null。
+ *
+ * 目录授权解析失败后的兜底：系统对话框走 OS 外壳，能拿到真实字节——
+ * 绕过"云同步占位文件"和"文件夹名匹配不上"两类读盘问题。
+ */
+export async function pickLocalFiles(): Promise<File[] | null> {
+  if (!filePickerSupported()) return null;
+  try {
+    const picker = (
+      window as unknown as {
+        showOpenFilePicker: (opts?: {
+          multiple?: boolean;
+        }) => Promise<Array<{ getFile(): Promise<File> }>>;
+      }
+    ).showOpenFilePicker;
+    const handles = await picker.call(window, { multiple: true });
+    return await Promise.all(handles.map((h) => h.getFile()));
+  } catch {
+    return null;
+  }
+}
+
+/** 目录查找结果：file 为空时，readError 区分"没找到"与"找到了但读不出来" */
+export interface FindFileResult {
+  file: File | null;
+  /**
+   * 找到了同名文件句柄但 `getFile()` 失败。
+   * 典型场景：OneDrive / WPS 云盘等**云同步占位文件**——资源管理器里"存在"，
+   * 但浏览器 File System Access API 读不到字节。
+   */
+  readError?: unknown;
+}
+
+/** 按路径段逐级下钻取文件；任一段不存在返回空结果，读到字节才算命中 */
+async function tryExactPath(root: FsDirectoryHandle, parts: string[]): Promise<FindFileResult> {
+  if (parts.length === 0) return { file: null };
   let dir = root;
   for (let i = 0; i < parts.length - 1; i++) {
     try {
       dir = await dir.getDirectoryHandle(parts[i]);
     } catch {
-      return null;
+      return { file: null };
     }
   }
   try {
     const fh = await dir.getFileHandle(parts[parts.length - 1]);
-    return await fh.getFile();
+    try {
+      return { file: await fh.getFile() };
+    } catch (readError) {
+      return { file: null, readError };
+    }
   } catch {
-    return null;
+    return { file: null };
   }
 }
 
@@ -136,10 +184,11 @@ async function searchByBasename(
   root: FsDirectoryHandle,
   basename: string,
   budget = 5000,
-): Promise<File | null> {
+): Promise<FindFileResult> {
   const target = basename.toLowerCase();
   const stack: FsDirectoryHandle[] = [root];
   let visited = 0;
+  let readError: unknown;
   while (stack.length > 0 && visited < budget) {
     const dir = stack.pop() as FsDirectoryHandle;
     try {
@@ -148,7 +197,12 @@ async function searchByBasename(
         if (visited > budget) break;
         if (entry.kind === "file") {
           if (entry.name.toLowerCase() === target) {
-            return await entry.getFile();
+            try {
+              return { file: await entry.getFile() };
+            } catch (err) {
+              // 同名但读不出来（云占位等）：记住错误，继续找别的同名文件
+              readError = err;
+            }
           }
         } else if (entry.kind === "directory") {
           stack.push(entry as unknown as FsDirectoryHandle);
@@ -158,7 +212,10 @@ async function searchByBasename(
       /* 个别目录无权限等，跳过 */
     }
   }
-  return null;
+  if (visited >= budget) {
+    console.warn(`目录遍历预算 ${budget} 已耗尽，「${basename}」可能藏在不完整的搜索范围内`);
+  }
+  return { file: null, readError };
 }
 
 /**
@@ -168,25 +225,31 @@ async function searchByBasename(
  * 1. 完整路径逐级下钻；
  * 2. 逐段去掉开头路径段再试（兼容粘贴进来的是"库绝对路径"，而用户授权的是子目录）；
  * 3. 按 basename 递归查找（兼容 Obsidian"最短路径"写法）。
- * 找不到返回 null。
+ *
+ * 返回 `{ file, readError }`：`file` 为 null 且带 `readError` 时表示
+ * "找到了文件但读不出字节"（云同步占位文件的典型表现），与"目录里没有"区分开。
  */
 export async function findFileInDirectory(
   root: FsDirectoryHandle,
   src: string,
-): Promise<File | null> {
+): Promise<FindFileResult> {
   const normalized = normalizeLocalSrc(src);
   const parts = normalized.split("/").filter(Boolean);
-  if (parts.length === 0) return null;
+  if (parts.length === 0) return { file: null };
 
+  let readError: unknown;
   // 1 + 2：完整路径 → 逐步去掉开头段
   for (let start = 0; start < parts.length; start++) {
     const sub = parts.slice(start);
-    const file = await tryExactPath(root, sub);
-    if (file) return file;
+    const result = await tryExactPath(root, sub);
+    if (result.file) return result;
+    if (result.readError) readError = result.readError;
   }
 
   // 3：basename 兜底
-  return searchByBasename(root, parts[parts.length - 1]);
+  const fallback = await searchByBasename(root, parts[parts.length - 1]);
+  if (fallback.file || fallback.readError) return fallback;
+  return { file: null, readError };
 }
 
 // ---- 文档扫描：找出待解析的本地媒体引用 ----
