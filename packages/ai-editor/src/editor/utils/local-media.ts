@@ -280,20 +280,25 @@ const MEDIA_NODE_KIND: Record<string, LocalMediaKind> = {
  * - image / videoEmbed / audioEmbed / attachmentEmbed 节点中 src 为本地引用的；
  * - 文本上 link mark 的 href 为本地文件路径的（链接型附件，如 `[[a.pdf]]`）。
  *
- * 按 src 去重。粘贴后由 RelativeMedia 扩展据此驱动解析与上传。
+ * 同类引用按 src 去重；**链接型与节点型不互相去重**——同一文件可能既被图片节点
+ * 嵌入、又被链接引用（如 `[Open: x.png](x.jpeg)`），两者都要解析换链。
+ * 粘贴后由 RelativeMedia 扩展据此驱动解析与上传。
  */
 export function collectLocalMediaRefs(rootNode: {
   descendants: (fn: (node: any, pos: number) => boolean | undefined) => void;
   nodeAt?: (pos: number) => any;
 }): LocalMediaRef[] {
-  const seen = new Map<string, LocalMediaRef>();
+  const seen = new Set<string>();
+  const refs: LocalMediaRef[] = [];
 
   rootNode.descendants((node: any) => {
     const kind = MEDIA_NODE_KIND[node.type?.name];
     if (kind) {
       const src = node.attrs?.src;
-      if (typeof src === "string" && isLocalMediaSrc(src) && !seen.has(src)) {
-        seen.set(src, {
+      const key = `node:${src}`;
+      if (typeof src === "string" && isLocalMediaSrc(src) && !seen.has(key)) {
+        seen.add(key);
+        refs.push({
           src,
           normalized: normalizeLocalSrc(src),
           basename: basenameOf(src),
@@ -311,13 +316,15 @@ export function collectLocalMediaRefs(rootNode: {
       }>) {
         if (mark.type.name !== "link") continue;
         const href = mark.attrs?.href;
+        const key = `link:${href}`;
         if (
           typeof href === "string" &&
           isLocalMediaSrc(href) &&
           looksLikeFilePath(href) &&
-          !seen.has(href)
+          !seen.has(key)
         ) {
-          seen.set(href, {
+          seen.add(key);
+          refs.push({
             src: href,
             normalized: normalizeLocalSrc(href),
             basename: basenameOf(href),
@@ -329,7 +336,7 @@ export function collectLocalMediaRefs(rootNode: {
     }
   });
 
-  return [...seen.values()];
+  return refs;
 }
 
 // ---- 剪贴板文本探测（供粘贴分流用） ----

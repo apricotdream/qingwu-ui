@@ -104,19 +104,24 @@ describe("全栈：真实扩展（含 React ImageView）下本地图片换链后
     document.body.appendChild(el);
     editor = new Editor({ element: el, extensions: getEditorExtensions() });
 
-    // 复刻用户文档形状：纯文本行 + 本地相对路径图片节点
+    // 复刻用户真实文档形状：[Open: x.png](a.jpeg) 链接 + 同路径图片节点
     editor.commands.setContent(
-      '<p>Open: Pasted image 20250810232353.png</p><img src="a.jpeg"><p>技巧：</p><p>Open: Pasted image 20250810232428.png</p><img src="b.jpeg">',
+      '<p><a href="a.jpeg">Open: Pasted image 20250810232353.png</a></p><img src="a.jpeg"><p>技巧：</p><p><a href="b.jpeg">Open: Pasted image 20250810232428.png</a></p><img src="b.jpeg">',
     );
 
-    // 文档层：两个 image 节点都换链
+    // 文档层：两个 image 节点与两个同路径链接都换链
     await vi.waitFor(
       () => {
         const srcs: string[] = [];
+        const hrefs: string[] = [];
         editor.state.doc.descendants((n) => {
           if (n.type.name === "image") srcs.push(n.attrs.src);
+          if (n.isText) {
+            for (const m of n.marks) if (m.type.name === "link") hrefs.push(m.attrs.href);
+          }
         });
         expect(srcs).toEqual([DATA_URL, DATA_URL]);
+        expect(hrefs).toEqual([DATA_URL, DATA_URL]);
       },
       { timeout: 3000 },
     );
