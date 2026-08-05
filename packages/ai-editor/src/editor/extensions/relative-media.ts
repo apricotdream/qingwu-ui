@@ -7,7 +7,7 @@
  *   image / videoEmbed / audioEmbed / attachmentEmbed 的本地 src，以及链接型附件的本地 href。
  *   这样 Obsidian（markdown 粘贴）与 Typora（HTML 粘贴）都能被统一捕获。
  * - 用 `appendTransaction` 在每次文档变化后微任务里扫描新出现的本地引用；
- *   已处理过的引用记入 `processed`，避免打字时反复弹窗。
+ *   **成功**解析过的引用记入 `resolved`（失败/取消不记账，允许重试），避免打字时反复弹窗。
  * - 解析编排（先剪贴板文件静默上传，再目录授权 / 拖拽降级）委托 `resolve-local-media.ts`。
  *
  * 剪贴板文件暂存在扩展 storage（`clipboardFiles`），由本扩展与 `ai-editor` 的粘贴处理共同写入，
@@ -52,18 +52,22 @@ export const RelativeMedia = Extension.create({
   addProseMirrorPlugins() {
     const editor = this.editor as any;
     const storage = this.storage as RelativeMediaStorage;
-    /** 已触发过解析流程的引用（src），避免反复弹窗 */
-    const processed = new Set<string>();
+    /** 已成功解析的引用（src）——成功才记账，失败/取消/被吞的竞态都允许重试 */
+    const resolved = new Set<string>();
+    /** busy 期间新出现的引用，收尾后再跑一轮 */
+    let pending: LocalMediaRef[] = [];
     let busy = false;
 
     const runResolution = async (refs: LocalMediaRef[]): Promise<void> => {
       const view = editor.view;
       const report = createEmptyReport();
+      const markResolved = (ref: LocalMediaRef) => resolved.add(ref.src);
 
       // 1) 剪贴板文件：按 basename 匹配后静默上传，不打扰用户
       const { matched, unmatched } = matchClipboardFiles(refs, storage.clipboardFiles);
       for (const { ref, file } of matched) {
         const outcome = await processResolvedFile(view, editor, ref, file);
+        if (outcome === "uploaded") markResolved(ref);
         report[outcome]++;
       }
 
@@ -74,14 +78,25 @@ export const RelativeMedia = Extension.create({
           if (choice === "pick") {
             const dir = await pickDirectory();
             if (dir) {
-              const dirReport = await resolveRefsFromDirectory(view, editor, unmatched, dir);
+              const dirReport = await resolveRefsFromDirectory(
+                view,
+                editor,
+                unmatched,
+                dir,
+                markResolved,
+              );
               mergeReports(report, dirReport);
               // 兜底：文件夹方式仍有遗漏（云占位/文件夹不匹配）时，引导直接选文件
               const stragglers = [...report.missing, ...report.readFailed];
               if (stragglers.length > 0 && filePickerSupported()) {
                 const pickChoice = await openPickFilesDialog(stragglers.map((r) => r.basename));
                 if (pickChoice === "pick") {
-                  const pickReport = await resolveRefsByFilePicker(view, editor, stragglers);
+                  const pickReport = await resolveRefsByFilePicker(
+                    view,
+                    editor,
+                    stragglers,
+                    markResolved,
+                  );
                   mergeReports(report, pickReport);
                   // 原 missing/readFailed 已被兜底尝试过一轮，最终结果以 pickReport 为准
                   report.missing = pickReport.missing;
@@ -103,14 +118,31 @@ export const RelativeMedia = Extension.create({
     };
 
     const maybeResolve = (): void => {
-      if (busy || !editor || editor.isDestroyed) return;
-      const refs = collectLocalMediaRefs(editor.state.doc).filter((r) => !processed.has(r.src));
-      if (refs.length === 0) return;
-      for (const r of refs) processed.add(r.src);
+      if (!editor || editor.isDestroyed) return;
+      const fresh = collectLocalMediaRefs(editor.state.doc).filter((r) => !resolved.has(r.src));
+      if (fresh.length === 0) return;
+      if (busy) {
+        for (const r of fresh) {
+          if (!pending.some((p) => p.src === r.src)) pending.push(r);
+        }
+        return;
+      }
       busy = true;
-      void runResolution(refs).finally(() => {
-        busy = false;
-      });
+      void runResolution(fresh)
+        .then(() => {
+          const hadPending = pending.length > 0;
+          pending = [];
+          if (!hadPending || editor.isDestroyed) return;
+          // pending 只是"有新引用出现"的信号：收尾时重新扫描文档，
+          // 本轮已换链的引用不再重复处理（多图场景下避免二次授权弹窗）
+          const next = collectLocalMediaRefs(editor.state.doc).filter(
+            (r) => !resolved.has(r.src),
+          );
+          if (next.length > 0) return runResolution(next);
+        })
+        .finally(() => {
+          busy = false;
+        });
     };
 
     return [
