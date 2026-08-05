@@ -149,6 +149,27 @@ describe("RelativeMedia 扩展编排", () => {
     expect(h.pickFileCalls).toBe(0);
   });
 
+  it("同路径链接与图片节点共存：两类引用都解析换链（去重不跨类型吞引用）", async () => {
+    editor = makeEditor();
+    // 用户真实文档形状：[Open: x.png](a.png) 链接 + ![](a.png) 图片节点指向同一文件
+    editor.commands.setContent('<p><a href="a.png">Open: a.png</a></p><img src="a.png">');
+
+    await vi.waitFor(
+      () => {
+        expect(imageSrcs(editor)).toEqual([DATA_URL]);
+        let href: string | undefined;
+        editor.state.doc.descendants((n) => {
+          if (n.isText) {
+            for (const m of n.marks) if (m.type.name === "link") href = m.attrs.href;
+          }
+        });
+        expect(href).toBe(DATA_URL);
+      },
+      { timeout: 3000 },
+    );
+    expect(h.consentCalls).toBe(1);
+  });
+
   it("同 src 再次出现（重粘/撤销回滚）不被永久豁免：重新解析并换链", async () => {
     editor = makeEditor();
     editor.commands.setContent('<img src="a.png">');
