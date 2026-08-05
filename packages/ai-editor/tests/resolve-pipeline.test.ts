@@ -2,10 +2,16 @@ import { Editor } from "@tiptap/core";
 import { Image } from "@tiptap/extension-image";
 import { Link } from "@tiptap/extension-link";
 import StarterKit from "@tiptap/starter-kit";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { setStorageProvider } from "../src/editor/storage";
 import { collectLocalMediaRefs } from "../src/editor/utils/local-media";
 import { processResolvedFile } from "../src/editor/utils/resolve-local-media";
+
+// jsdom 的 Image 永不触发 load/error（真实探针会 8s 超时判 false）→ 可控 mock
+const probe = vi.hoisted(() => ({ ok: true }));
+vi.mock("../src/editor/utils/render-probe", () => ({
+  verifyImageRenderable: () => Promise.resolve(probe.ok),
+}));
 
 // jsdom 没有 URL.createObjectURL / revokeObjectURL
 if (typeof URL.createObjectURL !== "function") {
@@ -18,6 +24,7 @@ if (typeof URL.revokeObjectURL !== "function") {
 const DATA_URL = "data:image/jpeg;base64,dGVzdA==";
 
 beforeEach(() => {
+  probe.ok = true;
   setStorageProvider({
     name: "测试存储",
     type: "local",
@@ -86,6 +93,22 @@ describe("本地媒体解析管线（processResolvedFile）", () => {
       }
     });
     expect(href).toBe(DATA_URL);
+  });
+
+  it("换链成功但浏览器渲染失败：计 renderFailed 而非 uploaded（诚实计数）", async () => {
+    probe.ok = false;
+    editor = makeEditor('<img src="c9794a39add8edfd15a32bd8610cf682_MD5.jpeg">');
+    const refs = collectLocalMediaRefs(editor.state.doc);
+    expect(refs).toHaveLength(1);
+
+    const file = new File(["x"], "c9794a39add8edfd15a32bd8610cf682_MD5.jpeg", {
+      type: "image/jpeg",
+    });
+    const outcome = await processResolvedFile(editor.view, editor, refs[0], file);
+
+    expect(outcome).toBe("renderFailed");
+    // 文档确实换链了（字节真实上传），只是不宣称"已上传成功"
+    expect(imageSrc(editor)).toBe(DATA_URL);
   });
 
   it("链接已被删除：不计 uploaded", async () => {

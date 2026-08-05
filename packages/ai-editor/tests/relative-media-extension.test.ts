@@ -49,6 +49,11 @@ const h = vi.hoisted(() => {
   };
 });
 
+// jsdom 的 Image 永不触发 load/error（真实探针会超时判 false）→ 固定通过
+vi.mock("../src/editor/utils/render-probe", () => ({
+  verifyImageRenderable: () => Promise.resolve(true),
+}));
+
 vi.mock("../src/editor/utils/local-media", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/editor/utils/local-media")>();
   return {
