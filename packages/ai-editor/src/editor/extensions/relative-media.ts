@@ -34,7 +34,7 @@ import {
   openDirectoryConsentDialog,
   openDragHintDialog,
   openPickFilesDialog,
-  processResolvedFile,
+  processResolvedFileGroup,
   reportResolveResult,
   resolveRefsByFilePicker,
   resolveRefsFromDirectory,
@@ -70,10 +70,10 @@ export const RelativeMedia = Extension.create({
       const view = editor.view;
       const report = createEmptyReport();
 
-      // 1) 剪贴板文件：按 basename 匹配后静默上传，不打扰用户
+      // 1) 剪贴板文件：按文件归组、basename 匹配后静默上传（同组只传一次），不打扰用户
       const { matched, unmatched } = matchClipboardFiles(refs, storage.clipboardFiles);
-      for (const { ref, file } of matched) {
-        const outcome = await processResolvedFile(view, editor, ref, file);
+      for (const { refs: group, file } of matched) {
+        const outcome = await processResolvedFileGroup(view, editor, group, file);
         report[outcome]++;
       }
 

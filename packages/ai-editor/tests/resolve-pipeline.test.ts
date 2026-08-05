@@ -5,7 +5,11 @@ import StarterKit from "@tiptap/starter-kit";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { setStorageProvider } from "../src/editor/storage";
 import { collectLocalMediaRefs } from "../src/editor/utils/local-media";
-import { processResolvedFile } from "../src/editor/utils/resolve-local-media";
+import {
+  groupRefsByFile,
+  processResolvedFile,
+  processResolvedFileGroup,
+} from "../src/editor/utils/resolve-local-media";
 
 // jsdom 的 Image 永不触发 load/error（真实探针会 8s 超时判 false）→ 可控 mock
 const probe = vi.hoisted(() => ({ ok: true }));
@@ -109,6 +113,39 @@ describe("本地媒体解析管线（processResolvedFile）", () => {
     expect(outcome).toBe("renderFailed");
     // 文档确实换链了（字节真实上传），只是不宣称"已上传成功"
     expect(imageSrc(editor)).toBe(DATA_URL);
+  });
+
+  it("同一文件的图片节点 + 同路径 Open: 链接：只上传一次、计一次、都换链", async () => {
+    let uploadCount = 0;
+    setStorageProvider({
+      name: "测试存储",
+      type: "local",
+      async upload() {
+        uploadCount++;
+        return DATA_URL;
+      },
+      async remove() {},
+    });
+    // Obsidian 导出常见形状：每张图同时有 <img> 节点与 [Open: x.png](x.jpeg) 链接
+    editor = makeEditor('<p><a href="a.jpeg">Open: a.png</a></p><img src="a.jpeg">');
+    const refs = collectLocalMediaRefs(editor.state.doc);
+    expect(refs).toHaveLength(2); // 节点型 + 链接型两条引用
+    const groups = groupRefsByFile(refs);
+    expect(groups).toHaveLength(1); // 同一文件只归一组（5 张图 → 5 组，不会变 10）
+
+    const file = new File(["x"], "a.jpeg", { type: "image/jpeg" });
+    const outcome = await processResolvedFileGroup(editor.view, editor, groups[0], file);
+
+    expect(outcome).toBe("uploaded"); // 结果只计一次
+    expect(uploadCount).toBe(1); // 字节只上传一次
+    expect(imageSrc(editor)).toBe(DATA_URL); // 图片节点换链
+    let href: string | undefined;
+    editor.state.doc.descendants((n) => {
+      if (n.isText) {
+        for (const m of n.marks) if (m.type.name === "link") href = m.attrs.href;
+      }
+    });
+    expect(href).toBe(DATA_URL); // 链接共享同一存储 URL
   });
 
   it("链接已被删除：不计 uploaded", async () => {
