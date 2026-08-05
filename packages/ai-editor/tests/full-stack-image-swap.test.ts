@@ -37,7 +37,7 @@ const h = vi.hoisted(() => {
       },
     };
   }
-  return { consentCalls: 0, dir: null as any, buildHandle };
+  return { consentCalls: 0, consentArg: 0, dir: null as any, buildHandle };
 });
 
 // jsdom 的 Image 永不触发 load/error（真实探针会超时判 false）→ 固定通过
@@ -59,8 +59,9 @@ vi.mock("../src/editor/utils/resolve-local-media", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/editor/utils/resolve-local-media")>();
   return {
     ...actual,
-    openDirectoryConsentDialog: async () => {
+    openDirectoryConsentDialog: async (n: number) => {
       h.consentCalls++;
+      h.consentArg = n; // 面向用户的数量：必须按文件数（非引用条数）
       return "pick" as const;
     },
     openPickFilesDialog: async () => "cancel" as const,
@@ -82,6 +83,7 @@ describe("全栈：真实扩展（含 React ImageView）下本地图片换链后
 
   beforeEach(() => {
     h.consentCalls = 0;
+    h.consentArg = 0;
     h.dir = h.buildHandle({
       name: "vault",
       children: [
@@ -131,6 +133,8 @@ describe("全栈：真实扩展（含 React ImageView）下本地图片换链后
       { timeout: 3000 },
     );
     expect(h.consentCalls).toBe(1);
+    // 授权弹窗报"文件数"而非"引用条数"：2 个文件（各含节点+链接共 4 条引用）→ 报 2
+    expect(h.consentArg).toBe(2);
 
     // 渲染层说明：jsdom 下 ReactNodeViewRenderer 不挂载 React 节点视图
     // （DOM 为 ProseMirror 默认 <img> 渲染），React 视图的跟进无法在此验证；
