@@ -25,27 +25,38 @@ import {
   type LocalMediaRef,
   pickLocalFiles,
 } from "./local-media";
+import { verifyImageRenderable } from "./render-probe";
 
 /** 单个引用的解析结果 */
-export type ResolveOutcome = "uploaded" | "sessionOnly" | "limitRejected";
+export type ResolveOutcome = "uploaded" | "sessionOnly" | "limitRejected" | "renderFailed";
 
 export interface ResolveReport {
   uploaded: number;
   sessionOnly: number;
   limitRejected: number;
+  /** 换链成功但存储 URL 在浏览器里渲染/解码失败——不计入"已上传"，如实上报 */
+  renderFailed: number;
   missing: LocalMediaRef[];
   /** 在目录里找到了同名文件，但读不出字节（云同步占位文件等） */
   readFailed: LocalMediaRef[];
 }
 
 export function createEmptyReport(): ResolveReport {
-  return { uploaded: 0, sessionOnly: 0, limitRejected: 0, missing: [], readFailed: [] };
+  return {
+    uploaded: 0,
+    sessionOnly: 0,
+    limitRejected: 0,
+    renderFailed: 0,
+    missing: [],
+    readFailed: [],
+  };
 }
 
 export function mergeReports(target: ResolveReport, src: ResolveReport): void {
   target.uploaded += src.uploaded;
   target.sessionOnly += src.sessionOnly;
   target.limitRejected += src.limitRejected;
+  target.renderFailed += src.renderFailed;
   target.missing.push(...src.missing);
   target.readFailed.push(...src.readFailed);
 }
@@ -134,8 +145,12 @@ export async function processResolvedFile(
     URL.revokeObjectURL(objectUrl);
     return "sessionOnly"; // 节点已被用户删除等，无需上传
   }
-  const swapped = await uploadPlaceholder(view, file, objectUrl);
-  return swapped ? "uploaded" : "sessionOnly";
+  const url = await uploadPlaceholder(view, file, objectUrl);
+  if (!url) return "sessionOnly";
+  // 只有图片真实渲染出来才计"已上传"（探针与 ImageView 私有桶回退一致）；
+  // 非图片节点（video/audio/attachment）无 Image 解码探针可用，按换链成功计数
+  if (ref.kind !== "image") return "uploaded";
+  return (await verifyImageRenderable(url)) ? "uploaded" : "renderFailed";
 }
 
 /**
@@ -200,6 +215,9 @@ export function reportResolveResult(report: ResolveReport): void {
     parts.push(`${report.sessionOnly} 个仅本次会话可见（未配置存储或上传失败）`);
   }
   if (report.limitRejected > 0) parts.push(`${report.limitRejected} 个超出大小限制`);
+  if (report.renderFailed > 0) {
+    parts.push(`${report.renderFailed} 个上传成功但页面渲染失败（存储 URL 无法在浏览器访问/解码）`);
+  }
   if (report.readFailed.length > 0) {
     parts.push(
       `${report.readFailed.length} 个找到但读取失败：${namesSummary(report.readFailed)}` +
@@ -215,7 +233,10 @@ export function reportResolveResult(report: ResolveReport): void {
   if (parts.length === 0) return;
 
   const allGood =
-    report.uploaded > 0 && report.missing.length === 0 && report.readFailed.length === 0;
+    report.uploaded > 0 &&
+    report.renderFailed === 0 &&
+    report.missing.length === 0 &&
+    report.readFailed.length === 0;
   toast(`本地文件解析完成：${parts.join("；")}`, allGood ? "success" : "info");
 }
 

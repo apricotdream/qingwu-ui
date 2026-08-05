@@ -138,18 +138,20 @@ function createNode(schema: any, file: File, placeholderSrc: string) {
  * 上传文件并替换文档中 src === placeholderSrc 的占位节点。
  * 供拖拽/粘贴（uploadAndInsert）与斜杠命令共用。
  * 上传失败时释放占位 blob URL，避免泄漏（占位节点保留在文档中，用户可手动删除）。
+ *
+ * @returns 换链成功返回存储 URL；未换链（存储未配置/上传失败/节点已不存在）返回 null
  */
 export async function uploadPlaceholder(
   view: any,
   file: File,
   placeholderSrc: string,
-): Promise<boolean> {
+): Promise<string | null> {
   // 存储未配置时保持 placeholder
   let storage;
   try {
     storage = getStorageProvider();
   } catch {
-    return false;
+    return null;
   }
 
   try {
@@ -170,11 +172,11 @@ export async function uploadPlaceholder(
       }
       return true;
     });
-    return swapped;
+    return swapped ? url : null;
   } catch (err) {
     console.error(`${file.type} upload failed:`, err);
     URL.revokeObjectURL(placeholderSrc);
-    return false;
+    return null;
   }
 }
 
