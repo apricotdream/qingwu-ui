@@ -413,16 +413,18 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
         event.preventDefault();
 
         // 剪贴板若带文件（Obsidian 复制嵌入等场景），暂存给 RelativeMedia：
-        // 插入完成后由它按文件名匹配、上传换链；匹配不到的走目录授权解析
+        // 插入完成后由它按文件名匹配、上传换链；匹配不到的走目录授权解析。
+        // 此路径会越过 RelativeMedia 插件的 handlePaste，暂停标记也要在这里清除
         const relStorage = (
           editorRef.current?.storage as
-            | { relativeMedia?: { clipboardFiles: Map<string, File> } }
+            | { relativeMedia?: { clipboardFiles: Map<string, File>; pausedUntilPaste: boolean } }
             | undefined
         )?.relativeMedia;
         if (relStorage) {
           relStorage.clipboardFiles = new Map(
             Array.from(cb.files ?? []).map((f) => [f.name.toLowerCase(), f] as const),
           );
+          relStorage.pausedUntilPaste = false;
         }
 
         // 按原始相对路径插入；本地引用的解析与上传统一由 RelativeMedia 扩展兜底

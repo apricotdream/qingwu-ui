@@ -166,7 +166,6 @@ export async function resolveRefsFromDirectory(
   editor: any,
   refs: LocalMediaRef[],
   dir: FsDirectoryHandle,
-  onSuccess?: (ref: LocalMediaRef) => void,
 ): Promise<ResolveReport> {
   const report = createEmptyReport();
   for (const ref of refs) {
@@ -182,7 +181,6 @@ export async function resolveRefsFromDirectory(
       continue;
     }
     const outcome = await processResolvedFile(view, editor, ref, file);
-    if (outcome === "uploaded") onSuccess?.(ref);
     report[outcome]++;
   }
   return report;
@@ -407,7 +405,6 @@ export async function resolveRefsByFilePicker(
   view: any,
   editor: any,
   refs: LocalMediaRef[],
-  onSuccess?: (ref: LocalMediaRef) => void,
 ): Promise<ResolveReport> {
   const report = createEmptyReport();
   const files = await pickLocalFiles();
@@ -427,7 +424,6 @@ export async function resolveRefsByFilePicker(
     }
     byName.delete(ref.basename);
     const outcome = await processResolvedFile(view, editor, ref, file);
-    if (outcome === "uploaded") onSuccess?.(ref);
     report[outcome]++;
   }
   report.missing.push(...unmatched);

@@ -43,6 +43,7 @@ const h = vi.hoisted(() => {
   return {
     consentCalls: 0,
     pickFileCalls: 0,
+    consentReturn: "pick" as "pick" | "cancel",
     dir: null as any,
     buildHandle,
   };
@@ -64,7 +65,7 @@ vi.mock("../src/editor/utils/resolve-local-media", async (importOriginal) => {
     ...actual,
     openDirectoryConsentDialog: async (_n: number) => {
       h.consentCalls++;
-      return "pick" as const;
+      return h.consentReturn;
     },
     openPickFilesDialog: async (_names: string[]) => {
       h.pickFileCalls++;
@@ -83,12 +84,25 @@ if (typeof URL.revokeObjectURL !== "function") {
 
 const DATA_URL = "data:image/png;base64,dGVzdA==";
 
+function imageSrcs(editor: Editor): string[] {
+  const srcs: string[] = [];
+  editor.state.doc.descendants((n) => {
+    if (n.type.name === "image") srcs.push(n.attrs.src);
+  });
+  return srcs;
+}
+
+function relStorage(editor: Editor): { pausedUntilPaste: boolean } {
+  return (editor.storage as any).relativeMedia;
+}
+
 describe("RelativeMedia 扩展编排", () => {
   let editor: Editor;
 
   beforeEach(() => {
     h.consentCalls = 0;
     h.pickFileCalls = 0;
+    h.consentReturn = "pick";
     h.dir = h.buildHandle({
       name: "vault",
       children: [
@@ -111,31 +125,65 @@ describe("RelativeMedia 扩展编排", () => {
     document.body.innerHTML = "";
   });
 
-  it("多图粘贴：一轮授权弹窗解析全部引用，不弹第二次", async () => {
+  function makeEditor(): Editor {
     const el = document.createElement("div");
     document.body.appendChild(el);
-    editor = new Editor({
+    return new Editor({
       element: el,
       extensions: [StarterKit, Image, Link, RelativeMedia],
     });
+  }
+
+  it("多图粘贴：一轮授权弹窗解析全部引用，不弹第二次", async () => {
+    editor = makeEditor();
     // 模拟粘贴落文档：走事务，触发 appendTransaction
     editor.commands.setContent('<img src="a.png"><img src="b.png">');
 
     // 等两张图都换链为存储 URL
-    await vi.waitFor(
-      () => {
-        const srcs: string[] = [];
-        editor.state.doc.descendants((n) => {
-          if (n.type.name === "image") srcs.push(n.attrs.src);
-        });
-        expect(srcs).toHaveLength(2);
-        for (const s of srcs) expect(s).toBe(DATA_URL);
-      },
-      { timeout: 3000 },
-    );
+    await vi.waitFor(() => expect(imageSrcs(editor)).toEqual([DATA_URL, DATA_URL]), {
+      timeout: 3000,
+    });
 
     // 关键回归点：只允许一轮授权弹窗
     expect(h.consentCalls).toBe(1);
     expect(h.pickFileCalls).toBe(0);
+  });
+
+  it("同 src 再次出现（重粘/撤销回滚）不被永久豁免：重新解析并换链", async () => {
+    editor = makeEditor();
+    editor.commands.setContent('<img src="a.png">');
+    await vi.waitFor(() => expect(imageSrcs(editor)).toEqual([DATA_URL]), { timeout: 3000 });
+    expect(h.consentCalls).toBe(1);
+
+    // 同一本地 src 再次进入文档（重新粘贴 / Ctrl+Z 回滚换链后的状态）：
+    // 必须再走一轮解析，而不是被"已成功过"永久跳过、留下无声占位
+    editor.commands.setContent('<img src="a.png">');
+    await vi.waitFor(() => expect(imageSrcs(editor)).toEqual([DATA_URL]), { timeout: 3000 });
+    expect(h.consentCalls).toBe(2);
+  });
+
+  it("取消后暂停探测：击键不重复弹窗，下一次粘贴才重试", async () => {
+    editor = makeEditor();
+    h.consentReturn = "cancel";
+    // 末尾带段落，避免单节点文档的 NodeSelection 被后续 insertContent 替换掉
+    editor.commands.setContent('<img src="a.png"><p></p>');
+    await vi.waitFor(() => expect(h.consentCalls).toBe(1));
+    // 等编排收尾：仍有未解析引用 → 暂停探测
+    await vi.waitFor(() => expect(relStorage(editor).pausedUntilPaste).toBe(true));
+
+    // 暂停期间的文档变化（击键等）不应再次弹窗
+    editor.commands.insertContent("x");
+    await new Promise((r) => setTimeout(r, 50));
+    expect(h.consentCalls).toBe(1);
+    expect(imageSrcs(editor)).toEqual(["a.png"]);
+
+    // 模拟下一次粘贴（粘贴路径会清除暂停标记），恢复解析
+    relStorage(editor).pausedUntilPaste = false;
+    h.consentReturn = "pick";
+    editor.commands.insertContent('<img src="b.png">');
+    await vi.waitFor(() => expect(imageSrcs(editor)).toEqual([DATA_URL, DATA_URL]), {
+      timeout: 3000,
+    });
+    expect(h.consentCalls).toBe(2);
   });
 });
