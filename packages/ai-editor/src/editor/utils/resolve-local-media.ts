@@ -117,8 +117,9 @@ export async function processResolvedFile(
   if (ref.isLink) {
     try {
       const url = await getStorageProvider().upload(file, "editor");
-      swapLinkHref(view, ref.src, url);
-      return "uploaded";
+      // 链接已被用户删除等情况：上传成功但无处可换，不算 uploaded
+      const swapped = swapLinkHref(view, ref.src, url);
+      return swapped ? "uploaded" : "sessionOnly";
     } catch (err) {
       console.error(`本地附件 ${ref.basename} 上传失败:`, err);
       toast(`「${ref.basename}」上传失败`, "error");
@@ -165,6 +166,7 @@ export async function resolveRefsFromDirectory(
   editor: any,
   refs: LocalMediaRef[],
   dir: FsDirectoryHandle,
+  onSuccess?: (ref: LocalMediaRef) => void,
 ): Promise<ResolveReport> {
   const report = createEmptyReport();
   for (const ref of refs) {
@@ -180,6 +182,7 @@ export async function resolveRefsFromDirectory(
       continue;
     }
     const outcome = await processResolvedFile(view, editor, ref, file);
+    if (outcome === "uploaded") onSuccess?.(ref);
     report[outcome]++;
   }
   return report;
@@ -404,6 +407,7 @@ export async function resolveRefsByFilePicker(
   view: any,
   editor: any,
   refs: LocalMediaRef[],
+  onSuccess?: (ref: LocalMediaRef) => void,
 ): Promise<ResolveReport> {
   const report = createEmptyReport();
   const files = await pickLocalFiles();
@@ -423,6 +427,7 @@ export async function resolveRefsByFilePicker(
     }
     byName.delete(ref.basename);
     const outcome = await processResolvedFile(view, editor, ref, file);
+    if (outcome === "uploaded") onSuccess?.(ref);
     report[outcome]++;
   }
   report.missing.push(...unmatched);
