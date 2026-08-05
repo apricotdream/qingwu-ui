@@ -17,7 +17,6 @@
  */
 import { toast } from "../../components/toast";
 import { getEditorAttachmentLimits, validateAttachmentFile } from "../attachment-limits";
-import { uploadPlaceholder } from "../extensions/image-upload";
 import { getStorageProvider } from "../storage";
 import {
   type FsDirectoryHandle,
@@ -107,75 +106,134 @@ function swapLinkHref(view: any, matchHref: string, newHref: string): boolean {
 }
 
 /**
- * 处理单个已拿到字节的文件：限额校验 → 先显示（objectURL 占位）→ 上传 → 换持久 URL。
- * 链接型附件无节点可占位，直接上传后把 href 指向存储 URL。
+ * 把引用按"同一文件"归组（归一化路径相同即同一文件）。
+ * 同一文件常同时以 `<img>` 节点与 `Open: xxx` 链接两种形态出现（Obsidian 导出常见形状），
+ * 归组后整组只读取/上传一次、只计一次，组内所有节点与链接共享同一个存储 URL。
  */
+export function groupRefsByFile(refs: LocalMediaRef[]): LocalMediaRef[][] {
+  const map = new Map<string, LocalMediaRef[]>();
+  for (const ref of refs) {
+    const group = map.get(ref.normalized);
+    if (group) group.push(ref);
+    else map.set(ref.normalized, [ref]);
+  }
+  return Array.from(map.values());
+}
+
+/**
+ * 处理"指向同一文件"的一组引用：限额校验 → 节点先 objectURL 预览 → **只上传一次** →
+ * 组内所有媒体节点与链接统一换成同一个持久 URL，结果只计一次。
+ *
+ * 修复一张图既有 `<img>` 节点又有同路径 `Open:` 链接时，同文件被上传两次、
+ * "已上传"计数翻倍（5 张图报成 10 个）的问题。
+ */
+export async function processResolvedFileGroup(
+  view: any,
+  editor: any,
+  refs: LocalMediaRef[],
+  file: File,
+): Promise<ResolveOutcome> {
+  if (refs.length === 0) return "sessionOnly";
+  const first = refs[0];
+
+  const limits = getEditorAttachmentLimits(editor);
+  if (limits) {
+    const err = validateAttachmentFile(view.state.doc, file, limits);
+    if (err) {
+      toast(`${first.basename}：${err}`, "error");
+      return "limitRejected";
+    }
+  }
+
+  const nodeRefs = refs.filter((r) => !r.isLink);
+  const linkRefs = refs.filter((r) => r.isLink);
+
+  // 纯链接型附件（无媒体节点）：上传一次，所有链接指向同一 URL
+  if (nodeRefs.length === 0) {
+    try {
+      const url = await getStorageProvider().upload(file, "editor");
+      let swapped = false;
+      for (const ref of linkRefs) {
+        if (swapLinkHref(view, ref.src, url)) swapped = true;
+      }
+      // 链接已被用户删除等情况：上传成功但无处可换，不算 uploaded
+      return swapped ? "uploaded" : "sessionOnly";
+    } catch (err) {
+      console.error(`本地附件 ${first.basename} 上传失败:`, err);
+      toast(`「${first.basename}」上传失败`, "error");
+      return "sessionOnly";
+    }
+  }
+
+  // 含媒体节点：全部先换 objectURL 立即预览，再统一上传、统一换成持久 URL
+  const objectUrl = URL.createObjectURL(file);
+  let nodeSwapped = false;
+  for (const ref of nodeRefs) {
+    if (swapNodeSrc(view, ref.src, objectUrl, file.size)) nodeSwapped = true;
+  }
+
+  let url: string;
+  try {
+    url = await getStorageProvider().upload(file, "editor");
+  } catch (err) {
+    console.error(`本地文件 ${first.basename} 上传失败:`, err);
+    toast(`「${first.basename}」上传失败`, "error");
+    URL.revokeObjectURL(objectUrl);
+    return "sessionOnly";
+  }
+  URL.revokeObjectURL(objectUrl);
+
+  if (nodeSwapped) swapNodeSrc(view, objectUrl, url, file.size); // 所有预览节点 → 持久 URL
+  for (const ref of linkRefs) swapLinkHref(view, ref.src, url);
+
+  if (!nodeSwapped && linkRefs.length === 0) return "sessionOnly"; // 节点已删且无链接可换
+
+  // 只有图片真实渲染出来才计"已上传"（探针与 ImageView 私有桶回退一致）；
+  // 非图片节点（video/audio/attachment）无 Image 解码探针可用，按换链成功计数
+  if (nodeSwapped && refs.some((r) => r.kind === "image")) {
+    return (await verifyImageRenderable(url)) ? "uploaded" : "renderFailed";
+  }
+  return "uploaded";
+}
+
+/** 单引用解析（单元素组的特例，保留旧签名供既有调用与测试使用） */
 export async function processResolvedFile(
   view: any,
   editor: any,
   ref: LocalMediaRef,
   file: File,
 ): Promise<ResolveOutcome> {
-  const limits = getEditorAttachmentLimits(editor);
-  if (limits) {
-    const err = validateAttachmentFile(view.state.doc, file, limits);
-    if (err) {
-      toast(`${ref.basename}：${err}`, "error");
-      return "limitRejected";
-    }
-  }
-
-  if (ref.isLink) {
-    try {
-      const url = await getStorageProvider().upload(file, "editor");
-      // 链接已被用户删除等情况：上传成功但无处可换，不算 uploaded
-      const swapped = swapLinkHref(view, ref.src, url);
-      return swapped ? "uploaded" : "sessionOnly";
-    } catch (err) {
-      console.error(`本地附件 ${ref.basename} 上传失败:`, err);
-      toast(`「${ref.basename}」上传失败`, "error");
-      return "sessionOnly";
-    }
-  }
-
-  // 媒体节点：先换 objectURL 立即显示，再走共享的上传换链流程
-  const objectUrl = URL.createObjectURL(file);
-  const found = swapNodeSrc(view, ref.src, objectUrl, file.size);
-  if (!found) {
-    URL.revokeObjectURL(objectUrl);
-    return "sessionOnly"; // 节点已被用户删除等，无需上传
-  }
-  const url = await uploadPlaceholder(view, file, objectUrl);
-  if (!url) return "sessionOnly";
-  // 只有图片真实渲染出来才计"已上传"（探针与 ImageView 私有桶回退一致）；
-  // 非图片节点（video/audio/attachment）无 Image 解码探针可用，按换链成功计数
-  if (ref.kind !== "image") return "uploaded";
-  return (await verifyImageRenderable(url)) ? "uploaded" : "renderFailed";
+  return processResolvedFileGroup(view, editor, [ref], file);
 }
 
 /**
  * 用剪贴板里随文本一起粘贴的文件（basename → File）匹配引用。
- * 命中的直接从 clipboardFiles 中消费；返回命中与未命中两组。
+ * 按文件归组后整组匹配：一个剪贴板文件服务同组的全部引用（节点 + 链接），
+ * 命中即从 clipboardFiles 中消费；返回命中（整组）与未命中两组。
  */
 export function matchClipboardFiles(
   refs: LocalMediaRef[],
   clipboardFiles: Map<string, File>,
-): { matched: Array<{ ref: LocalMediaRef; file: File }>; unmatched: LocalMediaRef[] } {
-  const matched: Array<{ ref: LocalMediaRef; file: File }> = [];
+): { matched: Array<{ refs: LocalMediaRef[]; file: File }>; unmatched: LocalMediaRef[] } {
+  const matched: Array<{ refs: LocalMediaRef[]; file: File }> = [];
   const unmatched: LocalMediaRef[] = [];
-  for (const ref of refs) {
-    const file = clipboardFiles.get(ref.basename);
+  for (const group of groupRefsByFile(refs)) {
+    const rep = group[0];
+    const file = clipboardFiles.get(rep.basename);
     if (file) {
-      matched.push({ ref, file });
-      clipboardFiles.delete(ref.basename);
+      matched.push({ refs: group, file });
+      clipboardFiles.delete(rep.basename);
     } else {
-      unmatched.push(ref);
+      unmatched.push(...group);
     }
   }
   return { matched, unmatched };
 }
 
-/** 在已授权的目录里逐个找回引用对应的文件并上传换链；找不到的记入 missing，读不出的记入 readFailed。 */
+/**
+ * 在已授权的目录里按文件归组找回并上传换链：同组只查找/读取/上传一次、只计一次；
+ * 找不到记入 missing，读不出记入 readFailed（均以组为代表，不重复计数）。
+ */
 export async function resolveRefsFromDirectory(
   view: any,
   editor: any,
@@ -183,19 +241,20 @@ export async function resolveRefsFromDirectory(
   dir: FsDirectoryHandle,
 ): Promise<ResolveReport> {
   const report = createEmptyReport();
-  for (const ref of refs) {
-    const { file, readError } = await findFileInDirectory(dir, ref.src);
+  for (const group of groupRefsByFile(refs)) {
+    const rep = group[0];
+    const { file, readError } = await findFileInDirectory(dir, rep.src);
     if (!file) {
       if (readError) {
-        console.warn(`本地文件「${ref.basename}」在所选文件夹中找到但读取失败:`, readError);
-        report.readFailed.push(ref);
+        console.warn(`本地文件「${rep.basename}」在所选文件夹中找到但读取失败:`, readError);
+        report.readFailed.push(rep);
       } else {
-        console.warn(`本地文件「${ref.basename}」未在所选文件夹「${dir.name}」中找到`);
-        report.missing.push(ref);
+        console.warn(`本地文件「${rep.basename}」未在所选文件夹「${dir.name}」中找到`);
+        report.missing.push(rep);
       }
       continue;
     }
-    const outcome = await processResolvedFile(view, editor, ref, file);
+    const outcome = await processResolvedFileGroup(view, editor, group, file);
     report[outcome]++;
   }
   return report;
@@ -419,8 +478,8 @@ export function openPickFilesDialog(names: string[]): Promise<"pick" | "cancel">
 }
 
 /**
- * 兜底：从系统文件选择器选中的真实文件，按 basename 匹配引用后上传换链；
- * 用户取消或选了但仍有未匹配的引用，记入 missing（交给汇总 toast 说明）。
+ * 兜底：从系统文件选择器选中的真实文件，按文件归组、以 basename 匹配后上传换链；
+ * 同组只上传一次、只计一次；用户取消或选了但仍有未匹配的组，记入 missing（交汇总 toast 说明）。
  */
 export async function resolveRefsByFilePicker(
   view: any,
@@ -428,25 +487,25 @@ export async function resolveRefsByFilePicker(
   refs: LocalMediaRef[],
 ): Promise<ResolveReport> {
   const report = createEmptyReport();
+  const groups = groupRefsByFile(refs);
   const files = await pickLocalFiles();
   if (!files) {
-    // 取消/失败：全部留在占位状态，交汇总 toast 说明
-    report.missing.push(...refs);
+    // 取消/失败：全部留在占位状态，交汇总 toast 说明（每组记一个，不重复）
+    for (const group of groups) report.missing.push(group[0]);
     return report;
   }
 
   const byName = new Map(files.map((f) => [f.name.toLowerCase(), f] as const));
-  const unmatched: LocalMediaRef[] = [];
-  for (const ref of refs) {
-    const file = byName.get(ref.basename);
+  for (const group of groups) {
+    const rep = group[0];
+    const file = byName.get(rep.basename);
     if (!file) {
-      unmatched.push(ref);
+      report.missing.push(rep);
       continue;
     }
-    byName.delete(ref.basename);
-    const outcome = await processResolvedFile(view, editor, ref, file);
+    byName.delete(rep.basename);
+    const outcome = await processResolvedFileGroup(view, editor, group, file);
     report[outcome]++;
   }
-  report.missing.push(...unmatched);
   return report;
 }
