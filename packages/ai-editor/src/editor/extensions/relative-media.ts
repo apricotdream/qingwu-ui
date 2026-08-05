@@ -29,6 +29,7 @@ import {
 } from "../utils/local-media";
 import {
   createEmptyReport,
+  groupRefsByFile,
   matchClipboardFiles,
   mergeReports,
   openDirectoryConsentDialog,
@@ -79,11 +80,13 @@ export const RelativeMedia = Extension.create({
 
       // 2) 剩余引用：目录授权（Chromium）或拖拽降级；读盘只在用户明确同意后发生
       if (unmatched.length > 0) {
+        // 面向用户的数量按"文件"口径（同组节点+链接只算一个文件），与上传/计数口径一致
+        const pendingFileCount = groupRefsByFile(unmatched).length;
         if (fsAccessSupported()) {
           // 收尾轮复用已授权目录（同一轮编排内用户已同意过读这个文件夹）
           let dir: FsDirectoryHandle | null = preferredDir ?? null;
           if (!dir) {
-            const choice = await openDirectoryConsentDialog(unmatched.length);
+            const choice = await openDirectoryConsentDialog(pendingFileCount);
             if (choice === "pick") {
               dir = await pickDirectory();
               if (!dir) {
@@ -114,7 +117,7 @@ export const RelativeMedia = Extension.create({
             }
           }
         } else {
-          openDragHintDialog(unmatched.length);
+          openDragHintDialog(pendingFileCount);
         }
       }
 
