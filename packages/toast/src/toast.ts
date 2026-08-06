@@ -155,6 +155,8 @@ export class Toaster {
     const duration = persist ? 0 : (options?.duration ?? this.opts.duration);
     const dismissible = options?.dismissible ?? true;
     const maxLines = options?.maxLines ?? this.opts.maxLines;
+    const description = options?.description;
+    const action = options?.action;
 
     const id = uid();
     const entry: ToastEntry = {
@@ -164,7 +166,7 @@ export class Toaster {
       position,
       duration,
       order: ++this._seq,
-      element: this.buildElement(id, message, type, dismissible, maxLines),
+      element: this.buildElement(id, message, type, dismissible, maxLines, description, action),
       timer: null,
     };
 
@@ -275,16 +277,27 @@ export class Toaster {
     type: ToastType,
     dismissible: boolean,
     maxLines: number | undefined,
+    description?: string,
+    action?: ToastOptions["action"],
   ): HTMLElement {
     /* qt-truncate：仅显式 maxLines（截断模式）时启用，CSS 才允许行省略号兜底；
-       默认不限行（完整显示）时禁用 text-overflow，绝不出省略号 */
-    const toastEl = el("div", `qt-toast qt-${type}${maxLines != null ? " qt-truncate" : ""}`);
+       默认不限行（完整显示）时禁用 text-overflow，绝不出省略号。
+       qt-rich：带 description/action 的富内容，禁用主消息 max-width 入场动画，
+       避免说明行先于文本撑开导致的布局跳动 */
+    const rich = Boolean(description || action);
+    const toastEl = el(
+      "div",
+      `qt-toast qt-${type}${maxLines != null ? " qt-truncate" : ""}${rich ? " qt-rich" : ""}`,
+    );
     toastEl.setAttribute("data-qt-id", id);
 
     /* 图标 */
     const iconEl = el("span", "qt-icon");
     iconEl.innerHTML = ICONS[type];
     toastEl.appendChild(iconEl);
+
+    /* 主体：主消息 + 可选说明行 */
+    const bodyEl = el("div", "qt-body");
 
     /* 文本：text-layout 精确排版，自适应行数与宽度 */
     const msgEl = el("span", "qt-msg");
@@ -305,7 +318,29 @@ export class Toaster {
         msgEl.appendChild(span);
       });
     }
-    toastEl.appendChild(msgEl);
+    bodyEl.appendChild(msgEl);
+
+    /* 说明行：纯文本，不解析 **标记**，不参与 maxLines 截断 */
+    if (description) {
+      const descEl = el("div", "qt-desc");
+      descEl.textContent = description;
+      bodyEl.appendChild(descEl);
+    }
+
+    toastEl.appendChild(bodyEl);
+
+    /* 操作按钮：点击先关闭 toast 再执行回调 */
+    if (action) {
+      const btn = el("button", "qt-action") as HTMLButtonElement;
+      btn.type = "button";
+      btn.textContent = action.label;
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.dismiss(id);
+        action.onClick();
+      });
+      toastEl.appendChild(btn);
+    }
 
     /* 关闭按钮（SF Symbol xmark） */
     if (dismissible) {
@@ -323,10 +358,10 @@ export class Toaster {
       toastEl.appendChild(btn);
     }
 
-    /* 点击整条关闭 */
+    /* 点击整条关闭（关闭按钮与操作按钮除外） */
     if (dismissible) {
       toastEl.addEventListener("click", (e) => {
-        if ((e.target as HTMLElement).closest(".qt-close")) return;
+        if ((e.target as HTMLElement).closest(".qt-close, .qt-action")) return;
         this.dismiss(id);
       });
     }

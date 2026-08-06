@@ -296,12 +296,20 @@
   /* ============================================================
    ⑤ 文本 · iOS label 语义（text-layout 精确排版）
    ============================================================ */
-  .qt-msg {
+  /* 主体容器：主消息 + 说明行纵向排布，占据剩余宽度 */
+  .qt-body {
     flex: 1 1 auto;
     min-width: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    gap: 1px;
+  }
+
+  .qt-msg {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
     overflow: hidden; /* 入场 max-width 动画期间裁剪文本 */
     white-space: nowrap;
     /* 兜底：长不可断行 token（URL/文件名）超出测量宽度时强制断词，防止撑破容器上限 */
@@ -310,6 +318,24 @@
     color: rgb(var(--qt-fg));
     font-weight: 500;
     letter-spacing: 0.01em;
+  }
+
+  /* 富内容（带 description/action）：禁用主消息 max-width 延伸动画，
+     说明行会先撑开主体宽度，文本再延伸会造成布局跳动 */
+  .qt-toast.qt-rich.qt-enter .qt-msg {
+    animation: none;
+  }
+
+  /* 说明行：弱化色小字号，纯文本可换行，不参与 maxLines 截断 */
+  .qt-desc {
+    color: rgb(var(--qt-fg2));
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.45;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    user-select: text; /* 错误详情等允许选中复制 */
   }
 
   /* 多行时每行一个 span（宽度由 text-layout 保证不溢出）。
@@ -343,6 +369,36 @@
   .qt-error .qt-mark {
     color: rgb(var(--qt-red));
     background: rgb(var(--qt-red) / 0.12);
+  }
+
+  /* ============================================================
+   ⑤.5 操作按钮 · iOS 胶囊 tint 按钮（如「重试」）
+   ============================================================ */
+  .qt-action {
+    flex-shrink: 0;
+    margin: -2px 0;
+    padding: 4px 12px;
+    border: none;
+    border-radius: 999px;
+    background: rgb(var(--qt-blue) / 0.14);
+    color: rgb(var(--qt-blue));
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .qt-action:hover {
+    background: rgb(var(--qt-blue) / 0.22);
+  }
+
+  .qt-action:focus-visible {
+    outline: 2px solid rgb(var(--qt-blue));
+    outline-offset: 2px;
   }
 
   /* ============================================================
@@ -436,6 +492,11 @@
     .qt-icon svg {
       width: 13px;
       height: 13px;
+    }
+
+    .qt-action {
+      padding: 3px 10px;
+      font-size: 12px;
     }
 
     .qt-close {

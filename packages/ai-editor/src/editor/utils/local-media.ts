@@ -285,7 +285,7 @@ const MEDIA_NODE_KIND: Record<string, LocalMediaKind> = {
  * 粘贴后由 RelativeMedia 扩展据此驱动解析与上传。
  */
 export function collectLocalMediaRefs(rootNode: {
-  descendants: (fn: (node: any, pos: number) => boolean | undefined) => void;
+  descendants: (fn: (node: any, pos: number) => boolean | undefined | void) => void;
   nodeAt?: (pos: number) => any;
 }): LocalMediaRef[] {
   const seen = new Set<string>();

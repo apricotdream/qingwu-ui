@@ -1,8 +1,8 @@
 # @qingwu/ai-editor
 
-## Unreleased
+## 0.7.2
 
-### Minor Changes
+### Patch Changes
 
 - 新增：粘贴外部 Markdown（Obsidian / Typora 等）时，**本地相对路径图片/附件自动检测与解析**（新增 `RelativeMedia` 扩展，随 `getEditorExtensions` 默认启用）：
   - 剪贴板随文本带入的文件按文件名匹配后直接上传换链，无需用户操作；
@@ -16,6 +16,9 @@
   - 编排稳定性：多图粘贴**只弹一次**授权弹窗（收尾阶段复用已授权目录补齐新出现的引用，不弹第二次）；**文档是唯一事实来源**——重粘、撤销回滚后再次出现的同路径引用会重新解析，不会因"曾解析成功"被永久跳过、留下无声占位；失败/取消后暂停探测到下一次粘贴再重试，不会随每次击键重复弹窗；链接型附件换链成功才计"已上传"
 - 重构：Obsidian `[[wiki]]` 粘贴不再把剪贴板文件转 base64 dataURL 内联进文档（一次性且膨胀文档），统一走"objectURL 占位预览 → 上传 → 换持久 URL"管线
 - 移除：已无调用的手写 Markdown 兜底解析器（`_obsidianToFragment` 及关联约 450 行死代码）
+- 修复：AI 模型调用显式走 `openai.chat()`（`/chat/completions`）——`@ai-sdk/openai` 默认调用走 Responses API（`POST /responses`），DeepSeek / 通义 / GLM 等兼容端点会 404
+- 修复：`showToc` prop 运行期变化（宿主读者侧目录开关）同步进内部状态，初值仍取 prop
+- 依赖：`@qingwu/toast` 升至 `^0.8.0`（`description` 详情行 / `action` 操作按钮）
 
 ## 0.7.0
 

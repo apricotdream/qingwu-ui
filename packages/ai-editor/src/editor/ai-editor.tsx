@@ -242,6 +242,10 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   } | null>(null);
   const [showTocState, setShowTocState] = useState(showToc);
   const [showTocMobile, setShowTocMobile] = useState(false);
+  // 宿主运行时切换 showToc（如读者侧目录开关）：prop 变化同步进内部状态，初值仍取 prop
+  useEffect(() => {
+    setShowTocState(showToc);
+  }, [showToc]);
   // 注意：state 名为 searchOpen，避免与 prop showSearch 冲突
   const [searchOpen, setSearchOpen] = useState(false);
   // 视口是否达到桌面断点（与 TOC 悬浮框的 80rem 一致）。

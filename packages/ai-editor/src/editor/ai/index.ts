@@ -83,7 +83,9 @@ export async function createAILanguageModelProvider(
     apiKey: config.apiKey,
     baseURL: config.baseURL,
   });
-  const model = openai(config.model);
+  // 必须显式用 chat()：@ai-sdk/openai 的默认调用 openai(model) 走 Responses API（POST /responses），
+  // 而 DeepSeek / 通义 / GLM 等兼容端点只实现了 /chat/completions，默认调用会 404。
+  const model = openai.chat(config.model);
 
   return {
     async *stream(req: AIRequest): AsyncIterable<string> {
