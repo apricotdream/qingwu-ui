@@ -1,5 +1,12 @@
 # @qingwu/toast
 
+## 0.8.0
+
+### Minor Changes
+
+- 新增 `description` 次级说明行：纯文本、可换行、不参与 `maxLines` 截断，供错误提示携带详情
+- 新增 `action` 单个操作按钮（`{ label, onClick }`）：点击即关闭 toast，供「重试」类操作
+
 ## 0.7.0
 
 ### Minor Changes
