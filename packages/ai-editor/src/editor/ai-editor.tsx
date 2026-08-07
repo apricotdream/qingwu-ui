@@ -14,6 +14,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { SearchBar } from "../components/search-bar";
 import type { ToastOptions, ToastType } from "../components/toast";
 import { subscribeToast, toast } from "../components/toast";
@@ -621,27 +622,34 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   }, []);
 
   // 打开写作助手面板 — 工具栏「AI 编写」按钮与扩展（slash / 气泡菜单）共用。
-  // 有选区时锚定选区下沿，无选区时锚定光标坐标；二者皆无则用默认位置。
+  // anchorEl 传入时（工具栏按钮）锚定该元素下沿，面板贴近按钮弹出；
+  // 否则有选区时锚定选区下沿，无选区时锚定光标坐标。
   // 关键：同步算好 fixed 坐标与 showAI 一起 setState，首帧即 fixed，
   // 从源头消除「面板先以静态块级元素渲染撑高编辑器 → 页面滚动跳变」的问题。
-  const openAIPanel = useCallback(() => {
-    if (!editor?.isEditable) return;
-    const domSel = window.getSelection();
-    let anchor: FloatingPoint;
-    if (domSel && domSel.rangeCount > 0 && !domSel.isCollapsed) {
-      const rect = domSel.getRangeAt(0).getBoundingClientRect();
-      anchor = { top: rect.bottom, left: rect.left, width: rect.width };
-    } else {
-      const coords = editor.view.coordsAtPos(editor.state.selection.from);
-      anchor = { top: coords.bottom, left: coords.left, width: 0 };
-    }
-    aiAnchorRef.current = anchor;
-    const layout = layoutAIPanel(anchor);
-    setShowAI(true);
-    setAiPanelStyle(layout.style);
-    setAiPlacement(layout.placement);
-    setAiArrowLeft(layout.arrowLeft);
-  }, [editor]);
+  const openAIPanel = useCallback(
+    (anchorEl?: HTMLElement | null) => {
+      if (!editor?.isEditable) return;
+      const domSel = window.getSelection();
+      let anchor: FloatingPoint;
+      if (anchorEl) {
+        const rect = anchorEl.getBoundingClientRect();
+        anchor = { top: rect.bottom, left: rect.left, width: rect.width };
+      } else if (domSel && domSel.rangeCount > 0 && !domSel.isCollapsed) {
+        const rect = domSel.getRangeAt(0).getBoundingClientRect();
+        anchor = { top: rect.bottom, left: rect.left, width: rect.width };
+      } else {
+        const coords = editor.view.coordsAtPos(editor.state.selection.from);
+        anchor = { top: coords.bottom, left: coords.left, width: 0 };
+      }
+      aiAnchorRef.current = anchor;
+      const layout = layoutAIPanel(anchor);
+      setShowAI(true);
+      setAiPanelStyle(layout.style);
+      setAiPlacement(layout.placement);
+      setAiArrowLeft(layout.arrowLeft);
+    },
+    [editor],
+  );
 
   // 注册全局回调（供 slash 命令和代码块等触发）
   // 注册 UI 回调到 (editor.storage as any).qingwuUI（替代 window.__qingwu_* 全局变量）
@@ -652,7 +660,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
       | {
           openImageDialog?: () => void;
           openVideoDialog?: () => void;
-          openAI?: () => void;
+          openAI?: (anchorEl?: HTMLElement | null) => void;
           chooseMd?: (filename: string, resolve: (v: "render" | "attach" | null) => void) => void;
           parseMd?: (schema: any, text: string) => unknown;
         }
@@ -824,12 +832,13 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                 </button>
               )}
 
-              {/* AI 编写按钮 — 唤起写作助手面板（无选区时针对光标上下文，有选区时针对选区） */}
+              {/* AI 编写按钮 — 唤起写作助手面板，锚定按钮自身就近弹出；
+                  作用范围由 AISelector 决定：有选区→选区，无选区→全文 */}
               {!isReadonly && (
                 <button
                   type="button"
                   className={`qed-tb-btn qed-tb-btn--ai${showAI ? " is-active" : ""}`}
-                  onClick={() => (showAI ? setShowAI(false) : openAIPanel())}
+                  onClick={(e) => (showAI ? setShowAI(false) : openAIPanel(e.currentTarget))}
                   title={t("editor.toolbar.aiTitle")}
                   aria-label={t("editor.toolbar.ai")}
                   aria-pressed={showAI}
@@ -1129,28 +1138,34 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           </>
         )}
 
-        {/* 写作助手面板 - 浮动在选中区域下方，点击外部关闭 */}
-        {!isReadonly && showAI && (
-          <>
-            <div className="fixed inset-0 z-[9998]" onClick={() => setShowAI(false)} />
-            <div
-              ref={aiPanelRef}
-              style={aiPanelStyle}
-              className={`ai-panel relative bg-background border border-default-200 rounded-xl shadow-xl${
-                aiPlacement === "above" ? " ai-panel--above" : ""
-              }`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* 锚点箭头 - 面板在选区下方时指向上，翻转后指向下 */}
-              <span
-                className="ai-panel__arrow"
-                style={{ left: `${aiArrowLeft}%` }}
-                aria-hidden="true"
-              />
-              <AISelector editor={editor} onClose={() => setShowAI(false)} />
-            </div>
-          </>
-        )}
+        {/* 写作助手面板 - 浮动在锚点（工具栏按钮/选区/光标）下方，点击外部关闭。
+            portal 到 body：宿主页面动画可能在编辑器祖先残留 transform/filter，
+            会把 fixed 的包含块从视口抢成该祖先，面板坐标随之漂移（如落到屏幕底部）；
+            body 下无此干扰，fixed 坐标始终相对视口。 */}
+        {!isReadonly &&
+          showAI &&
+          createPortal(
+            <>
+              <div className="fixed inset-0 z-[9998]" onClick={() => setShowAI(false)} />
+              <div
+                ref={aiPanelRef}
+                style={aiPanelStyle}
+                className={`ai-panel relative bg-background border border-default-200 rounded-xl shadow-xl${
+                  aiPlacement === "above" ? " ai-panel--above" : ""
+                }`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* 锚点箭头 - 面板在锚点下方时指向上，翻转后指向下 */}
+                <span
+                  className="ai-panel__arrow"
+                  style={{ left: `${aiArrowLeft}%` }}
+                  aria-hidden="true"
+                />
+                <AISelector editor={editor} onClose={() => setShowAI(false)} />
+              </div>
+            </>,
+            document.body,
+          )}
 
         {/* 图片上传弹窗 */}
         {showImageDialog && (
