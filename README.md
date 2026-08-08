@@ -389,16 +389,16 @@ bun run build      # 构建全部包
 bun run test       # 运行 vitest 测试
 ```
 
-技术基线：TypeScript 7 · tsdown (Rolldown) · Bun + Turborepo · Biome · vitest · size-limit · changesets。
+技术基线：TypeScript 7 · tsdown (Rolldown) · Bun + Turborepo · Biome · vitest · size-limit。
 
 ## 发布
 
-语义化版本，由 [changesets](https://github.com/changesets/changesets) 驱动。**版本策略：五包统一版本号**（每次发版所有包对齐同一版本，无变更的包创建「版本统一对齐」changeset）。
+语义化版本，手动维护。**版本策略：多包统一版本号**（每次发版所有包对齐同一版本，无变更的包仅对齐版本号）。
 
 ```bash
-bun run changeset          # 登记变更（无变更的包登记对齐 changeset）
-bun run version-packages   # 消费 changeset，升版本 + 生成 CHANGELOG
-bun run release            # 构建全部包 + 发布前校验（publish-check）
+# 1) 手动升级各包 version（package.json + CHANGELOG 首条）
+# 2) 构建全部包 + 发布前校验（publish-check）
+bun run release
 ```
 
 发版前 `bun run publish-check` 自动校验：dist 无 `workspace:*` 依赖残留（`publish-check:fix` 一键替换）、CHANGELOG 首条版本与 package.json 一致、exports 声明产物齐全。

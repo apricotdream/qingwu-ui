@@ -3,7 +3,7 @@
  *
  * 检查：
  * 1. dependencies / peerDependencies 中不允许残留 workspace:* 协议
- *    （changeset publish 不会替换它，0.3.0 曾因此发布失败）
+ *    （按原样发布会安装失败，0.3.0 曾因此发布失败）
  * 2. 每个包的 CHANGELOG 首条版本号与 package.json 一致
  * 3. dist 产物齐全（index.mjs / index.cjs / index.d.mts / style.css）
  *
