@@ -8,7 +8,7 @@
 
 import { ClipperError, toClipperError } from "./errors";
 import type { Message, MessageKind, MessageResponse } from "./messages";
-import { isMessage, ok as okResp } from "./messages";
+import { isMessage } from "./messages";
 
 const DEFAULT_TIMEOUT = 60_000;
 
@@ -36,7 +36,15 @@ export async function send<T = unknown>(
         const err = chrome.runtime.lastError;
         if (err)
           reject(new ClipperError("runtime", err.message ?? "runtime error", { retryable: false }));
-        else resolve(resp ?? okResp(null as T));
+        else if (resp === undefined || resp === null)
+          // 无应答不是成功：SW 冷启动竞态或被回收时通道会静默关闭。
+          // 若翻译成 ok(null)，调用方会在 null.ok / null.locale 上崩溃且无从诊断。
+          reject(
+            new ClipperError("runtime", "扩展后台未应答（可能在启动中），请重试", {
+              retryable: true,
+            }),
+          );
+        else resolve(resp);
       });
     } catch (e) {
       reject(toClipperError(e));

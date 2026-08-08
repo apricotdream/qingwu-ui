@@ -32,14 +32,10 @@ function normalizeBaseURL(baseURL?: string): string {
   return `${u}/chat/completions`;
 }
 
-async function withTimeout<T>(p: Promise<T>, ms = DEFAULT_TIMEOUT_MS): Promise<T> {
+function fetchWithTimeout(url: string, init: RequestInit, ms = DEFAULT_TIMEOUT_MS): Promise<Response> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
-  try {
-    return await p;
-  } finally {
-    clearTimeout(timer);
-  }
+  return fetch(url, { ...init, signal: ctrl.signal }).finally(() => clearTimeout(timer));
 }
 
 async function callOpenAICompatible(
@@ -67,33 +63,23 @@ async function callOpenAICompatible(
   };
 
   const start = performance.now();
+  const init: RequestInit = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${cfg.apiKey}`,
+    },
+    body: JSON.stringify(body),
+  };
   let resp: Response;
   try {
-    resp = await withTimeout(
-      fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${cfg.apiKey}`,
-        },
-        body: JSON.stringify(body),
-      }),
-    );
+    resp = await fetchWithTimeout(url, init);
   } catch (e) {
     const err = toClipperError(e);
-    // 网络错误自动重试一次
-    if (err.retryable) {
+    // 仅网络错误自动重试一次；超时不重试（再试 30s 会撞上消息层 60s 总超时）
+    if (err.code === "network") {
       try {
-        resp = await withTimeout(
-          fetch(url, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${cfg.apiKey}`,
-            },
-            body: JSON.stringify(body),
-          }),
-        );
+        resp = await fetchWithTimeout(url, init);
       } catch (e2) {
         throw toClipperError(e2);
       }
