@@ -9,5 +9,4 @@ bun run changeset        # 描述本次变更，生成 .changeset/*.md
 git add . && git commit
 ```
 
-发布由 GitHub Actions（`.github/workflows/release.yml`）自动完成：
-合入 `main` 后生成 Release PR，合并后以 `npm publish --provenance` 发布（供应链可验证）。
+发布在本地执行：`bun run release`（build + publish-check）→ 显式 `--registry` 发布到私有 Nexus registry；发布后提交并推送远端仓库。
