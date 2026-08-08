@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "rm -rf .next && next dev",
-    "build": "next build",
-    "start": "next start ",
-    "e2e": "playwright test"
+    "dev": "node scripts/sync-file-viewer.mjs && rm -rf .next && next dev",
+    "build": "node scripts/sync-file-viewer.mjs && next build",
+    "start": "node scripts/sync-file-viewer.mjs && next start",
+    "e2e": "node scripts/sync-file-viewer.mjs && playwright test"
   },
   "dependencies": {
     "@qingwu/button": "workspace:*",
