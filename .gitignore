@@ -5,6 +5,7 @@ dist/
 .turbo/
 coverage/
 *.tsbuildinfo
+*.d.ts.map
 
 # 包打包产物
 *.tgz
@@ -36,6 +37,9 @@ Desktop.ini
 # 缓存
 .cache/
 
+# 演示站构建时从 packages/ai-editor 同步的 file-viewer 静态资源（方案 A，不入库）
+examples/nextjs/public/file-viewer/
+
 # AI 辅助工具本地文件（不提交）
 .claude/
 CLAUDE.md
@@ -44,3 +48,7 @@ AGENTS.md
 .agents/
 .github/copilot-instructions.md
 COPILOT.md
+
+# 内部产品文档（不公开）
+PRODUCT.md
+PRODUCT_*.md
