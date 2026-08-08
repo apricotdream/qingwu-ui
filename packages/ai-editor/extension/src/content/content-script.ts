@@ -10,6 +10,7 @@
  */
 import { FAB_STORAGE_KEYS, getFabConfig, hideFabOnHost, setFabPosition } from "../shared/fab";
 import { setLocale, t } from "../shared/i18n";
+import type { Locale } from "../shared/types";
 
 // 用 128 大图：42px 显示 + 高分屏 2x 都无需放大位图，避免模糊
 const FAB_ICON = chrome.runtime.getURL("icons/icon-128.png");
@@ -338,7 +339,11 @@ const DRAG_THRESHOLD = 5;
   async function init() {
     // 语言跟随扩展设置（设置经 settingsStore 镜像到 chrome.storage.local）
     try {
-      const { settings } = await chrome.storage.local.get("settings");
+      // @types/chrome 0.2.x 的 storage.get 默认返回 Record<string, unknown>，
+      // 显式给出值类型避免逐处断言
+      const { settings } = await chrome.storage.local.get<{
+        settings?: { locale?: Locale };
+      }>("settings");
       if (settings?.locale) setLocale(settings.locale);
     } catch {
       /* ignore */

@@ -1,10 +1,12 @@
 /** 扩展侧边栏：剪藏主界面，含草稿编辑、历史管理、推送与下载。 */
+import { toast } from "@qingwu/toast";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { setLocale, t } from "../shared/i18n";
 import { send } from "../shared/messaging";
+import { getSettingsWithRetry } from "../shared/settings-client";
 import { renderTemplate } from "../shared/templates/engine";
-import type { ClipperSettings, ClipRecord, ExtractedContent } from "../shared/types";
+import type { ClipperSettings, ClipRecord, ExtractedContent, Locale } from "../shared/types";
 import {
   Badge,
   Button,
@@ -16,22 +18,40 @@ import {
   Switch,
   Textarea,
   ThemeProvider,
-  ToastProvider,
   useTheme,
-  useToast,
 } from "../shared/ui";
 
 type Tab = "clip" | "history" | "settings";
 
 export function App() {
   const [settings, setSettings] = useState<ClipperSettings | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   useEffect(() => {
     void (async () => {
-      const s = await send<ClipperSettings>("settings:get");
-      setSettings(s);
-      setLocale(s.locale);
+      try {
+        const s = await getSettingsWithRetry();
+        setSettings(s);
+        setLocale(s.locale);
+      } catch (e) {
+        setLoadError((e as Error).message);
+      }
     })();
   }, []);
+
+  if (loadError) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center gap-3 p-4 text-center text-sm text-ink-500">
+        <div>扩展后台未响应：{loadError}</div>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="px-3 py-1.5 rounded-lg bg-qingwu-600 text-white"
+        >
+          重新加载
+        </button>
+      </div>
+    );
+  }
 
   if (!settings) {
     return (
@@ -46,9 +66,7 @@ export function App() {
       onModeChange={(mode) => void persistSettings({ ...settings, theme: mode }, setSettings)}
       onAccentChange={(accent) => void persistSettings({ ...settings, accent }, setSettings)}
     >
-      <ToastProvider>
-        <Inner settings={settings} setSettings={setSettings} />
-      </ToastProvider>
+      <Inner settings={settings} setSettings={setSettings} />
     </ThemeProvider>
   );
 }
@@ -132,8 +150,6 @@ function Inner({
     return () => chrome.storage.onChanged.removeListener(listener);
   }, [settings, applyPendingDraft]);
 
-  const toast = useToast();
-
   const runExtract = useCallback(
     async (payload: { mode: "page" | "selection" | "bookmark"; selection?: string }) => {
       if (!settings) return;
@@ -166,11 +182,7 @@ function Inner({
               | { text: string; html: string; hasSelection: boolean }
               | undefined;
             if (!sel?.hasSelection) {
-              toast.push({
-                level: "warning",
-                message: "未选中文本",
-                detail: "请先在页面上选中要剪藏的文本",
-              });
+              toast.warn("未选中文本", { description: "请先在页面上选中要剪藏的文本" });
               setExtracting(false);
               return;
             }
@@ -184,11 +196,7 @@ function Inner({
           await chrome.storage.local.remove("pendingDraft");
         } catch {}
         if (content.warnings.length > 0) {
-          toast.push({
-            level: "warning",
-            message: content.warnings[0],
-            duration: 6000,
-          });
+          toast.warn(content.warnings[0], { duration: 6000 });
         }
         // 自动 AI
         if (settings.ai && (settings.autoSummary || settings.autoTags)) {
@@ -196,17 +204,12 @@ function Inner({
         }
       } catch (e) {
         const err = e as Error;
-        toast.push({
-          level: "error",
-          message: t("toast.clip.failed"),
-          detail: err.message,
-          duration: 8000,
-        });
+        toast.error(t("toast.clip.failed"), { description: err.message, duration: 8000 });
       } finally {
         setExtracting(false);
       }
     },
-    [settings, toast],
+    [settings],
   );
 
   async function runAutoAI(content: ExtractedContent) {
@@ -225,13 +228,7 @@ function Inner({
             setDraft((d) => (d ? { ...d, aiSummary: String(r.data.data) } : d));
           }
         })
-        .catch((e: Error) =>
-          toast.push({
-            level: "warning",
-            message: t("toast.ai.unknown"),
-            detail: e.message,
-          }),
-        );
+        .catch((e: Error) => toast.warn(t("toast.ai.unknown"), { description: e.message }));
     }
     if (settings.autoTags) {
       void send<{ ok: boolean; data?: unknown }>("ai:run", {
@@ -285,6 +282,7 @@ function Inner({
                 templateId: r.templateId,
                 aiSummary: r.aiSummary ?? "",
                 aiTags: r.aiTags ?? [],
+                aiTranslation: r.aiTranslation ?? null,
                 autoSummaryRan: true,
               });
               setTab("clip");
@@ -314,6 +312,7 @@ interface ClipDraft {
   templateId: string;
   aiSummary: string;
   aiTags: string[];
+  aiTranslation: { lang: Locale; text: string } | null;
   autoSummaryRan: boolean;
 }
 
@@ -332,6 +331,7 @@ function createClipDraft(content: ExtractedContent, settings: ClipperSettings): 
     templateId: settings.defaultTemplateId,
     aiSummary: "",
     aiTags: [],
+    aiTranslation: null,
     autoSummaryRan: false,
   };
 }
@@ -453,7 +453,6 @@ function ClipTab({
   extracting: boolean;
   onSaved: (rec: ClipRecord) => void;
 }) {
-  const toast = useToast();
   const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -466,6 +465,7 @@ function ClipTab({
       tags: draft.tags,
       aiSummary: draft.aiSummary,
       aiTags: draft.aiTags,
+      extra: { aiTranslation: draft.aiTranslation?.text ?? "" },
     }).rendered;
   }, [draft, settings.templates]);
 
@@ -481,16 +481,15 @@ function ClipTab({
         templateId: draft.templateId,
         aiSummary: draft.aiSummary || undefined,
         aiTags: draft.aiTags.length ? draft.aiTags : undefined,
+        aiTranslation: draft.aiTranslation,
       });
-      toast.push({ level: "success", message: t("toast.clip.saved") });
+      toast.success(t("toast.clip.saved"));
       // 加载刚保存的记录用于推/下载
       const rec = await send<ClipRecord>("clip:get", { id: r.id });
       onSaved(rec);
     } catch (e) {
-      toast.push({
-        level: "error",
-        message: t("toast.clip.failed"),
-        detail: (e as Error).message,
+      toast.error(t("toast.clip.failed"), {
+        description: (e as Error).message,
         duration: 8000,
       });
     } finally {
@@ -590,21 +589,21 @@ function ClipTab({
         </Button>
         <Button
           variant="secondary"
-          onClick={() => void pushOrDownload(draft, "push", toast)}
+          onClick={() => void pushOrDownload(draft, "push")}
           title={t("action.push")}
         >
           <Icon name="push" size={14} />
         </Button>
         <Button
           variant="secondary"
-          onClick={() => void pushOrDownload(draft, "download", toast)}
+          onClick={() => void pushOrDownload(draft, "download")}
           title={t("action.download")}
         >
           <Icon name="download" size={14} />
         </Button>
         <Button
           variant="secondary"
-          onClick={() => void pushOrDownload(draft, "copy", toast)}
+          onClick={() => void pushOrDownload(draft, "copy")}
           title={t("action.copyMd")}
         >
           <Icon name="copy" size={14} />
@@ -630,11 +629,7 @@ function ClipTab({
   );
 }
 
-async function pushOrDownload(
-  draft: ClipDraft,
-  op: "push" | "download" | "copy",
-  toast: ReturnType<typeof useToast>,
-) {
+async function pushOrDownload(draft: ClipDraft, op: "push" | "download" | "copy") {
   try {
     // 先保存
     const r = await send<{ id: string }>("clip:save", {
@@ -645,33 +640,34 @@ async function pushOrDownload(
       templateId: draft.templateId,
       aiSummary: draft.aiSummary || undefined,
       aiTags: draft.aiTags.length ? draft.aiTags : undefined,
+      aiTranslation: draft.aiTranslation,
     });
     if (op === "push") {
       await send("push:editor", { recordId: r.id });
-      toast.push({ level: "success", message: t("toast.push.ok") });
+      toast.success(t("toast.push.ok"));
     } else if (op === "download") {
       await send("download:md", { recordId: r.id });
-      toast.push({ level: "success", message: t("toast.download.ok") });
+      toast.success(t("toast.download.ok"));
     } else {
       const rec = await send<ClipRecord>("clip:get", { id: r.id });
       await navigator.clipboard.writeText(rec.renderedMarkdown);
-      toast.push({ level: "success", message: t("toast.copy.ok") });
+      toast.success(t("toast.copy.ok"));
     }
   } catch (e) {
-    toast.push({
-      level: "error",
-      message:
-        op === "push"
-          ? t("toast.push.failed")
-          : op === "download"
-            ? t("toast.clip.failed")
-            : t("toast.clip.failed"),
-      detail: (e as Error).message,
-      duration: 8000,
-      action: (e as Error).message.includes("超时")
-        ? { label: t("action.retry"), onClick: () => void pushOrDownload(draft, op, toast) }
-        : undefined,
-    });
+    toast.error(
+      op === "push"
+        ? t("toast.push.failed")
+        : op === "download"
+          ? t("toast.clip.failed")
+          : t("toast.clip.failed"),
+      {
+        description: (e as Error).message,
+        duration: 8000,
+        action: (e as Error).message.includes("超时")
+          ? { label: t("action.retry"), onClick: () => void pushOrDownload(draft, op) }
+          : undefined,
+      },
+    );
   }
 }
 
@@ -868,6 +864,14 @@ function TagsInput({
   );
 }
 
+type AIActionMode = "summary" | "tags" | "translate" | "rename";
+
+type AIResultDraft =
+  | { mode: "summary"; title: string; text: string }
+  | { mode: "tags"; title: string; tags: string[] }
+  | { mode: "translate"; title: string; text: string; targetLang: Locale }
+  | { mode: "rename"; title: string; text: string };
+
 function AIPanel({
   draft,
   setDraft,
@@ -877,18 +881,26 @@ function AIPanel({
   setDraft: (d: ClipDraft) => void;
   settings: ClipperSettings;
 }) {
-  const toast = useToast();
-  const [busy, setBusy] = useState<"summary" | "tags" | "translate" | "rename" | null>(null);
+  const [busy, setBusy] = useState<AIActionMode | null>(null);
+  const [result, setResult] = useState<AIResultDraft | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const resultText = result
+    ? result.mode === "tags"
+      ? result.tags.map((tag) => `#${tag}`).join(" ")
+      : result.text
+    : "";
 
   async function callAI(
-    mode: "summary" | "tags" | "translate" | "rename",
-    extra?: { targetLang?: "zh-CN" | "en-US"; instruction?: string },
+    mode: AIActionMode,
+    extra?: { targetLang?: Locale; instruction?: string },
   ) {
     if (!settings.ai) {
-      toast.push({ level: "warning", message: t("toast.ai.noKey") });
+      toast.warn(t("toast.ai.noKey"));
       return;
     }
     setBusy(mode);
+    setResult(null);
     try {
       const r = await send<{ ok: boolean; data: unknown; error?: { message: string } }>("ai:run", {
         request: {
@@ -901,41 +913,86 @@ function AIPanel({
       });
       const resp = r as any;
       if (!resp.ok) {
-        toast.push({
-          level: "error",
-          message: resp.error?.message ?? t("toast.ai.unknown"),
+        toast.error(resp.error?.message ?? t("toast.ai.unknown"), {
           duration: 8000,
           action: { label: t("action.retry"), onClick: () => void callAI(mode, extra) },
         });
         return;
       }
+
       const data = resp.data?.data;
-      if (mode === "summary") {
-        setDraft({ ...draft, aiSummary: String(data ?? "") });
-      } else if (mode === "tags") {
-        setDraft({ ...draft, aiTags: Array.isArray(data) ? data : [] });
+      if (mode === "tags") {
+        setResult({
+          mode,
+          title: t("ai.tags"),
+          tags: Array.isArray(data) ? data.map(String) : [],
+        });
       } else if (mode === "translate") {
-        // 翻译写入 summary 下方（暂存到 aiSummary 末尾）
-        const oldSummary = draft.aiSummary ? `${draft.aiSummary}\n\n` : "";
-        setDraft({
-          ...draft,
-          aiSummary: `${oldSummary}## ${extra?.targetLang === "en-US" ? "EN" : "中文"} 翻译\n${String(data ?? "")}`,
+        const targetLang = extra?.targetLang ?? (settings.locale === "zh-CN" ? "en-US" : "zh-CN");
+        setResult({
+          mode,
+          title: `${t("ai.translate")} ${targetLang === "en-US" ? "EN" : "中文"}`,
+          text: String(data ?? ""),
+          targetLang,
         });
       } else if (mode === "rename") {
-        setDraft({ ...draft, noteTitle: String(data ?? draft.noteTitle) });
+        setResult({ mode, title: t("ai.rename"), text: String(data ?? draft.noteTitle) });
+      } else {
+        setResult({ mode, title: t("ai.summary.medium"), text: String(data ?? "") });
       }
-      toast.push({ level: "success", message: "AI 完成" });
+      toast.success("AI 完成");
     } catch (e) {
-      toast.push({
-        level: "error",
-        message: t("toast.ai.unknown"),
-        detail: (e as Error).message,
+      toast.error(t("toast.ai.unknown"), {
+        description: (e as Error).message,
         duration: 8000,
         action: { label: t("action.retry"), onClick: () => void callAI(mode, extra) },
       });
     } finally {
       setBusy(null);
     }
+  }
+
+  function applyResult(target: "field" | "content") {
+    if (!result) return;
+    if (result.mode === "tags") {
+      setDraft({
+        ...draft,
+        tags: [...new Set([...draft.tags, ...result.tags])],
+        aiTags: [],
+      });
+    } else if (result.mode === "rename") {
+      const title = result.text.trim() || draft.noteTitle;
+      setDraft({
+        ...draft,
+        noteTitle: title,
+        content: { ...draft.content, title },
+      });
+    } else if (result.mode === "summary") {
+      setDraft({ ...draft, aiSummary: result.text });
+    } else if (target === "field") {
+      setDraft({ ...draft, aiTranslation: { lang: result.targetLang, text: result.text } });
+    } else {
+      const text = result.text;
+      setDraft({
+        ...draft,
+        content: {
+          ...draft.content,
+          contentText: text,
+          markdown: text,
+          contentHtml: text,
+          excerpt: text.slice(0, 200),
+          wordCount: text.length,
+          selection: draft.content.selection ? text : draft.content.selection,
+        },
+      });
+    }
+    toast.success("已应用 AI 结果");
+  }
+
+  async function copyResult() {
+    if (!resultText) return;
+    await navigator.clipboard.writeText(resultText);
+    toast.success(t("toast.copy.ok"));
   }
 
   return (
@@ -975,7 +1032,58 @@ function AIPanel({
           onClick={() => callAI("rename")}
         />
       </div>
-      {draft.aiSummary && (
+
+      {result && (
+        <div className="mt-2 rounded-lg border border-violet-100 dark:border-violet-900/50 bg-violet-50/70 dark:bg-violet-950/30 overflow-hidden">
+          <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-violet-100 dark:border-violet-900/50">
+            <span className="text-[11px] font-medium text-violet-700 dark:text-violet-300">
+              {result.title}
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setPreviewOpen(true)}
+                className="px-1.5 py-0.5 rounded text-[10px] text-violet-700 dark:text-violet-300 hover:bg-white/70 dark:hover:bg-ink-900"
+              >
+                预览
+              </button>
+              <button
+                type="button"
+                onClick={() => void copyResult()}
+                className="px-1.5 py-0.5 rounded text-[10px] text-violet-700 dark:text-violet-300 hover:bg-white/70 dark:hover:bg-ink-900"
+              >
+                复制
+              </button>
+            </div>
+          </div>
+          <div className="p-2 text-xs text-ink-700 dark:text-ink-300 whitespace-pre-wrap break-words max-h-40 overflow-y-auto">
+            {resultText}
+          </div>
+          <div className="flex flex-wrap gap-1 px-2 pb-2">
+            <Button size="sm" variant="subtle" onClick={() => applyResult("field")}>
+              <Icon name="check" size={12} />
+              {result.mode === "summary"
+                ? "替换摘要"
+                : result.mode === "tags"
+                  ? "接受标签"
+                  : result.mode === "rename"
+                    ? "替换标题"
+                    : "保存翻译"}
+            </Button>
+            {result.mode === "translate" && (
+              <Button size="sm" variant="ghost" onClick={() => applyResult("content")}>
+                <Icon name="edit" size={12} />
+                替换正文
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" onClick={() => setResult(null)}>
+              丢弃
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {draft.aiSummary && !result && (
         <div className="mt-1 p-2 rounded-md bg-violet-50 dark:bg-violet-950/30 text-xs text-ink-700 dark:text-ink-300 whitespace-pre-wrap">
           {draft.aiSummary}
         </div>
@@ -1001,10 +1109,29 @@ function AIPanel({
           {t("ai.thinking")}
         </div>
       )}
+      <Modal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        title="AI 结果预览"
+        size="lg"
+        footer={
+          <>
+            <Button variant="ghost" size="sm" onClick={() => setPreviewOpen(false)}>
+              关闭
+            </Button>
+            <Button size="sm" onClick={() => void copyResult()}>
+              复制
+            </Button>
+          </>
+        }
+      >
+        <pre className="text-xs font-mono text-ink-700 dark:text-ink-300 whitespace-pre-wrap break-words bg-ink-50 dark:bg-ink-950 rounded-lg p-3">
+          {resultText}
+        </pre>
+      </Modal>
     </div>
   );
 }
-
 function AIButton({
   icon,
   label,
@@ -1082,7 +1209,6 @@ function HistoryTab({ activeId, onOpen }: { activeId?: string; onOpen: (r: ClipR
   const [favOnly, setFavOnly] = useState(false);
   const [items, setItems] = useState<ClipRecord[]>([]);
   const [active, setActive] = useState<ClipRecord | null>(null);
-  const toast = useToast();
 
   const reload = useCallback(async () => {
     const { items } = await send<{ items: ClipRecord[]; total: number }>("clip:list", {
@@ -1113,7 +1239,7 @@ function HistoryTab({ activeId, onOpen }: { activeId?: string; onOpen: (r: ClipR
 
   async function deleteRec(r: ClipRecord) {
     await send("clip:delete", { id: r.id });
-    toast.push({ level: "success", message: "已删除" });
+    toast.success("已删除");
     void reload();
     if (active?.id === r.id) setActive(null);
   }

@@ -16,10 +16,11 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "types": ["chrome", "node", "vite/client"],
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@shared/*": ["src/shared/*"]
+      "@/*": ["./src/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@qingwu/toast": ["../../toast/src/index.ts"],
+      "@qingwu/text-layout": ["../../text-layout/src/index.ts"]
     }
   },
   "include": ["src", "scripts", "vite.config.ts", "vite.config.content.ts"]

@@ -41,7 +41,6 @@ Desktop.ini
 CLAUDE.md
 AGENTS.md
 .project-memory.md
-.cursor/
-.cursorrules
+.agents/
 .github/copilot-instructions.md
 COPILOT.md

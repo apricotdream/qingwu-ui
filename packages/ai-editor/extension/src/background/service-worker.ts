@@ -228,6 +228,7 @@ registerHandler({
         tags: payload.tags,
         aiSummary: payload.aiSummary,
         aiTags: payload.aiTags,
+        extra: { aiTranslation: payload.aiTranslation?.text ?? "" },
       });
       rendered = r.rendered;
       unknownVars = r.unknownVars;
@@ -246,7 +247,7 @@ registerHandler({
       summary: payload.summary,
       aiSummary: payload.aiSummary,
       aiTags: payload.aiTags,
-      aiTranslation: null,
+      aiTranslation: payload.aiTranslation ?? null,
       templateId: tpl?.id ?? "default",
       renderedMarkdown: rendered,
       favorite: false,
@@ -900,7 +901,8 @@ function waitForTabComplete(tabId: number, timeoutMs: number): Promise<void> {
       clearTimeout(timer);
       resolve();
     };
-    const listener = (id: number, info: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => {
+    // @types/chrome 0.2.x 把 tabs.onUpdated 的 changeInfo 类型更名为 OnUpdatedInfo
+    const listener = (id: number, info: chrome.tabs.OnUpdatedInfo, tab: chrome.tabs.Tab) => {
       if (id === tabId && (info.status === "complete" || tab.status === "complete")) {
         finish();
       }
