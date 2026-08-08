@@ -19,8 +19,6 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "ci": "biome check . && turbo build typecheck test size",
-    "changeset": "changeset",
-    "version-packages": "changeset version",
     "publish-check": "bun tooling/publish-check/index.mjs",
     "publish-check:fix": "bun tooling/publish-check/index.mjs --fix",
     "release": "turbo build --filter='./packages/*' && bun run publish-check",
@@ -28,7 +26,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.5",
-    "@changesets/cli": "^2.31.1",
     "turbo": "^2.10.6",
     "typescript": "^7.0.2"
   },
