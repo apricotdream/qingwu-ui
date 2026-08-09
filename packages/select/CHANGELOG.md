@@ -1,4 +1,10 @@
 # @qingwu/select
+## 0.8.0
+
+### Minor Changes
+
+- 版本统一对齐 0.8.0（无功能变更；所有 @qingwu 包版本对齐）
+
 
 ## 0.7.0
 

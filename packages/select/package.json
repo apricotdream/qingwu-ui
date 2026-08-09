@@ -1,6 +1,6 @@
 {
   "name": "@qingwu/select",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Framework-agnostic dropdown select for Qingwu UI — single-select, accordion stagger open animation, disabled options, zero dependencies",
   "type": "module",
   "license": "Apache-2.0",

@@ -20,6 +20,7 @@ import type { ToastOptions, ToastType } from "../components/toast";
 import { subscribeToast, toast } from "../components/toast";
 import { TocPanel } from "../components/toc";
 import { AISelector } from "./ai/components/ai-selector";
+import { flushPendingRemovals } from "./ai/pending-removal";
 import { formatBytes, getDocAttachmentTotal, validateAttachmentFile } from "./attachment-limits";
 import { getEditorExtensions } from "./extensions";
 import { type BubbleMenuAction, getBubbleMenuActions } from "./extensions/bubble-menu";
@@ -39,8 +40,8 @@ const HIGHLIGHT_COLORS = [
   { color: "#ddd6fe", name: "紫" },
 ];
 
-/** AI 面板固定宽度（与 AISelector 内部一致，避免测量偏差） */
-const AI_PANEL_WIDTH = 288;
+/** AI 面板宽度兜底（无法测量编辑器宽度时用，与 AISelector 内部一致） */
+const AI_PANEL_WIDTH_FALLBACK = 288;
 /** 翻转判断用面板高度估算，渲染后 useLayoutEffect 会用真实高度校正 */
 const AI_PANEL_HEIGHT_ESTIMATE = 320;
 
@@ -54,11 +55,16 @@ interface AIPanelLayout {
 }
 
 /** 计算 AI 面板 fixed 定位。调用方必须同步 setState，保证首帧即 fixed，
- *  避免面板先以静态块级元素渲染撑高编辑器导致页面滚动跳变。 */
-function layoutAIPanel(anchor: FloatingPoint, measuredHeight?: number): AIPanelLayout {
+ *  避免面板先以静态块级元素渲染撑高编辑器导致页面滚动跳变。
+ *  宽度默认对齐编辑器根节点（随编辑器宽度），左缘对齐编辑器左缘。 */
+function layoutAIPanel(
+  anchor: FloatingPoint,
+  measuredHeight?: number,
+  opts: { panelWidth?: number; editorLeft?: number } = {},
+): AIPanelLayout {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const pw = Math.min(AI_PANEL_WIDTH, vw - 32);
+  const pw = Math.min(opts.panelWidth || AI_PANEL_WIDTH_FALLBACK, vw - 32);
   const ph = Math.max(measuredHeight || AI_PANEL_HEIGHT_ESTIMATE, 160);
 
   // 移动端：顶部居中全宽
@@ -71,6 +77,10 @@ function layoutAIPanel(anchor: FloatingPoint, measuredHeight?: number): AIPanelL
         right: 8,
         width: "auto",
         zIndex: 9999,
+        maxHeight: "calc(100dvh - 32px)",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       },
       placement: "below",
       arrowLeft: 50,
@@ -78,19 +88,30 @@ function layoutAIPanel(anchor: FloatingPoint, measuredHeight?: number): AIPanelL
   }
 
   const anchorCenter = anchor.left + anchor.width / 2;
-  let left = anchorCenter - pw / 2;
+  // 水平：优先对齐编辑器左缘（宽度随编辑器）；无法测量时以锚点居中兜底
+  let left = typeof opts.editorLeft === "number" ? opts.editorLeft : anchorCenter - pw / 2;
+  left = Math.max(16, Math.min(left, vw - pw - 16));
   const spaceBelow = vh - anchor.top - 16;
   const spaceAbove = anchor.top - 16;
   const placement: AIPanelPlacement =
     spaceBelow < ph + 12 && spaceAbove >= ph + 12 ? "above" : "below";
   let top = placement === "below" ? anchor.top + 10 : anchor.top - ph - 10;
   top = Math.max(16, Math.min(top, vh - ph - 16));
-  left = Math.max(16, Math.min(left, vw - pw - 16));
   // 箭头尽量贴近选区中心，同时夹在面板内避免溢出
   const arrowLeft = Math.max(14, Math.min(((anchorCenter - left) / pw) * 100, 86));
 
   return {
-    style: { position: "fixed", top, left, width: pw, zIndex: 9999 },
+    style: {
+      position: "fixed",
+      top,
+      left,
+      width: pw,
+      zIndex: 9999,
+      maxHeight: "calc(100dvh - 32px)",
+      overflow: "hidden",
+      display: "flex",
+      flexDirection: "column",
+    },
     placement,
     arrowLeft,
   };
@@ -450,6 +471,12 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     (window as any).__editor = editor;
   }, [editor]);
 
+  // 编辑器销毁时 flush 待删孤儿资源（替换产生的孤儿已不在文档中 → 立即删存储）
+  useEffect(() => {
+    if (!editor) return;
+    return () => flushPendingRemovals(editor);
+  }, [editor]);
+
   // 编辑器实例就绪后回调宿主（Web Clipper 接收器据此拿到 editor 调用 insertContent）
   useEffect(() => {
     if (!editor || !onEditorReady) return;
@@ -642,7 +669,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
         anchor = { top: coords.bottom, left: coords.left, width: 0 };
       }
       aiAnchorRef.current = anchor;
-      const layout = layoutAIPanel(anchor);
+      const rect = editorContainerRef.current?.getBoundingClientRect();
+      const layout = layoutAIPanel(anchor, undefined, {
+        panelWidth: rect?.width,
+        editorLeft: rect?.left,
+      });
       setShowAI(true);
       setAiPanelStyle(layout.style);
       setAiPlacement(layout.placement);
@@ -696,7 +727,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     const anchor = aiAnchorRef.current;
     if (!anchor) return;
     const panel = aiPanelRef.current;
-    const layout = layoutAIPanel(anchor, panel?.offsetHeight || undefined);
+    const rect = editorContainerRef.current?.getBoundingClientRect();
+    const layout = layoutAIPanel(anchor, panel?.offsetHeight || undefined, {
+      panelWidth: rect?.width,
+      editorLeft: rect?.left,
+    });
     setAiPlacement(layout.placement);
     setAiArrowLeft(layout.arrowLeft);
     setAiPanelStyle(layout.style);
@@ -709,7 +744,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
       const anchor = aiAnchorRef.current;
       if (!anchor) return;
       const panel = aiPanelRef.current;
-      const layout = layoutAIPanel(anchor, panel?.offsetHeight || undefined);
+      const rect = editorContainerRef.current?.getBoundingClientRect();
+      const layout = layoutAIPanel(anchor, panel?.offsetHeight || undefined, {
+        panelWidth: rect?.width,
+        editorLeft: rect?.left,
+      });
       setAiPlacement(layout.placement);
       setAiArrowLeft(layout.arrowLeft);
       setAiPanelStyle(layout.style);
@@ -1149,8 +1188,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
               <div className="fixed inset-0 z-[9998]" onClick={() => setShowAI(false)} />
               <div
                 ref={aiPanelRef}
+                /* 面板 portal 到 body，不在宿主 data-lenis-prevent 子树内；
+                   Lenis 会劫走内部滚轮 → 面板自身挂 prevent，滚轮放行给原生滚动 */
+                data-lenis-prevent
                 style={aiPanelStyle}
-                className={`ai-panel relative bg-background border border-default-200 rounded-xl shadow-xl${
+                className={`ai-panel relative flex flex-col bg-background border border-default-200 rounded-xl shadow-xl${
                   aiPlacement === "above" ? " ai-panel--above" : ""
                 }`}
                 onClick={(e) => e.stopPropagation()}

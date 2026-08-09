@@ -1,6 +1,6 @@
 {
   "name": "@qingwu/skeleton",
-  "version": "0.6.0",
+  "version": "0.8.0",
   "description": "Qingwu UI Skeleton — runtime DOM-measuring auto skeleton (in-place measurement, portal overlay, compositor-driven shimmer), snapshot-to-static-HTML renderer, zero-dependency",
   "type": "module",
   "license": "Apache-2.0",
