@@ -1,6 +1,6 @@
 {
   "name": "@qingwu/search",
-  "version": "0.6.5",
+  "version": "0.8.0",
   "description": "Framework-agnostic headless search / command-palette component for Qingwu UI — typewriter placeholder, keyboard-first, zero dependencies",
   "type": "module",
   "license": "Apache-2.0",

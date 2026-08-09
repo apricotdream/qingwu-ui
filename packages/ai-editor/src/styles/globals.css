@@ -460,6 +460,20 @@
   }
 }
 
+/* AI 面板内部滚动容器滚动条（流式输出框等）。
+   消费方若全局隐藏 div 滚动条，需自行加作用域例外（如 echo-diary .ai-panel *::-webkit-scrollbar） */
+.ai-panel .ai-selector ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.ai-panel .ai-selector ::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 140, 0.35);
+  border-radius: 999px;
+}
+.ai-panel .ai-selector ::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 140, 0.55);
+}
+
 /* === 鍥剧墖涓婁紶寮圭獥鍔ㄧ敾 === */
 
 @keyframes dialog-in {

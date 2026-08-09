@@ -30,7 +30,7 @@
     "size": "size-limit"
   },
   "dependencies": {
-    "@qingwu/text-layout": "^0.6.0"
+    "@qingwu/text-layout": "^0.8.0"
   },
   "devDependencies": {
     "@qingwu/tsconfig": "workspace:*",
