@@ -12,8 +12,8 @@
  *
  * 用法：
  * ```ts
- * import { AutoSkeleton } from "@qingwu/skeleton";
- * import "@qingwu/skeleton/style.css";
+ * import { AutoSkeleton } from "@apricotdream/skeleton";
+ * import "@apricotdream/skeleton/style.css";
  *
  * const container = document.getElementById("product-card");
  * const skeleton = new AutoSkeleton(container, { loading: true });

@@ -1,4 +1,11 @@
-# @qingwu/search
+# @apricotdream/search
+
+## 0.9.0
+
+### Minor Changes
+
+- 版本统一对齐 0.9.0（无功能变更；首次以 @apricotdream scope 发布，@qingwu → @apricotdream 品牌迁移）
+
 ## 0.8.0
 
 ### Minor Changes
@@ -31,7 +38,7 @@
 
 ### Patch Changes
 
-- 版本统一对齐 0.6.0（无功能变更；`@qingwu/tag-input` 随本版首次发布）
+- 版本统一对齐 0.6.0（无功能变更；`@apricotdream/tag-input` 随本版首次发布）
 
 ## 0.5.0
 
@@ -63,7 +70,7 @@
 
 ### Minor Changes
 
-- 版本统一对齐 0.2.0，API 与 0.1.0 完全兼容，无破坏性变更。框架无关搜索框 / 命令面板组件：打字机占位轮播、`Ctrl/⌘+K` 与 `/` 全局唤起、全键盘导航 + 焦点陷阱、ARIA dialog/combobox/listbox 完整语义、分类筛选、关键词高亮、`destroy()` 完整资源释放。`Typewriter` 打字机组件随主入口一并导出。样式经 `@qingwu/search/style.css` 子路径单独导出。
+- 版本统一对齐 0.2.0，API 与 0.1.0 完全兼容，无破坏性变更。框架无关搜索框 / 命令面板组件：打字机占位轮播、`Ctrl/⌘+K` 与 `/` 全局唤起、全键盘导航 + 焦点陷阱、ARIA dialog/combobox/listbox 完整语义、分类筛选、关键词高亮、`destroy()` 完整资源释放。`Typewriter` 打字机组件随主入口一并导出。样式经 `@apricotdream/search/style.css` 子路径单独导出。
 
 ## 0.1.0
 
@@ -71,5 +78,5 @@
 
 - 首个公开版本 0.1.0。
 
-  - `@qingwu/calendar-core`：headless 日历引擎基座 —— 本地时区语义的纯日期工具（`startOfDay` / `toISODate` / `addDays` / `isSameDay` / `compareDay`）与 v0 类型契约（`CalendarOptions` / `ViewMode` / `SelectionMode` / `DayMeta`）。零依赖、零 DOM 副作用、完全可 tree-shake。
-  - `@qingwu/search`：框架无关搜索框 / 命令面板组件 —— 打字机占位轮播、`Ctrl/⌘+K` 与 `/` 全局唤起、全键盘导航 + 焦点陷阱、ARIA dialog/combobox/listbox 完整语义、分类筛选、关键词高亮、`destroy()` 完整资源释放，样式经 `@qingwu/search/style.css` 子路径单独导出。
+  - `@apricotdream/calendar-core`：headless 日历引擎基座 —— 本地时区语义的纯日期工具（`startOfDay` / `toISODate` / `addDays` / `isSameDay` / `compareDay`）与 v0 类型契约（`CalendarOptions` / `ViewMode` / `SelectionMode` / `DayMeta`）。零依赖、零 DOM 副作用、完全可 tree-shake。
+  - `@apricotdream/search`：框架无关搜索框 / 命令面板组件 —— 打字机占位轮播、`Ctrl/⌘+K` 与 `/` 全局唤起、全键盘导航 + 焦点陷阱、ARIA dialog/combobox/listbox 完整语义、分类筛选、关键词高亮、`destroy()` 完整资源释放，样式经 `@apricotdream/search/style.css` 子路径单独导出。

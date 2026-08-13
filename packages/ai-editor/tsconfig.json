@@ -17,7 +17,7 @@
     "sourceMap": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@qingwu/ai-editor": ["./src/editor/index.ts"]
+      "@apricotdream/ai-editor": ["./src/editor/index.ts"]
     }
   },
   "include": ["src"],

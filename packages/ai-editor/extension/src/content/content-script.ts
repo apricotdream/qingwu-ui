@@ -226,13 +226,7 @@ const DRAG_THRESHOLD = 5;
         dragged = false;
         return;
       }
-      chrome.runtime
-        .sendMessage({
-          id: crypto.randomUUID(),
-          kind: "tab:open-sidepanel",
-          payload: null,
-        })
-        .catch(() => {});
+      openSidePanelPage();
       void clipPageWithToast();
     });
 
@@ -243,6 +237,22 @@ const DRAG_THRESHOLD = 5;
     });
 
     document.documentElement.appendChild(fab);
+  }
+
+  function openSidePanelPage() {
+    chrome.runtime.sendMessage(
+      {
+        id: crypto.randomUUID(),
+        kind: "tab:open-sidepanel",
+        payload: null,
+      },
+      (resp: { ok?: boolean; error?: { message?: string } } | undefined) => {
+        const error = chrome.runtime.lastError?.message || resp?.error?.message;
+        if (error || !resp?.ok) {
+          showToast(`右侧框打开失败：${error ?? "请点击扩展图标打开侧栏"}`, "error", 5000);
+        }
+      },
+    );
   }
 
   function extractFallbackDraft() {
@@ -258,7 +268,7 @@ const DRAG_THRESHOLD = 5;
       title,
       siteName: location.hostname,
       excerpt: text.slice(0, 200),
-      contentHtml: "",
+      contentHtml: text || location.href,
       contentText: text,
       markdown,
       images: [],

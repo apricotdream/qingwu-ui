@@ -1,8 +1,8 @@
 "use client";
 
-import { TagInput } from "@qingwu/tag-input";
+import { TagInput } from "@apricotdream/tag-input";
 import { useEffect, useRef, useState } from "react";
-import "@qingwu/tag-input/style.css";
+import "@apricotdream/tag-input/style.css";
 import DemoCard from "@/components/DemoCard";
 import { COMPONENT_SECTIONS } from "@/docs.config";
 
@@ -170,7 +170,7 @@ function CollapseSection() {
 
   return (
     <section>
-      <div className="tag-input-section-title">展开 / 收起 · @qingwu/text-layout</div>
+      <div className="tag-input-section-title">展开 / 收起 · @apricotdream/text-layout</div>
       <div className="qti-demo-basic">
         <div ref={ref} />
       </div>
@@ -249,8 +249,8 @@ function EnterCreateSection() {
 
 export default function TagInputPage() {
   const react = [
-    'import { TagInput } from "@qingwu/tag-input";',
-    'import "@qingwu/tag-input/style.css";',
+    'import { TagInput } from "@apricotdream/tag-input";',
+    'import "@apricotdream/tag-input/style.css";',
     "",
     "// 基础用法：点击标签填入输入框（逗号分隔），",
     "// 已插入的标签从快捷栏消失，删除后重现",
@@ -291,19 +291,19 @@ export default function TagInputPage() {
 
   const html = [
     '<script type="module">',
-    '  import { TagInput } from "https://unpkg.com/@qingwu/tag-input";',
+    '  import { TagInput } from "https://unpkg.com/@apricotdream/tag-input";',
     '  new TagInput(document.querySelector("#app"), {',
     '    defaultTags: ["React", "Vue"],',
     "  });",
     "</script>",
-    '<link rel="stylesheet" href="https://unpkg.com/@qingwu/tag-input/style.css" />',
+    '<link rel="stylesheet" href="https://unpkg.com/@apricotdream/tag-input/style.css" />',
   ].join("\n");
 
   const vue = [
     '<script setup lang="ts">',
     'import { onMounted, onBeforeUnmount, ref } from "vue";',
-    'import { TagInput } from "@qingwu/tag-input";',
-    'import "@qingwu/tag-input/style.css";',
+    'import { TagInput } from "@apricotdream/tag-input";',
+    'import "@apricotdream/tag-input/style.css";',
     "",
     "const el = ref();",
     "let ti: TagInput;",

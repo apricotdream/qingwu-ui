@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar } from "@qingwu/calendar";
+import { Calendar } from "@apricotdream/calendar";
 import { useEffect, useRef } from "react";
 
 export default function CalendarPopup({

@@ -1,4 +1,10 @@
-# @qingwu/calendar
+# @apricotdream/calendar
+## 0.9.0
+
+### Minor Changes
+
+- 新增 `dateOnly` 选项：仅选日期模式，隐藏时分秒时间行，`onChange` 回发 `YYYY-MM-DD`（默认仍回发完整 `YYYY-MM-DD HH:mm:ss`）。适用于截止日期、生日等纯日期场景；`input`/`getSelectedDate`/取消回滚同步为 date-only 格式。无破坏性变更。
+
 ## 0.8.0
 
 ### Minor Changes
@@ -45,7 +51,7 @@
 
 ### Patch Changes
 
-- 版本统一对齐 0.6.0（无功能变更；`@qingwu/tag-input` 随本版首次发布）
+- 版本统一对齐 0.6.0（无功能变更；`@apricotdream/tag-input` 随本版首次发布）
 
 ## 0.5.0
 
@@ -64,13 +70,13 @@
 ### Minor Changes
 
 - 版本统一对齐 0.3.0，API 完全兼容，无行为变更。
-- **合并 `@qingwu/calendar-core` 入 `@qingwu/calendar`**：core 包仅有 5 个日期工具且本包仅引用其 `DayMeta` 类型（dayRenderer/RichDayMeta/selectedDetail 均为从未生效的死代码），判定独立包无必要，删除 core 包。
+- **合并 `@apricotdream/calendar-core` 入 `@apricotdream/calendar`**：core 包仅有 5 个日期工具且本包仅引用其 `DayMeta` 类型（dayRenderer/RichDayMeta/selectedDetail 均为从未生效的死代码），判定独立包无必要，删除 core 包。
 
   - 移除 `CalendarUiOptions.dayRenderer` 选项与 `RichDayMeta` 导出类型
-  - `@qingwu/calendar-core` 不再发布，日期工具与类型契约不再对外提供
+  - `@apricotdream/calendar-core` 不再发布，日期工具与类型契约不再对外提供
 
 ## 0.2.0
 
 ### Minor Changes
 
-- 首个公开版本 0.2.0。自渲染日历组件 `Calendar` —— 农历（`solarToLunar` / `lunarToSolar` / `formatLunarDate` / `getLunarMonthName` / `getLunarDayName` / `getYearGanzhi`）、二十四节气（`getSolarTerm` / `getNearbySolarTerms` / `getSolarTermDetail`）、节日（`getLunarFestival` / `getSolarFestival`）与黄历宜忌（`getAlmanac`）。框架无关、零 DOM 副作用，样式经 `@qingwu/calendar/style.css` 子路径单独导出；运行时依赖 `@qingwu/calendar-core`（`^0.2.0`）。
+- 首个公开版本 0.2.0。自渲染日历组件 `Calendar` —— 农历（`solarToLunar` / `lunarToSolar` / `formatLunarDate` / `getLunarMonthName` / `getLunarDayName` / `getYearGanzhi`）、二十四节气（`getSolarTerm` / `getNearbySolarTerms` / `getSolarTermDetail`）、节日（`getLunarFestival` / `getSolarFestival`）与黄历宜忌（`getAlmanac`）。框架无关、零 DOM 副作用，样式经 `@apricotdream/calendar/style.css` 子路径单独导出；运行时依赖 `@apricotdream/calendar-core`（`^0.2.0`）。

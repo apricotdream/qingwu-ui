@@ -58,6 +58,8 @@ export class Calendar {
   /* ---- 配置 ---- */
   private root: HTMLElement;
   private readonly mode: CalendarMode;
+  /** dateOnly：仅选日期，隐藏时分秒输入，onChange 回发 YYYY-MM-DD */
+  private readonly dateOnly: boolean;
   private selected: Date;
   private viewDate: Date; // 当前视图的年月
   private minDate: Date | null;
@@ -121,6 +123,7 @@ export class Calendar {
   constructor(root: HTMLElement, opts: CalendarUiOptions = {}) {
     this.root = root;
     this.mode = opts.mode ?? "modal";
+    this.dateOnly = opts.dateOnly ?? false;
     this.selected = toDate(opts.selected) ?? new Date();
     this.viewDate = new Date(this.selected);
     this.viewDate.setDate(1);
@@ -286,6 +289,8 @@ export class Calendar {
       zeroBtn,
       endBtn,
     );
+    /* dateOnly：隐藏时间行（元素保留，renderTime 仍安全引用） */
+    this.timeRow.hidden = this.dateOnly;
     this.mainArea.append(this.timeRow);
 
     /* 底部操作栏（modal / popover 统一提交制：点日期只更新面板，确认才回发 onChange） */
@@ -553,9 +558,10 @@ export class Calendar {
     this.close();
   }
 
-  /** 获取当前选中日期（含时分秒） */
+  /** 获取当前选中日期；dateOnly 回 `YYYY-MM-DD`，否则含时分秒 */
   getSelectedDate(): string {
     const d = this.selected;
+    if (this.dateOnly) return formatDate(d);
     const pad = (n: number) => String(n).padStart(2, "0");
     return `${formatDate(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }
@@ -933,6 +939,10 @@ export class Calendar {
 
   private syncInput(): void {
     const d = this.selected;
+    if (this.dateOnly) {
+      this.input.value = formatDate(this.selected);
+      return;
+    }
     const pad = (n: number) => String(n).padStart(2, "0");
     this.input.value = `${formatDate(this.selected)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }

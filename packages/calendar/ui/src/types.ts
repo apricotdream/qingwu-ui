@@ -19,6 +19,8 @@ export type CalendarMode = "modal" | "popover";
 export interface CalendarUiOptions {
   /** 展示形态：modal（默认，全屏居中弹窗）/ popover（紧凑浮层，锚定输入框下方） */
   mode?: CalendarMode;
+  /** 仅选日期：隐藏时分秒输入，`onChange` 回发 `YYYY-MM-DD`（默认 false，回发完整 `YYYY-MM-DD HH:mm:ss`） */
+  dateOnly?: boolean;
   /** 初始选中日期 */
   selected?: Date | string;
   /** 最小可选日期 */

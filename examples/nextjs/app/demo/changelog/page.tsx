@@ -3,13 +3,85 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "0.9.0",
+    date: "2026-08-12",
+    tag: "十二包对齐 · @apricotdream scope 首发",
+    changes: [
+      {
+        type: "feat",
+        text: "新增 @apricotdream/notifications 通知铃铛组件：铃铛触发器 + 未读红点徽标 + 手风琴错峰下拉面板，ARIA menu/menuitem 全键盘导航，空态 / 自定义渲染 / 受控更新 / 向上翻转",
+      },
+      {
+        type: "feat",
+        text: "@apricotdream/calendar 新增 dateOnly 模式：仅选日期，隐藏时分秒时间行，onChange 回发 YYYY-MM-DD（默认仍回发完整 datetime）",
+      },
+      {
+        type: "improve",
+        text: "十二包版本统一对齐 0.9.0，首次以 @apricotdream scope 发布（品牌自 @qingwu 迁移）；演示页新增 Notifications 组件页与 API 属性表",
+      },
+    ],
+  },
+  {
+    version: "0.8.0",
+    date: "2026-08-09",
+    tag: "十一包对齐 · ai-editor 增强",
+    changes: [
+      {
+        type: "feat",
+        text: "ai-editor AI 面板宽度随编辑器自适应、左缘对齐，高度钳进视口避免滚动跳变",
+      },
+      {
+        type: "feat",
+        text: "ai-editor AI 替换（选中 / 全文）前弹确认弹窗：列出本次将被移除的媒体节点（图片 / 附件 / 视频 / 音频）",
+      },
+      {
+        type: "feat",
+        text: "ai-editor 替换后孤儿媒体资源 30s 延迟删除（undo 可救回）；编辑器销毁时立即 flush 剩余孤儿",
+      },
+      {
+        type: "improve",
+        text: "十一包版本统一对齐 0.8.0（select / action-menu 随本版首次发布）",
+      },
+    ],
+  },
+  {
+    version: "0.7.3",
+    date: "2026-08-07",
+    tag: "ai-editor AI 面板锚定",
+    changes: [
+      {
+        type: "improve",
+        text: "ai-editor AI 面板锚定工具栏按钮：点击 AI 按钮时面板贴近按钮下沿弹出（createPortal 挂载）",
+      },
+    ],
+  },
+  {
+    version: "0.7.2",
+    date: "2026-08-06",
+    tag: "外部 Markdown 图片解析",
+    changes: [
+      {
+        type: "feat",
+        text: "ai-editor 粘贴外部 Markdown（Obsidian / Typora）时，本地相对路径图片 / 附件自动检测与解析（RelativeMedia 扩展）",
+      },
+      {
+        type: "improve",
+        text: "Obsidian [[wiki]] 粘贴不再转 base64 内联，统一 objectURL 占位预览 → 上传 → 换持久 URL 管线",
+      },
+      {
+        type: "fix",
+        text: "AI 模型调用显式走 openai.chat()（/chat/completions），修复 DeepSeek / 通义 / GLM 等兼容端点 404",
+      },
+    ],
+  },
+  {
     version: "0.6.0",
     date: "2026-08-02",
     tag: "TagInput 首发 · 九包对齐",
     changes: [
       {
         type: "feat",
-        text: "新增 @qingwu/tag-input 标签快捷插入组件：输入框 + 标签快捷栏，点击标签自动填入（逗号分隔），已插入自动隐藏、删除后重现",
+        text: "新增 @apricotdream/tag-input 标签快捷插入组件：输入框 + 标签快捷栏，点击标签自动填入（逗号分隔），已插入自动隐藏、删除后重现",
       },
       {
         type: "feat",
@@ -40,7 +112,7 @@ const VERSIONS = [
     changes: [
       {
         type: "feat",
-        text: "@qingwu/skeleton 块级渐变位移：每块独立 ::before 渐变层 transform 滑动（合成器线程零 repaint），错峰级联（负延迟，staggerDelay 可配）",
+        text: "@apricotdream/skeleton 块级渐变位移：每块独立 ::before 渐变层 transform 滑动（合成器线程零 repaint），错峰级联（负延迟，staggerDelay 可配）",
       },
       {
         type: "feat",
@@ -71,11 +143,11 @@ const VERSIONS = [
     changes: [
       {
         type: "feat",
-        text: "@qingwu/editor 更名 @qingwu/ai-editor，Toast 解耦为 onToast 事件通道",
+        text: "@apricotdream/editor 更名 @apricotdream/ai-editor，Toast 解耦为 onToast 事件通道",
       },
       {
         type: "feat",
-        text: "@qingwu/upload 新增 URL 批量导入；@qingwu/toast 默认 top-center + 关键词强调 + error 震动；@qingwu/search 关闭键/清空键内嵌、遮罩挂 body",
+        text: "@apricotdream/upload 新增 URL 批量导入；@apricotdream/toast 默认 top-center + 关键词强调 + error 震动；@apricotdream/search 关闭键/清空键内嵌、遮罩挂 body",
       },
       { type: "improve", text: "文档站 EP 化改造；八包全部对齐 0.5.0（calendar 直升）" },
     ],
@@ -87,7 +159,7 @@ const VERSIONS = [
     changes: [
       {
         type: "feat",
-        text: "新增 @qingwu/toast 轻提示组件：零依赖、纯 TypeScript + 原生 DOM 渲染",
+        text: "新增 @apricotdream/toast 轻提示组件：零依赖、纯 TypeScript + 原生 DOM 渲染",
       },
       {
         type: "feat",
@@ -143,7 +215,7 @@ const VERSIONS = [
     changes: [
       {
         type: "feat",
-        text: "新增 @qingwu/upload 图片上传组件：拖拽区 / 按钮两种触发形态，按钮形态复用 @qingwu/button",
+        text: "新增 @apricotdream/upload 图片上传组件：拖拽区 / 按钮两种触发形态，按钮形态复用 @apricotdream/button",
       },
       {
         type: "feat",
@@ -164,19 +236,19 @@ const VERSIONS = [
       { type: "feat", text: "首次发布青梧 UI 组件库，MIT 协议开源" },
       {
         type: "feat",
-        text: "@qingwu/button 按钮：胶囊形（pill）风格，default / primary / amber / icon 四种变体，纯 DOM + CSS",
+        text: "@apricotdream/button 按钮：胶囊形（pill）风格，default / primary / amber / icon 四种变体，纯 DOM + CSS",
       },
       {
         type: "feat",
-        text: "@qingwu/editor 编辑器：Tiptap/ProseMirror 内核，斜杠命令、AI 写作助手（OpenAI/DeepSeek/Qwen）、代码高亮、i18n、Web Clipper",
+        text: "@apricotdream/editor 编辑器：Tiptap/ProseMirror 内核，斜杠命令、AI 写作助手（OpenAI/DeepSeek/Qwen）、代码高亮、i18n、Web Clipper",
       },
       {
         type: "feat",
-        text: "@qingwu/search 搜索：打字机占位轮播、Ctrl/⌘+K 全局唤起、全键盘导航+焦点陷阱、ARIA 完整语义、分类筛选",
+        text: "@apricotdream/search 搜索：打字机占位轮播、Ctrl/⌘+K 全局唤起、全键盘导航+焦点陷阱、ARIA 完整语义、分类筛选",
       },
       {
         type: "feat",
-        text: "@qingwu/calendar-core 日历引擎：headless 纯日期工具，零依赖零 DOM 副作用，tree-shakeable",
+        text: "@apricotdream/calendar-core 日历引擎：headless 纯日期工具，零依赖零 DOM 副作用，tree-shakeable",
       },
     ],
   },
@@ -187,7 +259,7 @@ const VERSIONS = [
     changes: [
       {
         type: "feat",
-        text: "发布 @qingwu/calendar-core@0.1.0 与 @qingwu/search@0.1.0（私有 Nexus registry）",
+        text: "发布 @apricotdream/calendar-core@0.1.0 与 @apricotdream/search@0.1.0（私有 Nexus registry）",
       },
       {
         type: "feat",

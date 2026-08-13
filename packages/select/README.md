@@ -1,4 +1,4 @@
-# @qingwu/select
+# @apricotdream/select
 
 [青梧UI](https://github.com/apricotdream/qingwu-ui) 的 **下拉选择器组件** —— 框架无关，纯 DOM + CSS，零依赖。
 
@@ -13,15 +13,15 @@
 ## 安装
 
 ```bash
-npm install @qingwu/select
-# or: pnpm add @qingwu/select / bun add @qingwu/select
+npm install @apricotdream/select
+# or: pnpm add @apricotdream/select / bun add @apricotdream/select
 ```
 
 ## 使用
 
 ```ts
-import { Select } from "@qingwu/select";
-import "@qingwu/select/style.css";
+import { Select } from "@apricotdream/select";
+import "@apricotdream/select/style.css";
 
 const el = document.querySelector("#root");
 const select = new Select(el, {

@@ -1,5 +1,5 @@
 /** 扩展选项页：配置推送方式、HTTP 端点、AI、模板与语言等。 */
-import { toast } from "@qingwu/toast";
+import { toast } from "@apricotdream/toast";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
@@ -396,9 +396,12 @@ function FabSettings() {
 const PROVIDER_PRESETS: Partial<
   Record<AIProviderConfig["kind"], { baseURL: string; model: string }>
 > = {
-  openai: { baseURL: "https://api.openai.com/v1", model: "gpt-4o-mini" },
-  deepseek: { baseURL: "https://api.deepseek.com", model: "deepseek-chat" },
-  qwen: { baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1", model: "qwen-plus" },
+  openai: { baseURL: "https://api.openai.com/v1", model: "gpt-5.6-luna" },
+  deepseek: { baseURL: "https://api.deepseek.com", model: "deepseek-v4-flash" },
+  qwen: { baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1", model: "qwen3.7-plus" },
+  moonshot: { baseURL: "https://api.moonshot.ai/v1", model: "kimi-k2.6" },
+  zhipu: { baseURL: "https://open.bigmodel.cn/api/paas/v4", model: "glm-5.2" },
+  minimax: { baseURL: "https://api.minimax.io/v1", model: "MiniMax-M3" },
 };
 
 function AISection({
@@ -413,19 +416,16 @@ function AISection({
     kind: "openai" as const,
     baseURL: "https://api.openai.com/v1",
     apiKey: "",
-    model: "gpt-4o-mini",
+    model: "gpt-5.6-luna",
     temperature: 0.4,
   };
 
   async function test() {
     setTesting(true);
     try {
-      const r = await send<{ ok: boolean; data?: { data: string }; error?: { message: string } }>(
-        "ai:test",
-        cfg,
-      );
-      if (r.ok && r.data?.data) {
-        toast.success("连接成功", { description: `返回：${r.data.data.slice(0, 80)}` });
+      const r = await send<{ ok: boolean; data?: string; error?: { message: string } }>("ai:test", cfg);
+      if (r.ok && r.data) {
+        toast.success("连接成功", { description: `返回：${r.data.slice(0, 80)}` });
       } else {
         toast.error("连接失败", {
           description: r.error?.message ?? "未知错误",
@@ -461,6 +461,9 @@ function AISection({
           <option value="openai">OpenAI 兼容（OpenAI / DeepSeek / Qwen / Moonshot 等）</option>
           <option value="deepseek">DeepSeek（预设）</option>
           <option value="qwen">通义千问（预设）</option>
+          <option value="moonshot">Kimi / Moonshot（预设）</option>
+          <option value="zhipu">智谱 GLM（预设）</option>
+          <option value="minimax">MiniMax（预设）</option>
           <option value="chrome-built-in">Chrome 内置 AI（Gemini Nano）</option>
           <option value="custom">自定义</option>
         </Select>
@@ -468,10 +471,10 @@ function AISection({
 
       {cfg.kind !== "chrome-built-in" && (
         <>
-          <Field label={t("settings.ai.baseURL")} hint="自动补全 /v1/chat/completions">
+          <Field label={t("settings.ai.baseURL")} hint="DeepSeek 直连 /chat/completions，其他兼容接口按需补齐 /v1">
             <Input
               value={cfg.baseURL ?? ""}
-              placeholder="https://api.deepseek.com/v1 或 https://api.openai.com/v1"
+              placeholder="https://api.deepseek.com 或 https://api.openai.com/v1"
               onChange={(e) => onSave({ ...settings, ai: { ...cfg, baseURL: e.target.value } })}
             />
           </Field>
@@ -487,7 +490,7 @@ function AISection({
             <Field label={t("settings.ai.model")}>
               <Input
                 value={cfg.model ?? ""}
-                placeholder="deepseek-chat / qwen-plus / gpt-4o-mini"
+                placeholder="deepseek-v4-flash / qwen3.7-plus / gpt-5.6-luna"
                 onChange={(e) => onSave({ ...settings, ai: { ...cfg, model: e.target.value } })}
               />
             </Field>
@@ -510,8 +513,7 @@ function AISection({
           <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-[11px] p-2 rounded-md flex gap-1.5">
             <Icon name="info" size={12} className="mt-0.5 shrink-0" />
             <span>
-              选择「DeepSeek（预设）」或「通义千问（预设）」会自动填入 baseURL 与模型。插件会自动补全{" "}
-              <code>/v1/chat/completions</code>，不会出现 404。
+              选择「DeepSeek（预设）」或「通义千问（预设）」会自动填入 baseURL 与模型。插件会自动识别 DeepSeek 与 OpenAI 兼容接口路径。
             </span>
           </div>
         </>

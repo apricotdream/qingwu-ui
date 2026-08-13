@@ -1,5 +1,5 @@
 /** 扩展弹窗：快捷入口，触发整页 / 选区剪藏并打开侧边栏。 */
-import { toast } from "@qingwu/toast";
+import { toast } from "@apricotdream/toast";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { setLocale, t } from "../shared/i18n";

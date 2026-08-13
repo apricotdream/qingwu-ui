@@ -45,7 +45,7 @@ export type {
 } from "./clipper/receiver";
 // Web Clipper 接收器（让浏览器扩展可推送剪藏到编辑器）
 // 仅导出纯浏览器实现；Node HTTP 接收器（startClipperReceiver / stopClipperReceiver）
-// 经独立子入口 `@qingwu/ai-editor/clipper` 暴露，避免 node:http 进入浏览器产物。
+// 经独立子入口 `@apricotdream/ai-editor/clipper` 暴露，避免 node:http 进入浏览器产物。
 export { startBrowserClipperReceiver } from "./clipper/receiver";
 // 扩展
 export {

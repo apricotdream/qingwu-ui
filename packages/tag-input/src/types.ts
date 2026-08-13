@@ -84,7 +84,7 @@ export interface TagInputOptions {
   /** 自定义类名（追加到根容器） */
   className?: string;
   /**
-   * CSS font 字符串，供 @qingwu/text-layout 测量（如 "14px system-ui"）；
+   * CSS font 字符串，供 @apricotdream/text-layout 测量（如 "14px system-ui"）；
    * 不传则读取容器 computed style（字体加载完成后自动重排）
    */
   font?: string;

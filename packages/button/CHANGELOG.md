@@ -1,4 +1,11 @@
-# @qingwu/button
+# @apricotdream/button
+
+## 0.9.0
+
+### Minor Changes
+
+- 版本统一对齐 0.9.0（无功能变更；首次以 @apricotdream scope 发布，@qingwu → @apricotdream 品牌迁移）
+
 ## 0.8.0
 
 ### Minor Changes
@@ -10,7 +17,7 @@
 
 ### Patch Changes
 
-- 版本统一对齐 0.6.0（无功能变更；`@qingwu/tag-input` 随本版首次发布）
+- 版本统一对齐 0.6.0（无功能变更；`@apricotdream/tag-input` 随本版首次发布）
 
 ## 0.5.0
 
@@ -34,10 +41,10 @@
 
 ### Minor Changes
 
-- 版本统一对齐 0.3.0，API 完全兼容。按钮样式现随 `@qingwu/upload` 的 style.css 合并导出（upload 按钮触发形态无需单独引入 `@qingwu/button/style.css`）。
+- 版本统一对齐 0.3.0，API 完全兼容。按钮样式现随 `@apricotdream/upload` 的 style.css 合并导出（upload 按钮触发形态无需单独引入 `@apricotdream/button/style.css`）。
 
 ## 0.2.0
 
 ### Minor Changes
 
-- 首个公开版本 0.2.0。青梧 UI 通用按钮 —— 胶囊形（pill）风格，`default` / `primary` / `amber` / `icon` 四种变体，纯 DOM + CSS 实现，零依赖、框架无关。样式经 `@qingwu/button/style.css` 子路径单独导出。
+- 首个公开版本 0.2.0。青梧 UI 通用按钮 —— 胶囊形（pill）风格，`default` / `primary` / `amber` / `icon` 四种变体，纯 DOM + CSS 实现，零依赖、框架无关。样式经 `@apricotdream/button/style.css` 子路径单独导出。

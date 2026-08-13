@@ -336,6 +336,86 @@ describe("Calendar · modal 提交制", () => {
   });
 });
 
+describe("Calendar · dateOnly 模式", () => {
+  it("隐藏时分秒时间行", () => {
+    const cal = new Calendar(mount(), { dateOnly: true, selected: "2026-08-01" });
+    cal.open();
+    const time = document.querySelector<HTMLElement>(".qw-cal-time");
+    expect(time).not.toBeNull();
+    expect(time?.hidden).toBe(true);
+    cal.destroy();
+  });
+
+  it("非 dateOnly 仍显示时间行", () => {
+    const cal = new Calendar(mount(), { selected: "2026-08-01" });
+    cal.open();
+    const time = document.querySelector<HTMLElement>(".qw-cal-time");
+    expect(time?.hidden).toBe(false);
+    cal.destroy();
+  });
+
+  it("dateOnly 输入框与 onChange 均回 YYYY-MM-DD（确认回发）", () => {
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
+    const onChange = vi.fn();
+    const cal = new Calendar(mount(), {
+      mode: "popover",
+      dateOnly: true,
+      selected: "2026-08-01",
+      onChange,
+    });
+    cal.open();
+    const input = document.querySelector<HTMLInputElement>(".qw-cal-input")!;
+    expect(input.value).toBe("2026-08-01");
+
+    document
+      .querySelector(".qw-cal-grid")!
+      .querySelector<HTMLElement>('[data-date="2026-08-15"]')!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    /* 提交制：点日期不回发，但输入框实时更新为 date-only */
+    expect(onChange).not.toHaveBeenCalled();
+    expect(input.value).toBe("2026-08-15");
+
+    document
+      .querySelector<HTMLButtonElement>(".qw-cal-confirm-btn")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith("2026-08-15");
+    cal.destroy();
+  });
+
+  it("dateOnly 取消回滚到打开前 date-only 值且不回发", () => {
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
+    const onChange = vi.fn();
+    const cal = new Calendar(mount(), {
+      mode: "popover",
+      dateOnly: true,
+      selected: "2026-08-01",
+      onChange,
+    });
+    cal.open();
+    const input = document.querySelector<HTMLInputElement>(".qw-cal-input")!;
+
+    document
+      .querySelector(".qw-cal-grid")!
+      .querySelector<HTMLElement>('[data-date="2026-08-20"]')!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(input.value).toBe("2026-08-20");
+
+    document
+      .querySelector<HTMLButtonElement>(".qw-cal-cancel-btn")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(input.value).toBe("2026-08-01");
+    cal.destroy();
+  });
+});
+
 describe("Calendar · 销毁清理", () => {
   it("destroy 调用所有 Provider 的 destroy 钩子", () => {
     const dmDestroy = vi.fn();

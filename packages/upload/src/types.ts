@@ -52,7 +52,7 @@ export type UploadFn = (file: File, onProgress: (percent: number) => void) => Pr
 export type UploadTrigger = "dropzone" | "button";
 
 export interface UploadOptions {
-  /** 触发形态：大拖拽区（默认）或小按钮（复用 @qingwu/button 样式） */
+  /** 触发形态：大拖拽区（默认）或小按钮（复用 @apricotdream/button 样式） */
   trigger?: UploadTrigger;
   /** 接受的类型，默认 ["image/*"] */
   accept?: string[];

@@ -1,4 +1,4 @@
 {
-  "extends": "@qingwu/tsconfig/base.json",
+  "extends": "@apricotdream/tsconfig/base.json",
   "include": ["src"]
 }

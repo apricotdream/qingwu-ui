@@ -1,6 +1,6 @@
 {
-  "name": "@qingwu/upload",
-  "version": "0.8.0",
+  "name": "@apricotdream/upload",
+  "version": "0.9.0",
   "description": "Qingwu UI Image Upload component — drag & drop, per-format progress bar, client-side compression to original / webp / avif, zero dependencies",
   "type": "module",
   "license": "Apache-2.0",
@@ -29,10 +29,10 @@
     "size": "size-limit"
   },
   "dependencies": {
-    "@qingwu/button": "^0.8.0"
+    "@apricotdream/button": "^0.9.0-beta"
   },
   "devDependencies": {
-    "@qingwu/tsconfig": "workspace:*",
+    "@apricotdream/tsconfig": "workspace:*",
     "@size-limit/preset-small-lib": "^13.0.1",
     "happy-dom": "^20.11.1",
     "size-limit": "^13.0.1",

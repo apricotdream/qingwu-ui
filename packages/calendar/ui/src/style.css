@@ -552,6 +552,10 @@
   padding-top: 14px;
   border-top: 1px solid var(--qw-line);
 }
+/* dateOnly：time 行隐藏（父类 display:flex 优先于 UA 的 [hidden] 默认规则，需显式覆盖） */
+.qw-cal-time[hidden] {
+  display: none;
+}
 .qw-cal-time-label {
   font-size: 12px;
   font-weight: 600;

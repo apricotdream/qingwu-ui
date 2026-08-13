@@ -1,6 +1,6 @@
 "use client";
 
-import { AutoSkeleton, extractElementInfo, renderSkeletonSnapshot } from "@qingwu/skeleton";
+import { AutoSkeleton, extractElementInfo, renderSkeletonSnapshot } from "@apricotdream/skeleton";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DemoCard from "@/components/DemoCard";
 import { COMPONENT_SECTIONS } from "@/docs.config";
@@ -168,8 +168,8 @@ function ProductCardDemo() {
       snippets={{
         html: '<!-- 只需写一次真实布局 -->\n<div class="product-card">\n  <img ... />\n  <h3>2025 春季新款连衣裙</h3>\n  <span>¥299</span>\n</div>',
         react:
-          'import { AutoSkeleton } from "@qingwu/skeleton";\nimport "@qingwu/skeleton/style.css";\n\nuseEffect(() => {\n  const el = document.getElementById("card")!;\n  el.innerHTML = cardHTML;\n  const sk = new AutoSkeleton(el, { loading: true });\n  // 数据加载完成后\n  sk.update({ loading: false });\n  return () => sk.destroy();\n}, []);',
-        vue: '<script setup>\nimport { ref, onMounted, onUnmounted } from "vue";\nimport { AutoSkeleton } from "@qingwu/skeleton";\nimport "@qingwu/skeleton/style.css";\n\nconst cardRef = ref<HTMLElement>();\nlet sk: AutoSkeleton | null = null;\n\nonMounted(() => {\n  if (!cardRef.value) return;\n  cardRef.value.innerHTML = cardHTML;\n  sk = new AutoSkeleton(cardRef.value, { loading: true });\n  // 数据加载完成后\n  sk.update({ loading: false });\n});\n\nonUnmounted(() => sk?.destroy());\n</script>\n\n<template>\n  <div ref="cardRef" />\n</template>',
+          'import { AutoSkeleton } from "@apricotdream/skeleton";\nimport "@apricotdream/skeleton/style.css";\n\nuseEffect(() => {\n  const el = document.getElementById("card")!;\n  el.innerHTML = cardHTML;\n  const sk = new AutoSkeleton(el, { loading: true });\n  // 数据加载完成后\n  sk.update({ loading: false });\n  return () => sk.destroy();\n}, []);',
+        vue: '<script setup>\nimport { ref, onMounted, onUnmounted } from "vue";\nimport { AutoSkeleton } from "@apricotdream/skeleton";\nimport "@apricotdream/skeleton/style.css";\n\nconst cardRef = ref<HTMLElement>();\nlet sk: AutoSkeleton | null = null;\n\nonMounted(() => {\n  if (!cardRef.value) return;\n  cardRef.value.innerHTML = cardHTML;\n  sk = new AutoSkeleton(cardRef.value, { loading: true });\n  // 数据加载完成后\n  sk.update({ loading: false });\n});\n\nonUnmounted(() => sk?.destroy());\n</script>\n\n<template>\n  <div ref="cardRef" />\n</template>',
       }}
     >
       <div className="sk-stage">
@@ -220,8 +220,8 @@ function FormDemo() {
       snippets={{
         html: '<form>\n  <input placeholder="姓名" />\n  <select>...</select>\n  <textarea />\n  <button>提交</button>\n</form>',
         react:
-          'import { AutoSkeleton } from "@qingwu/skeleton";\n\nuseEffect(() => {\n  const el = document.getElementById("form")!;\n  el.innerHTML = formHTML;\n  const sk = new AutoSkeleton(el, { loading: true });\n  return () => sk.destroy();\n}, []);\n\n// 数据就绪\nsk.update({ loading: false });',
-        vue: '<script setup>\nimport { ref, onMounted, onUnmounted } from "vue";\nimport { AutoSkeleton } from "@qingwu/skeleton";\nimport "@qingwu/skeleton/style.css";\n\nconst formRef = ref<HTMLElement>();\nconst sk = ref<AutoSkeleton>();\n\nonMounted(() => {\n  formRef.value!.innerHTML = formHTML;\n  sk.value = new AutoSkeleton(formRef.value!, { loading: true });\n});\n\n// 数据就绪后\n// sk.value?.update({ loading: false });\n\nonUnmounted(() => sk.value?.destroy());\n</script>\n\n<template>\n  <div ref="formRef" />\n</template>',
+          'import { AutoSkeleton } from "@apricotdream/skeleton";\n\nuseEffect(() => {\n  const el = document.getElementById("form")!;\n  el.innerHTML = formHTML;\n  const sk = new AutoSkeleton(el, { loading: true });\n  return () => sk.destroy();\n}, []);\n\n// 数据就绪\nsk.update({ loading: false });',
+        vue: '<script setup>\nimport { ref, onMounted, onUnmounted } from "vue";\nimport { AutoSkeleton } from "@apricotdream/skeleton";\nimport "@apricotdream/skeleton/style.css";\n\nconst formRef = ref<HTMLElement>();\nconst sk = ref<AutoSkeleton>();\n\nonMounted(() => {\n  formRef.value!.innerHTML = formHTML;\n  sk.value = new AutoSkeleton(formRef.value!, { loading: true });\n});\n\n// 数据就绪后\n// sk.value?.update({ loading: false });\n\nonUnmounted(() => sk.value?.destroy());\n</script>\n\n<template>\n  <div ref="formRef" />\n</template>',
       }}
     >
       <div className="sk-stage">
@@ -359,8 +359,8 @@ function SSRDemo() {
       snippets={{
         html: `<div class="qs-skel-container" style="...">\n  <!-- 骨架块由 renderSkeletonSnapshot() 生成 -->\n  <div class="qs-skel-block" style="..."></div>\n</div>`,
         react:
-          'import { extractElementInfo, renderSkeletonSnapshot } from "@qingwu/skeleton";\n\n// 构建时：渲染真实页面后测量\nconst snapshot = extractElementInfo(document.querySelector(".card")!);\n\nconst html = renderSkeletonSnapshot(snapshot, {\n  width: snapshot[0].x + snapshot[0].width,\n  shimmerColor: "#f0f0f0",\n  backgroundColor: "#e0e0e0",\n  duration: 1500,\n});\n// 返回完整 CSS 骨架 HTML 字符串',
-        vue: '<!-- Nuxt / Vue SSR 中使用 -->\n<script setup lang="ts">\nimport { renderSkeletonSnapshot } from "@qingwu/skeleton";\n\nconst skeletonHTML = renderSkeletonSnapshot(snapshot, {\n  width: 360,\n});\n</script>\n\n<template>\n  <div v-html="skeletonHTML" />\n</template>',
+          'import { extractElementInfo, renderSkeletonSnapshot } from "@apricotdream/skeleton";\n\n// 构建时：渲染真实页面后测量\nconst snapshot = extractElementInfo(document.querySelector(".card")!);\n\nconst html = renderSkeletonSnapshot(snapshot, {\n  width: snapshot[0].x + snapshot[0].width,\n  shimmerColor: "#f0f0f0",\n  backgroundColor: "#e0e0e0",\n  duration: 1500,\n});\n// 返回完整 CSS 骨架 HTML 字符串',
+        vue: '<!-- Nuxt / Vue SSR 中使用 -->\n<script setup lang="ts">\nimport { renderSkeletonSnapshot } from "@apricotdream/skeleton";\n\nconst skeletonHTML = renderSkeletonSnapshot(snapshot, {\n  width: 360,\n});\n</script>\n\n<template>\n  <div v-html="skeletonHTML" />\n</template>',
       }}
     >
       <div className="sk-stage">
@@ -449,8 +449,8 @@ function PerContainerDemo() {
       desc="每个容器独立的流光颜色、时长、时序函数，互不覆盖。红色 600ms linear 快扫、蓝色 2600ms ease-out 缓扫、紫色默认配置。"
       snippets={{
         react:
-          'import { AutoSkeleton } from "@qingwu/skeleton";\n\nconst sk = new AutoSkeleton(el, {\n  loading: true,\n  shimmerColor: "#ffb3b3",\n  backgroundColor: "#f5a3a3",\n  duration: 600,\n  timingFunction: "linear",\n});\n// 多个容器并存：各自动画样式独立生效',
-        vue: '<script setup>\nimport { onMounted, onUnmounted } from "vue";\nimport { AutoSkeleton } from "@qingwu/skeleton";\n\nonMounted(() => {\n  sk.value = new AutoSkeleton(el.value!, {\n    loading: true,\n    shimmerColor: "#ffb3b3",\n    duration: 600,\n    timingFunction: "linear",\n  });\n});\nonUnmounted(() => sk.value?.destroy());\n</script>',
+          'import { AutoSkeleton } from "@apricotdream/skeleton";\n\nconst sk = new AutoSkeleton(el, {\n  loading: true,\n  shimmerColor: "#ffb3b3",\n  backgroundColor: "#f5a3a3",\n  duration: 600,\n  timingFunction: "linear",\n});\n// 多个容器并存：各自动画样式独立生效',
+        vue: '<script setup>\nimport { onMounted, onUnmounted } from "vue";\nimport { AutoSkeleton } from "@apricotdream/skeleton";\n\nonMounted(() => {\n  sk.value = new AutoSkeleton(el.value!, {\n    loading: true,\n    shimmerColor: "#ffb3b3",\n    duration: 600,\n    timingFunction: "linear",\n  });\n});\nonUnmounted(() => sk.value?.destroy());\n</script>',
       }}
     >
       <div className="sk-stage">
