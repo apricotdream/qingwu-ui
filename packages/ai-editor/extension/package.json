@@ -1,6 +1,6 @@
 {
   "name": "qingwu-web-clipper",
-  "version": "0.2.2",
+  "version": "0.2.13",
   "description": "青梧 Web Clipper - 面向青梧 AI 编辑器的现代化浏览器剪藏插件（Chrome / Edge / Firefox）",
   "type": "module",
   "private": true,

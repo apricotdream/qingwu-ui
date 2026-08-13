@@ -95,7 +95,7 @@ export type PushStatus =
 
 /** AI 提供方配置 */
 export interface AIProviderConfig {
-  kind: "openai" | "deepseek" | "qwen" | "chrome-built-in" | "custom";
+  kind: "openai" | "deepseek" | "qwen" | "moonshot" | "zhipu" | "minimax" | "chrome-built-in" | "custom";
   baseURL?: string;
   apiKey?: string;
   model?: string;

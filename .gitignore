@@ -1,6 +1,10 @@
 # 依赖与构建产物
 node_modules/
 dist/
+
+# 本地 registry 凭据（含 _auth，禁止入库）
+.npmrc
+**/.npmrc
 .next/
 .turbo/
 coverage/
@@ -40,14 +44,28 @@ Desktop.ini
 # 演示站构建时从 packages/ai-editor 同步的 file-viewer 静态资源（方案 A，不入库）
 examples/nextjs/public/file-viewer/
 
-# AI 辅助工具本地文件（不提交）
+# ---- AI 工具链本地文件（不提交；他人拉取后不可用 / 无效，一律忽略）----
+
+# Claude Code 配置 / 记忆目录
 .claude/
+.claude.json
+
+# 项目级 AI 指令文件
 CLAUDE.md
 AGENTS.md
 .project-memory.md
 .agents/
 .github/copilot-instructions.md
 COPILOT.md
+
+# AI 生成的临时文件
+tmp_*
+*.tmp
+*.bak
+
+# 临时测试文件（仅本机联调 / 浏览器测试 Profile）
+tmp_qingwu_server.cjs
+.edge-test-profile/
 
 # 内部产品文档（不公开）
 PRODUCT.md

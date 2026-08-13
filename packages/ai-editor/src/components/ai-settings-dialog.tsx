@@ -46,21 +46,21 @@ interface Props {
 }
 
 const PRESETS: Array<{ label: string; baseURL: string; model: string }> = [
-  { label: "DeepSeek", baseURL: "https://api.deepseek.com/v1", model: "deepseek-chat" },
+  { label: "DeepSeek", baseURL: "https://api.deepseek.com/v1", model: "deepseek-v4-flash" },
   {
     label: "通义千问",
     baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    model: "qwen-plus",
+    model: "qwen3.7-plus",
   },
-  { label: "OpenAI", baseURL: "https://api.openai.com/v1", model: "gpt-4o-mini" },
-  { label: "智谱 GLM", baseURL: "https://open.bigmodel.cn/api/paas/v4", model: "glm-4" },
-  { label: "Moonshot", baseURL: "https://api.moonshot.cn/v1", model: "moonshot-v1-8k" },
+  { label: "OpenAI", baseURL: "https://api.openai.com/v1", model: "gpt-5.6-luna" },
+  { label: "智谱 GLM", baseURL: "https://open.bigmodel.cn/api/paas/v4", model: "glm-5.2" },
+  { label: "Moonshot", baseURL: "https://api.moonshot.ai/v1", model: "kimi-k2.6" },
 ];
 
 export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
   const [apiKey, setApiKey] = useState("");
   const [baseURL, setBaseURL] = useState("https://api.deepseek.com/v1");
-  const [model, setModel] = useState("deepseek-chat");
+  const [model, setModel] = useState("deepseek-v4-flash");
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
@@ -75,7 +75,7 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
     if (saved) {
       setApiKey(saved.apiKey || "");
       setBaseURL(saved.baseURL || "https://api.deepseek.com/v1");
-      setModel(saved.model || "deepseek-chat");
+      setModel(saved.model || "deepseek-v4-flash");
     }
     // 检查是否已配置写作助手
     try {
@@ -235,7 +235,7 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
             <label className="block text-xs text-default-500 mb-1">模型名称 (Model)</label>
             <input
               className="w-full px-3 py-2 rounded-lg border border-default-200 bg-background text-sm focus:outline-none focus:border-primary"
-              placeholder="deepseek-chat"
+              placeholder="deepseek-v4-flash"
               value={model}
               onChange={(e) => setModel(e.target.value)}
             />

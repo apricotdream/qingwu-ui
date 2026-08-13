@@ -25,7 +25,7 @@ import {
   type TemplateRenderPayload,
 } from "../shared/messages";
 import { registerHandler } from "../shared/messaging";
-import { db, loadSettings } from "../shared/storage/db";
+import { db, loadSettings, settingsStore } from "../shared/storage/db";
 import { renderTemplate } from "../shared/templates/engine";
 import type {
   AIProviderConfig,
@@ -167,18 +167,6 @@ function openSidePanelForTab(tabId: number) {
   } catch (e) {
     console.warn("sidePanel 不可用，回退到独立窗口", e);
   }
-}
-
-function openSidePanelWindow() {
-  void chrome.windows
-    .create({
-      url: chrome.runtime.getURL("sidepanel/index.html"),
-      type: "popup",
-      width: 430,
-      height: 760,
-      focused: true,
-    })
-    .catch((e) => console.warn("打开独立侧栏窗口失败:", e));
 }
 
 // ===== 消息中枢 =====
@@ -468,16 +456,20 @@ registerHandler({
     return ok({ delivered: true });
   },
 
-  // 内容脚本点击来自用户手势；优先原生 sidePanel，随后用完整侧栏窗口兜底。
-  "tab:open-sidepanel": (_msg, sender) => {
+  // 悬浮球来自 content script，跨进程调用 sidePanel.open 容易丢用户手势。
+  // 这里直接打开完整侧栏窗口，保留设置 / 历史 / AI / 复制 / 预览等完整功能。
+  "tab:open-sidepanel": async (_msg, sender) => {
     const tabId = sender.tab?.id;
-    if (typeof tabId === "number") {
-      openSidePanelForTab(tabId);
-    } else {
-      openSidePanelForCurrentWindow();
+    try {
+      if (typeof tabId !== "number") {
+        return err("sidepanel.no-tab", "无法识别当前标签页", { retryable: false });
+      }
+      await chrome.sidePanel.open({ tabId });
+      return ok({ tabId, mode: "sidepanel" });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      return err("sidepanel.open", message, { retryable: false });
     }
-    setTimeout(openSidePanelWindow, 700);
-    return ok({ tabId, fallback: "window" });
   },
 });
 
@@ -965,6 +957,5 @@ function sanitizeFilename(name: string): string {
 }
 
 async function persistSettings(s: ClipperSettings): Promise<void> {
-  const { settingsStore } = await import("../shared/storage/db");
   await settingsStore.set(s);
 }

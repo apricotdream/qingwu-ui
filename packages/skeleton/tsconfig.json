@@ -1,5 +1,5 @@
 {
-  "extends": "@qingwu/tsconfig/base.json",
+  "extends": "@apricotdream/tsconfig/base.json",
   "compilerOptions": {
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": [],

@@ -2,13 +2,13 @@
    青梧UI · 标签快捷插入组件（TagInput）
    - 输入框 + 下方标签快捷栏：点击标签按钮自动填入输入框
    - 已插入的标签从快捷栏消失，输入值中删除后自动重现
-   - @qingwu/text-layout 的 layoutChips 驱动展开/收起与标签栏高度
+   - @apricotdream/text-layout 的 layoutChips 驱动展开/收起与标签栏高度
    - 受控 / 非受控双模式，全键盘可用（Tab + 方向键 + Enter）
    - 零框架依赖，纯 DOM + CSS
    ============================================================ */
 
-import type { ChipItem } from "@qingwu/text-layout";
-import { layoutChips } from "@qingwu/text-layout";
+import type { ChipItem } from "@apricotdream/text-layout";
+import { layoutChips } from "@apricotdream/text-layout";
 import type { TagInputOptions } from "./types";
 
 /* ---------- 布局常量（与 style.css 对齐） ---------- */

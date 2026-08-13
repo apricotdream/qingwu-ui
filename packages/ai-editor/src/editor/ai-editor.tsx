@@ -209,8 +209,8 @@ export interface QingWuAIEditorProps {
   immediatelyRender?: boolean;
   /**
    * 全局提示回调（附件超限拦截 / 文档附件超限警告等）。
-   * 由宿主接入自己的 Toast 组件（如 @qingwu/toast）；不传时回退到内置
-   * @qingwu/toast 默认渲染，也可通过 setToastProvider() 全局替换。
+   * 由宿主接入自己的 Toast 组件（如 @apricotdream/toast）；不传时回退到内置
+   * @apricotdream/toast 默认渲染，也可通过 setToastProvider() 全局替换。
    * 第三参 options 透传展示选项（persist/maxLines/duration）；旧签名自动兼容。
    */
   onToast?: (message: string, type: ToastType, options?: ToastOptions) => void;
@@ -531,7 +531,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     editor.setEditable(!isReadonly, false);
   }, [editor, isReadonly]);
 
-  // Toast 通道订阅：宿主传入 onToast 则转发；否则回退到内置 @qingwu/toast 默认渲染
+  // Toast 通道订阅：宿主传入 onToast 则转发；否则回退到内置 @apricotdream/toast 默认渲染
   useEffect(() => {
     if (!onToast) return;
     return subscribeToast(onToast);
@@ -1277,7 +1277,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           </Suspense>
         )}
 
-        {/* 全局 toast：宿主经 onToast 回调自定义；未接入时内置 @qingwu/toast 兜底渲染 */}
+        {/* 全局 toast：宿主经 onToast 回调自定义；未接入时内置 @apricotdream/toast 兜底渲染 */}
 
         {/* 编辑器主区域 */}
         {/* 编辑器主体 + 目录侧栏 */}

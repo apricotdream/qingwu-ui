@@ -22,16 +22,21 @@ const DEFAULT_TIMEOUT_MS = 30_000;
 function normalizeBaseURL(baseURL?: string): string {
   if (!baseURL) return "";
   let u = baseURL.trim().replace(/\/+$/, "");
-  // 自动补全路径：用户可能填 https://api.deepseek.com/v1 或 https://api.deepseek.com
-  if (!/\/v\d+$/.test(u) && !/\/openai\/v\d+$/.test(u)) {
-    // DeepSeek / Qwen 等兼容接口约定有 /v1
-    if (/deepseek|dashscope|aliyuncs|moonshot|bigmodel|openai\.com|siliconflow/i.test(u)) {
+  const hasChatCompletions = /\/chat\/completions$/i.test(u);
+  if (hasChatCompletions) return u;
+
+  if (/deepseek/i.test(u)) {
+    u = u.replace(/\/v\d+$/i, "");
+    return `${u}/chat/completions`;
+  }
+
+  if (!/\/v\d+$/i.test(u) && !/\/openai\/v\d+$/i.test(u)) {
+    if (/dashscope|aliyuncs|moonshot|bigmodel|openai\.com|minimax|siliconflow/i.test(u)) {
       u = `${u}/v1`;
     }
   }
   return `${u}/chat/completions`;
 }
-
 function fetchWithTimeout(url: string, init: RequestInit, ms = DEFAULT_TIMEOUT_MS): Promise<Response> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
@@ -170,8 +175,9 @@ function buildPrompt(req: AIRequest): { system: string; user: string } {
     }
     case "tags":
       return {
-        system: "你是标签提取助手。输出 3-8 个标签，用逗号分隔，仅小写中英文，不要带 # 号。",
-        user: `为以下内容提取标签：\n\n${req.text}`,
+        system:
+          '你是标签提取助手。只输出 JSON 字符串数组，3-8 个短标签，不要解释，例如：["ai","浏览器插件","剪藏"]。',
+        user: `为以下内容提取标签，只返回 JSON 数组：\n\n${req.text}`,
       };
     case "translate":
       return {
@@ -194,10 +200,21 @@ function buildPrompt(req: AIRequest): { system: string; user: string } {
 }
 
 function parseTags(text: string): string[] {
-  return text
-    .split(/[,\n、，]/)
-    .map((s) => s.trim().replace(/^#/, ""))
-    .filter((s) => s.length > 0 && s.length <= 24)
+  const raw = text.trim();
+  try {
+    const match = raw.match(/\[[\s\S]*\]/);
+    const parsed = JSON.parse(match ? match[0] : raw);
+    if (Array.isArray(parsed)) return cleanTags(parsed.map(String));
+  } catch {
+    // fallback to plain text parsing
+  }
+  return cleanTags(raw.split(/[,，、\n;；|]/));
+}
+
+function cleanTags(tags: string[]): string[] {
+  return [...new Set(tags
+    .map((s) => s.trim().replace(/^[-*\d.\s#]+/, "").replace(/^标签[:：]/, ""))
+    .filter((s) => s.length > 0 && s.length <= 24))]
     .slice(0, 8);
 }
 
@@ -220,7 +237,7 @@ export async function runAI(cfg: AIProviderConfig, req: AIRequest): Promise<AIRe
         {
           baseURL: cfg.baseURL ?? "",
           apiKey: cfg.apiKey,
-          model: cfg.model ?? "gpt-4o-mini",
+          model: cfg.model ?? "gpt-5.6-luna",
           temperature: cfg.temperature,
         },
         system,
@@ -256,9 +273,9 @@ export async function runAI(cfg: AIProviderConfig, req: AIRequest): Promise<AIRe
 export async function testAI(cfg: AIProviderConfig): Promise<AIResponse<string>> {
   const r = await runAI(cfg, {
     mode: "custom",
-    text: "请只回复：pong",
+    text: "请只回复 pong，不要解释。",
     instruction: "你是一个连通性测试助手。",
-    maxTokens: 16,
+    maxTokens: 64,
   });
   if (r.ok) return { ...r, data: String(r.data) };
   return r;

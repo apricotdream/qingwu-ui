@@ -22,8 +22,8 @@ import {
   t,
   toast,
   validateAttachmentFile,
-} from "@qingwu/ai-editor";
-import { toast as qwToast } from "@qingwu/toast";
+} from "@apricotdream/ai-editor";
+import { toast as qwToast } from "@apricotdream/toast";
 
 // 首页直接渲染 README.md；按当前语言切换中英文内容（传原始 markdown，由编辑器单次解析）
 
@@ -795,7 +795,7 @@ export default function App() {
                 onChange={(e) => setToastMode(e.target.value as ToastMode)}
                 className="rounded-lg border border-default-200 bg-background px-2 py-1 text-xs text-foreground outline-none transition-colors focus:border-qingwu-400"
               >
-                <option value="default">内置默认 @qingwu/toast</option>
+                <option value="default">内置默认 @apricotdream/toast</option>
                 <option value="onToast">onToast 实例级</option>
                 <option value="provider">setToastProvider 全局</option>
               </select>
@@ -822,7 +822,7 @@ export default function App() {
           </div>
           <div className="mt-2 text-[11px] text-default-400">
             {toastMode === "default" &&
-              "内置默认：未传 onToast、未 setToastProvider，提示由随包内置 @qingwu/toast 渲染（开箱即用）。"}
+              "内置默认：未传 onToast、未 setToastProvider，提示由随包内置 @apricotdream/toast 渲染（开箱即用）。"}
             {toastMode === "onToast" && "实例级：经 onToast 回调转发给宿主自己的 Toast 组件渲染。"}
             {toastMode === "provider" &&
               "全局级：setToastProvider() 替换默认渲染器，消息带 [setToastProvider] 前缀以示区别。"}

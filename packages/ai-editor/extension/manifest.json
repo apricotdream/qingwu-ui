@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "青梧 Web Clipper",
   "short_name": "QingWu Clipper",
-  "version": "0.2.2",
+  "version": "0.2.13",
   "description": "面向青梧 AI 编辑器的智能网页剪藏插件 - AI 摘要、标签提取、多模板、深浅主题、错误透明",
   "permissions": [
     "activeTab",
@@ -13,9 +13,12 @@
     "sidePanel",
     "downloads",
     "clipboardWrite",
-    "notifications"
+    "notifications",
+    "windows"
   ],
-  "host_permissions": ["<all_urls>"],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "action": {
     "default_title": "青梧 Web Clipper (Alt+Shift+C)",
     "default_icon": {
@@ -38,9 +41,15 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content/content-script.js"],
-      "css": ["content/content.css"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content/content-script.js"
+      ],
+      "css": [
+        "content/content.css"
+      ],
       "run_at": "document_idle",
       "all_frames": false
     }
@@ -70,8 +79,13 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["icons/*", "sidepanel/index.html"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "icons/*",
+        "sidepanel/index.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "icons": {

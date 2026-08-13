@@ -1,7 +1,7 @@
 "use client";
 
-import { SearchBox } from "@qingwu/search";
-import "@qingwu/button/style.css";
+import { SearchBox } from "@apricotdream/search";
+import "@apricotdream/button/style.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DemoCard from "@/components/DemoCard";
 
@@ -237,8 +237,8 @@ export default function SearchPage() {
     const optsBlock = optsLines.length > 0 ? ["{", ...optsLines, "}"].join("\n    ") : "{}";
 
     const react = [
-      'import { SearchBox } from "@qingwu/search";',
-      'import "@qingwu/search/style.css";',
+      'import { SearchBox } from "@apricotdream/search";',
+      'import "@apricotdream/search/style.css";',
       "",
       "function CommandPalette() {",
       "  const rootRef = useRef<HTMLDivElement>(null);",
@@ -263,9 +263,9 @@ export default function SearchPage() {
       "<head>",
       '  <meta charset="utf-8" />',
       '  <script type="module">',
-      '    import { SearchBox } from "https://unpkg.com/@qingwu/search";',
+      '    import { SearchBox } from "https://unpkg.com/@apricotdream/search";',
       "  </script>",
-      '  <link rel="stylesheet" href="https://unpkg.com/@qingwu/search/style.css" />',
+      '  <link rel="stylesheet" href="https://unpkg.com/@apricotdream/search/style.css" />',
       "</head>",
       "<body>",
       '  <div id="root"></div>',
@@ -285,8 +285,8 @@ export default function SearchPage() {
       "",
       '<script setup lang="ts">',
       'import { ref, onMounted, onUnmounted } from "vue";',
-      'import { SearchBox } from "@qingwu/search";',
-      'import "@qingwu/search/style.css";',
+      'import { SearchBox } from "@apricotdream/search";',
+      'import "@apricotdream/search/style.css";',
       "",
       "const rootRef = ref<HTMLDivElement>();",
       "let sb: SearchBox | null = null;",

@@ -1,5 +1,5 @@
 /** 扩展侧边栏：剪藏主界面，含草稿编辑、历史管理、推送与下载。 */
-import { toast } from "@qingwu/toast";
+import { toast } from "@apricotdream/toast";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { setLocale, t } from "../shared/i18n";
@@ -151,8 +151,11 @@ function Inner({
   }, [settings, applyPendingDraft]);
 
   const runExtract = useCallback(
-    async (payload: { mode: "page" | "selection" | "bookmark"; selection?: string }) => {
-      if (!settings) return;
+    async (
+      payload: { mode: "page" | "selection" | "bookmark"; selection?: string },
+      activeSettings = settings,
+    ) => {
+      if (!activeSettings) return;
       setExtracting(true);
       setTab("clip");
       try {
@@ -190,7 +193,7 @@ function Inner({
           }
         }
         const content = await send<ExtractedContent>("clip:extract", p);
-        setDraft(createClipDraft(content, settings));
+        setDraft(createClipDraft(content, activeSettings));
         // 消费 pendingDraft（实时提取覆盖暂存）
         try {
           await chrome.storage.local.remove("pendingDraft");
@@ -199,8 +202,8 @@ function Inner({
           toast.warn(content.warnings[0], { duration: 6000 });
         }
         // 自动 AI
-        if (settings.ai && (settings.autoSummary || settings.autoTags)) {
-          void runAutoAI(content);
+        if (activeSettings.ai && (activeSettings.autoSummary || activeSettings.autoTags)) {
+          void runAutoAI(content, activeSettings);
         }
       } catch (e) {
         const err = e as Error;
@@ -212,31 +215,40 @@ function Inner({
     [settings],
   );
 
-  async function runAutoAI(content: ExtractedContent) {
-    if (!settings?.ai) return;
-    if (settings.autoSummary) {
+  async function refreshPanel() {
+    const latestSettings = await getSettingsWithRetry();
+    setSettings(latestSettings);
+    setLocale(latestSettings.locale);
+    if (draft) {
+      await runExtract({ mode: draft.content.selection ? "selection" : "page" }, latestSettings);
+    }
+  }
+
+  async function runAutoAI(content: ExtractedContent, activeSettings = settings) {
+    if (!activeSettings?.ai) return;
+    if (activeSettings.autoSummary) {
       void send<{ ok: boolean; data?: unknown; error?: { message: string } }>("ai:run", {
         request: {
           mode: "summary",
           text: content.contentText,
-          targetLang: settings.locale,
+          targetLang: activeSettings.locale,
           maxTokens: 300,
         },
       })
         .then((r: any) => {
-          if (r?.ok && r.data?.data) {
-            setDraft((d) => (d ? { ...d, aiSummary: String(r.data.data) } : d));
+          if (r?.ok && r.data) {
+            setDraft((d) => (d ? { ...d, aiSummary: String(r.data) } : d));
           }
         })
         .catch((e: Error) => toast.warn(t("toast.ai.unknown"), { description: e.message }));
     }
-    if (settings.autoTags) {
+    if (activeSettings.autoTags) {
       void send<{ ok: boolean; data?: unknown }>("ai:run", {
         request: { mode: "tags", text: content.contentText.slice(0, 4000) },
       })
         .then((r: any) => {
-          if (r?.ok && Array.isArray(r.data?.data)) {
-            setDraft((d) => (d ? { ...d, aiTags: r.data.data as string[] } : d));
+          if (r?.ok && Array.isArray(r.data)) {
+            setDraft((d) => (d ? { ...d, aiTags: r.data as string[] } : d));
           }
         })
         .catch(() => {});
@@ -252,9 +264,7 @@ function Inner({
       <SidePanelHeader
         tab={tab}
         onTab={setTab}
-        onRefresh={() =>
-          draft && runExtract({ mode: draft.content.selection ? "selection" : "page" })
-        }
+        onRefresh={() => void refreshPanel()}
         onExtract={(m) => void runExtract({ mode: m })}
       />
       <div className="flex-1 overflow-y-auto">
@@ -650,7 +660,7 @@ async function pushOrDownload(draft: ClipDraft, op: "push" | "download" | "copy"
       toast.success(t("toast.download.ok"));
     } else {
       const rec = await send<ClipRecord>("clip:get", { id: r.id });
-      await navigator.clipboard.writeText(rec.renderedMarkdown);
+      await copyText(rec.renderedMarkdown);
       toast.success(t("toast.copy.ok"));
     }
   } catch (e) {
@@ -668,6 +678,24 @@ async function pushOrDownload(draft: ClipDraft, op: "push" | "download" | "copy"
           : undefined,
       },
     );
+  }
+}
+
+async function copyText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return;
+  } catch {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    const ok = document.execCommand("copy");
+    textarea.remove();
+    if (!ok) throw new Error("复制失败，请先聚焦侧栏窗口后重试");
   }
 }
 
@@ -920,7 +948,7 @@ function AIPanel({
         return;
       }
 
-      const data = resp.data?.data;
+      const data = resp.data;
       if (mode === "tags") {
         setResult({
           mode,
@@ -991,7 +1019,7 @@ function AIPanel({
 
   async function copyResult() {
     if (!resultText) return;
-    await navigator.clipboard.writeText(resultText);
+    await copyText(resultText);
     toast.success(t("toast.copy.ok"));
   }
 
@@ -1125,7 +1153,7 @@ function AIPanel({
           </>
         }
       >
-        <pre className="text-xs font-mono text-ink-700 dark:text-ink-300 whitespace-pre-wrap break-words bg-ink-50 dark:bg-ink-950 rounded-lg p-3">
+        <pre className="text-xs font-mono text-ink-700 dark:text-ink-300 whitespace-pre-wrap break-words bg-ink-50 dark:bg-ink-950 rounded-lg p-3 max-h-[60vh] overflow-auto">
           {resultText}
         </pre>
       </Modal>

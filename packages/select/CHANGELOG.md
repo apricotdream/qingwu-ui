@@ -1,4 +1,11 @@
-# @qingwu/select
+# @apricotdream/select
+
+## 0.9.0
+
+### Minor Changes
+
+- 版本统一对齐 0.9.0（无功能变更；首次以 @apricotdream scope 发布，@qingwu → @apricotdream 品牌迁移）
+
 ## 0.8.0
 
 ### Minor Changes
@@ -10,7 +17,7 @@
 
 ### Minor Changes
 
-- **首发**：框架无关下拉选择器（`@qingwu/select`）
+- **首发**：框架无关下拉选择器（`@apricotdream/select`）
   - 单选 · 手风琴错峰展开动画（选项像琴键逐项按下，向上展开反向级联）
   - 选项禁用（置灰、点击无效、键盘导航跳过）+ 整体禁用
   - 向上/向下自适应翻转（贴近视口底边自动向上弹）

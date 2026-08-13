@@ -1,4 +1,11 @@
-# @qingwu/ai-editor
+# @apricotdream/ai-editor
+
+## 0.9.0
+
+### Minor Changes
+
+- 版本统一对齐 0.9.0（无功能变更；首次以 @apricotdream scope 发布，@qingwu → @apricotdream 品牌迁移）
+
 
 ## 0.8.0
 
@@ -7,7 +14,7 @@
 - AI 面板宽度随编辑器宽度自适应、左缘对齐编辑器左缘（无法测量编辑器宽度时回退 288px），面板高度钳进视口（`max-height` + flex 布局），避免撑高编辑器引发滚动跳变
 - AI 替换（选中 / 全文）前弹确认弹窗：列出本次将被移除的媒体节点（图片 / 附件 / 视频 / 音频），确认后才执行替换
 - 全文 / 选区替换后的**孤儿媒体资源延迟删除**：替换后「旧文档有、新文档无」的资源异步从存储删除，带 30s 延迟窗口——期间 `undo`（Ctrl+Z）把 URL 还原回文档即取消删除，避免「undo 后图片 404」；编辑器销毁时立即 flush 剩余孤儿
-- 依赖：`@qingwu/toast` 保持 `^0.8.0`
+- 依赖：`@apricotdream/toast` 保持 `^0.8.0`
 
 ## 0.7.3
 
@@ -33,7 +40,7 @@
 - 移除：已无调用的手写 Markdown 兜底解析器（`_obsidianToFragment` 及关联约 450 行死代码）
 - 修复：AI 模型调用显式走 `openai.chat()`（`/chat/completions`）——`@ai-sdk/openai` 默认调用走 Responses API（`POST /responses`），DeepSeek / 通义 / GLM 等兼容端点会 404
 - 修复：`showToc` prop 运行期变化（宿主读者侧目录开关）同步进内部状态，初值仍取 prop
-- 依赖：`@qingwu/toast` 升至 `^0.8.0`（`description` 详情行 / `action` 操作按钮）
+- 依赖：`@apricotdream/toast` 升至 `^0.8.0`（`description` 详情行 / `action` 操作按钮）
 
 ## 0.7.0
 
@@ -41,37 +48,37 @@
 
 - Toast 提示默认**常驻不自动消失**（`persist: true`）+ **内容完整显示**（不再按行截断）：`toast()` 通道统一生效，长提示完整展示
 - `onToast` 回调新增第三参 `options`（透传 `persist` / `maxLines` / `duration`）；旧二参签名自动兼容，宿主无需改动
-- 内置兜底 `@qingwu/toast` 同步升级 `^0.7.0`（`persist` / `persistMaxVisible` 数量上限 / 默认去截断）
+- 内置兜底 `@apricotdream/toast` 同步升级 `^0.7.0`（`persist` / `persistMaxVisible` 数量上限 / 默认去截断）
 
 ## 0.6.1
 
 ### Patch Changes
 
-- **@qingwu/ai-editor**
+- **@apricotdream/ai-editor**
 
-  - 修复：Toast 提示默认内置 `@qingwu/toast` 渲染（不再静默丢弃），新增 `setToastProvider()` 全局替换与 `onToast` 实例级覆盖，并支持 `maxLines` / `duration` 透传
+  - 修复：Toast 提示默认内置 `@apricotdream/toast` 渲染（不再静默丢弃），新增 `setToastProvider()` 全局替换与 `onToast` 实例级覆盖，并支持 `maxLines` / `duration` 透传
   - 新增：删除确认开放 `setConfirmProvider()` 覆盖接口，默认仍用内置项目 `DeleteConfirmDialog`，6 处删除流程（图片/视频/音频/附件/代码块/表格）统一生效
   - 修复：MD 导入选择兜底由原生 `window.confirm` 改为内置项目风格弹窗（渲染/附加/取消），取消不再误附加
   - 修复：Obsidian 粘贴本地路径图片/视频警告改走统一 toast 通道
   - 新增：图片加载失败（本地路径/远程加载失败）占位支持右上角删除按钮（带确认弹窗）
 
-  **@qingwu/upload**
+  **@apricotdream/upload**
 
-  - 修复：依赖对齐 `@qingwu/button` `^0.5.0` → `^0.6.0`
+  - 修复：依赖对齐 `@apricotdream/button` `^0.5.0` → `^0.6.0`
 
 ## 0.6.0
 
 ### Patch Changes
 
-- 版本统一对齐 0.6.0（无功能变更；`@qingwu/tag-input` 随本版首次发布）
+- 版本统一对齐 0.6.0（无功能变更；`@apricotdream/tag-input` 随本版首次发布）
 
 ## 0.5.0
 
 ### Minor Changes
 
-- 包更名 `@qingwu/editor` → `@qingwu/ai-editor`（组件类 `QingWuAIEditor`，README/文档同步更新）
+- 包更名 `@apricotdream/editor` → `@apricotdream/ai-editor`（组件类 `QingWuAIEditor`，README/文档同步更新）
 
-  - **Toast 解耦**：不再内置 Toast 渲染宿主，改为模块级事件通道 `toast()` / `subscribeToast()`；`QingWuAIEditor` 通过 `onToast` 回调把消息转发给宿主自己的 Toast 组件（如 `@qingwu/toast`），未传 `onToast` 时消息静默丢弃
+  - **Toast 解耦**：不再内置 Toast 渲染宿主，改为模块级事件通道 `toast()` / `subscribeToast()`；`QingWuAIEditor` 通过 `onToast` 回调把消息转发给宿主自己的 Toast 组件（如 `@apricotdream/toast`），未传 `onToast` 时消息静默丢弃
   - **附件限制运行期可调**：新增 `getEditorAttachmentLimits`，上传路径从编辑器 storage 实时读取当前限制，宿主运行期更新配置即时生效（tiptap setOptions 不重建扩展，配置变更走 storage）
   - clipper 抓取、README 等随更名同步更新
 
@@ -85,8 +92,8 @@
 
 ### Patch Changes
 
-- - `@qingwu/upload` 新增 `supportedFormats` 属性：图片格式白名单（无点扩展名），指定后映射为 input accept 并驱动拖拽区提示文案；不传默认全支持（原行为不变）
-  - 图片上传支持 AVIF：`@qingwu/upload` 拖拽区提示文案、editor 图片上传对话框白名单与文案补充 avif（editor 其余图片识别路径早已支持）
+- - `@apricotdream/upload` 新增 `supportedFormats` 属性：图片格式白名单（无点扩展名），指定后映射为 input accept 并驱动拖拽区提示文案；不传默认全支持（原行为不变）
+  - 图片上传支持 AVIF：`@apricotdream/upload` 拖拽区提示文案、editor 图片上传对话框白名单与文案补充 avif（editor 其余图片识别路径早已支持）
 - 版本统一对齐至 0.4.0
 
 ## 0.3.1
@@ -109,4 +116,4 @@
   - 编辑能力：斜杠命令（`createSlashCommandExtension`）、代码块高亮（`CodeBlock`）、搜索高亮（`SearchHighlight`）、图片上传、视频嵌入、目录面板（`TocPanel`）；
   - AI 写作助手：LangChain.js 统一接口（`setAIProvider` / `getAIProvider`），内置 OpenAI / DeepSeek / Qwen Provider；
   - i18n（`setLocale` / `t` / `tf`）、存储插件（本地 / COS / OSS / S3）、HTML 安全工具（`sanitizeHtml` / `sanitizeSvg`）；
-  - Web Clipper：浏览器端接收器经主入口导出，Node HTTP 接收器经独立子入口 `@qingwu/ai-editor/clipper` 暴露。
+  - Web Clipper：浏览器端接收器经主入口导出，Node HTTP 接收器经独立子入口 `@apricotdream/ai-editor/clipper` 暴露。
