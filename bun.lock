@@ -14,18 +14,18 @@
       "name": "qingwu-nextjs-example",
       "version": "0.1.5",
       "dependencies": {
-        "@apricotdream/action-menu": "workspace:*",
-        "@apricotdream/ai-editor": "workspace:*",
-        "@apricotdream/button": "workspace:*",
-        "@apricotdream/calendar": "workspace:*",
-        "@apricotdream/notifications": "workspace:*",
-        "@apricotdream/search": "workspace:*",
-        "@apricotdream/select": "workspace:*",
-        "@apricotdream/skeleton": "workspace:*",
-        "@apricotdream/tag-input": "workspace:*",
-        "@apricotdream/text-layout": "workspace:*",
-        "@apricotdream/toast": "workspace:*",
-        "@apricotdream/upload": "workspace:*",
+        "@qingwu-ui/action-menu": "workspace:*",
+        "@qingwu-ui/ai-editor": "workspace:*",
+        "@qingwu-ui/button": "workspace:*",
+        "@qingwu-ui/calendar": "workspace:*",
+        "@qingwu-ui/notifications": "workspace:*",
+        "@qingwu-ui/search": "workspace:*",
+        "@qingwu-ui/select": "workspace:*",
+        "@qingwu-ui/skeleton": "workspace:*",
+        "@qingwu-ui/tag-input": "workspace:*",
+        "@qingwu-ui/text-layout": "workspace:*",
+        "@qingwu-ui/toast": "workspace:*",
+        "@qingwu-ui/upload": "workspace:*",
         "devicon": "^2.17.0",
         "driver.js": "^1.8.0",
         "next": "^15.3.1",
@@ -44,10 +44,10 @@
       },
     },
     "packages/action-menu": {
-      "name": "@apricotdream/action-menu",
-      "version": "0.9.0-beta",
+      "name": "@qingwu-ui/action-menu",
+      "version": "0.9.0",
       "devDependencies": {
-        "@apricotdream/tsconfig": "workspace:*",
+        "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
         "happy-dom": "^20.11.1",
         "size-limit": "^13.0.1",
@@ -57,11 +57,11 @@
       },
     },
     "packages/ai-editor": {
-      "name": "@apricotdream/ai-editor",
-      "version": "0.9.0-beta",
+      "name": "@qingwu-ui/ai-editor",
+      "version": "0.9.0",
       "dependencies": {
-        "@apricotdream/text-layout": "^0.9.0-beta",
-        "@apricotdream/toast": "^0.9.0-beta",
+        "@qingwu-ui/text-layout": "^0.9.0",
+        "@qingwu-ui/toast": "^0.9.0",
         "beautiful-mermaid": "^1.1.3",
         "cmdk": "^1.1.1",
         "dompurify": "^3.4.12",
@@ -172,10 +172,10 @@
       ],
     },
     "packages/button": {
-      "name": "@apricotdream/button",
-      "version": "0.9.0-beta",
+      "name": "@qingwu-ui/button",
+      "version": "0.9.0",
       "devDependencies": {
-        "@apricotdream/tsconfig": "workspace:*",
+        "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
         "size-limit": "^13.0.1",
         "tsdown": "^0.22.14",
@@ -184,10 +184,10 @@
       },
     },
     "packages/calendar/ui": {
-      "name": "@apricotdream/calendar",
-      "version": "0.9.0-beta",
+      "name": "@qingwu-ui/calendar",
+      "version": "0.9.0",
       "devDependencies": {
-        "@apricotdream/tsconfig": "workspace:*",
+        "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
         "happy-dom": "^20.11.1",
         "size-limit": "^13.0.1",
@@ -197,10 +197,10 @@
       },
     },
     "packages/notifications": {
-      "name": "@apricotdream/notifications",
-      "version": "0.9.0-beta",
+      "name": "@qingwu-ui/notifications",
+      "version": "0.9.0",
       "devDependencies": {
-        "@apricotdream/tsconfig": "workspace:*",
+        "@qingwu-ui/tsconfig": "workspace:*",
         "happy-dom": "^20.11.1",
         "tsdown": "^0.22.14",
         "typescript": "^7.0.2",
@@ -208,10 +208,10 @@
       },
     },
     "packages/search": {
-      "name": "@apricotdream/search",
-      "version": "0.9.0-beta",
+      "name": "@qingwu-ui/search",
+      "version": "0.9.0",
       "devDependencies": {
-        "@apricotdream/tsconfig": "workspace:*",
+        "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
         "happy-dom": "^20.11.1",
         "size-limit": "^13.0.1",
@@ -221,10 +221,10 @@
       },
     },
     "packages/select": {
-      "name": "@apricotdream/select",
-      "version": "0.9.0-beta",
+      "name": "@qingwu-ui/select",
+      "version": "0.9.0",
       "devDependencies": {
-        "@apricotdream/tsconfig": "workspace:*",
+        "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
         "happy-dom": "^20.11.1",
         "size-limit": "^13.0.1",
@@ -234,11 +234,11 @@
       },
     },
     "packages/skeleton": {
-      "name": "@apricotdream/skeleton",
-      "version": "0.9.0-beta",
+      "name": "@qingwu-ui/skeleton",
+      "version": "0.9.0",
       "devDependencies": {
-        "@apricotdream/text-layout": "workspace:*",
-        "@apricotdream/tsconfig": "workspace:*",
+        "@qingwu-ui/text-layout": "workspace:*",
+        "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
         "size-limit": "^13.0.1",
         "tsdown": "^0.22.14",
@@ -247,13 +247,13 @@
       },
     },
     "packages/tag-input": {
-      "name": "@apricotdream/tag-input",
-      "version": "0.9.0-beta",
+      "name": "@qingwu-ui/tag-input",
+      "version": "0.9.0",
       "dependencies": {
-        "@apricotdream/text-layout": "^0.9.0-beta",
+        "@qingwu-ui/text-layout": "^0.9.0",
       },
       "devDependencies": {
-        "@apricotdream/tsconfig": "workspace:*",
+        "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
         "happy-dom": "^20.11.1",
         "size-limit": "^13.0.1",
@@ -263,10 +263,10 @@
       },
     },
     "packages/text-layout": {
-      "name": "@apricotdream/text-layout",
-      "version": "0.9.0-beta",
+      "name": "@qingwu-ui/text-layout",
+      "version": "0.9.0",
       "devDependencies": {
-        "@apricotdream/tsconfig": "workspace:*",
+        "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
         "size-limit": "^13.0.1",
         "tsdown": "^0.22.14",
@@ -275,13 +275,13 @@
       },
     },
     "packages/toast": {
-      "name": "@apricotdream/toast",
-      "version": "0.9.0-beta",
+      "name": "@qingwu-ui/toast",
+      "version": "0.9.0",
       "dependencies": {
-        "@apricotdream/text-layout": "^0.9.0-beta",
+        "@qingwu-ui/text-layout": "^0.9.0",
       },
       "devDependencies": {
-        "@apricotdream/tsconfig": "workspace:*",
+        "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
         "happy-dom": "^20.11.1",
         "size-limit": "^13.0.1",
@@ -291,13 +291,13 @@
       },
     },
     "packages/upload": {
-      "name": "@apricotdream/upload",
-      "version": "0.9.0-beta",
+      "name": "@qingwu-ui/upload",
+      "version": "0.9.0",
       "dependencies": {
-        "@apricotdream/button": "^0.9.0-beta",
+        "@qingwu-ui/button": "^0.9.0",
       },
       "devDependencies": {
-        "@apricotdream/tsconfig": "workspace:*",
+        "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
         "happy-dom": "^20.11.1",
         "size-limit": "^13.0.1",
@@ -307,7 +307,7 @@
       },
     },
     "tooling/tsconfig": {
-      "name": "@apricotdream/tsconfig",
+      "name": "@qingwu-ui/tsconfig",
       "version": "0.0.0",
     },
   },
@@ -325,32 +325,6 @@
     "@alloc/quick-lru": ["@alloc/quick-lru@5.2.0", "http://192.168.3.8:8980/repository/npm-group/@alloc/quick-lru/-/quick-lru-5.2.0.tgz", {}, "sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw=="],
 
     "@antfu/install-pkg": ["@antfu/install-pkg@1.1.0", "http://192.168.3.8:8980/repository/npm-group/@antfu/install-pkg/-/install-pkg-1.1.0.tgz", { "dependencies": { "package-manager-detector": "^1.3.0", "tinyexec": "^1.0.1" } }, "sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ=="],
-
-    "@apricotdream/action-menu": ["@apricotdream/action-menu@workspace:packages/action-menu"],
-
-    "@apricotdream/ai-editor": ["@apricotdream/ai-editor@workspace:packages/ai-editor"],
-
-    "@apricotdream/button": ["@apricotdream/button@workspace:packages/button"],
-
-    "@apricotdream/calendar": ["@apricotdream/calendar@workspace:packages/calendar/ui"],
-
-    "@apricotdream/notifications": ["@apricotdream/notifications@workspace:packages/notifications"],
-
-    "@apricotdream/search": ["@apricotdream/search@workspace:packages/search"],
-
-    "@apricotdream/select": ["@apricotdream/select@workspace:packages/select"],
-
-    "@apricotdream/skeleton": ["@apricotdream/skeleton@workspace:packages/skeleton"],
-
-    "@apricotdream/tag-input": ["@apricotdream/tag-input@workspace:packages/tag-input"],
-
-    "@apricotdream/text-layout": ["@apricotdream/text-layout@workspace:packages/text-layout"],
-
-    "@apricotdream/toast": ["@apricotdream/toast@workspace:packages/toast"],
-
-    "@apricotdream/tsconfig": ["@apricotdream/tsconfig@workspace:tooling/tsconfig"],
-
-    "@apricotdream/upload": ["@apricotdream/upload@workspace:packages/upload"],
 
     "@asamuzakjp/css-color": ["@asamuzakjp/css-color@5.1.11", "http://192.168.3.8:8980/repository/npm-group/@asamuzakjp/css-color/-/css-color-5.1.11.tgz", { "dependencies": { "@asamuzakjp/generational-cache": "^1.0.1", "@csstools/css-calc": "^3.2.0", "@csstools/css-color-parser": "^4.1.0", "@csstools/css-parser-algorithms": "^4.0.0", "@csstools/css-tokenizer": "^4.0.0" } }, "sha512-KVw6qIiCTUQhByfTd78h2yD1/00waTmm9uy/R7Ck/ctUyAPj+AEDLkQIdJW0T8+qGgj3j5bpNKK7Q3G+LedJWg=="],
 
@@ -617,6 +591,32 @@
     "@profoundlogic/hogan": ["@profoundlogic/hogan@3.0.4", "http://192.168.3.8:8980/repository/npm-group/@profoundlogic/hogan/-/hogan-3.0.4.tgz", { "dependencies": { "nopt": "1.0.10" }, "bin": { "hulk": "bin/hulk" } }, "sha512-pmNVGuooS30Mm7YbZd5T7E5zYVO6D5Ct91sn4T39mUvMUc3sCGridcnhAufL1/Bz2QzAtzEn0agNrdk3+5yWzw=="],
 
     "@puppeteer/browsers": ["@puppeteer/browsers@3.0.6", "http://192.168.3.8:8980/repository/npm-group/@puppeteer/browsers/-/browsers-3.0.6.tgz", { "dependencies": { "modern-tar": "^0.7.6", "yargs": "^18.0.0" }, "peerDependencies": { "proxy-agent": ">=8.0.1", "yauzl": "^2.10.0 || ^3.4.0" }, "optionalPeers": ["proxy-agent", "yauzl"], "bin": { "browsers": "lib/main-cli.js" } }, "sha512-B/gKoqlFkzhvzsI6jo9K1cZz9o5ypviVv/xu8CwA4grZzyVwN+XfkT+tu8T1zrauuEXv6VhS2oGX+6NL95WcKA=="],
+
+    "@qingwu-ui/action-menu": ["@qingwu-ui/action-menu@workspace:packages/action-menu"],
+
+    "@qingwu-ui/ai-editor": ["@qingwu-ui/ai-editor@workspace:packages/ai-editor"],
+
+    "@qingwu-ui/button": ["@qingwu-ui/button@workspace:packages/button"],
+
+    "@qingwu-ui/calendar": ["@qingwu-ui/calendar@workspace:packages/calendar/ui"],
+
+    "@qingwu-ui/notifications": ["@qingwu-ui/notifications@workspace:packages/notifications"],
+
+    "@qingwu-ui/search": ["@qingwu-ui/search@workspace:packages/search"],
+
+    "@qingwu-ui/select": ["@qingwu-ui/select@workspace:packages/select"],
+
+    "@qingwu-ui/skeleton": ["@qingwu-ui/skeleton@workspace:packages/skeleton"],
+
+    "@qingwu-ui/tag-input": ["@qingwu-ui/tag-input@workspace:packages/tag-input"],
+
+    "@qingwu-ui/text-layout": ["@qingwu-ui/text-layout@workspace:packages/text-layout"],
+
+    "@qingwu-ui/toast": ["@qingwu-ui/toast@workspace:packages/toast"],
+
+    "@qingwu-ui/tsconfig": ["@qingwu-ui/tsconfig@workspace:tooling/tsconfig"],
+
+    "@qingwu-ui/upload": ["@qingwu-ui/upload@workspace:packages/upload"],
 
     "@quansync/fs": ["@quansync/fs@1.0.0", "http://192.168.3.8:8980/repository/npm-group/@quansync/fs/-/fs-1.0.0.tgz", { "dependencies": { "quansync": "^1.0.0" } }, "sha512-4TJ3DFtlf1L5LDMaM6CanJ/0lckGNtJcMjQ1NAV6zDmA0tEHKZtxNKin8EgPaVX1YzljbxckyT2tJrpQKAtngQ=="],
 

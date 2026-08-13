@@ -3,8 +3,8 @@
    单值字段（coverUrl: string）接入 Upload 的完整方案
    ============================================================ */
 
-const SNIPPET_CONFIG = `import { ImageUpload } from "@apricotdream/upload";
-import "@apricotdream/upload/style.css";
+const SNIPPET_CONFIG = `import { ImageUpload } from "@qingwu-ui/upload";
+import "@qingwu-ui/upload/style.css";
 
 // 单值字段：一张封面只留一个 URL，默认值三连覆盖
 const uploader = new ImageUpload(el, {

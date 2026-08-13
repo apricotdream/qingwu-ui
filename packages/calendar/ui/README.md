@@ -1,4 +1,4 @@
-# @apricotdream/calendar
+# @qingwu-ui/calendar
 
 [青梧UI](https://github.com/apricotdream/qingwu-ui) 的 **自渲染日历组件** —— 框架无关，纯 DOM + CSS，零依赖。以**中国历法**为核心差异化：农历 / 节气 / 节日 / 黄历宜忌。
 
@@ -12,14 +12,14 @@
 ## 安装
 
 ```bash
-npm install @apricotdream/calendar
+npm install @qingwu-ui/calendar
 ```
 
 ## 使用
 
 ```ts
-import { Calendar } from "@apricotdream/calendar";
-import "@apricotdream/calendar/style.css";
+import { Calendar } from "@qingwu-ui/calendar";
+import "@qingwu-ui/calendar/style.css";
 
 const cal = new Calendar(document.getElementById("calendar")!, {
   selected: "2026-07-29",

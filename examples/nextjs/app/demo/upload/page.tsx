@@ -1,9 +1,9 @@
 "use client";
 
-import type { OutputFormat, UploadItem } from "@apricotdream/upload";
-import { ImageUpload } from "@apricotdream/upload";
+import type { OutputFormat, UploadItem } from "@qingwu-ui/upload";
+import { ImageUpload } from "@qingwu-ui/upload";
 import { useCallback, useEffect, useRef, useState } from "react";
-import "@apricotdream/upload/style.css";
+import "@qingwu-ui/upload/style.css";
 import DemoCard from "@/components/DemoCard";
 import { COMPONENT_SECTIONS } from "@/docs.config";
 
@@ -27,7 +27,7 @@ const FIELDS: FieldDef[] = [
     defaultValue: "dropzone",
     options: [
       { label: "拖拽区", value: "dropzone" },
-      { label: "按钮（复用 @apricotdream/button）", value: "button" },
+      { label: "按钮（复用 @qingwu-ui/button）", value: "button" },
     ],
   },
   {
@@ -245,7 +245,7 @@ export default function UploadPage() {
   const buildOptsLines = () => {
     const lines: string[] = [];
     if (props.trigger === "button")
-      lines.push('  trigger: "button",            // 按钮形态，复用 @apricotdream/button');
+      lines.push('  trigger: "button",            // 按钮形态，复用 @qingwu-ui/button');
     if (props.compress === "false")
       lines.push("  compress: false,             // 关闭压缩，按原图上传");
     const formatMap: Record<string, string> = {
@@ -282,8 +282,8 @@ export default function UploadPage() {
     const optsLines = buildOptsLines();
 
     const react = [
-      'import { ImageUpload } from "@apricotdream/upload";',
-      'import "@apricotdream/upload/style.css";   // 按钮形态样式已内置',
+      'import { ImageUpload } from "@qingwu-ui/upload";',
+      'import "@qingwu-ui/upload/style.css";   // 按钮形态样式已内置',
       "",
       "useEffect(() => {",
       "  const el = rootRef.current;",
@@ -302,12 +302,12 @@ export default function UploadPage() {
       '<html lang="zh-CN">',
       "<head>",
       '  <meta charset="utf-8" />',
-      '  <link rel="stylesheet" href="https://unpkg.com/@apricotdream/upload/style.css" />',
+      '  <link rel="stylesheet" href="https://unpkg.com/@qingwu-ui/upload/style.css" />',
       "</head>",
       "<body>",
       '  <div id="root"></div>',
       '  <script type="module">',
-      '    import { ImageUpload } from "https://unpkg.com/@apricotdream/upload";',
+      '    import { ImageUpload } from "https://unpkg.com/@qingwu-ui/upload";',
       `    const uploader = new ImageUpload(document.querySelector("#root"), ${optsLines.length > 0 ? "{" : ""}`,
       ...optsLines.map((l) => `    ${l}`),
       optsLines.length > 0 ? "    });" : "    {});",
@@ -323,8 +323,8 @@ export default function UploadPage() {
       "",
       '<script setup lang="ts">',
       'import { ref, onMounted, onUnmounted } from "vue";',
-      'import { ImageUpload } from "@apricotdream/upload";',
-      'import "@apricotdream/upload/style.css";   // 按钮形态样式已内置',
+      'import { ImageUpload } from "@qingwu-ui/upload";',
+      'import "@qingwu-ui/upload/style.css";   // 按钮形态样式已内置',
       "",
       "const rootRef = ref<HTMLDivElement>();",
       "let uploader: ImageUpload | null = null;",

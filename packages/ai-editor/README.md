@@ -23,10 +23,10 @@
 ## 安装
 
 ```bash
-npm install @apricotdream/ai-editor
+npm install @qingwu-ui/ai-editor
 ```
 
-> **包名说明：** 对外发布的 npm 包名是 scoped 名 **`@apricotdream/ai-editor`**，`npm install` 与所有 `import` 都用它（含样式子路径 `@apricotdream/ai-editor/styles`、Node 子入口 `@apricotdream/ai-editor/clipper`）。包名历史：`qingwu-ai-editor`（unscoped）→ `@qingwu/editor` → `@qingwu/ai-editor` → **`@apricotdream/ai-editor`**（现名，公开 npm 发布用）；若你在旧文档/示例里看到前两者，请替换为 `@apricotdream/ai-editor`。
+> **包名说明：** 对外发布的 npm 包名是 scoped 名 **`@qingwu-ui/ai-editor`**，`npm install` 与所有 `import` 都用它（含样式子路径 `@qingwu-ui/ai-editor/styles`、Node 子入口 `@qingwu-ui/ai-editor/clipper`）。包名历史：`qingwu-ai-editor`（unscoped）→ `@qingwu/editor` → `@qingwu/ai-editor` → **`@qingwu-ui/ai-editor`**（现名，公开 npm 发布用）；若你在旧文档/示例里看到前两者，请替换为 `@qingwu-ui/ai-editor`。
 
 或直接克隆仓库（qingwu-ui monorepo，位于 `packages/ai-editor`）：
 
@@ -42,7 +42,7 @@ bun run dev
 ### 作为 npm 依赖使用
 
 ```tsx
-import { QingWuAIEditor, t, setLocale } from "@apricotdream/ai-editor";
+import { QingWuAIEditor, t, setLocale } from "@qingwu-ui/ai-editor";
 
 function App() {
   return (
@@ -63,7 +63,7 @@ function App() {
 
 ```tsx
 // 编辑器核心样式（必需，放在入口文件顶层，且必须在组件 import 之后能被打包器收集到）
-import "@apricotdream/ai-editor/styles";
+import "@qingwu-ui/ai-editor/styles";
 
 // 代码块语言图标（可选：先 npm i devicon，未安装时图标位留空、不影响功能）
 import "devicon/devicon.min.css";
@@ -73,9 +73,9 @@ import "xgplayer/dist/index.min.css";
 
 > **不要依赖引用方自己的 Tailwind 来「顺带」生成样式。** 编辑器的 class 在编译后已固化进 `dist/styles.css`，而 Tailwind 默认不扫描 `node_modules`，所以宿主项目即使也用了 Tailwind，也不会为库里的断点/工具类生成规则——必须引入上面的 `styles`。
 
-> **TypeScript 类型：** 本包已为样式子路径提供类型声明（`styles.d.ts`，经 `exports` 的 `./styles` 暴露），`import "@apricotdream/ai-editor/styles"` 通常**无需**额外配置即可通过类型检查。若你的 TS 仍报 `2307 找不到模块`，可在项目任意 `.d.ts` 补一行兜底，**不要**因此删掉样式 `import`：
+> **TypeScript 类型：** 本包已为样式子路径提供类型声明（`styles.d.ts`，经 `exports` 的 `./styles` 暴露），`import "@qingwu-ui/ai-editor/styles"` 通常**无需**额外配置即可通过类型检查。若你的 TS 仍报 `2307 找不到模块`，可在项目任意 `.d.ts` 补一行兜底，**不要**因此删掉样式 `import`：
 > ```ts
-> declare module "@apricotdream/ai-editor/styles";
+> declare module "@qingwu-ui/ai-editor/styles";
 > ```
 
 ### Next.js / SSR 集成
@@ -86,7 +86,7 @@ import "xgplayer/dist/index.min.css";
 import dynamic from "next/dynamic";
 
 const Editor = dynamic(
-  () => import("@apricotdream/ai-editor").then((m) => m.QingWuAIEditor),
+  () => import("@qingwu-ui/ai-editor").then((m) => m.QingWuAIEditor),
   { ssr: false }
 );
 
@@ -125,7 +125,7 @@ export default function Page() {
 import {
   setAIProvider,
   createAILanguageModelProvider,
-} from "@apricotdream/ai-editor";
+} from "@qingwu-ui/ai-editor";
 
 // 通用接口 - 支持任意 OpenAI 兼容 API
 const provider = await createAILanguageModelProvider({
@@ -143,7 +143,7 @@ setAIProvider(provider);
 ### 配置云存储
 
 ```ts
-import { setStorageProvider, createOSSStorage } from "@apricotdream/ai-editor";
+import { setStorageProvider, createOSSStorage } from "@qingwu-ui/ai-editor";
 
 setStorageProvider(
   createOSSStorage({
@@ -158,7 +158,7 @@ setStorageProvider(
 ### 中英切换
 
 ```ts
-import { setLocale } from "@apricotdream/ai-editor";
+import { setLocale } from "@qingwu-ui/ai-editor";
 
 setLocale("en-US"); // 切换到英文
 setLocale("zh-CN"); // 切换到中文
@@ -224,10 +224,10 @@ cd extension
 
 编辑器侧启动接收器，接收扩展推送的剪藏：
 
-> **Node / 桌面壳专用子入口：** `startClipperReceiver` / `stopClipperReceiver` 依赖 `node:http`，已从浏览器主入口移除，请从 `@apricotdream/ai-editor/clipper` 导入，避免把 Node 模块打进浏览器 / SSR 客户端产物。纯浏览器场景仍从主入口用 `startBrowserClipperReceiver`（见下文）。
+> **Node / 桌面壳专用子入口：** `startClipperReceiver` / `stopClipperReceiver` 依赖 `node:http`，已从浏览器主入口移除，请从 `@qingwu-ui/ai-editor/clipper` 导入，避免把 Node 模块打进浏览器 / SSR 客户端产物。纯浏览器场景仍从主入口用 `startBrowserClipperReceiver`（见下文）。
 
 ```ts
-import { startClipperReceiver } from "@apricotdream/ai-editor/clipper";
+import { startClipperReceiver } from "@qingwu-ui/ai-editor/clipper";
 
 await startClipperReceiver({
   port: 7321,
@@ -266,7 +266,7 @@ HTTP 接口 `POST http://127.0.0.1:7321/clip`，请求体（`IncomingClip`）：
 纯浏览器场景（无 Node 运行时）使用 `startBrowserClipperReceiver`，通过 `window.postMessage` 接收，无需 HTTP：
 
 ```ts
-import { startBrowserClipperReceiver } from "@apricotdream/ai-editor";
+import { startBrowserClipperReceiver } from "@qingwu-ui/ai-editor";
 
 startBrowserClipperReceiver({
   onClip: (clip) => editor.commands.setContent(clip.markdown),
@@ -307,13 +307,13 @@ startBrowserClipperReceiver({
 
 #### Toast 提示通道
 
-超限拦截等提示**默认内置渲染**：未接入任何自定义 Toast 时，自动使用随包内置的 `@apricotdream/toast`（样式随包发布，零额外配置）。渲染优先级：`onToast` 实例回调 > `setToastProvider()` 全局渲染器 > 内置 `@apricotdream/toast`。
+超限拦截等提示**默认内置渲染**：未接入任何自定义 Toast 时，自动使用随包内置的 `@qingwu-ui/toast`（样式随包发布，零额外配置）。渲染优先级：`onToast` 实例回调 > `setToastProvider()` 全局渲染器 > 内置 `@qingwu-ui/toast`。
 
-**onToast 实例级接入示例（推荐 @apricotdream/toast）**：
+**onToast 实例级接入示例（推荐 @qingwu-ui/toast）**：
 
 ```tsx
-import { toast } from "@apricotdream/toast";
-import "@apricotdream/toast/style.css";
+import { toast } from "@qingwu-ui/toast";
+import "@qingwu-ui/toast/style.css";
 
 <QingWuAIEditor
   maxAttachmentSize={50 * 1024 * 1024}
@@ -329,7 +329,7 @@ import "@apricotdream/toast/style.css";
 **setToastProvider 全局替换**（与 `setStorageProvider` / `setAIProvider` 同款模式，对所有编辑器实例生效；传 `null` 恢复内置默认）：
 
 ```ts
-import { setToastProvider } from "@apricotdream/ai-editor";
+import { setToastProvider } from "@qingwu-ui/ai-editor";
 
 setToastProvider((message, type) => {
   // 接入宿主自己的 Toast 组件
@@ -344,8 +344,8 @@ setToastProvider((message, type) => {
 - **删除确认**：默认使用内置项目 `DeleteConfirmDialog`（图片/视频/音频/附件/代码块/表格删除均走它）。宿主可经 `setConfirmProvider()` 全局替换为自定义确认 UI（如接入自己的 Dialog 组件）；传 `null` 恢复内置默认：
 
 ```ts
-import { setConfirmProvider } from "@apricotdream/ai-editor";
-import type { DeleteConfirmDialogProps } from "@apricotdream/ai-editor";
+import { setConfirmProvider } from "@qingwu-ui/ai-editor";
+import type { DeleteConfirmDialogProps } from "@qingwu-ui/ai-editor";
 
 setConfirmProvider(({ title, message, confirmText, cancelText, onConfirm, onCancel }) => {
   // 渲染宿主自己的确认框，确认时调用 onConfirm()，取消时调用 onCancel()

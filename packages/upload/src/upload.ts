@@ -7,7 +7,7 @@
    - 零框架依赖，纯 DOM + CSS
    ============================================================ */
 
-import { Button } from "@apricotdream/button";
+import { Button } from "@qingwu-ui/button";
 import { compressImage, detectEncodeMimes } from "./compress";
 import type { CompressedFile, OutputFormat, UploadItem, UploadOptions } from "./types";
 
@@ -479,7 +479,7 @@ export class ImageUpload {
     this.input.hidden = true;
 
     if (this.opts.trigger === "button") {
-      /* 按钮变体：复用 @apricotdream/button 样式，进度内嵌按钮，不渲染列表容器 */
+      /* 按钮变体：复用 @qingwu-ui/button 样式，进度内嵌按钮，不渲染列表容器 */
       this.btn = new Button({
         text: "选择图片",
         variant: "primary",

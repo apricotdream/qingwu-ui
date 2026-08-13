@@ -1,9 +1,9 @@
 "use client";
 
 import { ICON_MOON } from "@icon/icons";
-import type { NotificationItem, NotificationsOptions } from "@apricotdream/notifications";
-import { Notifications } from "@apricotdream/notifications";
-import "@apricotdream/notifications/style.css";
+import type { NotificationItem, NotificationsOptions } from "@qingwu-ui/notifications";
+import { Notifications } from "@qingwu-ui/notifications";
+import "@qingwu-ui/notifications/style.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DemoCard from "@/components/DemoCard";
 
@@ -16,7 +16,7 @@ const BASE_ITEMS: NotificationItem[] = [
   {
     id: 1,
     title: "青梧 UI 0.9.0 发布",
-    sub: "12 包全量对齐 · 首次以 @apricotdream scope 发布",
+    sub: "12 包全量对齐 · 首次以 @qingwu-ui scope 发布",
     glyph: "梧",
     unread: true,
   },
@@ -98,6 +98,16 @@ export default function NotificationsPage() {
   const addLog = useCallback((msg: string) => {
     setLog((prev) => [...prev.slice(-19), `[${new Date().toLocaleTimeString()}] ${msg}`]);
   }, []);
+  /* ---- 摇铃动画开关（实时热更 ring） ---- */
+  const [ringOn, setRingOn] = useState(true);
+  const ringOnRef = useRef(true);
+  const toggleRing = useCallback(() => {
+    const next = !ringOnRef.current;
+    ringOnRef.current = next;
+    setRingOn(next);
+    ntfRef.current?.update({ ring: next });
+    addLog(next ? "摇铃动画已开启" : "摇铃动画已关闭");
+  }, [addLog]);
 
   useEffect(() => {
     const root = ctrlRef.current;
@@ -140,8 +150,8 @@ export default function NotificationsPage() {
 
   const snippets = {
     react: [
-      'import { Notifications } from "@apricotdream/notifications";',
-      'import "@apricotdream/notifications/style.css";',
+      'import { Notifications } from "@qingwu-ui/notifications";',
+      'import "@qingwu-ui/notifications/style.css";',
       "",
       "const ntf = new Notifications(container, {",
       "  items: [",
@@ -149,6 +159,8 @@ export default function NotificationsPage() {
       '    { id: 2, title: "日历邀请已通过", sub: "周三 10:00 评审会", unread: false },',
       "  ],",
       "  unreadCount: 1,",
+      "  ring: true, // 未读响铃摆动开关",
+      '  // ringMode: "intermittent", ringInterval: 4000, // 按频率间歇重响',
       "  onItemClick: (item) => handle(item),",
       "  onOpenChange: (open) => console.log(open),",
       "});",
@@ -161,15 +173,16 @@ export default function NotificationsPage() {
       "<!DOCTYPE html>",
       '<html lang="zh-CN">',
       "<head>",
-      '  <link rel="stylesheet" href="https://unpkg.com/@apricotdream/notifications/style.css" />',
+      '  <link rel="stylesheet" href="https://unpkg.com/@qingwu-ui/notifications/style.css" />',
       "</head>",
       "<body>",
       '  <div id="root"></div>',
       '  <script type="module">',
-      '    import { Notifications } from "https://unpkg.com/@apricotdream/notifications";',
+      '    import { Notifications } from "https://unpkg.com/@qingwu-ui/notifications";',
       "    const ntf = new Notifications(document.querySelector(\"#root\"), {",
       "      items: [{ id: 1, title: \"青梧 UI 0.9.0 发布\", unread: true }],",
       "      unreadCount: 1,",
+      "      ring: true,",
       "    });",
       "  </script>",
       "</body>",
@@ -182,7 +195,7 @@ export default function NotificationsPage() {
       {/* 受控更新（full） */}
       <DemoCard
         title="Notifications 通知铃铛"
-        desc="铃铛触发器 + 未读红点徽标 + 手风琴错峰下拉面板。受控更新：动态推送消息 / 清空未读，点击条目与展开状态实时回调。"
+        desc="铃铛触发器 + 未读红点徽标 + 手风琴错峰下拉面板。未读时铃铛左右摆动（可一键关闭摇铃动画），受控更新：动态推送消息 / 清空未读 / 切换摇铃。"
         full
         snippets={snippets}
       >
@@ -206,6 +219,13 @@ export default function NotificationsPage() {
               </button>
               <button className="qw-btn" type="button" onClick={clearUnread}>
                 清空未读
+              </button>
+              <button
+                className={ringOn ? "qw-btn qw-btn-primary" : "qw-btn"}
+                type="button"
+                onClick={toggleRing}
+              >
+                摇铃动画：{ringOn ? "开" : "关"}
               </button>
             </div>
           </div>
@@ -247,7 +267,7 @@ export default function NotificationsPage() {
         <NotificationsHost
           options={{
             items: [
-              { id: 1, title: "青梧 UI 0.9.0", sub: "12 包全量对齐 · @apricotdream scope 首发", glyph: "0.9.0", unread: true },
+              { id: 1, title: "青梧 UI 0.9.0", sub: "12 包全量对齐 · @qingwu-ui scope 首发", glyph: "0.9.0", unread: true },
               { id: 2, title: "AI Editor 1.4.2", sub: "替换确认弹窗 · 孤儿资源延迟删除", glyph: "1.4.2", unread: false },
             ],
             unreadCount: 1,

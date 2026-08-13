@@ -115,6 +115,70 @@ describe("Notifications", () => {
     expect(badge!.classList.contains("is-visible")).toBe(false);
   });
 
+  /* ---- 铃铛摆动（ring） ---- */
+
+  test("unreadCount > 0 时触发器加 is-ringing（默认 persistent）", () => {
+    new Notifications(root, { items: BASE, unreadCount: 2 });
+    const trigger = document.querySelector<HTMLElement>(".qntf-trigger");
+    expect(trigger!.classList.contains("is-ringing")).toBe(true);
+  });
+
+  test("ring:false 时不加 is-ringing，即便存在未读", () => {
+    new Notifications(root, { items: BASE, unreadCount: 2, ring: false });
+    const trigger = document.querySelector<HTMLElement>(".qntf-trigger");
+    expect(trigger!.classList.contains("is-ringing")).toBe(false);
+  });
+
+  test("面板展开停止响铃，收起且仍有未读则恢复", () => {
+    const bell = new Notifications(root, { items: BASE, unreadCount: 2 });
+    const trigger = document.querySelector<HTMLElement>(".qntf-trigger")!;
+    expect(trigger.classList.contains("is-ringing")).toBe(true);
+    bell.open();
+    expect(trigger.classList.contains("is-ringing")).toBe(false);
+    bell.close();
+    expect(trigger.classList.contains("is-ringing")).toBe(true);
+  });
+
+  test("update 清空未读停止响铃，重新有未读恢复", () => {
+    const bell = new Notifications(root, { items: BASE, unreadCount: 2 });
+    const trigger = document.querySelector<HTMLElement>(".qntf-trigger")!;
+    expect(trigger.classList.contains("is-ringing")).toBe(true);
+    bell.update({ unreadCount: 0 });
+    expect(trigger.classList.contains("is-ringing")).toBe(false);
+    bell.update({ unreadCount: 3 });
+    expect(trigger.classList.contains("is-ringing")).toBe(true);
+  });
+
+  test("update 可热更 ring 开关", () => {
+    const bell = new Notifications(root, { items: BASE, unreadCount: 2 });
+    const trigger = document.querySelector<HTMLElement>(".qntf-trigger")!;
+    bell.update({ ring: false });
+    expect(trigger.classList.contains("is-ringing")).toBe(false);
+    bell.update({ ring: true });
+    expect(trigger.classList.contains("is-ringing")).toBe(true);
+  });
+
+  test("intermittent 模式：响一轮后静默，间隔后重响", () => {
+    vi.useFakeTimers();
+    try {
+      const bell = new Notifications(root, {
+        items: BASE,
+        unreadCount: 2,
+        ringMode: "intermittent",
+        ringInterval: 2000,
+      });
+      const trigger = document.querySelector<HTMLElement>(".qntf-trigger")!;
+      expect(trigger.classList.contains("is-ringing")).toBe(true);
+      vi.advanceTimersByTime(900); // 一轮摆动（RING_BURST）结束
+      expect(trigger.classList.contains("is-ringing")).toBe(false);
+      vi.advanceTimersByTime(2000); // 间隔 ringInterval 后重响
+      expect(trigger.classList.contains("is-ringing")).toBe(true);
+      bell.destroy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   test("destroy 移除面板并清空宿主", () => {
     const bell = new Notifications(root, { items: BASE });
     bell.destroy();

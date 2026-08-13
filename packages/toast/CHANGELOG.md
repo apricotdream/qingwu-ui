@@ -1,10 +1,9 @@
-# @apricotdream/toast
+# @qingwu-ui/toast
 
-## 0.9.0
-
+## 0.9.0-beta
 ### Minor Changes
 
-- 版本统一对齐 0.9.0（无功能变更；首次以 @apricotdream scope 发布，@qingwu → @apricotdream 品牌迁移）
+- 版本统一对齐 0.9.0（无功能变更；首次以 @qingwu-ui scope 发布，@qingwu → @qingwu-ui 品牌迁移）
 
 
 ## 0.8.0
@@ -28,7 +27,7 @@
 
 ### Patch Changes
 
-- 版本统一对齐 0.6.0（无功能变更；`@apricotdream/tag-input` 随本版首次发布）
+- 版本统一对齐 0.6.0（无功能变更；`@qingwu-ui/tag-input` 随本版首次发布）
 
 ## 0.5.0
 
@@ -41,7 +40,7 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @apricotdream/text-layout@0.5.0
+  - @qingwu-ui/text-layout@0.5.0
 
 ## 0.4.0
 

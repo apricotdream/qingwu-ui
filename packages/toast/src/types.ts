@@ -31,7 +31,7 @@ export interface ToastOptions {
    */
   persist?: boolean;
   /**
-   * 文本最大行数（由 @apricotdream/text-layout 精确排版），超过后按字符截断并追加省略号；
+   * 文本最大行数（由 @qingwu-ui/text-layout 精确排版），超过后按字符截断并追加省略号；
    * 默认不限制 → 长文本完整显示（内容自适应），文本宽度自适应。
    * 仅作用于主消息 message，description 不参与截断
    */

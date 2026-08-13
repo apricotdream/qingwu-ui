@@ -41,6 +41,12 @@ export interface NotificationsOptions {
   stagger?: number;
   /** 是否启用手风琴错峰动画，默认 true（自动尊重 prefers-reduced-motion） */
   animate?: boolean;
+  /** 铃铛摆动动画开关：未读数 > 0 且面板未展开时触发，默认 true（自动尊重 prefers-reduced-motion） */
+  ring?: boolean;
+  /** 摆动模式：persistent 常驻摆动（未读期间无限 loop）/ intermittent 按 ringInterval 间歇重响，默认 persistent */
+  ringMode?: "persistent" | "intermittent";
+  /** intermittent 模式：两轮响铃的间隔 ms，默认 3000 */
+  ringInterval?: number;
   /** 错峰动画最大条目数：超过即降级为面板整体淡入，0 表示不降级，默认 12 */
   maxStagger?: number;
   /** 受控展开 */

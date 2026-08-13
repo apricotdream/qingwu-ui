@@ -40,16 +40,16 @@ export default defineConfig({
   plugins: [tailwindcss(), react(), flattenHtmlPaths()],
   resolve: {
     alias: [
-      // @apricotdream/toast 未发布 npm（E404）：直连 workspace 源码，跳过发包。
-      // style.css 子路径必须先于主别名匹配，否则会被 "@apricotdream/toast" 前缀吃掉。
+      // @qingwu-ui/toast 未发布 npm（E404）：直连 workspace 源码，跳过发包。
+      // style.css 子路径必须先于主别名匹配，否则会被 "@qingwu-ui/toast" 前缀吃掉。
       {
-        find: /^@apricotdream\/toast\/style\.css$/,
+        find: /^@qingwu-ui\/toast\/style\.css$/,
         replacement: resolve(import.meta.dirname, "../../toast/src/style.css"),
       },
-      { find: /^@apricotdream\/toast$/, replacement: resolve(import.meta.dirname, "../../toast/src/index.ts") },
+      { find: /^@qingwu-ui\/toast$/, replacement: resolve(import.meta.dirname, "../../toast/src/index.ts") },
       // toast 源码依赖 text-layout（零运行时依赖），同样源码直连
       {
-        find: /^@apricotdream\/text-layout$/,
+        find: /^@qingwu-ui\/text-layout$/,
         replacement: resolve(import.meta.dirname, "../../text-layout/src/index.ts"),
       },
       { find: "@", replacement: resolve(import.meta.dirname, "src") },

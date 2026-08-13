@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import "./css-order.css";
-import "@apricotdream/calendar/style.css";
-import "@apricotdream/search/style.css";
-import "@apricotdream/toast/style.css";
-import "@apricotdream/skeleton/style.css";
+import "@qingwu-ui/calendar/style.css";
+import "@qingwu-ui/search/style.css";
+import "@qingwu-ui/toast/style.css";
+import "@qingwu-ui/skeleton/style.css";
 import "./globals.css";
 import {
   ICON_CHEVRON_DOWN,
@@ -19,7 +19,7 @@ import {
   ICON_SIDEBAR_TOGGLE,
   ICON_SUN,
 } from "@icon/icons";
-import { SearchBox, type SearchItem } from "@apricotdream/search";
+import { SearchBox, type SearchItem } from "@qingwu-ui/search";
 import DocToc from "@/components/DocToc";
 import PageHero from "@/components/PageHero";
 import PrevNext from "@/components/PrevNext";

@@ -7,14 +7,14 @@ Solar terms, lunar dates, almanac advice, and official holiday scheduling — th
 ## Highlights
 
 - 🪶 **Zero dependencies** — every light component is pure TypeScript + native DOM, framework-agnostic; a thin React / Vue wrapper is all it takes
-- 🧠 **AI flagship** — `@apricotdream/ai-editor`, a Chinese-first AI rich-text editor, bundled with a browser clipper extension (Web Clipper)
+- 🧠 **AI flagship** — `@qingwu-ui/ai-editor`, a Chinese-first AI rich-text editor, bundled with a browser clipper extension (Web Clipper)
 - ♿ **Accessibility built-in** — ARIA dialog / combobox / listbox / live-region semantics, fully keyboard-navigable
 - 🌗 **Motion restraint** — every component honors `prefers-reduced-motion`
 - 📦 **On-demand imports** — ESM + CJS dual builds, precise `sideEffects` annotations, fully tree-shakable
 
 ---
 
-## Flagship: @apricotdream/ai-editor — Chinese-first AI rich-text editor
+## Flagship: @qingwu-ui/ai-editor — Chinese-first AI rich-text editor
 
 Built on Tiptap + React 19 with the Vercel AI SDK, one component gets you a full writing workbench:
 
@@ -26,8 +26,8 @@ Built on Tiptap + React 19 with the Vercel AI SDK, one component gets you a full
 - **Bilingual** — switch between zh/en at runtime, no page reload
 
 ```tsx
-import { QingWuAIEditor } from "@apricotdream/ai-editor";
-import "@apricotdream/ai-editor/styles";
+import { QingWuAIEditor } from "@qingwu-ui/ai-editor";
+import "@qingwu-ui/ai-editor/styles";
 
 <QingWuAIEditor
   placeholder="Start writing…"
@@ -43,20 +43,20 @@ Full docs (install / props / AI providers / clipper extension) in [`packages/ai-
 
 | Package | What it is | Version |
 |---|---|---|
-| [`@apricotdream/ai-editor`](./packages/ai-editor/README.md) | AI rich-text editor (Tiptap + React 19) + Web Clipper extension | 0.9.0-beta |
-| [`@apricotdream/calendar`](./packages/calendar/ui/README.md) | Self-rendering calendar: lunar dates / solar terms / holidays / almanac | 0.9.0-beta |
-| [`@apricotdream/search`](./packages/search/README.md) | Search box / command palette: typewriter placeholders, keyboard nav, categories | 0.9.0-beta |
-| [`@apricotdream/select`](./packages/select/README.md) | Dropdown select: accordion stagger animation, adaptive flip | 0.9.0-beta |
-| [`@apricotdream/toast`](./packages/toast/README.md) | Toast notifications: ARIA live region, promise chaining, queue management | 0.9.0-beta |
-| [`@apricotdream/upload`](./packages/upload/README.md) | Image upload: drag & drop / button trigger, client-side compression (original / WebP / AVIF) | 0.9.0-beta |
-| [`@apricotdream/button`](./packages/button/README.md) | Pill-shaped button: default / primary / amber / icon | 0.9.0-beta |
-| [`@apricotdream/tag-input`](./packages/tag-input/README.md) | Quick tag insertion: shortcut bar + controlled / uncontrolled modes | 0.9.0-beta |
-| [`@apricotdream/notifications`](./packages/notifications/README.md) | Notification bell: unread red-dot badge, accordion stagger panel | 0.9.0-beta |
-| [`@apricotdream/action-menu`](./packages/action-menu/README.md) | Radial action menu: fan-out reveal, FAB / custom trigger | 0.9.0-beta |
-| [`@apricotdream/skeleton`](./packages/skeleton/README.md) | Runtime-measured auto skeleton, snapshot-to-static-HTML (SSR) | 0.9.0-beta |
-| [`@apricotdream/text-layout`](./packages/text-layout/README.md) | Text layout engine: Canvas measurement, virtual scroll heights, multi-line truncation | 0.9.0-beta |
+| [`@qingwu-ui/ai-editor`](./packages/ai-editor/README.md) | AI rich-text editor (Tiptap + React 19) + Web Clipper extension | 0.9.0-beta |
+| [`@qingwu-ui/calendar`](./packages/calendar/ui/README.md) | Self-rendering calendar: lunar dates / solar terms / holidays / almanac | 0.9.0-beta |
+| [`@qingwu-ui/search`](./packages/search/README.md) | Search box / command palette: typewriter placeholders, keyboard nav, categories | 0.9.0-beta |
+| [`@qingwu-ui/select`](./packages/select/README.md) | Dropdown select: accordion stagger animation, adaptive flip | 0.9.0-beta |
+| [`@qingwu-ui/toast`](./packages/toast/README.md) | Toast notifications: ARIA live region, promise chaining, queue management | 0.9.0-beta |
+| [`@qingwu-ui/upload`](./packages/upload/README.md) | Image upload: drag & drop / button trigger, client-side compression (original / WebP / AVIF) | 0.9.0-beta |
+| [`@qingwu-ui/button`](./packages/button/README.md) | Pill-shaped button: default / primary / amber / icon | 0.9.0-beta |
+| [`@qingwu-ui/tag-input`](./packages/tag-input/README.md) | Quick tag insertion: shortcut bar + controlled / uncontrolled modes | 0.9.0-beta |
+| [`@qingwu-ui/notifications`](./packages/notifications/README.md) | Notification bell: unread red-dot badge, accordion stagger panel, unread bell-ring swing | 0.9.0-beta |
+| [`@qingwu-ui/action-menu`](./packages/action-menu/README.md) | Radial action menu: fan-out reveal, FAB / custom trigger | 0.9.0-beta |
+| [`@qingwu-ui/skeleton`](./packages/skeleton/README.md) | Runtime-measured auto skeleton, snapshot-to-static-HTML (SSR) | 0.9.0-beta |
+| [`@qingwu-ui/text-layout`](./packages/text-layout/README.md) | Text layout engine: Canvas measurement, virtual scroll heights, multi-line truncation | 0.9.0-beta |
 
-> **Versioning**: all `@apricotdream/*` packages share one version (currently **0.9.0-beta**); packages with no changes just align their version number, keeping family-wide dependency consistency.
+> **Versioning**: all `@qingwu-ui/*` packages share one version (currently **0.9.0-beta**); packages with no changes just align their version number, keeping family-wide dependency consistency.
 
 ## Install
 
@@ -64,21 +64,21 @@ All packages are published to the public npm registry; install on demand:
 
 ```bash
 # One-shot flagship combo
-npm install @apricotdream/ai-editor @apricotdream/calendar @apricotdream/search
+npm install @qingwu-ui/ai-editor @qingwu-ui/calendar @qingwu-ui/search
 
 # Pick any subset
-npm install @apricotdream/toast @apricotdream/select @apricotdream/upload
+npm install @qingwu-ui/toast @qingwu-ui/select @qingwu-ui/upload
 ```
 
 ---
 
-## Quick start: @apricotdream/calendar
+## Quick start: @qingwu-ui/calendar
 
 A self-rendering calendar: input trigger → popover panel → lunar / solar-term / holiday / almanac details, ready on mount.
 
 ```ts
-import { Calendar } from "@apricotdream/calendar";
-import "@apricotdream/calendar/style.css"; // style is a separate subpath export
+import { Calendar } from "@qingwu-ui/calendar";
+import "@qingwu-ui/calendar/style.css"; // style is a separate subpath export
 
 const cal = new Calendar(document.getElementById("calendar")!, {
   selected: "2026-07-29",
@@ -86,7 +86,7 @@ const cal = new Calendar(document.getElementById("calendar")!, {
 });
 ```
 
-> Full API (options / instance methods / provider extension) in [`@apricotdream/calendar`](./packages/calendar/ui/README.md).
+> Full API (options / instance methods / provider extension) in [`@qingwu-ui/calendar`](./packages/calendar/ui/README.md).
 
 ---
 
@@ -96,8 +96,8 @@ Light components are native DOM, so React / Vue need only a thin lifecycle wrapp
 
 ```tsx
 import { useEffect, useRef } from "react";
-import { SearchBox, type SearchOptions } from "@apricotdream/search";
-import "@apricotdream/search/style.css";
+import { SearchBox, type SearchOptions } from "@qingwu-ui/search";
+import "@qingwu-ui/search/style.css";
 
 export function QingwuSearch(props: SearchOptions) {
   const ref = useRef<HTMLDivElement>(null);
@@ -115,8 +115,8 @@ export function QingwuSearch(props: SearchOptions) {
 ```vue
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
-import { SearchBox } from "@apricotdream/search";
-import "@apricotdream/search/style.css";
+import { SearchBox } from "@qingwu-ui/search";
+import "@qingwu-ui/search/style.css";
 
 const root = ref<HTMLElement>();
 let box: SearchBox | undefined;
@@ -135,7 +135,7 @@ onUnmounted(() => box?.destroy());
 </template>
 ```
 
-> Official thin wrappers `@apricotdream/calendar-react` / `@apricotdream/calendar-vue` are on the roadmap (below).
+> Official thin wrappers `@qingwu-ui/calendar-react` / `@qingwu-ui/calendar-vue` are on the roadmap (below).
 
 ---
 
@@ -144,18 +144,18 @@ onUnmounted(() => box?.destroy());
 ```
 qingwu-ui/
 ├── packages/
-│   ├── ai-editor/       # @apricotdream/ai-editor —— AI rich-text editor + Web Clipper extension
-│   ├── calendar/ui/     # @apricotdream/calendar —— self-rendering calendar
-│   ├── search/          # @apricotdream/search —— search box / command palette
-│   ├── select/          # @apricotdream/select —— dropdown select
-│   ├── toast/           # @apricotdream/toast —— toast notifications
-│   ├── upload/          # @apricotdream/upload —— image upload / client-side compression
-│   ├── button/          # @apricotdream/button —— pill-shaped button
-│   ├── tag-input/       # @apricotdream/tag-input —— quick tag insertion
-│   ├── notifications/   # @apricotdream/notifications —— notification bell
-│   ├── action-menu/     # @apricotdream/action-menu —— radial action menu
-│   ├── skeleton/        # @apricotdream/skeleton —— auto skeleton
-│   └── text-layout/     # @apricotdream/text-layout —— text layout engine
+│   ├── ai-editor/       # @qingwu-ui/ai-editor —— AI rich-text editor + Web Clipper extension
+│   ├── calendar/ui/     # @qingwu-ui/calendar —— self-rendering calendar
+│   ├── search/          # @qingwu-ui/search —— search box / command palette
+│   ├── select/          # @qingwu-ui/select —— dropdown select
+│   ├── toast/           # @qingwu-ui/toast —— toast notifications
+│   ├── upload/          # @qingwu-ui/upload —— image upload / client-side compression
+│   ├── button/          # @qingwu-ui/button —— pill-shaped button
+│   ├── tag-input/       # @qingwu-ui/tag-input —— quick tag insertion
+│   ├── notifications/   # @qingwu-ui/notifications —— notification bell
+│   ├── action-menu/     # @qingwu-ui/action-menu —— radial action menu
+│   ├── skeleton/        # @qingwu-ui/skeleton —— auto skeleton
+│   └── text-layout/     # @qingwu-ui/text-layout —— text layout engine
 ├── examples/nextjs/     # Next.js demo site
 ├── tooling/
 │   ├── tsconfig/        # shared TS7 config
@@ -190,8 +190,8 @@ bun run release
 
 ## Roadmap
 
-- [x] 0.1.0 – 0.8.0 —— light component matrix matured; `@apricotdream/ai-editor` + Web Clipper joined the family
-- [x] 0.9.0-beta —— `@apricotdream/calendar` adds `dateOnly` mode; all 12 packages aligned to 0.9.0-beta and published publicly
+- [x] 0.1.0 – 0.8.0 —— light component matrix matured; `@qingwu-ui/ai-editor` + Web Clipper joined the family
+- [x] 0.9.0-beta —— `@qingwu-ui/calendar` adds `dateOnly` mode; all 12 packages aligned to 0.9.0-beta and published publicly
 - [ ] 1.0.0 —— API freeze, official React / Vue wrappers, docs site
 
 ## License

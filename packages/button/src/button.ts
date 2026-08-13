@@ -4,8 +4,8 @@
  *
  * 使用方式：
  * ```ts
- * import { Button } from "@apricotdream/button";
- * import "@apricotdream/button/style.css";
+ * import { Button } from "@qingwu-ui/button";
+ * import "@qingwu-ui/button/style.css";
  *
  * const btn = new Button({ text: "确认", variant: "primary" });
  * container.append(btn.el);

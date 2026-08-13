@@ -997,7 +997,7 @@ export const COMPONENT_SECTIONS: DocSection[] = [
             props: [
               {
                 name: "trigger",
-                desc: "触发形态：大拖拽区或小按钮（复用 @apricotdream/button 样式）",
+                desc: "触发形态：大拖拽区或小按钮（复用 @qingwu-ui/button 样式）",
                 type: "dropzone | button",
                 default: "dropzone",
               },

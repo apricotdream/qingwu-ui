@@ -3,7 +3,7 @@
    零依赖 · CSS 自定义属性驱动 · 明暗双主题 · reduced-motion 友好
 
    使用方式：
-     import "@apricotdream/notifications/style.css"
+     import "@qingwu-ui/notifications/style.css"
 
    令牌覆盖：--qntf-* 可被宿主覆盖；复用宿主已定义的
    --card / --ink / --ink-2 / --ink-3 / --line / --teal / --vermilion / --hover / --shadow-pop
@@ -102,6 +102,9 @@
 .qntf-trigger svg {
   width: 18px;
   height: 18px;
+  /* 摆动以顶边中点为轴心（如挂着的铃铛）；fill-box 保证 iOS Safari 正确解析 */
+  transform-box: fill-box;
+  transform-origin: top center;
 }
 
 /* 未读红点徽标：纯红点，>0 时弹入显示 */
@@ -124,6 +127,37 @@
 .qntf-badge.is-visible {
   opacity: 1;
   transform: scale(1);
+}
+
+/* 未读响铃摆动：内层 SVG 左右摆动，仿佛摇铃。intermittent 模式的
+   静默/重响节奏由 JS 按 ringInterval 控制；persistent 常驻无限摆。 */
+.qntf-trigger.is-ringing svg {
+  animation: qntf-ring 0.9s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes qntf-ring {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  12% {
+    transform: rotate(15deg);
+  }
+  25% {
+    transform: rotate(-12deg);
+  }
+  38% {
+    transform: rotate(10deg);
+  }
+  50% {
+    transform: rotate(-8deg);
+  }
+  63% {
+    transform: rotate(5deg);
+  }
+  76% {
+    transform: rotate(-3deg);
+  }
 }
 
 /* ============================================================

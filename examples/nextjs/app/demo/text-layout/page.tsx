@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChipItem } from "@apricotdream/text-layout";
+import type { ChipItem } from "@qingwu-ui/text-layout";
 import {
   computeColumnWidths,
   computeVirtualHeights,
@@ -10,7 +10,7 @@ import {
   measure,
   prepare,
   truncateToLines,
-} from "@apricotdream/text-layout";
+} from "@qingwu-ui/text-layout";
 import { useEffect, useMemo, useState } from "react";
 import DemoCard from "@/components/DemoCard";
 import { COMPONENT_SECTIONS } from "@/docs.config";
@@ -100,7 +100,7 @@ function VirtualScrollDemo() {
     <DemoCard
       title="虚拟滚动高度预计算"
       desc={`1000 项不等高列表，总高 ${Math.round(totalHeight).toLocaleString()}px。Pretext 方案 O(1) 查找可见范围，无需 DOM 测量。拖动下方滚动条查看效果。`}
-      code={`import { computeVirtualHeights, findVisibleRange } from "@apricotdream/text-layout";
+      code={`import { computeVirtualHeights, findVisibleRange } from "@qingwu-ui/text-layout";
 
 // 1. 批量预计算高度（与数据加载并行）
 const { heights, offsets, totalHeight } = computeVirtualHeights(
@@ -201,7 +201,7 @@ function ChatBubbleDemo() {
     <DemoCard
       title="聊天气泡高度测量"
       desc="每条消息通过 layout() 精确计算高度，可用于虚拟滚动定位和滚动锚定。对比传统方案需 DOM 渲染后才能获取高度。"
-      code={`import { layout } from "@apricotdream/text-layout";
+      code={`import { layout } from "@qingwu-ui/text-layout";
 
 // 测量消息气泡高度
 const result = layout(messageText, { maxWidth: 300, lineHeight: 22 }, "15px system-ui");
@@ -252,7 +252,7 @@ function TruncateDemo() {
     <DemoCard
       title="精确多行截断"
       desc={`全文 ${fullResult.lineCount} 行。Pretext 方案通过二分查找精确定位截断位置，返回截断文本和元信息。CSS line-clamp 无法返回截断位置。`}
-      code={`import { truncateToLines } from "@apricotdream/text-layout";
+      code={`import { truncateToLines } from "@qingwu-ui/text-layout";
 
 const { text, truncated, lineCount, fullLineCount } = truncateToLines(
   longText, 360, 3, "15px system-ui"
@@ -344,7 +344,7 @@ function ChipFlowDemo() {
     <DemoCard
       title="芯片流（Chip Flow）布局"
       desc="芯片作为不可断行原子元素与文本混合 inline 排版。添加/删除芯片实时重新排版。"
-      code={`import { layoutChips } from "@apricotdream/text-layout";
+      code={`import { layoutChips } from "@qingwu-ui/text-layout";
 
 const items = [
   { type: "text", text: "筛选：" },
@@ -419,28 +419,28 @@ const { lines, totalHeight } = layoutChips(items, 400, "15px system-ui", 24, 28)
 function TableColumnsDemo() {
   const data = [
     ["组件名称", "描述", "版本", "体积"],
-    ["@apricotdream/button", "通用按钮组件，支持四种变体：默认、主色、琥珀色、图标按钮", "0.3.1", "4 kB"],
+    ["@qingwu-ui/button", "通用按钮组件，支持四种变体：默认、主色、琥珀色、图标按钮", "0.3.1", "4 kB"],
     [
-      "@apricotdream/calendar",
+      "@qingwu-ui/calendar",
       "农历日历组件，含节气、节日、黄历、干支纪年，纯 DOM 渲染",
       "0.3.1",
       "30 kB",
     ],
     [
-      "@apricotdream/search",
+      "@qingwu-ui/search",
       "搜索框组件，打字机轮播占位、键盘导航、焦点陷阱、结果动画",
       "0.3.1",
       "12 kB",
     ],
-    ["@apricotdream/upload", "图片上传组件，拖拽/点击、客户端压缩、多格式输出", "0.3.1", "8 kB"],
+    ["@qingwu-ui/upload", "图片上传组件，拖拽/点击、客户端压缩、多格式输出", "0.3.1", "8 kB"],
     [
-      "@apricotdream/ai-editor",
+      "@qingwu-ui/ai-editor",
       "AI 编辑器，基于 Tiptap，支持 Markdown 和所见即所得编辑",
       "0.3.1",
       "50 kB",
     ],
     [
-      "@apricotdream/text-layout",
+      "@qingwu-ui/text-layout",
       "文本排版引擎，Pretext 启发两阶段架构，Unicode 感知换行",
       "0.3.1",
       "6 kB",
@@ -458,7 +458,7 @@ function TableColumnsDemo() {
     <DemoCard
       title="表格列宽自动计算"
       desc="基于单元格内容自动计算最佳列宽，按比例分配 + 最小宽度约束。不受限于浏览器 table-layout: auto 的渲染后再确定列宽的性能问题。"
-      code={`import { computeColumnWidths } from "@apricotdream/text-layout";
+      code={`import { computeColumnWidths } from "@qingwu-ui/text-layout";
 
 const { widths, truncated } = computeColumnWidths(
   rows, tableWidth, "15px system-ui", 60, 300
@@ -539,7 +539,7 @@ function EngineOverview() {
     <DemoCard
       title="引擎核心：prepare → layout 两阶段 API"
       desc={`Pretext 风格的文本排版：prepare() 做 Unicode 字素分割 + Canvas 宽度测量 + 缓存（一次性），layout() 纯算术计算换行（每次宽度变化可重复调用）。`}
-      code={`import { prepare, layout, measure } from "@apricotdream/text-layout";
+      code={`import { prepare, layout, measure } from "@qingwu-ui/text-layout";
 
 // 阶段1: 预处理（一次性）
 const segments = prepare(text, "15px system-ui");

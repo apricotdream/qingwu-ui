@@ -115,7 +115,7 @@ npm run package
 1. 在青梧编辑器中启动 Clipper 接收器：
 
 ```ts
-import { QingWuAIEditor, startClipperReceiver } from "@apricotdream/ai-editor";
+import { QingWuAIEditor, startClipperReceiver } from "@qingwu-ui/ai-editor";
 
 const editor = ...; // 编辑器实例
 

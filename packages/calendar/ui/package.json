@@ -1,6 +1,6 @@
 {
-  "name": "@apricotdream/calendar",
-  "version": "0.9.0",
+  "name": "@qingwu-ui/calendar",
+  "version": "0.9.0-beta",
   "description": "Framework-agnostic calendar component with Chinese lunar calendar, holidays, and solar terms",
   "type": "module",
   "license": "Apache-2.0",
@@ -31,7 +31,7 @@
     "size": "size-limit"
   },
   "devDependencies": {
-    "@apricotdream/tsconfig": "workspace:*",
+    "@qingwu-ui/tsconfig": "workspace:*",
     "@size-limit/preset-small-lib": "^13.0.1",
     "happy-dom": "^20.11.1",
     "size-limit": "^13.0.1",
