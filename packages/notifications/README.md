@@ -1,8 +1,9 @@
-# @apricotdream/notifications
+# @qingwu-ui/notifications
 
 [青梧UI](https://github.com/apricotdream/qingwu-ui) 的 **通知铃铛组件** —— 框架无关，纯 DOM + CSS，零依赖。
 
 - **未读红点徽标**：`unreadCount > 0` 时铃铛右上角弹入红点（纯点，不带数字）
+- **未读响铃摆动**：`unreadCount > 0` 时铃铛图标左右摆动仿佛摇铃；`ring` 可整体关闭，`ringMode` 支持常驻无限摆 / 按 `ringInterval` 间歇重响
 - **手风琴错峰动画**：打开面板时条目像琴键一样逐项按下（stagger 级联 + 弹性回弹），向上展开时反向级联
 - **条目渲染**：内置 title/sub/glyph/未读圆点布局，`renderItem` 可完全自定义
 - **向上/向下自适应翻转**：贴近视口底边自动向上弹，动画方向同步反转
@@ -12,14 +13,14 @@
 ## 安装
 
 ```bash
-npm install @apricotdream/notifications
+npm install @qingwu-ui/notifications
 ```
 
 ## 使用
 
 ```ts
-import { Notifications } from "@apricotdream/notifications";
-import "@apricotdream/notifications/style.css";
+import { Notifications } from "@qingwu-ui/notifications";
+import "@qingwu-ui/notifications/style.css";
 
 const root = document.querySelector("#bell");
 const bell = new Notifications(root, {
@@ -54,6 +55,9 @@ React / Vue 集成时在 `useEffect` / `onMounted` 中实例化，卸载时调�
 | `duration` | `number` | `380` | 单个条目错峰动画时长 ms |
 | `stagger` | `number` | `28` | 条目错峰间隔 ms |
 | `animate` | `boolean` | `true` | 手风琴错峰动画开关 |
+| `ring` | `boolean` | `true` | 铃铛摆动动画开关：未读数 > 0 且面板未展开时触发（自动尊重 reduced-motion） |
+| `ringMode` | `"persistent" \| "intermittent"` | `"persistent"` | 摆动模式：常驻无限摆 / 按 `ringInterval` 间歇重响 |
+| `ringInterval` | `number` | `3000` | `intermittent` 模式两轮响铃的间隔 ms |
 | `maxStagger` | `number` | `12` | 超过该条目数降级为面板整体淡入，`0` 不降级 |
 | `open` | `boolean` | `-` | 受控展开 |
 | `defaultOpen` | `boolean` | `false` | 非受控初始展开 |

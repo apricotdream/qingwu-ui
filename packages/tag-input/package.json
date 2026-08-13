@@ -1,6 +1,6 @@
 {
-  "name": "@apricotdream/tag-input",
-  "version": "0.9.0",
+  "name": "@qingwu-ui/tag-input",
+  "version": "0.9.0-beta",
   "description": "Framework-agnostic tag quick-insert input for Qingwu UI — input + tag chip bar, click/Enter to insert, auto-hide inserted tags, layoutChips-powered expand/collapse",
   "type": "module",
   "license": "Apache-2.0",
@@ -30,10 +30,10 @@
     "size": "size-limit"
   },
   "dependencies": {
-    "@apricotdream/text-layout": "^0.9.0"
+    "@qingwu-ui/text-layout": "^0.9.0-beta"
   },
   "devDependencies": {
-    "@apricotdream/tsconfig": "workspace:*",
+    "@qingwu-ui/tsconfig": "workspace:*",
     "@size-limit/preset-small-lib": "^13.0.1",
     "happy-dom": "^20.11.1",
     "size-limit": "^13.0.1",

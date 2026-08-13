@@ -1,5 +1,5 @@
 /**
- * @apricotdream/text-layout
+ * @qingwu-ui/text-layout
  *
  * Pretext 启发的文本排版引擎 —— 两阶段 prepare/layout 架构
  *

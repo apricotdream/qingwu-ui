@@ -1,4 +1,4 @@
-# @apricotdream/skeleton
+# @qingwu-ui/skeleton
 
 [青梧UI](https://github.com/apricotdream/qingwu-ui) 的 **运行时测量自动骨架屏** —— 框架无关，纯 DOM + CSS，零依赖。
 
@@ -9,13 +9,13 @@
 ## 安装
 
 ```bash
-npm install @apricotdream/skeleton
+npm install @qingwu-ui/skeleton
 ```
 
 ## 使用
 
 ```ts
-import { AutoSkeleton } from "@apricotdream/skeleton";
+import { AutoSkeleton } from "@qingwu-ui/skeleton";
 
 const sk = new AutoSkeleton(document.getElementById("card")!, {
   shape: "rounded",

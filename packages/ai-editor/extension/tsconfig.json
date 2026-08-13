@@ -19,8 +19,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@shared/*": ["./src/shared/*"],
-      "@apricotdream/toast": ["../../toast/src/index.ts"],
-      "@apricotdream/text-layout": ["../../text-layout/src/index.ts"]
+      "@qingwu-ui/toast": ["../../toast/src/index.ts"],
+      "@qingwu-ui/text-layout": ["../../text-layout/src/index.ts"]
     }
   },
   "include": ["src", "scripts", "vite.config.ts", "vite.config.content.ts"]

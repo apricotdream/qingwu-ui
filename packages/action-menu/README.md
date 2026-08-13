@@ -1,4 +1,4 @@
-# @apricotdream/action-menu
+# @qingwu-ui/action-menu
 
 [青梧UI](https://github.com/apricotdream/qingwu-ui) 的 **径向快捷操作菜单** —— 框架无关，纯 DOM + CSS，零依赖。
 
@@ -10,13 +10,13 @@
 ## 安装
 
 ```bash
-npm install @apricotdream/action-menu
+npm install @qingwu-ui/action-menu
 ```
 
 ## 使用
 
 ```ts
-import { ActionMenu } from "@apricotdream/action-menu";
+import { ActionMenu } from "@qingwu-ui/action-menu";
 
 const menu = new ActionMenu(document.getElementById("fab")!, {
   items: [

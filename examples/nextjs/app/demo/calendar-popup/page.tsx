@@ -1,8 +1,8 @@
 "use client";
 
-import { Calendar } from "@apricotdream/calendar";
+import { Calendar } from "@qingwu-ui/calendar";
 import { useCallback, useEffect, useRef, useState } from "react";
-import "@apricotdream/button/style.css";
+import "@qingwu-ui/button/style.css";
 import DemoCard from "@/components/DemoCard";
 
 /* ============================================================
@@ -402,8 +402,8 @@ export default function CalendarPopupPage() {
     const optsLines = buildOptsLines();
 
     const react = [
-      'import { Calendar } from "@apricotdream/calendar";',
-      'import "@apricotdream/calendar/style.css";',
+      'import { Calendar } from "@qingwu-ui/calendar";',
+      'import "@qingwu-ui/calendar/style.css";',
       "",
       "function CalendarPicker() {",
       "  const rootRef = useRef<HTMLDivElement>(null);",
@@ -428,9 +428,9 @@ export default function CalendarPopupPage() {
       "<head>",
       '  <meta charset="utf-8" />',
       '  <script type="module">',
-      '    import { Calendar } from "https://unpkg.com/@apricotdream/calendar";',
+      '    import { Calendar } from "https://unpkg.com/@qingwu-ui/calendar";',
       "  </script>",
-      '  <link rel="stylesheet" href="https://unpkg.com/@apricotdream/calendar/style.css" />',
+      '  <link rel="stylesheet" href="https://unpkg.com/@qingwu-ui/calendar/style.css" />',
       "</head>",
       "<body>",
       '  <div id="root"></div>',
@@ -450,8 +450,8 @@ export default function CalendarPopupPage() {
       "",
       '<script setup lang="ts">',
       'import { ref, onMounted, onUnmounted } from "vue";',
-      'import { Calendar } from "@apricotdream/calendar";',
-      'import "@apricotdream/calendar/style.css";',
+      'import { Calendar } from "@qingwu-ui/calendar";',
+      'import "@qingwu-ui/calendar/style.css";',
       "",
       "const rootRef = ref<HTMLDivElement>();",
       "let cal: Calendar | null = null;",

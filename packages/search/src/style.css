@@ -3,8 +3,8 @@
    零依赖 · CSS 自定义属性驱动 · 明暗双主题 · reduced-motion 友好
 
    使用方式：
-     <link rel="stylesheet" href="@apricotdream/search/style.css">
-     或 import "@apricotdream/search/style.css"
+     <link rel="stylesheet" href="@qingwu-ui/search/style.css">
+     或 import "@qingwu-ui/search/style.css"
 
    令牌覆盖：修改 :root 中 --qs-* 或复用宿主已定义的
    --paper / --card / --ink / --teal / --vermilion / --amber / --line

@@ -3,7 +3,7 @@
    零依赖 · CSS 自定义属性驱动 · 明暗双主题 · reduced-motion 友好
 
    使用方式：
-     import "@apricotdream/select/style.css"
+     import "@qingwu-ui/select/style.css"
 
    令牌覆盖：--qsel-* 可被宿主覆盖；复用宿主已定义的
    --paper / --card / --ink / --teal / --vermilion / --amber / --line

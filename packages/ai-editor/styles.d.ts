@@ -1,1 +1,1 @@
-declare module "@apricotdream/ai-editor/styles";
+declare module "@qingwu-ui/ai-editor/styles";

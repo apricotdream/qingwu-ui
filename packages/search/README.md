@@ -1,4 +1,4 @@
-# @apricotdream/search
+# @qingwu-ui/search
 
 [青梧UI](https://github.com/apricotdream/qingwu-ui) 的 **搜索框 / 命令面板组件** —— 框架无关，纯 DOM + CSS，零依赖。
 
@@ -11,15 +11,15 @@
 ## 安装
 
 ```bash
-npm install @apricotdream/search
-# or: pnpm add @apricotdream/search / bun add @apricotdream/search
+npm install @qingwu-ui/search
+# or: pnpm add @qingwu-ui/search / bun add @qingwu-ui/search
 ```
 
 ## 使用
 
 ```ts
-import { SearchBox } from "@apricotdream/search";
-import "@apricotdream/search/style.css";
+import { SearchBox } from "@qingwu-ui/search";
+import "@qingwu-ui/search/style.css";
 
 const box = new SearchBox(document.getElementById("search")!, {
   placeholders: ["搜索节日、节气或功能…", "试试「中秋」", "试试「霜降」"],
@@ -39,7 +39,7 @@ box.destroy();
 ### 按需导入打字机引擎
 
 ```ts
-import { Typewriter } from "@apricotdream/search";
+import { Typewriter } from "@qingwu-ui/search";
 
 const tw = new Typewriter(el, ["第一句", "第二句"], { typeMs: 80, holdFull: 1500 });
 tw.start();
@@ -73,7 +73,7 @@ tw.start();
 
 ### 样式
 
-单独导出 `@apricotdream/search/style.css`（`sideEffects` 已标注，不引入即不进 bundle）。类名前缀 `qs-`，覆盖样式直接针对 `--qs-*` 之外的原始类名即可。暗色主题同时支持 `<html data-theme="dark">` 与 `.dark` 类（Tailwind / Next.js 常见约定）。
+单独导出 `@qingwu-ui/search/style.css`（`sideEffects` 已标注，不引入即不进 bundle）。类名前缀 `qs-`，覆盖样式直接针对 `--qs-*` 之外的原始类名即可。暗色主题同时支持 `<html data-theme="dark">` 与 `.dark` 类（Tailwind / Next.js 常见约定）。
 
 ## 产物
 

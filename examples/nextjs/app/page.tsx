@@ -199,14 +199,14 @@ export default function HomePage() {
           <code>
             <span className="hl-comment"># 安装日历组件</span>
             {"\n"}
-            <span className="hl-keyword">npm</span> install @apricotdream/calendar{"\n\n"}
+            <span className="hl-keyword">npm</span> install @qingwu-ui/calendar{"\n\n"}
             <span className="hl-comment">{"// 在代码中使用"}</span>
             {"\n"}
             <span className="hl-keyword">import</span> {"{"} Calendar {"}"}{" "}
             <span className="hl-keyword">from</span>{" "}
-            <span className="hl-string">&quot;@apricotdream/calendar&quot;</span>;{"\n"}
+            <span className="hl-string">&quot;@qingwu-ui/calendar&quot;</span>;{"\n"}
             <span className="hl-keyword">import</span>{" "}
-            <span className="hl-string">&quot;@apricotdream/calendar/style.css&quot;</span>;{"\n\n"}
+            <span className="hl-string">&quot;@qingwu-ui/calendar/style.css&quot;</span>;{"\n\n"}
             <span className="hl-keyword">const</span> cal = <span className="hl-keyword">new</span>{" "}
             Calendar(el, {"{"}
             {"\n"}

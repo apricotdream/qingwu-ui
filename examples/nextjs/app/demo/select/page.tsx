@@ -1,9 +1,9 @@
 "use client";
 
-import type { SelectOption, SelectOptions } from "@apricotdream/select";
-import { Select } from "@apricotdream/select";
-import "@apricotdream/select/style.css";
-import "@apricotdream/button/style.css";
+import type { SelectOption, SelectOptions } from "@qingwu-ui/select";
+import { Select } from "@qingwu-ui/select";
+import "@qingwu-ui/select/style.css";
+import "@qingwu-ui/button/style.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DemoCard from "@/components/DemoCard";
 
@@ -199,8 +199,8 @@ export default function SelectPage() {
     const optsBlock = ["{", ...optsLines, "}"].join("\n    ");
 
     const react = [
-      'import { Select } from "@apricotdream/select";',
-      'import "@apricotdream/select/style.css";',
+      'import { Select } from "@qingwu-ui/select";',
+      'import "@qingwu-ui/select/style.css";',
       "",
       "const FRAMEWORKS = [",
       '  { value: "react", label: "React", hint: "框架无关" },',
@@ -227,12 +227,12 @@ export default function SelectPage() {
       '<html lang="zh-CN">',
       "<head>",
       '  <meta charset="utf-8" />',
-      '  <link rel="stylesheet" href="https://unpkg.com/@apricotdream/select/style.css" />',
+      '  <link rel="stylesheet" href="https://unpkg.com/@qingwu-ui/select/style.css" />',
       "</head>",
       "<body>",
       '  <div id="root"></div>',
       '  <script type="module">',
-      '    import { Select } from "https://unpkg.com/@apricotdream/select";',
+      '    import { Select } from "https://unpkg.com/@qingwu-ui/select";',
       `    const sel = new Select(document.querySelector("#root"), ${optsBlock});`,
       "  </script>",
       "</body>",
@@ -246,8 +246,8 @@ export default function SelectPage() {
       "",
       '<script setup lang="ts">',
       'import { ref, onMounted, onUnmounted } from "vue";',
-      'import { Select } from "@apricotdream/select";',
-      'import "@apricotdream/select/style.css";',
+      'import { Select } from "@qingwu-ui/select";',
+      'import "@qingwu-ui/select/style.css";',
       "",
       "const rootRef = ref<HTMLDivElement>();",
       "let sel: Select | null = null;",

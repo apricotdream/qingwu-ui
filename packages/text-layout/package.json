@@ -1,6 +1,6 @@
 {
-  "name": "@apricotdream/text-layout",
-  "version": "0.9.0",
+  "name": "@qingwu-ui/text-layout",
+  "version": "0.9.0-beta",
   "description": "Pretext-inspired text layout engine — two-phase prepare/layout, Canvas measurement, Unicode-aware line breaking, virtual scroll heights, multi-line truncation, chip flow, and table column sizing",
   "type": "module",
   "license": "Apache-2.0",
@@ -26,7 +26,7 @@
     "size": "size-limit"
   },
   "devDependencies": {
-    "@apricotdream/tsconfig": "workspace:*",
+    "@qingwu-ui/tsconfig": "workspace:*",
     "@size-limit/preset-small-lib": "^13.0.1",
     "size-limit": "^13.0.1",
     "tsdown": "^0.22.14",

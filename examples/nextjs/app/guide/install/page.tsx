@@ -4,16 +4,16 @@
 
 const PACKAGES = [
   {
-    name: "@apricotdream/calendar",
+    name: "@qingwu-ui/calendar",
     desc: "日历 + 农历引擎：农历 / 节气 / 节日 / 黄历宜忌 / 休假表 / 禁用规则",
   },
-  { name: "@apricotdream/button", desc: "药丸风格按钮，四变体，零依赖" },
-  { name: "@apricotdream/search", desc: "搜索框 / 命令面板：打字机占位、类别筛选、全键盘导航" },
-  { name: "@apricotdream/upload", desc: "图片上传：拖拽、WebP / AVIF 客户端压缩" },
-  { name: "@apricotdream/toast", desc: "轻提示：ARIA live region、Promise 链、队列管理" },
-  { name: "@apricotdream/skeleton", desc: "骨架屏：运行时 DOM 测量、SSR 感知" },
-  { name: "@apricotdream/text-layout", desc: "文字排版引擎：截断 / 分栏 / 虚拟滚动" },
-  { name: "@apricotdream/ai-editor", desc: "AI 辅助 Markdown / WYSIWYG 编辑器" },
+  { name: "@qingwu-ui/button", desc: "药丸风格按钮，四变体，零依赖" },
+  { name: "@qingwu-ui/search", desc: "搜索框 / 命令面板：打字机占位、类别筛选、全键盘导航" },
+  { name: "@qingwu-ui/upload", desc: "图片上传：拖拽、WebP / AVIF 客户端压缩" },
+  { name: "@qingwu-ui/toast", desc: "轻提示：ARIA live region、Promise 链、队列管理" },
+  { name: "@qingwu-ui/skeleton", desc: "骨架屏：运行时 DOM 测量、SSR 感知" },
+  { name: "@qingwu-ui/text-layout", desc: "文字排版引擎：截断 / 分栏 / 虚拟滚动" },
+  { name: "@qingwu-ui/ai-editor", desc: "AI 辅助 Markdown / WYSIWYG 编辑器" },
 ];
 
 export default function InstallPage() {
@@ -48,13 +48,13 @@ export default function InstallPage() {
       <p>任选包管理器，安装你需要的组件包：</p>
       <pre>
         <code>{`# npm
-npm install @apricotdream/calendar
+npm install @qingwu-ui/calendar
 
 # pnpm
-pnpm add @apricotdream/calendar
+pnpm add @qingwu-ui/calendar
 
 # bun
-bun add @apricotdream/calendar`}</code>
+bun add @qingwu-ui/calendar`}</code>
       </pre>
 
       <h2 id="usage">快速使用</h2>
@@ -62,8 +62,8 @@ bun add @apricotdream/calendar`}</code>
         组件是<b>框架无关</b>的：实例化时传入挂载节点与配置即可。以日历为例：
       </p>
       <pre>
-        <code>{`import { Calendar } from "@apricotdream/calendar";
-import "@apricotdream/calendar/style.css";
+        <code>{`import { Calendar } from "@qingwu-ui/calendar";
+import "@qingwu-ui/calendar/style.css";
 
 const el = document.querySelector("#root");
 const cal = new Calendar(el, {
@@ -80,8 +80,8 @@ cal.destroy();`}</code>
       </p>
       <pre>
         <code>{`import { useEffect, useRef } from "react";
-import { Calendar } from "@apricotdream/calendar";
-import "@apricotdream/calendar/style.css";
+import { Calendar } from "@qingwu-ui/calendar";
+import "@qingwu-ui/calendar/style.css";
 
 function CalendarPicker() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -103,9 +103,9 @@ function CalendarPicker() {
       </p>
       <pre>
         <code>{`<script type="module">
-  import { Calendar } from "https://unpkg.com/@apricotdream/calendar";
+  import { Calendar } from "https://unpkg.com/@qingwu-ui/calendar";
 </script>
-<link rel="stylesheet" href="https://unpkg.com/@apricotdream/calendar/style.css" />`}</code>
+<link rel="stylesheet" href="https://unpkg.com/@qingwu-ui/calendar/style.css" />`}</code>
       </pre>
 
       <h2 id="support">浏览器支持</h2>

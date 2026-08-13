@@ -1,5 +1,5 @@
 /** 扩展选项页：配置推送方式、HTTP 端点、AI、模板与语言等。 */
-import { toast } from "@apricotdream/toast";
+import { toast } from "@qingwu-ui/toast";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {

@@ -31,7 +31,7 @@ const DEFAULT_FALLBACK_BORDER_RADIUS = 4;
  *
  * @example
  * ```ts
- * import { extractElementInfo, renderSkeletonSnapshot } from "@apricotdream/skeleton";
+ * import { extractElementInfo, renderSkeletonSnapshot } from "@qingwu-ui/skeleton";
  *
  * // 构建时：对真实页面测量
  * const snapshot = extractElementInfo(document.querySelector(".card-list")!);

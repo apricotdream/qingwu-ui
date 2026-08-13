@@ -1,10 +1,9 @@
-# @apricotdream/upload
+# @qingwu-ui/upload
 
-## 0.9.0
-
+## 0.9.0-beta
 ### Minor Changes
 
-- 版本统一对齐 0.9.0（无功能变更；首次以 @apricotdream scope 发布，@qingwu → @apricotdream 品牌迁移）
+- 版本统一对齐 0.9.0（无功能变更；首次以 @qingwu-ui scope 发布，@qingwu → @qingwu-ui 品牌迁移）
 
 ## 0.8.0
 
@@ -17,23 +16,23 @@
 
 ### Patch Changes
 
-- **@apricotdream/ai-editor**
+- **@qingwu-ui/ai-editor**
 
-  - 修复：Toast 提示默认内置 `@apricotdream/toast` 渲染（不再静默丢弃），新增 `setToastProvider()` 全局替换与 `onToast` 实例级覆盖，并支持 `maxLines` / `duration` 透传
+  - 修复：Toast 提示默认内置 `@qingwu-ui/toast` 渲染（不再静默丢弃），新增 `setToastProvider()` 全局替换与 `onToast` 实例级覆盖，并支持 `maxLines` / `duration` 透传
   - 新增：删除确认开放 `setConfirmProvider()` 覆盖接口，默认仍用内置项目 `DeleteConfirmDialog`，6 处删除流程（图片/视频/音频/附件/代码块/表格）统一生效
   - 修复：MD 导入选择兜底由原生 `window.confirm` 改为内置项目风格弹窗（渲染/附加/取消），取消不再误附加
   - 修复：Obsidian 粘贴本地路径图片/视频警告改走统一 toast 通道
   - 新增：图片加载失败（本地路径/远程加载失败）占位支持右上角删除按钮（带确认弹窗）
 
-  **@apricotdream/upload**
+  **@qingwu-ui/upload**
 
-  - 修复：依赖对齐 `@apricotdream/button` `^0.5.0` → `^0.6.0`
+  - 修复：依赖对齐 `@qingwu-ui/button` `^0.5.0` → `^0.6.0`
 
 ## 0.6.0
 
 ### Patch Changes
 
-- 版本统一对齐 0.6.0（无功能变更；`@apricotdream/tag-input` 随本版首次发布）
+- 版本统一对齐 0.6.0（无功能变更；`@qingwu-ui/tag-input` 随本版首次发布）
 
 ## 0.5.0
 
@@ -50,20 +49,20 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @apricotdream/button@0.5.0
+  - @qingwu-ui/button@0.5.0
 
 ## 0.4.0
 
 ### Minor Changes
 
-- - `@apricotdream/upload` 新增 `supportedFormats` 属性：图片格式白名单（无点扩展名），指定后映射为 input accept 并驱动拖拽区提示文案；不传默认全支持（原行为不变）
-  - 图片上传支持 AVIF：`@apricotdream/upload` 拖拽区提示文案、editor 图片上传对话框白名单与文案补充 avif（editor 其余图片识别路径早已支持）
+- - `@qingwu-ui/upload` 新增 `supportedFormats` 属性：图片格式白名单（无点扩展名），指定后映射为 input accept 并驱动拖拽区提示文案；不传默认全支持（原行为不变）
+  - 图片上传支持 AVIF：`@qingwu-ui/upload` 拖拽区提示文案、editor 图片上传对话框白名单与文案补充 avif（editor 其余图片识别路径早已支持）
 
 ### Patch Changes
 
 - 版本统一对齐至 0.4.0
 - Updated dependencies
-  - @apricotdream/button@0.3.2
+  - @qingwu-ui/button@0.3.2
 
 ## 0.3.1
 
@@ -71,15 +70,15 @@
 
 - 版本统一对齐 0.3.1。工程级更新：发版流程接入 `bun run publish-check` 产物校验门禁（workspace 依赖残留 / CHANGELOG 版本一致 / exports 产物齐全）；新增 Playwright e2e（拖拽上传、压缩产出 WebP/AVIF、单张限制、按钮触发、真实上传）；README 同步 0.3.0 状态与 upload 组件文档。
 - Updated dependencies
-  - @apricotdream/button@0.3.1
+  - @qingwu-ui/button@0.3.1
 
 ## 0.3.0
 
 ### Minor Changes
 
-- 新增 @apricotdream/upload 图片上传组件：拖拽/按钮两种触发形态（trigger 复用 @apricotdream/button）、独立进度条、客户端压缩（原图/WebP/AVIF 按配置多份输出、AVIF 不支持时自动降级 WebP/PNG）、内置 XHR 上传与可插拔自定义上传函数、数量/大小/类型校验。
+- 新增 @qingwu-ui/upload 图片上传组件：拖拽/按钮两种触发形态（trigger 复用 @qingwu-ui/button）、独立进度条、客户端压缩（原图/WebP/AVIF 按配置多份输出、AVIF 不支持时自动降级 WebP/PNG）、内置 XHR 上传与可插拔自定义上传函数、数量/大小/类型校验。
 
 ### Patch Changes
 
 - Updated dependencies
-  - @apricotdream/button@0.3.0
+  - @qingwu-ui/button@0.3.0

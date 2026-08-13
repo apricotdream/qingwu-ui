@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@apricotdream/button";
+import { Button } from "@qingwu-ui/button";
 import { useEffect, useRef } from "react";
-import "@apricotdream/button/style.css";
+import "@qingwu-ui/button/style.css";
 import DemoCard from "@/components/DemoCard";
 
 export default function ButtonPage() {
@@ -36,8 +36,8 @@ export default function ButtonPage() {
         title="Button 按钮"
         desc="按钮变体：默认、主色、琥珀色、图标按钮"
         full
-        code={`import { Button } from "@apricotdream/button";
-import "@apricotdream/button/style.css";
+        code={`import { Button } from "@qingwu-ui/button";
+import "@qingwu-ui/button/style.css";
 
 const btn = new Button({ text: "确认", variant: "primary" });
 container.append(btn.el);`}

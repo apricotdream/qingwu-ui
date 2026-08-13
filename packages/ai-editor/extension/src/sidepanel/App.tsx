@@ -1,5 +1,5 @@
 /** 扩展侧边栏：剪藏主界面，含草稿编辑、历史管理、推送与下载。 */
-import { toast } from "@apricotdream/toast";
+import { toast } from "@qingwu-ui/toast";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { setLocale, t } from "../shared/i18n";

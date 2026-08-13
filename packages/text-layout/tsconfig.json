@@ -1,4 +1,4 @@
 {
-  "extends": "@apricotdream/tsconfig",
+  "extends": "@qingwu-ui/tsconfig",
   "include": ["src"]
 }

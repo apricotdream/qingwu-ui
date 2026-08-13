@@ -1,6 +1,6 @@
 /* ============================================================
    指南 · 历法说明
-   内容提炼自 @apricotdream/calendar 的 lunar.ts / data.ts
+   内容提炼自 @qingwu-ui/calendar 的 lunar.ts / data.ts
    ============================================================ */
 
 export default function LunarPage() {

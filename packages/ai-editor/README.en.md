@@ -22,7 +22,7 @@
 ## Install
 
 ```bash
-npm install @apricotdream/ai-editor
+npm install @qingwu-ui/ai-editor
 ```
 
 Or clone the repo (qingwu-ui monorepo, in `packages/ai-editor`):
@@ -39,7 +39,7 @@ bun run dev
 ### Use as an npm dependency
 
 ```tsx
-import { QingWuAIEditor, t, setLocale } from "@apricotdream/ai-editor";
+import { QingWuAIEditor, t, setLocale } from "@qingwu-ui/ai-editor";
 
 function App() {
   return (
@@ -60,7 +60,7 @@ function App() {
 import {
   setAIProvider,
   createAILanguageModelProvider,
-} from "@apricotdream/ai-editor";
+} from "@qingwu-ui/ai-editor";
 
 // Generic interface - supports any OpenAI-compatible API
 const provider = await createAILanguageModelProvider({
@@ -78,7 +78,7 @@ setAIProvider(provider);
 ### Configure cloud storage
 
 ```ts
-import { setStorageProvider, createOSSStorage } from "@apricotdream/ai-editor";
+import { setStorageProvider, createOSSStorage } from "@qingwu-ui/ai-editor";
 
 setStorageProvider(
   createOSSStorage({
@@ -93,7 +93,7 @@ setStorageProvider(
 ### Switch language
 
 ```ts
-import { setLocale } from "@apricotdream/ai-editor";
+import { setLocale } from "@qingwu-ui/ai-editor";
 
 setLocale("en-US"); // switch to English
 setLocale("zh-CN"); // switch to Chinese
@@ -160,7 +160,7 @@ After loading, the QingWu extension icon appears in the browser toolbar.
 Start a receiver on the editor side to accept clips pushed by the extension:
 
 ```ts
-import { startClipperReceiver } from "@apricotdream/ai-editor";
+import { startClipperReceiver } from "@qingwu-ui/ai-editor";
 
 await startClipperReceiver({
   port: 7321,
@@ -199,7 +199,7 @@ Error codes (stable, so the extension can handle them precisely):
 For pure browser scenarios (no Node runtime), use `startBrowserClipperReceiver`, which receives via `window.postMessage` without HTTP:
 
 ```ts
-import { startBrowserClipperReceiver } from "@apricotdream/ai-editor";
+import { startBrowserClipperReceiver } from "@qingwu-ui/ai-editor";
 
 startBrowserClipperReceiver({
   onClip: (clip) => editor.commands.setContent(clip.markdown),

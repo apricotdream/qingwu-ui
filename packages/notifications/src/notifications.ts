@@ -33,6 +33,9 @@ function el(tag: string, cls?: string, html?: string): HTMLElement {
 
 let UID = 0;
 
+/** 单轮摆动时长 ms，与 style.css 中 @keyframes qntf-ring 的时长保持一致 */
+const RING_BURST = 900;
+
 /* ============================================================ */
 export class Notifications {
   /* ---- 配置 ---- */
@@ -45,6 +48,9 @@ export class Notifications {
   private readonly stagger: number;
   private readonly animate: boolean;
   private readonly maxStagger: number;
+  private ring: boolean;
+  private ringMode: "persistent" | "intermittent";
+  private ringInterval: number;
   private readonly renderItemCb?: (item: NotificationItem) => HTMLElement;
   private readonly onItemClickCb?: (item: NotificationItem) => void;
   private readonly onOpenChangeCb?: (open: boolean) => void;
@@ -55,6 +61,7 @@ export class Notifications {
   private active = -1;
   private dir: "down" | "up" = "down";
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
+  private ringTimer: ReturnType<typeof setTimeout> | null = null;
 
   /* ---- DOM 引用 ---- */
   private trigger!: HTMLButtonElement;
@@ -76,6 +83,9 @@ export class Notifications {
     this.stagger = opts.stagger ?? 28;
     this.animate = opts.animate !== false;
     this.maxStagger = opts.maxStagger ?? 12;
+    this.ring = opts.ring !== false;
+    this.ringMode = opts.ringMode ?? "persistent";
+    this.ringInterval = opts.ringInterval ?? 3000;
     this.renderItemCb = opts.renderItem;
     this.onItemClickCb = opts.onItemClick;
     this.onOpenChangeCb = opts.onOpenChange;
@@ -114,6 +124,7 @@ export class Notifications {
     this.badge.setAttribute("aria-hidden", "true");
     this.trigger.append(this.badge);
     this.syncBadge();
+    this.applyRing();
     this.root.append(this.trigger);
 
     /* 面板（挂 body，避免宿主 transform/filter/overflow 裁剪） */
@@ -190,6 +201,38 @@ export class Notifications {
     this.badge.classList.toggle("is-visible", this.unreadCount > 0);
   }
 
+  /** 清空响铃定时器 */
+  private clearRingTimer(): void {
+    if (this.ringTimer !== null) {
+      clearTimeout(this.ringTimer);
+      this.ringTimer = null;
+    }
+  }
+
+  /**
+   * 铃铛摆动状态机：
+   * - persistent：未读期间 `is-ringing` 常驻，CSS 无限摆动
+   * - intermittent：响一轮（RING_BURST ms）后静默，间隔 ringInterval 再响
+   * - 面板展开 / 未读清空 / ring=false / prefers-reduced-motion 任一命中即停摆
+   */
+  private applyRing(): void {
+    this.clearRingTimer();
+    const shouldRing = this.ring && !PREFERS_REDUCED && this.unreadCount > 0 && !this.isOpen;
+    if (!shouldRing) {
+      this.trigger.classList.remove("is-ringing");
+      return;
+    }
+    if (this.ringMode === "intermittent") {
+      this.trigger.classList.add("is-ringing");
+      this.ringTimer = setTimeout(() => {
+        this.trigger.classList.remove("is-ringing");
+        this.ringTimer = setTimeout(() => this.applyRing(), this.ringInterval);
+      }, RING_BURST);
+    } else {
+      this.trigger.classList.add("is-ringing");
+    }
+  }
+
   /* ============================================================
      展开 / 关闭 / 定位
      ============================================================ */
@@ -197,6 +240,7 @@ export class Notifications {
   open(): void {
     if (this.isOpen) return;
     this.isOpen = true;
+    this.applyRing();
     this.renderItems();
 
     this.panel.hidden = false;
@@ -224,6 +268,7 @@ export class Notifications {
   close(): void {
     if (!this.isOpen) return;
     this.isOpen = false;
+    this.applyRing();
     this.root.classList.remove("is-open");
     this.panel.classList.remove("is-open");
     this.trigger.setAttribute("aria-expanded", "false");
@@ -410,6 +455,19 @@ export class Notifications {
     if ("unreadCount" in patch && patch.unreadCount !== undefined) {
       this.unreadCount = patch.unreadCount;
       this.syncBadge();
+      this.applyRing();
+    }
+    if ("ring" in patch && patch.ring !== undefined) {
+      this.ring = patch.ring;
+      this.applyRing();
+    }
+    if ("ringMode" in patch && patch.ringMode !== undefined) {
+      this.ringMode = patch.ringMode;
+      this.applyRing();
+    }
+    if ("ringInterval" in patch && patch.ringInterval !== undefined) {
+      this.ringInterval = patch.ringInterval;
+      this.applyRing();
     }
     if ("open" in patch && patch.open !== undefined) {
       patch.open ? this.open() : this.close();
@@ -426,6 +484,7 @@ export class Notifications {
   /** 销毁组件，清空宿主容器并移除 body 上的面板 */
   destroy(): void {
     if (this.closeTimer !== null) clearTimeout(this.closeTimer);
+    this.clearRingTimer();
     this.close();
     this.panel.remove();
     this.root.classList.remove("qntf", "is-open");
