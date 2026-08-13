@@ -29,7 +29,7 @@
     "size": "size-limit"
   },
   "dependencies": {
-    "@apricotdream/button": "^0.9.0-beta"
+    "@apricotdream/button": "^0.9.0"
   },
   "devDependencies": {
     "@apricotdream/tsconfig": "workspace:*",
