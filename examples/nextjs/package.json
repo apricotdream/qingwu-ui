@@ -14,6 +14,7 @@
     "@qingwu-ui/ai-editor": "workspace:*",
     "@qingwu-ui/button": "workspace:*",
     "@qingwu-ui/calendar": "workspace:*",
+    "@qingwu-ui/confirm": "workspace:*",
     "@qingwu-ui/notifications": "workspace:*",
     "@qingwu-ui/search": "workspace:*",
     "@qingwu-ui/select": "workspace:*",
