@@ -57,6 +57,16 @@ interface FieldDef {
 }
 
 const FIELDS: FieldDef[] = [
+  {
+    key: "mode",
+    label: "展示形态",
+    type: "select",
+    defaultValue: "popover",
+    options: [
+      { label: "popover · 锚定输入框", value: "popover" },
+      { label: "modal · 居中弹窗", value: "modal" },
+    ],
+  },
   { key: "placeholder", label: "占位文本", type: "text", defaultValue: "点击选择日期" },
   { key: "selected", label: "默认选中日期", type: "date", defaultValue: "" },
   { key: "min", label: "最小日期", type: "date", defaultValue: "" },
@@ -77,10 +87,21 @@ const FIELDS: FieldDef[] = [
     key: "showDetailPanel",
     label: "日历详情",
     type: "boolean",
-    defaultValue: "false",
+    defaultValue: "true",
     options: [
       { label: "关闭", value: "false" },
       { label: "开启", value: "true" },
+    ],
+  },
+  {
+    key: "detailPosition",
+    label: "详情悬浮方式",
+    type: "select",
+    defaultValue: "right",
+    options: [
+      { label: "right · 右侧展开（默认）", value: "right" },
+      { label: "left · 左侧展开", value: "left" },
+      { label: "inside · 面板内覆盖", value: "inside" },
     ],
   },
   {
@@ -279,6 +300,37 @@ function DisabledCalendar({ ruleTitle }: { ruleTitle: string }) {
 
 /* ============================================================ */
 
+/* 详情悬浮方式三实例并排演示 */
+function DetailPositionDemo() {
+  const r1 = useRef<HTMLDivElement>(null);
+  const r2 = useRef<HTMLDivElement>(null);
+  const r3 = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const cals = [
+      new Calendar(r1.current!, { mode: "popover", selected: "2026-08-01", detailPosition: "right" }),
+      new Calendar(r2.current!, { mode: "popover", selected: "2026-08-01", detailPosition: "left" }),
+      new Calendar(r3.current!, { mode: "popover", selected: "2026-08-01", detailPosition: "inside" }),
+    ];
+    return () => cals.forEach((c) => c.destroy());
+  }, []);
+  return (
+    <div style={{ display: "flex", gap: 40, flexWrap: "wrap", alignItems: "flex-start" }}>
+      <div>
+        <div style={{ fontSize: 13, marginBottom: 8 }}>right · 右侧展开</div>
+        <div ref={r1} className="dp-demo" />
+      </div>
+      <div>
+        <div style={{ fontSize: 13, marginBottom: 8 }}>left · 左侧展开</div>
+        <div ref={r2} className="dp-demo" />
+      </div>
+      <div>
+        <div style={{ fontSize: 13, marginBottom: 8 }}>inside · 面板内覆盖</div>
+        <div ref={r3} className="dp-demo" />
+      </div>
+    </div>
+  );
+}
+
 export default function CalendarPopupPage() {
   const rootRef = useRef<HTMLDivElement>(null);
   const calRef = useRef<Calendar | null>(null);
@@ -332,12 +384,14 @@ export default function CalendarPopupPage() {
       el.textContent = "";
 
       const opts: Record<string, unknown> = {};
+      if (currentProps.mode) opts.mode = currentProps.mode;
       if (currentProps.placeholder) opts.placeholder = currentProps.placeholder;
       if (currentProps.selected) opts.selected = currentProps.selected;
       if (currentProps.min) opts.min = currentProps.min;
       if (currentProps.max) opts.max = currentProps.max;
       if (currentProps.inputName) opts.inputName = currentProps.inputName;
       opts.showDetailPanel = currentProps.showDetailPanel === "true";
+      if (currentProps.detailPosition) opts.detailPosition = currentProps.detailPosition;
       try {
         const h = JSON.parse(currentProps.holidays || "{}");
         if (h.holidays || h.workdays) opts.holidays = h;
@@ -375,6 +429,7 @@ export default function CalendarPopupPage() {
   /* 构建 opts 代码行 */
   const buildOptsLines = () => {
     const lines: string[] = [];
+    if (props.mode && props.mode !== "popover") lines.push(`  mode: "${props.mode}",`);
     if (props.placeholder && props.placeholder !== "点击选择日期")
       lines.push(`  placeholder: "${props.placeholder}",`);
     if (props.selected) lines.push(`  selected: "${props.selected}",`);
@@ -383,6 +438,10 @@ export default function CalendarPopupPage() {
     if (props.inputName) lines.push(`  inputName: "${props.inputName}",`);
     if (props.showDetailPanel === "true")
       lines.push("  showDetailPanel: true,    // 开启右侧详情面板");
+    if (props.detailPosition && props.detailPosition !== "right")
+      lines.push(
+        `  detailPosition: "${props.detailPosition}",    // 详情悬浮方式`,
+      );
     try {
       const h = JSON.parse(props.holidays || "{}");
       if (h.holidays || h.workdays) {
@@ -474,7 +533,7 @@ export default function CalendarPopupPage() {
     <div className="demo-grid">
       <DemoCard
         title="Calendar 弹出选择"
-        desc="输入框 + 日历图标触发 → 弹出面板，农历/节气/节日/黄历宜忌详情侧栏，键盘导航。"
+        desc="输入框 + 日历图标触发 → 弹出面板，农历/节气/节日/黄历宜忌详情侧栏，支持三种详情悬浮方式（inside 面板内覆盖 / left 左展开 / right 右展开），键盘导航。"
         full
         snippets={snippets}
       >
@@ -546,6 +605,15 @@ export default function CalendarPopupPage() {
             </div>
           </div>
         </div>
+      </DemoCard>
+
+      {/* ---- 详情悬浮方式（detailPosition） ---- */}
+      <DemoCard
+        title="详情悬浮方式"
+        desc="detailPosition 控制详情面板的悬浮方式：right 右侧展开（面板加宽）/ left 左侧展开 / inside 面板内覆盖浮层（不改变面板宽度）。点击各日历中的日期查看效果。"
+        full
+      >
+        <DetailPositionDemo />
       </DemoCard>
 
       {/* ---- 日格结构（原 calendar-basic） ---- */}
