@@ -1,0 +1,72 @@
+{
+  "name": "@qingwu-ui/confirm",
+  "version": "0.9.0-beta",
+  "description": "Framework-agnostic confirmation dialog for Qingwu UI — morphs from the trigger control, elastic scale same-origin transition, async confirm with loading state, mutual-exclusion singleton, zero dependencies",
+  "type": "module",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "./dist/style.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./style.css": "./dist/style.css",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown && node -e \"require('fs').cpSync('src/style.css','dist/style.css')\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "size": "size-limit"
+  },
+  "devDependencies": {
+    "@qingwu-ui/tsconfig": "workspace:*",
+    "@size-limit/preset-small-lib": "^13.0.1",
+    "happy-dom": "^20.11.1",
+    "size-limit": "^13.0.1",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.mjs",
+      "limit": "4 kB"
+    }
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apricotdream/qingwu-ui.git",
+    "directory": "packages/confirm"
+  },
+  "homepage": "https://github.com/apricotdream/qingwu-ui#readme",
+  "bugs": "https://github.com/apricotdream/qingwu-ui/issues",
+  "keywords": [
+    "confirm",
+    "dialog",
+    "modal",
+    "morph",
+    "framework-agnostic",
+    "zero-dependency",
+    "accessibility",
+    "ui-component",
+    "qingwu"
+  ],
+  "author": "Qingwu Team",
+  "engines": {
+    "node": ">=20"
+  }
+}
