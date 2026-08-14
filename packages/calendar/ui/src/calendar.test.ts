@@ -429,3 +429,49 @@ describe("Calendar · 销毁清理", () => {
     expect(pnDestroy).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("Calendar · 详情悬浮方向 detailPosition", () => {
+  it("默认 right：overlay 带 is-detail-right", () => {
+    const cal = new Calendar(mount(), { mode: "popover", selected: "2026-08-01" });
+    cal.open();
+    const overlay = document.querySelector(".qw-cal-overlay--popover")!;
+    expect(overlay.classList.contains("is-detail-right")).toBe(true);
+    expect(overlay.classList.contains("is-detail-inside")).toBe(false);
+    cal.destroy();
+  });
+
+  it("inside：overlay 带 is-detail-inside，点击日期后详情侧栏仍激活", () => {
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
+    const cal = new Calendar(mount(), {
+      mode: "popover",
+      detailPosition: "inside",
+      selected: "2026-08-01",
+    });
+    cal.open();
+    const overlay = document.querySelector(".qw-cal-overlay--popover")!;
+    expect(overlay.classList.contains("is-detail-inside")).toBe(true);
+
+    const grid = document.querySelector(".qw-cal-grid")!;
+    const cell = grid.querySelector<HTMLElement>('[data-date="2026-08-15"]');
+    cell?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const side = document.querySelector(".qw-cal-side")!;
+    expect(side.classList.contains("is-active")).toBe(true);
+    expect(overlay.classList.contains("is-open")).toBe(true);
+    cal.destroy();
+  });
+
+  it("left：overlay 带 is-detail-left，面板行反向（侧栏在左）", () => {
+    const cal = new Calendar(mount(), {
+      mode: "popover",
+      detailPosition: "left",
+      selected: "2026-08-01",
+    });
+    cal.open();
+    const overlay = document.querySelector(".qw-cal-overlay--popover")!;
+    expect(overlay.classList.contains("is-detail-left")).toBe(true);
+    cal.destroy();
+  });
+});

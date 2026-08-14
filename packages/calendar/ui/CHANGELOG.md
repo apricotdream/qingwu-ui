@@ -1,5 +1,13 @@
 # @qingwu-ui/calendar
-## 0.9.0-beta
+## 0.9.1-beta.0
+
+### Minor Changes
+
+- 新增 `detailPosition` 选项：控制详情面板悬浮方式 —— `right`（默认，右侧展开、面板加宽）/ `left`（左侧展开、面板向左加宽、网格锚点不变）/ `inside`（面板内右缘覆盖浮层、不改变面板/网格宽度）。
+- 修复窄输入框/小屏下日期网格右侧列被 popover overlay 裁剪的问题：日期格允许收缩、overlay 放开裁剪、面板宽度跟随实际尺寸。
+- 修复详情侧栏宽度过渡中间值导致面板宽度测量不准；点击日期/关闭详情后重新锚定。
+- 操作栏钉在面板底部（sticky + 置顶），详情浮层展开时确认/取消按钮始终可见可点。
+
 ### Minor Changes
 
 - 新增 `dateOnly` 选项：仅选日期模式，隐藏时分秒时间行，`onChange` 回发 `YYYY-MM-DD`（默认仍回发完整 `YYYY-MM-DD HH:mm:ss`）。适用于截止日期、生日等纯日期场景；`input`/`getSelectedDate`/取消回滚同步为 date-only 格式。无破坏性变更。
