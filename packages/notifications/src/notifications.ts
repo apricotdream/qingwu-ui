@@ -321,11 +321,12 @@ export class Notifications {
     this.dir = flipUp ? "up" : "down";
     this.panel.classList.toggle("is-up", flipUp);
 
-    let left = tr.left;
+    /* 右缘对齐触发器右缘、向左展开（铃铛通常在头部右侧，向左开可避免面板探出视口右缘） */
+    let left = Math.max(8, tr.right - panelW);
     if (this.width === "auto" && panelW > window.innerWidth - 16) {
       left = Math.max(8, window.innerWidth - panelW - 8);
     }
-    this.panel.style.left = `${Math.max(8, left)}px`;
+    this.panel.style.left = `${left}px`;
 
     if (flipUp) {
       this.panel.style.top = "auto";
