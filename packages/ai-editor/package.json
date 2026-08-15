@@ -1,6 +1,6 @@
 {
   "name": "@qingwu-ui/ai-editor",
-  "version": "0.9.0-beta.3",
+  "version": "0.9.0-beta.4",
   "description": "青梧 - 一款面向中文用户的 AI 智能编辑器",
   "type": "module",
   "license": "Apache-2.0",

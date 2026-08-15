@@ -1,5 +1,11 @@
 # @qingwu-ui/ai-editor
 
+## 0.9.0-beta.4
+### Patch Changes
+
+- 修复 slash 命令框列表滚轮被宿主 Lenis 劫持：弹窗 portal 到 body 不在宿主 `data-lenis-prevent` 子树内，滚轮事件被 Lenis `preventDefault` 吞掉、列表无法滚动；弹窗自身挂 `data-lenis-prevent` 放行原生滚动
+- 修复键盘导航选中项滚出可视区：ArrowUp/Down 切换选中项后不再原地停留，列表自动滚动让选中项进入可视区（`scrollTop` 按需修正，不依赖 `scrollIntoView` 以免联动页面滚动）
+
 ## 0.9.0-beta.3
 ### Patch Changes
 
