@@ -168,6 +168,12 @@
 .qsel-panel.is-up.is-open {
   transform: translateY(0) scale(1);
 }
+/* 半透明磨砂：默认开启（构造时挂 is-frosted）。关闭时回退为上方不透明实体面板 */
+.qsel-panel.is-frosted {
+  background: color-mix(in srgb, var(--qsel-card) 72%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+}
 
 /* ============================================================
    ⑤ 选项列表

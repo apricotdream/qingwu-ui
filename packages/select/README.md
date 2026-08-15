@@ -63,6 +63,7 @@ React / Vue 集成时在 `useEffect` / `onMounted` 中实例化，卸载时调�
 | `stagger` | `number` | `28` | 选项错峰间隔 ms |
 | `animate` | `boolean` | `true` | 手风琴错峰动画开关 |
 | `maxStagger` | `number` | `12` | 超过该选项数降级为整体淡入，`0` 不降级 |
+| `frosted` | `boolean` | `true` | 面板半透明磨砂质感（半透明底 + backdrop-filter 毛玻璃）；`false` 回退不透明实体面板 |
 | `ariaLabel` | `string` | `placeholder` | 触发器无障碍标签 |
 | `onOpenChange` | `(open) => void` | `-` | 展开状态变化回调 |
 | `onChange` | `(value, option) => void` | `-` | 选中值变化回调（取消为 `null`） |

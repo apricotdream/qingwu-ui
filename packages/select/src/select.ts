@@ -45,6 +45,7 @@ export class Select {
   private readonly stagger: number;
   private readonly animate: boolean;
   private readonly maxStagger: number;
+  private frosted: boolean;
   private readonly onOpenChangeCb?: (open: boolean) => void;
   private readonly onChangeCb?: (value: string | null, option: SelectOption | null) => void;
 
@@ -79,6 +80,7 @@ export class Select {
     this.stagger = opts.stagger ?? 28;
     this.animate = opts.animate !== false;
     this.maxStagger = opts.maxStagger ?? 12;
+    this.frosted = opts.frosted !== false;
     this.onOpenChangeCb = opts.onOpenChange;
     this.onChangeCb = opts.onChange;
 
@@ -120,6 +122,7 @@ export class Select {
 
     /* 面板（挂 body，避免宿主 transform/filter/overflow 裁剪） */
     this.panel = el("div", "qsel-panel");
+    this.panel.classList.toggle("is-frosted", this.frosted);
     this.panel.hidden = true;
     this.panel.id = `qsel-panel-${++UID}`;
     this.panel.setAttribute("role", "listbox");
@@ -468,6 +471,10 @@ export class Select {
     }
     if ("ariaLabel" in patch && patch.ariaLabel !== undefined) {
       this.trigger.setAttribute("aria-label", patch.ariaLabel);
+    }
+    if ("frosted" in patch && patch.frosted !== undefined) {
+      this.frosted = patch.frosted;
+      this.panel.classList.toggle("is-frosted", this.frosted);
     }
   }
 

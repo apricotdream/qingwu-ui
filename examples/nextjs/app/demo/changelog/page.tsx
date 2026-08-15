@@ -3,6 +3,17 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "0.9.0-beta.1",
+    date: "2026-08-15",
+    tag: "Select 磨砂面板选项",
+    changes: [
+      {
+        type: "feat",
+        text: "@qingwu-ui/select 新增 frosted 选项（默认开启）：面板半透明磨砂质感（半透明底 + backdrop-filter 毛玻璃）；false 回退不透明实体面板，update({ frosted }) 动态切换。演示页新增「面板磨砂 vs 不透明」对比卡与 props 面板磨砂开关",
+      },
+    ],
+  },
+  {
     version: "0.9.0",
     date: "2026-08-12",
     tag: "十二包对齐 · @qingwu-ui scope 首发",
