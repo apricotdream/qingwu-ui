@@ -3103,8 +3103,10 @@
   color: #93c5fd;
 }
 /* 目录切换按钮仅桌面断点显示（TOC 悬浮框 80rem 之下、64rem 之上仍保留此开关，
-   否则用户无法取消 TOC 悬浮球）；小于 64rem 后由悬浮球 + 抽屉接管 */
-@media (width < 64rem) {
+   否则用户无法取消 TOC 悬浮球）；小于 64rem 后由悬浮球 + 抽屉接管。
+   用 (max-width: 63.999rem) 而非 (width < 64rem)：后者被部分构建器转译成
+   `@media not all and (width>=64rem)`，在 Chromium 下实际恒命中，导致按钮被隐藏。 */
+@media (max-width: 63.999rem) {
   .qingwu-editor .qed-tb-btn--desktop-only {
     display: none;
   }
