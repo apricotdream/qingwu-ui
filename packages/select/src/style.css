@@ -183,6 +183,30 @@
   max-height: 320px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* 滚动条默认隐藏：面板开/关的 scale+opacity 动画期，滚动条在真实 GPU 合成
+     会闪一下（headless 软件渲染测不到）。隐藏后动画期无滚动条渲染；hover /
+     键盘聚焦时显示细滚动条，滚轮/触摸滚动不受影响。 */
+  scrollbar-width: none;
+}
+.qsel-list:hover,
+.qsel-list:focus-within {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--qsel-ink-3) 35%, transparent) transparent;
+}
+.qsel-list::-webkit-scrollbar {
+  width: 6px;
+  display: none;
+}
+.qsel-list:hover::-webkit-scrollbar,
+.qsel-list:focus-within::-webkit-scrollbar {
+  display: block;
+}
+.qsel-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.qsel-list::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--qsel-ink-3) 35%, transparent);
+  border-radius: 3px;
 }
 .qsel-opt {
   position: relative;
