@@ -77,6 +77,16 @@ const FIELDS: FieldDef[] = [
     ],
   },
   {
+    key: "frosted",
+    label: "面板磨砂",
+    type: "boolean",
+    defaultValue: "true",
+    options: [
+      { label: "半透明磨砂", value: "true" },
+      { label: "不透明", value: "false" },
+    ],
+  },
+  {
     key: "stagger",
     label: "错峰间隔 ms",
     type: "select",
@@ -137,6 +147,7 @@ export default function SelectPage() {
         options: FRAMEWORKS,
         width: currentProps.width === "auto" ? "auto" : "trigger",
         animate: currentProps.animate === "true",
+        frosted: currentProps.frosted !== "false",
         stagger: Number(currentProps.stagger) || 28,
         disabled: currentProps.disabled === "true",
       };
@@ -187,6 +198,7 @@ export default function SelectPage() {
     lines.push("  options: FRAMEWORKS,");
     if (props.width === "auto") lines.push('  width: "auto",');
     if (props.animate === "false") lines.push("  animate: false,");
+    if (props.frosted === "false") lines.push("  frosted: false,");
     const st = Number(props.stagger) || 28;
     if (st !== 28) lines.push(`  stagger: ${st},`);
     if (props.disabled === "true") lines.push("  disabled: true,");
@@ -361,6 +373,20 @@ export default function SelectPage() {
 
       <DemoCard title="整体禁用" desc="disabled: true，触发器置灰不可点。">
         <StaticSelect options={FRAMEWORKS} placeholder="选择框架" disabled />
+      </DemoCard>
+
+      <DemoCard
+        title="面板磨砂 vs 不透明"
+        desc="frosted 默认开启：半透明底 + backdrop-filter 毛玻璃；false 回退不透明实体面板。"
+      >
+        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+          <div style={{ width: 240 }}>
+            <StaticSelect options={FRAMEWORKS} placeholder="磨砂面板（默认）" defaultValue="react" />
+          </div>
+          <div style={{ width: 240 }}>
+            <StaticSelect options={FRAMEWORKS} placeholder="不透明面板" defaultValue="vue" frosted={false} />
+          </div>
+        </div>
       </DemoCard>
 
       <DemoCard title="受控模式" desc="value 由外部驱动，用户选择仅回调；配合按钮重设。">

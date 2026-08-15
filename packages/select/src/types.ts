@@ -45,6 +45,8 @@ export interface SelectOptions {
   animate?: boolean;
   /** 错峰动画最大选项数：超过即降级为面板整体淡入（性能/体验保护），0 表示不降级，默认 12 */
   maxStagger?: number;
+  /** 面板半透明磨砂质感：半透明底 + backdrop-filter 毛玻璃；false 为不透明实体面板，默认 true */
+  frosted?: boolean;
   /** 无障碍标签（trigger aria-label），缺省取 placeholder */
   ariaLabel?: string;
   /** 展开状态变化回调 */

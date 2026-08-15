@@ -1,5 +1,11 @@
 # @qingwu-ui/select
 
+## 0.9.0-beta.1
+### Minor Changes
+
+- 新增 `frosted` 选项（默认 `true`）：面板半透明磨砂质感（半透明底 + `backdrop-filter` 毛玻璃）；设为 `false` 回退不透明实体面板。`update({ frosted })` 可动态切换
+- 演示页 `demo.html`：磨砂面板 vs 不透明面板 + 切换按钮（`bun run build:browser` 后打开）
+
 ## 0.9.0-beta
 ### Minor Changes
 
