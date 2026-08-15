@@ -332,6 +332,9 @@ export default function App() {
     }
   }, [editorMode]);
 
+  // 目录（TOC）默认展开状态：true 展开 / false 收起（目录控件仍可用）
+  const [showToc, setShowToc] = useState(true);
+
   // ===== Web Clipper 接收器（浏览器 postMessage 通道）=====
   // 插件通过 chrome.tabs.create 打开本页面后注入脚本 postMessage 推送剪藏内容，
   // 这里监听 message 事件，把 markdown 插入编辑器。
@@ -568,6 +571,21 @@ export default function App() {
               title={editorMode === "edit" ? "切换为只读查看" : "切换为编辑模式"}
             >
               {editorMode === "edit" ? "✏️" : "👁"}
+            </button>
+
+            {/* TOC 默认展开开关 */}
+            <button
+              type="button"
+              data-tour="toc-default"
+              className={`px-1.5 sm:px-2 py-1 text-[11px] sm:text-xs rounded-lg border transition-colors shrink-0 ${
+                showToc
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
+                  : "border-default-200 hover:bg-default-100 text-default-500"
+              }`}
+              onClick={() => setShowToc((v) => !v)}
+              title={showToc ? "目录默认展开（点击切为默认收起）" : "目录默认收起（点击切为默认展开）"}
+            >
+              ☰
             </button>
 
             {/* Editor fullscreen controls */}
@@ -845,6 +863,7 @@ export default function App() {
         <QingWuAIEditor
           initialContent={readmeContent}
           mode={editorMode}
+          showToc={showToc}
           placeholder={t("editor.placeholder")}
           onEditorReady={onEditorReady}
           maxAttachmentSize={maxAttachmentSize}

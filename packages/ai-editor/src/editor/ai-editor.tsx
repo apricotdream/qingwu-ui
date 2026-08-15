@@ -192,7 +192,12 @@ export interface QingWuAIEditorProps {
   style?: React.CSSProperties;
   /** 是否显示顶部工具栏（导出按钮），默认 true */
   showToolbar?: boolean;
-  /** 是否显示目录（TOC）侧栏，默认 true */
+  /**
+   * 目录（TOC）默认展开状态，默认 true。
+   * - true  目录控件可用且默认展开（保持既有行为）
+   * - false 目录控件可用但默认收起，由工具栏按钮 / 悬浮球展开
+   * 注意：false 不再关闭目录功能，仅决定初始展开与否。
+   */
   showToc?: boolean;
   /**
    * 是否启用全文搜索（关键词高亮）
@@ -276,6 +281,12 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   const [isWide, setIsWide] = useState(() =>
     typeof window !== "undefined" && typeof window.matchMedia === "function"
       ? window.matchMedia("(min-width: 80rem)").matches
+      : true,
+  );
+  // 工具栏目录按钮的可见断点（64rem 起显示）；<64rem 时目录入口交给悬浮球
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia("(min-width: 64rem)").matches
       : true,
   );
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -402,6 +413,16 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     const mq = window.matchMedia("(min-width: 80rem)");
     const handler = (e: MediaQueryListEvent) => setIsWide(e.matches);
     setIsWide(mq.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  // 监听 64rem 断点（工具栏目录按钮显隐），窄视口下目录入口由悬浮球接管
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const mq = window.matchMedia("(min-width: 64rem)");
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    setIsDesktop(mq.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
@@ -624,6 +645,24 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
       editor.off("update", handler);
     };
   }, [editor]);
+
+  // 文档是否含标题（h1~h6）：只读态 / 窄屏下据此决定是否亮出目录悬浮球入口
+  const [hasHeadings, setHasHeadings] = useState(false);
+  useEffect(() => {
+    if (!editor) return;
+    const check = () => {
+      let found = false;
+      editor.state.doc.descendants((node) => {
+        if (node.type.name === "heading") found = true;
+      });
+      setHasHeadings(found);
+    };
+    check();
+    editor.on("update", check);
+    return () => {
+      editor.off("update", check);
+    };
+  }, [editor]);
   const characterCount = useMemo(
     () => editor?.storage?.characterCount?.characters?.() ?? 0,
     // charTick 强制重新计算
@@ -775,11 +814,15 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   );
 
   // 桌面内联侧栏可见 = 用户开启 TOC 且 视口宽屏 且 非全屏。
-  // 悬浮球可见 = TOC 功能启用 且 用户开启 TOC 且 桌面侧栏当前不可见 且 目录抽屉未展开
-  // （窄屏 / 浏览器放大到窄视口 / 网页全屏 / 原生全屏 都落入此分支）。
+  // 悬浮球可见 = 目录未以侧栏/抽屉展示，且存在「打开目录」的入口需要：
+  //   1) 用户已开启 TOC（showTocState）——收起后作为重开入口；或
+  //   2) 文档有标题且工具栏目录按钮不可用（<64rem 窄屏编辑 / 只读态无工具栏）——
+  //      悬浮球成为唯一入口。
   // 抽屉展开时目录已直接展示，悬浮球隐藏避免重叠。
   const desktopTocVisible = showTocState && isWide && !editorWebFS && !editorNativeFS;
-  const fabVisible = showToc && showTocState && !desktopTocVisible && !showTocMobile;
+  const isDesktopToolbar = !isReadonly && isDesktop;
+  const fabVisible =
+    !desktopTocVisible && !showTocMobile && (showTocState || (hasHeadings && !isDesktopToolbar));
   // 目录启用但桌面侧栏不可见（窄视口 / 全屏等）时，挂载后直接展开抽屉展示目录内容，
   // 而不是只亮出悬浮球等用户再点一次。仅首次挂载自动展开一次；
   // 用户手动关闭抽屉后，悬浮球作为折叠态入口保留。
@@ -787,10 +830,10 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   useEffect(() => {
     if (autoOpenedTocRef.current) return;
     autoOpenedTocRef.current = true;
-    if (showToc && showTocState && !desktopTocVisible) {
+    if (showTocState && !desktopTocVisible) {
       setShowTocMobile(true);
     }
-  }, [showToc, showTocState, desktopTocVisible]);
+  }, [showTocState, desktopTocVisible]);
 
   // 桌面目录改为编辑器卡片之外的独立侧栏（flex 兄弟节点 + sticky），
   // 不再用 fixed 浮层：fixed 在「宿主容器满宽」或「祖先存在 transform/filter 包含块」时
@@ -825,9 +868,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                     setShowTocMobile(false);
                   } else {
                     setShowTocState(true);
-                    // 桌面侧栏不可见（64rem~80rem 窄视口 / 全屏等）时，
-                    // 展开目录直接打开抽屉，而不是只亮出悬浮球等二次点击
-                    if (!desktopTocVisible) setShowTocMobile(true);
+                    // 展开后桌面侧栏能否显示取决于 isWide 与全屏态（而非点击时的
+                    // desktopTocVisible，那时 showTocState 尚未更新恒为 false，
+                    // 会导致宽屏下侧栏与抽屉同时出现）。侧栏可显示则不叠开抽屉。
+                    const canShowSidebar = isWide && !editorWebFS && !editorNativeFS;
+                    if (!canShowSidebar) setShowTocMobile(true);
                   }
                 }}
                 title={showTocState ? "隐藏目录" : "显示目录"}
@@ -1336,7 +1381,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
         )}
 
         {/* 移动端目录抽屉 - 不设遮罩层，避免遮挡编辑器内容；关闭走抽屉头 × / 面板收起按钮 */}
-        {showToc && showTocMobile && (
+        {showTocMobile && (
           <div className="qingwu-toc-drawer toc-scroll">
             <div className="qed-drawer-head">
               <span className="qed-drawer-head__title">目录</span>

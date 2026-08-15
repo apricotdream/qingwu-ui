@@ -1,5 +1,22 @@
 # @qingwu-ui/ai-editor
 
+## 0.9.0-beta.3
+### Patch Changes
+
+- 修复工具栏「目录」按钮在宽屏点击时抽屉与侧栏同时出现：点击分支原以 `desktopTocVisible`（此刻恒为 false）判断是否叠开抽屉，导致宽屏下两个面板重叠；改为按展开后的侧栏可显示性（`isWide && 非全屏`）决定，宽屏只出侧栏、窄屏/全屏才叠开抽屉
+
+## 0.9.0-beta.2
+### Patch Changes
+
+- 修复目录切换按钮在预构建 CSS 下恒被隐藏的问题：`@media (width < 64rem)` 被构建器转译为 `@media not all and (width>=64rem)`，在 Chromium 下实际恒命中，导致 `--desktop-only` 按钮（含目录开关）对使用预构建产物（如 Vite 应用）的宿主全部隐藏；改为 `(max-width: 63.999rem)` 等价写法，仅 <64rem 隐藏
+
+## 0.9.0-beta.1
+### Patch Changes
+
+- TOC 目录语义统一为「默认展开状态」：`showToc={false}` 不再关闭目录功能，而是**控件可用但默认收起**（工具栏按钮 / 悬浮球 / 抽屉仍可展开），实现宿主「默认关闭」诉求
+- 只读（view）态下文档含标题时亮出目录悬浮球作为唯一入口，点击展开目录抽屉；窄屏（<64rem）编辑态工具栏目录按钮隐藏后同样由悬浮球接管入口
+- 新增内部 `hasHeadings` / `isDesktop` 状态：仅当文档存在 h1~h6 标题且工具栏按钮不可见时才展示悬浮球，避免无标题文档空转悬浮球
+
 ## 0.9.0-beta
 ### Minor Changes
 
