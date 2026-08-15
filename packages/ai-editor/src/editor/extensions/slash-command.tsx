@@ -146,6 +146,19 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
             }
             popup.appendChild(listEl);
 
+            // 键盘选择时确保选中项滚入可视区：列表在 fixed 弹窗内，ArrowDown/Up 直接改
+            // selectedIndex，若不滚列表，选中项会滑出 300px 可视区外仍停留在原滚动位置。
+            const selectedEl = listEl.querySelector<HTMLButtonElement>(".slash-item--selected");
+            if (selectedEl) {
+              const listRect = listEl.getBoundingClientRect();
+              const selRect = selectedEl.getBoundingClientRect();
+              if (selRect.top < listRect.top) {
+                listEl.scrollTop -= listRect.top - selRect.top;
+              } else if (selRect.bottom > listRect.bottom) {
+                listEl.scrollTop += selRect.bottom - listRect.bottom;
+              }
+            }
+
             // 搜索过滤
             searchInput.addEventListener("input", () => {
               const q = searchInput.value.toLowerCase();
@@ -187,6 +200,9 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
                 popup.className = "slash-command-popup";
                 popup.style.cssText =
                   "background:#fff;border:1px solid #e4e4e7;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.12);min-width:260px;max-width:340px;";
+                /* 弹窗 portal 到 body，不在宿主 data-lenis-prevent 子树内；
+                   Lenis 会劫走列表滚轮 → 弹窗自身挂 prevent，滚轮放行给原生滚动 */
+                popup.setAttribute("data-lenis-prevent", "");
                 container.appendChild(popup);
               }
 
