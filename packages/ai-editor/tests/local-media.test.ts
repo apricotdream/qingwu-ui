@@ -60,6 +60,12 @@ describe("textHasLocalMediaRefs", () => {
     expect(textHasLocalMediaRefs("[[某篇笔记]]")).toBe(false);
     expect(textHasLocalMediaRefs("普通文本")).toBe(false);
   });
+
+  it("宿主 owns 命中的引用不参与分流判定", () => {
+    const isOwned = (src: string) => src.startsWith("/api/assets/");
+    expect(textHasLocalMediaRefs(`<img src="/api/assets/editor-assets/x.png">`, undefined, isOwned)).toBe(false);
+    expect(textHasLocalMediaRefs(`<img src="images/photo.png">`, undefined, isOwned)).toBe(true);
+  });
 });
 
 // ---- 目录句柄 mock ----
@@ -243,5 +249,31 @@ describe("collectLocalMediaRefs", () => {
       { type: { name: "image" }, attrs: { src: "a.png" } },
     ]);
     expect(collectLocalMediaRefs(doc)).toHaveLength(1);
+  });
+
+  it("宿主 owns 命中的站内相对路径（/api/assets/、/uploads/）不算本地引用", () => {
+    const isOwned = (src: string) =>
+      src.startsWith("/api/assets/") || src.startsWith("/uploads/");
+    const doc = fakeDoc([
+      { type: { name: "image" }, attrs: { src: "/api/assets/editor-assets/x.png" } },
+      { type: { name: "image" }, attrs: { src: "/uploads/20260807_a.png" } },
+      { type: { name: "image" }, attrs: { src: "images/photo.png" } },
+    ]);
+    // 无 owns：/ 开头相对路径会被判为本地引用（历史行为，勿回归为期望值）
+    expect(collectLocalMediaRefs(doc)).toHaveLength(3);
+    // 有 owns：仅剩真正的本地引用
+    const refs = collectLocalMediaRefs(doc, isOwned);
+    expect(refs.map((r) => r.src)).toEqual(["images/photo.png"]);
+  });
+
+  it("链接型附件同样受 owns 过滤", () => {
+    const isOwned = (src: string) => src.startsWith("/uploads/");
+    const linkMark = (href: string) => ({ type: { name: "link" }, attrs: { href } });
+    const doc = fakeDoc([
+      { isText: true, marks: [linkMark("/uploads/a.pdf")] },
+      { isText: true, marks: [linkMark("files/b.pdf")] },
+    ]);
+    const refs: LocalMediaRef[] = collectLocalMediaRefs(doc, isOwned);
+    expect(refs.map((r) => r.basename)).toEqual(["b.pdf"]);
   });
 });
