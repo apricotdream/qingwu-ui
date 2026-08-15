@@ -19,6 +19,7 @@
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { toast } from "../../components/toast";
+import { ownedUrlChecker } from "../storage";
 import {
   collectLocalMediaRefs,
   type FsDirectoryHandle,
@@ -127,7 +128,9 @@ export const RelativeMedia = Extension.create({
     const maybeResolve = (): void => {
       if (!editor || editor.isDestroyed) return;
       if (storage.pausedUntilPaste) return;
-      const fresh = collectLocalMediaRefs(editor.state.doc);
+      // 宿主 owns 判定：其自有资源（上传返回的站内相对路径）不算本地引用
+      const isOwned = ownedUrlChecker();
+      const fresh = collectLocalMediaRefs(editor.state.doc, isOwned);
       if (fresh.length === 0 || busy) return;
 
       busy = true;
@@ -137,7 +140,9 @@ export const RelativeMedia = Extension.create({
           if (editor.isDestroyed) return;
           // 收尾：busy 期间若出现了本轮之外的新引用（多事务粘贴等），重新扫描补齐；
           // 本轮处理过的 src（含失败/取消的）不立即重跑，避免二次弹窗——留给下次粘贴重试
-          const next = collectLocalMediaRefs(editor.state.doc).filter((r) => !runSrcs.has(r.src));
+          const next = collectLocalMediaRefs(editor.state.doc, isOwned).filter(
+            (r) => !runSrcs.has(r.src),
+          );
           if (next.length === 0) return;
           return runResolution(next, lastDir);
         })
@@ -146,7 +151,8 @@ export const RelativeMedia = Extension.create({
           if (!editor || editor.isDestroyed) return;
           // 仍有未解析的本地引用（取消/未找到等）：暂停探测直到下一次粘贴，
           // 避免用户每次击键都触发扫描与弹窗
-          storage.pausedUntilPaste = collectLocalMediaRefs(editor.state.doc).length > 0;
+          storage.pausedUntilPaste =
+            collectLocalMediaRefs(editor.state.doc, isOwned).length > 0;
         });
     };
 
