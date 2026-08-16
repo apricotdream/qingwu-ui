@@ -1,5 +1,10 @@
 # @qingwu-ui/ai-editor
 
+## 0.9.0-beta.7
+### Patch Changes
+
+- 修复代码块行号列与内容底部错位：库内 `.qingwu-editor .ProseMirror pre`（特异性 0-2-1）覆盖自定义代码块 `.cb-code-pre`（0-1-0）的 `padding`/`line-height`，导致行号列垂直度量（.75rem / 24px）与代码区（1rem / 1.7）不一致、行号列底部比内容高出一段；改为通用 pre 规则排除 `.cb-code-pre`（`pre:not(.cb-code-pre)`），卡片视觉（背景/边框/圆角）移入 `.cb-code-pre` 自身，补齐 dark / 选中态边框，行号与代码逐行对齐
+
 ## 0.9.0-beta.4
 ### Patch Changes
 
