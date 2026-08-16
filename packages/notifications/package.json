@@ -1,6 +1,6 @@
 {
   "name": "@qingwu-ui/notifications",
-  "version": "0.9.0-beta",
+  "version": "0.9.0-beta.1",
   "description": "Framework-agnostic notification bell for Qingwu UI — bell trigger, unread red-dot badge, accordion stagger dropdown panel, zero dependencies",
   "type": "module",
   "license": "Apache-2.0",
