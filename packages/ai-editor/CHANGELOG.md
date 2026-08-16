@@ -1,5 +1,10 @@
 # @qingwu-ui/ai-editor
 
+## 0.9.0-beta.9
+### Patch Changes
+
+- 视频嵌入（videoEmbed）编码不受浏览器支持时显示友好占位：浏览器缺 HEVC/H.265 解码器时 `<video>` 触发 `MEDIA_ERR_SRC_NOT_SUPPORTED`（code 4），此前黑屏 / 显示「不支持的音频或格式」；现捕获该错误改为占位提示（说明原因 + 引导安装 HEVC 扩展或转码 H.264），编辑与只读预览均生效，占位保留删除/全屏工具栏入口
+
 ## 0.9.0-beta.7
 ### Patch Changes
 
