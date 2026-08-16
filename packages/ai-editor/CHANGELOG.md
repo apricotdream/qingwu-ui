@@ -1,5 +1,16 @@
 # @qingwu-ui/ai-editor
 
+## 0.9.0-beta.11
+### Patch Changes
+
+- sanitize 放行 `blob:` URI：DOMPurify 默认过滤 blob: 导致预览/详情回显编辑器内容时，拖入媒体的 blob 占位 src 被清空（视频嵌入 src 变空、无法触发上传中占位）；显式 `ALLOWED_URI_REGEXP` 放行 blob:（会话内同源，安全）
+- 视频嵌入只读态上传中占位（随 0.9.0-beta.10 发布，补记）：view 模式 + src 为 blob: 时显示「视频上传中…」动画，替代黑屏播放器
+
+## 0.9.0-beta.10
+### Patch Changes
+
+- 视频嵌入（videoEmbed）只读态（预览/详情）下 src 仍为 blob 时显示「视频上传中…」动画占位：此前直接创建播放器播 blob，上传完成瞬间 blob 被 revoke 或初始化失败会黑屏；现派生判断 `blob:` 前缀 + 非编辑态，优先于编码不支持占位渲染，上传完成换持久 URL 后经宿主 contentHtml 更新自动切回播放器
+
 ## 0.9.0-beta.9
 ### Patch Changes
 
