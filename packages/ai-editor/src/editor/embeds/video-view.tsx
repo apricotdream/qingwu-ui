@@ -31,6 +31,8 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
   const source = storedSource !== "unknown" ? storedSource : detectSource(src);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [playerLoading, setPlayerLoading] = useState(false);
+  /* 视频编码不受浏览器支持（HEVC/H.265 常见，浏览器缺解码器）：true 时显示友好占位而非黑屏播放器 */
+  const [formatError, setFormatError] = useState(false);
   const isEditable = editor?.isEditable ?? true;
 
   // 删除确认框（复用 delete-confirm 标志，多选时防重复弹框）
@@ -173,8 +175,16 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
     if (source !== "direct" || !videoUrl) return;
     let cancelled = false;
     setPlayerLoading(true);
+    setFormatError(false);
+    const el = containerRef.current;
+    /* 捕获阶段监听容器内 <video> 的 MEDIA_ERR_SRC_NOT_SUPPORTED（code 4，error 不冒泡）：
+       HEVC/H.265 等浏览器无解码器的编码会触发，此时改显友好占位而非黑屏 */
+    const onMediaError = (e: Event) => {
+      const t = e.target as HTMLMediaElement;
+      if (t?.error && t.error.code === 4 && !cancelled) setFormatError(true);
+    };
+    el?.addEventListener("error", onMediaError, true);
     (async () => {
-      const el = containerRef.current;
       if (!el) return;
       try {
         const [{ default: XgPlayer }] = await Promise.all([import("xgplayer")]);
@@ -213,12 +223,20 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
     })();
     return () => {
       cancelled = true;
+      el?.removeEventListener("error", onMediaError, true);
       setPlayerLoading(false);
       playerRef.current?.destroy();
       playerRef.current = null;
       if (containerRef.current) (containerRef.current as any).__xgplayer = null;
     };
   }, [source, videoUrl]);
+
+  /* 编码不支持时销毁残留播放器实例（播放器挂载的容器将被占位替换） */
+  useEffect(() => {
+    if (!formatError) return;
+    playerRef.current?.destroy();
+    playerRef.current = null;
+  }, [formatError]);
 
   // B站 iframe 播放器
   if (source === "bilibili") {
@@ -458,11 +476,41 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
         </div>
       )}
       <div style={{ position: "relative", width: "100%", background: "#000" }}>
-        <div ref={containerRef} style={{ width: "100%", minHeight: 260 }} />
-        {playerLoading && (
-          <div className="xg-loading-overlay">
-            <span className="xg-loading-spinner" />
+        {formatError ? (
+          <div
+            style={{
+              minHeight: 260,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.5rem",
+              padding: "1.25rem",
+              textAlign: "center",
+              color: "#fff",
+            }}
+          >
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <div style={{ fontSize: 14, fontWeight: 500 }}>
+              视频编码不受当前浏览器支持（HEVC/H.265 常见）
+            </div>
+            <div style={{ fontSize: 12, opacity: 0.7, lineHeight: 1.5 }}>
+              请安装「HEVC 视频扩展」，或将视频转码为 H.264 后重新上传
+            </div>
           </div>
+        ) : (
+          <>
+            <div ref={containerRef} style={{ width: "100%", minHeight: 260 }} />
+            {playerLoading && (
+              <div className="xg-loading-overlay">
+                <span className="xg-loading-spinner" />
+              </div>
+            )}
+          </>
         )}
       </div>
       {deleteConfirmDialog}
