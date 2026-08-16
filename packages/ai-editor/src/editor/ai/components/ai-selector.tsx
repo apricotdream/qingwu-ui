@@ -1,7 +1,7 @@
 import type { Editor } from "@tiptap/core";
 import { type Fragment, Slice } from "@tiptap/pm/model";
 import { TextSelection } from "@tiptap/pm/state";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { t } from "../../i18n";
 import { CloseIcon, SparklesIcon } from "../../icons";
 import { type AIMode, getAIProvider } from "../index";
@@ -147,6 +147,9 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
   /** AI 执行那一刻的选区快照：插入范围与按钮显隐都基于它，流式期间改选区不影响结果 */
   const selectionRef = useRef<SelectionRange>({ from: 0, to: 0, empty: true });
   const inputRef = useRef<HTMLInputElement>(null);
+  /** 流式文本区 ref + 自动滚底跟随标志：生成中最新内容始终可见 */
+  const streamingBoxRef = useRef<HTMLDivElement>(null);
+  const followStreamRef = useRef(true);
 
   const handleModeSelect = useCallback(
     async (mode: AIMode) => {
@@ -173,6 +176,8 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
       selectionRef.current = { from: sel.from, to: sel.to, empty: sel.empty };
       setIsLoading(true);
       setStreamingText("");
+      // 新一轮生成：恢复自动滚底跟随（上一轮若用户上滚已暂停）
+      followStreamRef.current = true;
       setError(null);
 
       try {
@@ -198,6 +203,27 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
     },
     [editor, customInstruction],
   );
+
+  // 流式自动滚底跟随：文本增长时滚到底（最新内容始终可见）；
+  // 用户主动上滚即暂停跟随，滚回底部恢复。
+  // 监听挂载以 streamingText 是否出现为依赖：文本区是条件渲染，挂载后再绑定。
+  useEffect(() => {
+    const el = streamingBoxRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 24;
+      followStreamRef.current = nearBottom;
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [Boolean(streamingText)]);
+
+  // 生成中每段文本落到 DOM 前滚到底，避免「最新一行在折叠线下」的闪烁
+  useLayoutEffect(() => {
+    const el = streamingBoxRef.current;
+    if (!el || !followStreamRef.current) return;
+    el.scrollTop = el.scrollHeight;
+  }, [streamingText]);
 
   /** 执行替换并清理孤儿资源：旧媒体 − 新媒体 → 延迟删（undo 窗口内可救回） */
   const applyAIResult = useCallback(
@@ -356,8 +382,11 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
 
               {streamingText && (
                 <>
-                  {/* 流式文本区：面板被 max-height 钳制时收缩并滚动 */}
-                  <div className="flex-1 min-h-0 overflow-y-auto text-sm whitespace-pre-wrap text-default-700 mb-3">
+                  {/* 流式文本区：面板被 max-height 钳制时收缩并滚动；ref 供自动滚底跟随 */}
+                  <div
+                    ref={streamingBoxRef}
+                    className="flex-1 min-h-0 overflow-y-auto text-sm whitespace-pre-wrap text-default-700 mb-3"
+                  >
                     {streamingText}
                     {isLoading && <span className="animate-pulse">▊</span>}
                   </div>
