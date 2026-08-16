@@ -42,6 +42,8 @@ const HIGHLIGHT_COLORS = [
 
 /** AI 面板宽度兜底（无法测量编辑器宽度时用，与 AISelector 内部一致） */
 const AI_PANEL_WIDTH_FALLBACK = 288;
+/** AI 面板宽度上限：宿主正文（如 640px）偏宽，输出文本整宽横排难读，桌面封顶保证阅读宽度 */
+const AI_PANEL_WIDTH_MAX = 480;
 /** 翻转判断用面板高度估算，渲染后 useLayoutEffect 会用真实高度校正 */
 const AI_PANEL_HEIGHT_ESTIMATE = 320;
 
@@ -64,20 +66,27 @@ function layoutAIPanel(
 ): AIPanelLayout {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const pw = Math.min(opts.panelWidth || AI_PANEL_WIDTH_FALLBACK, vw - 32);
+  const pw = Math.min(
+    opts.panelWidth || AI_PANEL_WIDTH_FALLBACK,
+    AI_PANEL_WIDTH_MAX,
+    vw - 32,
+  );
   const ph = Math.max(measuredHeight || AI_PANEL_HEIGHT_ESTIMATE, 160);
 
   // 移动端：顶部居中全宽
   if (vw < 640) {
+    // 移动端贴近视口顶部：maxHeight 按实际 top 动态算，保证底边不出视口，
+    // 流式文本再长，底部控件（替换/插入/丢弃）也常驻可见
+    const top = Math.max(8, Math.min(anchor.top + 10, vh - 420));
     return {
       style: {
         position: "fixed",
-        top: Math.max(8, Math.min(anchor.top + 10, vh - 420)),
+        top,
         left: 8,
         right: 8,
         width: "auto",
         zIndex: 9999,
-        maxHeight: "calc(100dvh - 32px)",
+        maxHeight: `calc(100dvh - ${top}px - 16px)`,
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
@@ -100,6 +109,15 @@ function layoutAIPanel(
   // 箭头尽量贴近选区中心，同时夹在面板内避免溢出
   const arrowLeft = Math.max(14, Math.min(((anchorCenter - left) / pw) * 100, 86));
 
+  // maxHeight 按实际 top/placement 动态算，不再写死 vh-32：
+  // - below：面板底边 = top + height ≤ 100dvh - 16，永不掉出视口；
+  // - above：面板底边不得越过锚点上方（anchor.top - 10），内容再长也只在锚点上方滚动。
+  // 流式文本变长时 flex 链收缩文本区滚动，底部控件常驻可见。
+  const maxHeight =
+    placement === "above"
+      ? `${Math.max(anchor.top - 10 - top, 160)}px`
+      : `calc(100dvh - ${top}px - 16px)`;
+
   return {
     style: {
       position: "fixed",
@@ -107,7 +125,7 @@ function layoutAIPanel(
       left,
       width: pw,
       zIndex: 9999,
-      maxHeight: "calc(100dvh - 32px)",
+      maxHeight,
       overflow: "hidden",
       display: "flex",
       flexDirection: "column",

@@ -393,6 +393,8 @@
 
 .ai-selector {
   animation: fade-in 0.15s ease-out;
+  /* 兜底：面板在极端高度（移动端键盘弹出/dvh 突变）下超视口时整体可滚，底部控件仍可达 */
+  overflow-y: auto;
 }
 
 /* === 气泡菜单 / AI 面板入场动画：缩放 + 淡入 === */
@@ -551,8 +553,13 @@
   --hljs-punctuation: #383a42;
 }
 
-/* ProseMirror 鍐呴儴鐨勪唬鐮佸潡 */
-.qingwu-editor .ProseMirror pre {
+/* ProseMirror 鍐呴儴鐨勪唬鐮佸潡
+   注意：通用 pre 规则须排除自定义代码块（.cb-code-pre）。该节点自带专属
+   padding/line-height（.75rem 1rem / 24px），与行号列、隐藏镜像逐行对齐；
+   通用规则的 1rem 1.25rem / line-height:1.7 会以更高特异性覆盖它，导致
+   行号列底部比代码内容高出一段、首行也错位。自定义代码块的卡片视觉
+   （背景/边框/圆角）已由 .cb-code-pre 自身提供。 */
+.qingwu-editor .ProseMirror pre:not(.cb-code-pre) {
   position: relative;
   background: var(--hljs-bg);
   border: 1px solid #e4e4e7;
@@ -568,7 +575,7 @@
   box-sizing: border-box;
 }
 
-.qingwu-editor .ProseMirror pre code {
+.qingwu-editor .ProseMirror pre:not(.cb-code-pre) code {
   color: var(--hljs-fg);
   background: none;
   padding: 0;
@@ -593,16 +600,20 @@
   border-color: rgba(244, 63, 94, 0.28);
 }
 
-.dark .qingwu-editor .ProseMirror pre {
+.dark .qingwu-editor .ProseMirror pre:not(.cb-code-pre) {
   border-color: #3f3f46;
 }
 
 /* 浠ｇ爜鍧楅€変腑鏃剁殑鐒︾偣鐜?*/
-.qingwu-editor .ProseMirror .ProseMirror-selectednode pre {
+.qingwu-editor .ProseMirror .ProseMirror-selectednode pre:not(.cb-code-pre) {
   border-color: #2563eb;
 }
 
-.qingwu-editor .ProseMirror pre code {
+.qingwu-editor .ProseMirror .ProseMirror-selectednode .cb-code-pre {
+  border-color: #2563eb;
+}
+
+.qingwu-editor .ProseMirror pre:not(.cb-code-pre) code {
   color: var(--hljs-fg);
   background: none;
   padding: 0;
@@ -1033,14 +1044,18 @@
 }
 
 /* 浠ｇ爜鍐呭 */
+/* 自定义代码块自带卡片视觉（背景/边框/底部圆角，与 .cb-header 顶部圆角拼合成整卡）。
+   padding/line-height 必须与 .cb-line-numbers / .cb-code-mirror 保持一致
+   （.75rem 垂直 / 24px），否则行号列与代码内容上下错位。 */
 .cb-code-pre {
   flex: 1;
   margin: 0;
   padding: 0.75rem 1rem;
   overflow-x: auto;
-  border: none;
-  border-radius: 0;
-  background: transparent;
+  background: var(--hljs-bg);
+  border: 1px solid #e4e4e7;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
   box-shadow: none;
   tab-size: 2;
   /* 长行软换行：配合隐藏镜像让行号逐行对齐 */
@@ -1090,6 +1105,10 @@
 
 .dark .cb-line-numbers {
   background: rgba(255, 255, 255, 0.03);
+  border-color: #3f3f46;
+}
+
+.dark .cb-code-pre {
   border-color: #3f3f46;
 }
 
