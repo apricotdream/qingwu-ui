@@ -34,6 +34,8 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
   /* 视频编码不受浏览器支持（HEVC/H.265 常见，浏览器缺解码器）：true 时显示友好占位而非黑屏播放器 */
   const [formatError, setFormatError] = useState(false);
   const isEditable = editor?.isEditable ?? true;
+  /* 只读态（预览/详情）且 src 仍是 blob：媒体未上传完成，显示「上传中」动画而非黑屏播放器 */
+  const isUploading = !isEditable && src.startsWith("blob:");
 
   // 删除确认框（复用 delete-confirm 标志，多选时防重复弹框）
   const deleteConfirmDialog = (
@@ -476,7 +478,35 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
         </div>
       )}
       <div style={{ position: "relative", width: "100%", background: "#000" }}>
-        {formatError ? (
+        {isUploading ? (
+          <div
+            style={{
+              minHeight: 260,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.6rem",
+              padding: "1.25rem",
+              color: "#fff",
+            }}
+          >
+            <svg width="34" height="34" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="3" />
+              <path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round">
+                <animateTransform
+                  attributeName="transform"
+                  type="rotate"
+                  from="0 12 12"
+                  to="360 12 12"
+                  dur="0.8s"
+                  repeatCount="indefinite"
+                />
+              </path>
+            </svg>
+            <div style={{ fontSize: 13, opacity: 0.75 }}>视频上传中…</div>
+          </div>
+        ) : formatError ? (
           <div
             style={{
               minHeight: 260,
