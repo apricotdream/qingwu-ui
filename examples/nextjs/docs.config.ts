@@ -16,6 +16,7 @@ import {
   ICON_TAG,
   ICON_TYPE,
   ICON_UPLOAD,
+  ICON_USERS,
 } from "@icon/icons";
 
 export interface DocPage {
@@ -135,13 +136,21 @@ export const COMPONENT_SECTIONS: DocSection[] = [
     title: "基础组件",
     icon: ICON_BOX,
     pages: [
-      {
+            {
         href: "/demo/button",
         title: "Button 按钮",
         en: "Button",
         desc: "药丸风格按钮：默认 / 主色 / 琥珀 / 图标四变体。",
         keywords: ["按钮", "button", "主色", "琥珀", "图标", "药丸"],
         icon: ICON_BOX,
+      },
+      {
+        href: "/demo/carousel",
+        title: "Carousel 轮播图",
+        en: "Carousel",
+        desc: "左侧大图 + 右侧卡片文案 + 底部缩略图切换。",
+        keywords: ["轮播图", "carousel", "slider", "gallery", "缩略图", "卡片式"],
+        icon: ICON_LIST,
       },
       {
         href: "/demo/input",
@@ -985,6 +994,51 @@ export const COMPONENT_SECTIONS: DocSection[] = [
         ],
       },
       {
+        href: "/demo/avatar",
+        title: "Avatar 头像",
+        en: "Avatar",
+        desc: "点击头像进入编辑层，拖动 / 缩放 / 旋转 / 圆角实时预览，本地导出 Blob 与 dataURL。",
+        keywords: ["头像", "avatar", "裁剪", "crop", "旋转", "缩放", "圆角", "Blob", "dataURL"],
+        icon: ICON_USERS,
+        api: [
+          {
+            title: "配置项",
+            props: [
+              { name: "initialUrl", desc: "已有头像地址；跨域资源需允许 CORS，否则本地导出失败", type: "string", default: "-" },
+              { name: "size", desc: "展示头像尺寸", type: "number", default: "96" },
+              { name: "outputSize", desc: "导出正方形边长", type: "number", default: "256" },
+              { name: "radius", desc: "圆角率（0-50%）", type: "number", default: "50" },
+              { name: "maxZoom", desc: "相对完整覆盖编辑区的最大缩放倍数", type: "number", default: "3" },
+              { name: "accept", desc: "文件选择器接受的类型", type: "string", default: '"image/*"' },
+              { name: "className", desc: "附加到根节点的类名", type: "string", default: "-" },
+              { name: "ariaLabel", desc: "头像按钮无障碍标签", type: "string", default: '"编辑头像"' },
+            ],
+          },
+          {
+            title: "事件",
+            props: [
+              {
+                name: "onConfirm",
+                desc: "确认后触发；本地 Canvas 导出，同时返回 Blob 与 dataURL",
+                type: "(result: AvatarEditorResult) => void",
+                default: "-",
+              },
+              { name: "onOpenChange", desc: "编辑层展开 / 关闭回调", type: "(open: boolean) => void", default: "-" },
+            ],
+          },
+          {
+            title: "实例方法 / 属性",
+            props: [
+              { name: "new AvatarEditor(root, options)", desc: "构造组件并挂载到 root", type: "(el, options) => AvatarEditor", default: "-" },
+              { name: "editor.el", desc: "组件根节点", type: "HTMLElement", default: "-" },
+              { name: "editor.open() / close()", desc: "程序化打开 / 关闭编辑层", type: "() => void", default: "-" },
+              { name: "editor.setImageUrl(url)", desc: "更新待编辑图片与触发器回显", type: "(url: string) => void", default: "-" },
+              { name: "editor.destroy()", desc: "销毁 DOM、编辑层与图片对象 URL", type: "() => void", default: "-" },
+            ],
+          },
+        ],
+      },
+      {
         href: "/demo/upload",
         title: "Upload 上传",
         en: "Upload",
@@ -1383,3 +1437,7 @@ export function findPrevNext(href: string): { prev?: DocPage; next?: DocPage } {
   if (i < 0) return {};
   return { prev: DOC_FLOW[i - 1], next: DOC_FLOW[i + 1] };
 }
+
+
+
+

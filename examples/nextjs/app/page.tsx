@@ -17,7 +17,7 @@ const FEATURE_ICONS = [
 ];
 
 const COMPONENTS = [
-  {
+    {
     href: "/demo/button",
     title: "Button 按钮",
     desc: "药丸风格按钮，默认 / 主色 / 琥珀 / 图标四变体",
@@ -25,6 +25,15 @@ const COMPONENTS = [
     iconClass: "button",
     badge: "stable",
     badgeText: "稳定",
+  },
+  {
+    href: "/demo/carousel",
+    title: "Carousel 轮播图",
+    desc: "左侧大图 + 右侧文案 + 底部缩略图切换",
+    icon: "◐",
+    iconClass: "carousel",
+    badge: "new",
+    badgeText: "新",
   },
   {
     href: "/demo/input",
@@ -219,3 +228,4 @@ export default function HomePage() {
     </>
   );
 }
+

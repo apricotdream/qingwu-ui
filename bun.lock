@@ -16,8 +16,10 @@
       "dependencies": {
         "@qingwu-ui/action-menu": "workspace:*",
         "@qingwu-ui/ai-editor": "workspace:*",
+        "@qingwu-ui/avatar": "workspace:*",
         "@qingwu-ui/button": "workspace:*",
         "@qingwu-ui/calendar": "workspace:*",
+        "@qingwu-ui/carousel": "workspace:*",
         "@qingwu-ui/confirm": "workspace:*",
         "@qingwu-ui/notifications": "workspace:*",
         "@qingwu-ui/search": "workspace:*",
@@ -59,7 +61,7 @@
     },
     "packages/ai-editor": {
       "name": "@qingwu-ui/ai-editor",
-      "version": "0.9.0-beta",
+      "version": "0.9.0-beta.11",
       "dependencies": {
         "@qingwu-ui/text-layout": "^0.9.0-beta",
         "@qingwu-ui/toast": "^0.9.0-beta",
@@ -172,6 +174,19 @@
         "devicon",
       ],
     },
+    "packages/avatar": {
+      "name": "@qingwu-ui/avatar",
+      "version": "0.9.0-beta",
+      "devDependencies": {
+        "@qingwu-ui/tsconfig": "workspace:*",
+        "@size-limit/preset-small-lib": "^13.0.1",
+        "happy-dom": "^20.11.1",
+        "size-limit": "^13.0.1",
+        "tsdown": "^0.22.14",
+        "typescript": "^7.0.2",
+        "vitest": "^4.1.10",
+      },
+    },
     "packages/button": {
       "name": "@qingwu-ui/button",
       "version": "0.9.0-beta",
@@ -186,6 +201,19 @@
     },
     "packages/calendar/ui": {
       "name": "@qingwu-ui/calendar",
+      "version": "0.9.1-beta.0",
+      "devDependencies": {
+        "@qingwu-ui/tsconfig": "workspace:*",
+        "@size-limit/preset-small-lib": "^13.0.1",
+        "happy-dom": "^20.11.1",
+        "size-limit": "^13.0.1",
+        "tsdown": "^0.22.14",
+        "typescript": "^7.0.2",
+        "vitest": "^4.1.10",
+      },
+    },
+    "packages/carousel": {
+      "name": "@qingwu-ui/carousel",
       "version": "0.9.0-beta",
       "devDependencies": {
         "@qingwu-ui/tsconfig": "workspace:*",
@@ -212,7 +240,7 @@
     },
     "packages/notifications": {
       "name": "@qingwu-ui/notifications",
-      "version": "0.9.0-beta",
+      "version": "0.9.0-beta.1",
       "devDependencies": {
         "@qingwu-ui/tsconfig": "workspace:*",
         "happy-dom": "^20.11.1",
@@ -236,7 +264,7 @@
     },
     "packages/select": {
       "name": "@qingwu-ui/select",
-      "version": "0.9.0-beta",
+      "version": "0.9.0-beta.2",
       "devDependencies": {
         "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
@@ -610,9 +638,13 @@
 
     "@qingwu-ui/ai-editor": ["@qingwu-ui/ai-editor@workspace:packages/ai-editor"],
 
+    "@qingwu-ui/avatar": ["@qingwu-ui/avatar@workspace:packages/avatar"],
+
     "@qingwu-ui/button": ["@qingwu-ui/button@workspace:packages/button"],
 
     "@qingwu-ui/calendar": ["@qingwu-ui/calendar@workspace:packages/calendar/ui"],
+
+    "@qingwu-ui/carousel": ["@qingwu-ui/carousel@workspace:packages/carousel"],
 
     "@qingwu-ui/confirm": ["@qingwu-ui/confirm@workspace:packages/confirm"],
 
