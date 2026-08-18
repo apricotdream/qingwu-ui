@@ -7,12 +7,15 @@
     "dev": "node scripts/sync-file-viewer.mjs && rm -rf .next && next dev",
     "build": "node scripts/sync-file-viewer.mjs && next build",
     "start": "node scripts/sync-file-viewer.mjs && next start",
-    "e2e": "node scripts/sync-file-viewer.mjs && playwright test"
+    "e2e": "node scripts/sync-file-viewer.mjs && playwright test",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@qingwu-ui/avatar": "workspace:*",
     "@qingwu-ui/action-menu": "workspace:*",
     "@qingwu-ui/ai-editor": "workspace:*",
     "@qingwu-ui/button": "workspace:*",
+    "@qingwu-ui/carousel": "workspace:*",
     "@qingwu-ui/calendar": "workspace:*",
     "@qingwu-ui/confirm": "workspace:*",
     "@qingwu-ui/notifications": "workspace:*",
