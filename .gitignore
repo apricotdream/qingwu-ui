@@ -6,6 +6,7 @@ dist/
 .npmrc
 **/.npmrc
 .next/
+.next-session-bak/
 .turbo/
 coverage/
 *.tsbuildinfo

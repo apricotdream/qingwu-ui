@@ -419,7 +419,12 @@ const { lines, totalHeight } = layoutChips(items, 400, "15px system-ui", 24, 28)
 function TableColumnsDemo() {
   const data = [
     ["组件名称", "描述", "版本", "体积"],
-    ["@qingwu-ui/button", "通用按钮组件，支持四种变体：默认、主色、琥珀色、图标按钮", "0.3.1", "4 kB"],
+    [
+      "@qingwu-ui/button",
+      "通用按钮组件，支持四种变体：默认、主色、琥珀色、图标按钮",
+      "0.3.1",
+      "4 kB",
+    ],
     [
       "@qingwu-ui/calendar",
       "农历日历组件，含节气、节日、黄历、干支纪年，纯 DOM 渲染",

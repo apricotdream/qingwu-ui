@@ -919,10 +919,7 @@ function AIPanel({
       : result.text
     : "";
 
-  async function callAI(
-    mode: AIActionMode,
-    extra?: { targetLang?: Locale; instruction?: string },
-  ) {
+  async function callAI(mode: AIActionMode, extra?: { targetLang?: Locale; instruction?: string }) {
     if (!settings.ai) {
       toast.warn(t("toast.ai.noKey"));
       return;

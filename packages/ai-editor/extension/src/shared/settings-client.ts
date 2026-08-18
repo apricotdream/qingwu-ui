@@ -10,10 +10,7 @@ import { send } from "./messaging";
 import { defaultSettings } from "./storage/db";
 import type { ClipperSettings } from "./types";
 
-export async function getSettingsWithRetry(
-  attempts = 3,
-  delayMs = 300,
-): Promise<ClipperSettings> {
+export async function getSettingsWithRetry(attempts = 3, delayMs = 300): Promise<ClipperSettings> {
   let lastErr: unknown;
   for (let i = 0; i < attempts; i++) {
     try {

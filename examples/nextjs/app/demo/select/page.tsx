@@ -381,10 +381,19 @@ export default function SelectPage() {
       >
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
           <div style={{ width: 240 }}>
-            <StaticSelect options={FRAMEWORKS} placeholder="磨砂面板（默认）" defaultValue="react" />
+            <StaticSelect
+              options={FRAMEWORKS}
+              placeholder="磨砂面板（默认）"
+              defaultValue="react"
+            />
           </div>
           <div style={{ width: 240 }}>
-            <StaticSelect options={FRAMEWORKS} placeholder="不透明面板" defaultValue="vue" frosted={false} />
+            <StaticSelect
+              options={FRAMEWORKS}
+              placeholder="不透明面板"
+              defaultValue="vue"
+              frosted={false}
+            />
           </div>
         </div>
       </DemoCard>

@@ -18,6 +18,8 @@
     "size": "turbo size",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
+    "lint:staged": "biome check --staged",
+    "hooks:install": "git config core.hooksPath .githooks",
     "ci": "biome check . && turbo build typecheck test size",
     "publish-check": "bun tooling/publish-check/index.mjs",
     "publish-check:fix": "bun tooling/publish-check/index.mjs --fix",

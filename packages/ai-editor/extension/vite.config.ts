@@ -46,7 +46,10 @@ export default defineConfig({
         find: /^@qingwu-ui\/toast\/style\.css$/,
         replacement: resolve(import.meta.dirname, "../../toast/src/style.css"),
       },
-      { find: /^@qingwu-ui\/toast$/, replacement: resolve(import.meta.dirname, "../../toast/src/index.ts") },
+      {
+        find: /^@qingwu-ui\/toast$/,
+        replacement: resolve(import.meta.dirname, "../../toast/src/index.ts"),
+      },
       // toast 源码依赖 text-layout（零运行时依赖），同样源码直连
       {
         find: /^@qingwu-ui\/text-layout$/,
@@ -63,7 +66,10 @@ export default defineConfig({
     target: "es2022",
     rollupOptions: {
       input: {
-        "background/service-worker": resolve(import.meta.dirname, "src/background/service-worker.ts"),
+        "background/service-worker": resolve(
+          import.meta.dirname,
+          "src/background/service-worker.ts",
+        ),
         "content/content-script": resolve(import.meta.dirname, "src/content/content-script.ts"),
         "popup/index": resolve(import.meta.dirname, "src/popup/index.html"),
         "sidepanel/index": resolve(import.meta.dirname, "src/sidepanel/index.html"),

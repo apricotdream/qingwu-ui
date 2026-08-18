@@ -934,8 +934,7 @@ async function waitForPageReady(tabId: number, timeoutMs: number): Promise<boole
         target: { tabId },
         // 必须在主世界读：页面在主世界设的 window.__qingwuReady，隔离世界读不到
         world: "MAIN",
-        func: () =>
-          (window as unknown as Record<string, boolean>).__qingwuReady === true,
+        func: () => (window as unknown as Record<string, boolean>).__qingwuReady === true,
       });
       if (res?.result) return true;
     } catch {

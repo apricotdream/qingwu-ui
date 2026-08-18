@@ -37,7 +37,11 @@ function normalizeBaseURL(baseURL?: string): string {
   }
   return `${u}/chat/completions`;
 }
-function fetchWithTimeout(url: string, init: RequestInit, ms = DEFAULT_TIMEOUT_MS): Promise<Response> {
+function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  ms = DEFAULT_TIMEOUT_MS,
+): Promise<Response> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
   return fetch(url, { ...init, signal: ctrl.signal }).finally(() => clearTimeout(timer));
@@ -212,10 +216,18 @@ function parseTags(text: string): string[] {
 }
 
 function cleanTags(tags: string[]): string[] {
-  return [...new Set(tags
-    .map((s) => s.trim().replace(/^[-*\d.\s#]+/, "").replace(/^标签[:：]/, ""))
-    .filter((s) => s.length > 0 && s.length <= 24))]
-    .slice(0, 8);
+  return [
+    ...new Set(
+      tags
+        .map((s) =>
+          s
+            .trim()
+            .replace(/^[-*\d.\s#]+/, "")
+            .replace(/^标签[:：]/, ""),
+        )
+        .filter((s) => s.length > 0 && s.length <= 24),
+    ),
+  ].slice(0, 8);
 }
 
 export async function runAI(cfg: AIProviderConfig, req: AIRequest): Promise<AIResponse> {

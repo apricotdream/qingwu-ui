@@ -616,15 +616,13 @@ export class Calendar {
     const vw = window.innerWidth || 0;
     const gap = 8;
     const base = ir.width > 0 ? ir.width : this.popoverMinWidth;
-    const sideActive =
-      this.showDetailPanel && this.detailPanel.classList.contains("is-active");
+    const sideActive = this.showDetailPanel && this.detailPanel.classList.contains("is-active");
     /* inside：详情为面板内覆盖浮层（.qw-cal-side absolute），不参与面板宽度；
        left/right：详情参与宽度，面板随详情加宽 */
     /* 读取详情栏宽度前临时取消 width 过渡：过渡中间值（0→240）会让面板宽度测不准 */
     const prevSideTrans = this.detailPanel.style.transition;
     this.detailPanel.style.transition = "none";
-    const sideW =
-      sideActive && this.detailPosition !== "inside" ? this.detailPanel.offsetWidth : 0;
+    const sideW = sideActive && this.detailPosition !== "inside" ? this.detailPanel.offsetWidth : 0;
     this.detailPanel.style.transition = prevSideTrans;
 
     /* 先按 输入框宽+详情宽 定位，再以面板实际宽度兜底：窄输入框下面板

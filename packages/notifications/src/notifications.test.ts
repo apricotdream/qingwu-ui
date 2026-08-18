@@ -76,7 +76,9 @@ describe("Notifications", () => {
     bell.open();
     expect(onOpenChange).toHaveBeenCalledWith(true);
     bell.update({ unreadCount: 0 });
-    expect(document.querySelector<HTMLElement>(".qntf-badge")!.classList.contains("is-visible")).toBe(false);
+    expect(
+      document.querySelector<HTMLElement>(".qntf-badge")!.classList.contains("is-visible"),
+    ).toBe(false);
     bell.close();
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
@@ -87,7 +89,9 @@ describe("Notifications", () => {
     bell.open();
     const items = qsItems();
     items[1]!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(onItemClick).toHaveBeenCalledWith(expect.objectContaining({ id: 2, title: "第二条消息" }));
+    expect(onItemClick).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 2, title: "第二条消息" }),
+    );
     expect(bell.expanded).toBe(false);
   });
 

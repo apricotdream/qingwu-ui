@@ -423,7 +423,10 @@ function AISection({
   async function test() {
     setTesting(true);
     try {
-      const r = await send<{ ok: boolean; data?: string; error?: { message: string } }>("ai:test", cfg);
+      const r = await send<{ ok: boolean; data?: string; error?: { message: string } }>(
+        "ai:test",
+        cfg,
+      );
       if (r.ok && r.data) {
         toast.success("连接成功", { description: `返回：${r.data.slice(0, 80)}` });
       } else {
@@ -471,7 +474,10 @@ function AISection({
 
       {cfg.kind !== "chrome-built-in" && (
         <>
-          <Field label={t("settings.ai.baseURL")} hint="DeepSeek 直连 /chat/completions，其他兼容接口按需补齐 /v1">
+          <Field
+            label={t("settings.ai.baseURL")}
+            hint="DeepSeek 直连 /chat/completions，其他兼容接口按需补齐 /v1"
+          >
             <Input
               value={cfg.baseURL ?? ""}
               placeholder="https://api.deepseek.com 或 https://api.openai.com/v1"
@@ -513,7 +519,8 @@ function AISection({
           <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-[11px] p-2 rounded-md flex gap-1.5">
             <Icon name="info" size={12} className="mt-0.5 shrink-0" />
             <span>
-              选择「DeepSeek（预设）」或「通义千问（预设）」会自动填入 baseURL 与模型。插件会自动识别 DeepSeek 与 OpenAI 兼容接口路径。
+              选择「DeepSeek（预设）」或「通义千问（预设）」会自动填入 baseURL
+              与模型。插件会自动识别 DeepSeek 与 OpenAI 兼容接口路径。
             </span>
           </div>
         </>

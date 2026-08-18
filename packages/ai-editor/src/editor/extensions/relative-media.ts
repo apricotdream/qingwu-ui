@@ -151,8 +151,7 @@ export const RelativeMedia = Extension.create({
           if (!editor || editor.isDestroyed) return;
           // 仍有未解析的本地引用（取消/未找到等）：暂停探测直到下一次粘贴，
           // 避免用户每次击键都触发扫描与弹窗
-          storage.pausedUntilPaste =
-            collectLocalMediaRefs(editor.state.doc, isOwned).length > 0;
+          storage.pausedUntilPaste = collectLocalMediaRefs(editor.state.doc, isOwned).length > 0;
         });
     };
 
