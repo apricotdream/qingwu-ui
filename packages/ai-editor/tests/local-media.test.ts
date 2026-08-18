@@ -63,7 +63,9 @@ describe("textHasLocalMediaRefs", () => {
 
   it("宿主 owns 命中的引用不参与分流判定", () => {
     const isOwned = (src: string) => src.startsWith("/api/assets/");
-    expect(textHasLocalMediaRefs(`<img src="/api/assets/editor-assets/x.png">`, undefined, isOwned)).toBe(false);
+    expect(
+      textHasLocalMediaRefs(`<img src="/api/assets/editor-assets/x.png">`, undefined, isOwned),
+    ).toBe(false);
     expect(textHasLocalMediaRefs(`<img src="images/photo.png">`, undefined, isOwned)).toBe(true);
   });
 });
@@ -252,8 +254,7 @@ describe("collectLocalMediaRefs", () => {
   });
 
   it("宿主 owns 命中的站内相对路径（/api/assets/、/uploads/）不算本地引用", () => {
-    const isOwned = (src: string) =>
-      src.startsWith("/api/assets/") || src.startsWith("/uploads/");
+    const isOwned = (src: string) => src.startsWith("/api/assets/") || src.startsWith("/uploads/");
     const doc = fakeDoc([
       { type: { name: "image" }, attrs: { src: "/api/assets/editor-assets/x.png" } },
       { type: { name: "image" }, attrs: { src: "/uploads/20260807_a.png" } },

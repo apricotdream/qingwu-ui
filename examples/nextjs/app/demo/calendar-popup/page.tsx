@@ -307,9 +307,21 @@ function DetailPositionDemo() {
   const r3 = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const cals = [
-      new Calendar(r1.current!, { mode: "popover", selected: "2026-08-01", detailPosition: "right" }),
-      new Calendar(r2.current!, { mode: "popover", selected: "2026-08-01", detailPosition: "left" }),
-      new Calendar(r3.current!, { mode: "popover", selected: "2026-08-01", detailPosition: "inside" }),
+      new Calendar(r1.current!, {
+        mode: "popover",
+        selected: "2026-08-01",
+        detailPosition: "right",
+      }),
+      new Calendar(r2.current!, {
+        mode: "popover",
+        selected: "2026-08-01",
+        detailPosition: "left",
+      }),
+      new Calendar(r3.current!, {
+        mode: "popover",
+        selected: "2026-08-01",
+        detailPosition: "inside",
+      }),
     ];
     return () => cals.forEach((c) => c.destroy());
   }, []);
@@ -439,9 +451,7 @@ export default function CalendarPopupPage() {
     if (props.showDetailPanel === "true")
       lines.push("  showDetailPanel: true,    // 开启右侧详情面板");
     if (props.detailPosition && props.detailPosition !== "right")
-      lines.push(
-        `  detailPosition: "${props.detailPosition}",    // 详情悬浮方式`,
-      );
+      lines.push(`  detailPosition: "${props.detailPosition}",    // 详情悬浮方式`);
     try {
       const h = JSON.parse(props.holidays || "{}");
       if (h.holidays || h.workdays) {

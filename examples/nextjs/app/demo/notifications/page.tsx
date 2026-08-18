@@ -179,8 +179,8 @@ export default function NotificationsPage() {
       '  <div id="root"></div>',
       '  <script type="module">',
       '    import { Notifications } from "https://unpkg.com/@qingwu-ui/notifications";',
-      "    const ntf = new Notifications(document.querySelector(\"#root\"), {",
-      "      items: [{ id: 1, title: \"青梧 UI 0.9.0 发布\", unread: true }],",
+      '    const ntf = new Notifications(document.querySelector("#root"), {',
+      '      items: [{ id: 1, title: "青梧 UI 0.9.0 发布", unread: true }],',
       "      unreadCount: 1,",
       "      ring: true,",
       "    });",
@@ -267,8 +267,20 @@ export default function NotificationsPage() {
         <NotificationsHost
           options={{
             items: [
-              { id: 1, title: "青梧 UI 0.9.0", sub: "12 包全量对齐 · @qingwu-ui scope 首发", glyph: "0.9.0", unread: true },
-              { id: 2, title: "AI Editor 1.4.2", sub: "替换确认弹窗 · 孤儿资源延迟删除", glyph: "1.4.2", unread: false },
+              {
+                id: 1,
+                title: "青梧 UI 0.9.0",
+                sub: "12 包全量对齐 · @qingwu-ui scope 首发",
+                glyph: "0.9.0",
+                unread: true,
+              },
+              {
+                id: 2,
+                title: "AI Editor 1.4.2",
+                sub: "替换确认弹窗 · 孤儿资源延迟删除",
+                glyph: "1.4.2",
+                unread: false,
+              },
             ],
             unreadCount: 1,
             renderItem: renderRelease,

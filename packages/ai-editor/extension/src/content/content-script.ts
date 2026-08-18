@@ -257,7 +257,11 @@ const DRAG_THRESHOLD = 5;
 
   function extractFallbackDraft() {
     const title = document.title || location.hostname || "剪藏结果";
-    const text = (document.querySelector("article, main, [role='main']")?.textContent ?? document.body?.innerText ?? "")
+    const text = (
+      document.querySelector("article, main, [role='main']")?.textContent ??
+      document.body?.innerText ??
+      ""
+    )
       .replace(/\n{3,}/g, "\n\n")
       .trim();
     const markdown = [`# ${title}`, "", text || location.href, "", location.href].join("\n");

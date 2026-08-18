@@ -34,8 +34,7 @@
 
   --shadow-soft: 0 2px 12px 0 rgba(20, 30, 50, 0.08);
   --shadow-pop: 0 8px 32px -4px rgba(20, 30, 50, 0.18);
-  --shadow-glow:
-    0 0 0 1px rgba(20, 184, 166, 0.2), 0 4px 16px -2px rgba(20, 184, 166, 0.3);
+  --shadow-glow: 0 0 0 1px rgba(20, 184, 166, 0.2), 0 4px 16px -2px rgba(20, 184, 166, 0.3);
 
   --animate-fade-in: fade-in 0.18s ease-out;
   --animate-slide-up: slide-up 0.22s cubic-bezier(0.16, 1, 0.3, 1);

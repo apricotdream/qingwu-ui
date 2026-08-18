@@ -583,7 +583,9 @@ export default function App() {
                   : "border-default-200 hover:bg-default-100 text-default-500"
               }`}
               onClick={() => setShowToc((v) => !v)}
-              title={showToc ? "目录默认展开（点击切为默认收起）" : "目录默认收起（点击切为默认展开）"}
+              title={
+                showToc ? "目录默认展开（点击切为默认收起）" : "目录默认收起（点击切为默认展开）"
+              }
             >
               ☰
             </button>

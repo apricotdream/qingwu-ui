@@ -66,11 +66,7 @@ function layoutAIPanel(
 ): AIPanelLayout {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const pw = Math.min(
-    opts.panelWidth || AI_PANEL_WIDTH_FALLBACK,
-    AI_PANEL_WIDTH_MAX,
-    vw - 32,
-  );
+  const pw = Math.min(opts.panelWidth || AI_PANEL_WIDTH_FALLBACK, AI_PANEL_WIDTH_MAX, vw - 32);
   const ph = Math.max(measuredHeight || AI_PANEL_HEIGHT_ESTIMATE, 160);
 
   // 移动端：顶部居中全宽
@@ -1206,7 +1202,6 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                 <div className="flex items-center gap-1.5 p-1.5">
                   <input
                     type="url"
-                    autoFocus
                     className="flex-1 px-2 py-1 text-xs rounded-md border border-default-200 bg-background focus:outline-none focus:border-primary"
                     placeholder="https://..."
                     value={linkUrl}

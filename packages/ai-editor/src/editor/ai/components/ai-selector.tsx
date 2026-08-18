@@ -117,7 +117,11 @@ function insertAIContent(
   if (!fragment) {
     const chain = editor.chain().focus();
     if (position === "replace") {
-      chain.setTextSelection({ from: range.from, to: range.to }).deleteSelection().insertContent(text).run();
+      chain
+        .setTextSelection({ from: range.from, to: range.to })
+        .deleteSelection()
+        .insertContent(text)
+        .run();
     } else {
       chain.insertContentAt(range.to, text).run();
     }

@@ -270,7 +270,11 @@ describe("Calendar · popover 视口钳制（溢出可滚）", () => {
     const panel = document.querySelector<HTMLElement>(".qw-cal-panel")!;
     stubInputRect(input, top, bottom);
     stubPanelHeight(panel, naturalH);
-    return { cal, panel, overlay: document.querySelector<HTMLElement>(".qw-cal-overlay--popover")! };
+    return {
+      cal,
+      panel,
+      overlay: document.querySelector<HTMLElement>(".qw-cal-overlay--popover")!,
+    };
   }
 
   it("下方空间充足：不钳制，锚定输入框下方", () => {
