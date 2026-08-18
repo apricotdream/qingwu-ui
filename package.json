@@ -24,7 +24,8 @@
     "publish-check": "bun tooling/publish-check/index.mjs",
     "publish-check:fix": "bun tooling/publish-check/index.mjs --fix",
     "release": "turbo build --filter='./packages/*' && bun run publish-check",
-    "serve": "bun run serve.ts"
+    "serve": "bun run serve.ts",
+    "push:all": "git push origin HEAD && git push github HEAD"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.5",
