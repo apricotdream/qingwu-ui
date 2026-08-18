@@ -4,12 +4,12 @@
  * 在浏览器扩展（青梧 Web Clipper）与编辑器之间架起 HTTP 桥梁。
  * 需要 Node 18+ 或支持 `node:http` 的环境（编辑器桌面壳 / Electron / Tauri 等）。
  *
- * 该模块**不**从浏览器主入口导出，而是经独立子入口 `@qingwu/ai-editor/clipper` 暴露，
+ * 该模块**不**从浏览器主入口导出，而是经独立子入口 `@qingwu-ui/ai-editor/clipper` 暴露，
  * 以免 `node:http` 被打包进浏览器产物。
  *
  * 用法：
  * ```ts
- * import { startClipperReceiver, stopClipperReceiver } from "@qingwu/ai-editor/clipper";
+ * import { startClipperReceiver, stopClipperReceiver } from "@qingwu-ui/ai-editor/clipper";
  *
  * // 启动监听（默认 127.0.0.1:7321）
  * const server = await startClipperReceiver({

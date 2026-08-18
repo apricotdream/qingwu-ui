@@ -283,11 +283,17 @@ const MEDIA_NODE_KIND: Record<string, LocalMediaKind> = {
  * 同类引用按 src 去重；**链接型与节点型不互相去重**——同一文件可能既被图片节点
  * 嵌入、又被链接引用（如 `[Open: x.png](x.jpeg)`），两者都要解析换链。
  * 粘贴后由 RelativeMedia 扩展据此驱动解析与上传。
+ *
+ * @param isOwned 宿主 URL 归属判定（可选）：命中表示"已是本站存储资源"，
+ *   跳过不视为待解析的本地引用（见 StorageProvider.owns）。
  */
-export function collectLocalMediaRefs(rootNode: {
-  descendants: (fn: (node: any, pos: number) => boolean | undefined | void) => void;
-  nodeAt?: (pos: number) => any;
-}): LocalMediaRef[] {
+export function collectLocalMediaRefs(
+  rootNode: {
+    descendants: (fn: (node: any, pos: number) => boolean | undefined | void) => void;
+    nodeAt?: (pos: number) => any;
+  },
+  isOwned?: (src: string) => boolean,
+): LocalMediaRef[] {
   const seen = new Set<string>();
   const refs: LocalMediaRef[] = [];
 
@@ -296,7 +302,7 @@ export function collectLocalMediaRefs(rootNode: {
     if (kind) {
       const src = node.attrs?.src;
       const key = `node:${src}`;
-      if (typeof src === "string" && isLocalMediaSrc(src) && !seen.has(key)) {
+      if (typeof src === "string" && isLocalMediaSrc(src) && !seen.has(key) && !isOwned?.(src)) {
         seen.add(key);
         refs.push({
           src,
@@ -321,7 +327,8 @@ export function collectLocalMediaRefs(rootNode: {
           typeof href === "string" &&
           isLocalMediaSrc(href) &&
           looksLikeFilePath(href) &&
-          !seen.has(key)
+          !seen.has(key) &&
+          !isOwned?.(href)
         ) {
           seen.add(key);
           refs.push({
@@ -345,8 +352,14 @@ export function collectLocalMediaRefs(rootNode: {
  * 粗判剪贴板文本/HTML 里是否"可能含本地媒体引用"。
  * 只用于粘贴分流（决定要不要让位给本地媒体解析），不保证精确；
  * 精确的引用清单以插入后文档节点为准（`collectLocalMediaRefs`）。
+ *
+ * @param isOwned 宿主 URL 归属判定（可选）：命中的候选不算本地引用。
  */
-export function textHasLocalMediaRefs(text: string, html?: string): boolean {
+export function textHasLocalMediaRefs(
+  text: string,
+  html?: string,
+  isOwned?: (src: string) => boolean,
+): boolean {
   const blob = html ? `${text}\n${html}` : text;
   if (!blob) return false;
 
@@ -368,5 +381,5 @@ export function textHasLocalMediaRefs(text: string, html?: string): boolean {
     candidates.push(m[1]);
   }
 
-  return candidates.some((c) => looksLikeFilePath(c) && isLocalMediaSrc(c));
+  return candidates.some((c) => looksLikeFilePath(c) && isLocalMediaSrc(c) && !isOwned?.(c));
 }

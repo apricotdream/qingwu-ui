@@ -1,0 +1,64 @@
+{
+  "name": "@qingwu-ui/notifications",
+  "version": "0.9.0-beta.1",
+  "description": "Framework-agnostic notification bell for Qingwu UI — bell trigger, unread red-dot badge, accordion stagger dropdown panel, zero dependencies",
+  "type": "module",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "./dist/style.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./style.css": "./dist/style.css",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown && node -e \"require('fs').cpSync('src/style.css','dist/style.css')\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@qingwu-ui/tsconfig": "workspace:*",
+    "happy-dom": "^20.11.1",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apricotdream/qingwu-ui.git",
+    "directory": "packages/notifications"
+  },
+  "homepage": "https://github.com/apricotdream/qingwu-ui#readme",
+  "bugs": "https://github.com/apricotdream/qingwu-ui/issues",
+  "keywords": [
+    "notifications",
+    "bell",
+    "badge",
+    "dropdown",
+    "accordion",
+    "stagger",
+    "framework-agnostic",
+    "a11y",
+    "ui-component",
+    "qingwu"
+  ],
+  "author": "Qingwu Team",
+  "engines": {
+    "node": ">=20"
+  }
+}

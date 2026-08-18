@@ -1,0 +1,356 @@
+/* ============================================================
+   青梧UI · 通知铃铛样式（Notifications）
+   零依赖 · CSS 自定义属性驱动 · 明暗双主题 · reduced-motion 友好
+
+   使用方式：
+     import "@qingwu-ui/notifications/style.css"
+
+   令牌覆盖：--qntf-* 可被宿主覆盖；复用宿主已定义的
+   --card / --ink / --ink-2 / --ink-3 / --line / --teal / --vermilion / --hover / --shadow-pop
+   若宿主未提供则使用本文件默认值。
+   ============================================================ */
+
+/* ============================================================
+   ① 设计令牌（可在宿主层覆盖）
+   ============================================================ */
+:root {
+  --qntf-card: var(--card, #fdfdfb);
+  --qntf-ink: var(--ink, #1d2b2c);
+  --qntf-ink-2: var(--ink-2, #47585a);
+  --qntf-ink-3: var(--ink-3, #84928f);
+  --qntf-line: var(--line, #dcdfd6);
+  --qntf-teal: var(--teal, #1e605a);
+  --qntf-vermilion: var(--vermilion, #c8402f);
+  --qntf-hover: var(--hover, rgba(30, 96, 90, 0.07));
+  --qntf-shadow-pop: var(--shadow-pop, 0 24px 60px -28px rgba(29, 43, 44, 0.42));
+  --qntf-font-ui: var(--font-ui, "Microsoft YaHei", "PingFang SC", system-ui, sans-serif);
+  --qntf-font-kai: var(--font-kai, KaiTi, "STKaiti", "Kaiti SC", serif);
+}
+
+/* 暗色主题：兼容 <html data-theme="dark"> 与 .dark 类两种宿主约定 */
+.dark,
+[data-theme="dark"] {
+  --qntf-card: #1a2022;
+  --qntf-ink: #e6ebe7;
+  --qntf-ink-2: #a8b4b2;
+  --qntf-ink-3: #6f7f7d;
+  --qntf-line: #2a3234;
+  --qntf-teal: #57a89e;
+  --qntf-vermilion: #e2695a;
+  --qntf-hover: rgba(255, 255, 255, 0.06);
+  --qntf-shadow-pop: 0 24px 60px -28px rgba(0, 0, 0, 0.7);
+}
+
+/* ============================================================
+   ② 基础复位（限定在组件范围内，不污染宿主）
+   ============================================================ */
+.qntf,
+.qntf *,
+.qntf-panel,
+.qntf-panel * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+.qntf {
+  position: relative;
+  font-family: var(--qntf-font-ui);
+  color: var(--qntf-ink);
+}
+.qntf button {
+  font-family: inherit;
+  color: inherit;
+}
+.qntf-panel ul,
+.qntf-panel li {
+  list-style: none;
+}
+
+/* 通用焦点环 */
+.qntf-trigger:focus-visible {
+  outline: 2px solid var(--qntf-teal);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   ③ 触发器（铃铛按钮 + 红点徽标）
+   ============================================================ */
+.qntf-trigger {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--qntf-ink-2);
+  cursor: pointer;
+  transition:
+    background-color 0.18s,
+    color 0.18s,
+    transform 0.12s;
+}
+.qntf-trigger:hover {
+  background: var(--qntf-hover);
+  color: var(--qntf-ink);
+}
+.qntf.is-open .qntf-trigger {
+  background: var(--qntf-hover);
+  color: var(--qntf-teal);
+}
+.qntf-trigger svg {
+  width: 18px;
+  height: 18px;
+  /* 摆动以顶边中点为轴心（如挂着的铃铛）；fill-box 保证 iOS Safari 正确解析 */
+  transform-box: fill-box;
+  transform-origin: top center;
+}
+
+/* 未读红点徽标：纯红点，>0 时弹入显示 */
+.qntf-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--qntf-vermilion);
+  box-shadow: 0 0 0 2px var(--qntf-card);
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity 0.18s ease,
+    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+.qntf-badge.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 未读响铃摆动：内层 SVG 左右摆动，仿佛摇铃。intermittent 模式的
+   静默/重响节奏由 JS 按 ringInterval 控制；persistent 常驻无限摆。 */
+.qntf-trigger.is-ringing svg {
+  animation: qntf-ring 0.9s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes qntf-ring {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  12% {
+    transform: rotate(15deg);
+  }
+  25% {
+    transform: rotate(-12deg);
+  }
+  38% {
+    transform: rotate(10deg);
+  }
+  50% {
+    transform: rotate(-8deg);
+  }
+  63% {
+    transform: rotate(5deg);
+  }
+  76% {
+    transform: rotate(-3deg);
+  }
+}
+
+/* ============================================================
+   ④ 面板（position: fixed 挂 body，向上/向下自适应）
+   ============================================================ */
+.qntf-panel {
+  position: fixed;
+  z-index: 300;
+  max-width: min(340px, calc(100vw - 16px));
+  background: var(--qntf-card);
+  border: 1px solid var(--qntf-line);
+  border-radius: 14px;
+  box-shadow: var(--qntf-shadow-pop);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+  transform-origin: top center;
+  transition:
+    opacity 0.16s ease,
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.qntf-panel[hidden] {
+  display: none;
+}
+.qntf-panel.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.qntf-panel.is-up {
+  transform: translateY(8px) scale(0.98);
+  transform-origin: bottom center;
+}
+.qntf-panel.is-up.is-open {
+  transform: translateY(0) scale(1);
+}
+
+/* ============================================================
+   ⑤ 条目列表
+   ============================================================ */
+.qntf-list {
+  padding: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.qntf-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--qntf-ink);
+  transition:
+    background-color 0.12s,
+    transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.qntf-item + .qntf-item {
+  margin-top: 1px;
+}
+/* 悬浮反馈：底色 + 轻微上浮 */
+.qntf-item:hover {
+  background: var(--qntf-hover);
+  transform: translateY(-1px);
+}
+/* 键盘焦点态：左侧黛青色条 */
+.qntf-item::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 3px;
+  height: 55%;
+  border-radius: 3px;
+  background: var(--qntf-teal);
+  transition: transform 0.16s ease;
+}
+.qntf-item.is-active {
+  background: var(--qntf-hover);
+}
+.qntf-item.is-active::before {
+  transform: translateY(-50%) scaleY(1);
+}
+
+/* 条目内部结构 */
+.qntf-item-glyph {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  font-family: var(--qntf-font-kai);
+  font-size: 14px;
+  background: color-mix(in srgb, var(--qntf-ink) 5%, transparent);
+  color: var(--qntf-ink-2);
+}
+.qntf-item-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.qntf-item-title {
+  display: block;
+  font-size: 13.5px;
+  color: var(--qntf-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qntf-item-sub {
+  display: block;
+  font-size: 11px;
+  color: var(--qntf-ink-3);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qntf-item-sub:empty {
+  display: none;
+}
+/* 未读圆点标识：行尾朱砂点，已读隐藏 */
+.qntf-item-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--qntf-vermilion);
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity 0.16s ease,
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.qntf-item.is-unread .qntf-item-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 空态 */
+.qntf-empty {
+  padding: 22px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--qntf-ink-3);
+  cursor: default;
+}
+.qntf-empty:hover {
+  background: transparent;
+  transform: none;
+}
+
+/* ============================================================
+   ⑥ 手风琴错峰关键帧（琴键逐项按下）
+   ============================================================ */
+@keyframes qntf-press {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scaleY(0.96);
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes qntf-press-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scaleY(0.96);
+  }
+  to {
+    opacity: 1;
+  }
+}
+.qntf-item.is-enter {
+  animation: qntf-press 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.qntf-panel.is-up .qntf-item.is-enter {
+  animation-name: qntf-press-up;
+}
+
+/* ============================================================
+   ⑦ prefers-reduced-motion：全部动画熔断
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .qntf *,
+  .qntf *::before,
+  .qntf *::after,
+  .qntf-panel *,
+  .qntf-panel *::before,
+  .qntf-panel *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

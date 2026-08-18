@@ -173,7 +173,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@qingwu/ai-editor": path.resolve(__dirname, "./src/editor/index.ts"),
+      "@qingwu-ui/ai-editor": path.resolve(__dirname, "./src/editor/index.ts"),
     },
   },
   optimizeDeps: {

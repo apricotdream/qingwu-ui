@@ -3,10 +3,10 @@
    - 纯 DOM 渲染，零第三方依赖
    - ARIA live region 内建 / prefers-reduced-motion 自动克制
    - 6 种定位 / 4 种语义类型 / Promise 链 / 队列管理
-   - 文本自适应行数：@qingwu/text-layout 精确排版
+   - 文本自适应行数：@qingwu-ui/text-layout 精确排版
    ============================================================ */
 
-import { layout } from "@qingwu/text-layout";
+import { layout } from "@qingwu-ui/text-layout";
 import type {
   PromiseMessages,
   ToasterOptions,

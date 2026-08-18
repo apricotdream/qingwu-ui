@@ -25,7 +25,7 @@ import {
   type TemplateRenderPayload,
 } from "../shared/messages";
 import { registerHandler } from "../shared/messaging";
-import { db, loadSettings } from "../shared/storage/db";
+import { db, loadSettings, settingsStore } from "../shared/storage/db";
 import { renderTemplate } from "../shared/templates/engine";
 import type {
   AIProviderConfig,
@@ -163,9 +163,9 @@ function openSidePanelForTab(tabId: number) {
   try {
     void chrome.sidePanel
       .open({ tabId })
-      .catch((e) => console.warn("sidePanel 不可用，回退到 popup", e));
+      .catch((e) => console.warn("sidePanel 不可用，回退到独立窗口", e));
   } catch (e) {
-    console.warn("sidePanel 不可用，回退到 popup", e);
+    console.warn("sidePanel 不可用，回退到独立窗口", e);
   }
 }
 
@@ -228,6 +228,7 @@ registerHandler({
         tags: payload.tags,
         aiSummary: payload.aiSummary,
         aiTags: payload.aiTags,
+        extra: { aiTranslation: payload.aiTranslation?.text ?? "" },
       });
       rendered = r.rendered;
       unknownVars = r.unknownVars;
@@ -246,7 +247,7 @@ registerHandler({
       summary: payload.summary,
       aiSummary: payload.aiSummary,
       aiTags: payload.aiTags,
-      aiTranslation: null,
+      aiTranslation: payload.aiTranslation ?? null,
       templateId: tpl?.id ?? "default",
       renderedMarkdown: rendered,
       favorite: false,
@@ -455,15 +456,20 @@ registerHandler({
     return ok({ delivered: true });
   },
 
-  // 内容脚本点击来自用户手势；这里不要 await，直接按来源 tab 打开。
-  "tab:open-sidepanel": (_msg, sender) => {
+  // 悬浮球来自 content script，跨进程调用 sidePanel.open 容易丢用户手势。
+  // 这里直接打开完整侧栏窗口，保留设置 / 历史 / AI / 复制 / 预览等完整功能。
+  "tab:open-sidepanel": async (_msg, sender) => {
     const tabId = sender.tab?.id;
-    if (typeof tabId === "number") {
-      openSidePanelForTab(tabId);
-      return ok({ tabId, fallback: false });
+    try {
+      if (typeof tabId !== "number") {
+        return err("sidepanel.no-tab", "无法识别当前标签页", { retryable: false });
+      }
+      await chrome.sidePanel.open({ tabId });
+      return ok({ tabId, mode: "sidepanel" });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      return err("sidepanel.open", message, { retryable: false });
     }
-    openSidePanelForCurrentWindow();
-    return ok({ fallback: true });
   },
 });
 
@@ -900,7 +906,8 @@ function waitForTabComplete(tabId: number, timeoutMs: number): Promise<void> {
       clearTimeout(timer);
       resolve();
     };
-    const listener = (id: number, info: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => {
+    // @types/chrome 0.2.x 把 tabs.onUpdated 的 changeInfo 类型更名为 OnUpdatedInfo
+    const listener = (id: number, info: chrome.tabs.OnUpdatedInfo, tab: chrome.tabs.Tab) => {
       if (id === tabId && (info.status === "complete" || tab.status === "complete")) {
         finish();
       }
@@ -927,8 +934,7 @@ async function waitForPageReady(tabId: number, timeoutMs: number): Promise<boole
         target: { tabId },
         // 必须在主世界读：页面在主世界设的 window.__qingwuReady，隔离世界读不到
         world: "MAIN",
-        func: () =>
-          (window as unknown as Record<string, boolean>).__qingwuReady === true,
+        func: () => (window as unknown as Record<string, boolean>).__qingwuReady === true,
       });
       if (res?.result) return true;
     } catch {
@@ -950,6 +956,5 @@ function sanitizeFilename(name: string): string {
 }
 
 async function persistSettings(s: ClipperSettings): Promise<void> {
-  const { settingsStore } = await import("../shared/storage/db");
   await settingsStore.set(s);
 }

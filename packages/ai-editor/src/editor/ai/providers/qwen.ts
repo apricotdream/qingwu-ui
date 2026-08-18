@@ -14,7 +14,7 @@ export function createQwenProvider(config: Partial<AIConfig> & { apiKey: string 
   return createOpenAICompatProvider({
     apiKey: config.apiKey,
     baseURL: config.baseURL || "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    model: config.model || "qwen-plus",
+    model: config.model || "qwen3.7-plus",
     headers: config.headers,
   });
 }

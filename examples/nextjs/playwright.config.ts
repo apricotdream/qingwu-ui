@@ -10,7 +10,7 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { browserName: "chromium" } }],
   webServer: {
-    command: "bunx next dev --port 3356",
+    command: "node scripts/sync-file-viewer.mjs && bunx next dev --port 3356",
     url: "http://localhost:3356/demo/upload",
     reuseExistingServer: true,
     timeout: 120_000,

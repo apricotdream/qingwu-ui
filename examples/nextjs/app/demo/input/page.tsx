@@ -12,7 +12,7 @@ const STYLE_LABELS: Record<InputStyle, string> = {
 
 const snippets = {
   react: [
-    'import "@qingwu/calendar/style.css";',
+    'import "@qingwu-ui/calendar/style.css";',
     "",
     "export default function InputDemo() {",
     "  return (",
@@ -28,7 +28,7 @@ const snippets = {
     '<html lang="zh-CN">',
     "<head>",
     '  <meta charset="utf-8" />',
-    '  <link rel="stylesheet" href="https://unpkg.com/@qingwu/calendar/style.css" />',
+    '  <link rel="stylesheet" href="https://unpkg.com/@qingwu-ui/calendar/style.css" />',
     "</head>",
     "<body>",
     '  <input class="qw-input" type="text" placeholder="流光边框..." />',

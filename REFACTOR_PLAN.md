@@ -1,6 +1,6 @@
 # 青梧UI · Calendar 组件库 TS7 现代化重构实施方案
 
-> 版本：v1.1（2026-07-31 修订：`@qingwu/calendar-core` 并入 `@qingwu/calendar`，状态引擎不再独立成包）｜ 编制日期：2026-07-25 ｜ 性质：规划文档（不含任何代码改动）
+> 版本：v1.1（2026-07-31 修订：`@qingwu-ui/calendar-core` 并入 `@qingwu-ui/calendar`，状态引擎不再独立成包）｜ 编制日期：2026-07-25 ｜ 性质：规划文档（不含任何代码改动）
 > 视角：资深产品经理 × 高级开发工程师 × 前端架构师
 > 数据基线：本地实测排查 + 2026-07-25 实时联网调研（npm registry / GitHub API / 上游 issue 库）
 
@@ -150,7 +150,7 @@ qingwu-ui/
 
 ### 3.3 为什么采用 headless + tokens 架构
 
-- **一次逻辑，一套原生渲染**：状态引擎与渲染层同置于 `@qingwu/calendar` 包内（纯逻辑模块零 DOM 依赖、Node 可测），原生 DOM 渲染层为正统，React/Vue 仅为生命周期薄包装——测试与 bug 修复只做一遍，框架大版本升级近乎无感（决策见 §6.6）。
+- **一次逻辑，一套原生渲染**：状态引擎与渲染层同置于 `@qingwu-ui/calendar` 包内（纯逻辑模块零 DOM 依赖、Node 可测），原生 DOM 渲染层为正统，React/Vue 仅为生命周期薄包装——测试与 bug 修复只做一遍，框架大版本升级近乎无感（决策见 §6.6）。
 - **主题即数据**：tokens JSON 单一数据源，主题切换/品牌定制=改变量，终结"8 个 CSS 文件拼权重"。
 - **对齐国际标准**：与 React Aria/Base UI 同构的架构语言，降低社区贡献者理解成本，利于开源传播。
 
@@ -202,9 +202,9 @@ qingwu-ui/
 ### 5.3 新建（Create）
 
 - monorepo 骨架、共享工具链配置、CI/CD、changesets。
-- `@qingwu/calendar`（**产品主体**：内置 headless 状态引擎 + 原生 DOM 渲染层 + 默认样式）、`@qingwu/calendar-react` / `@qingwu/calendar-vue`（生命周期薄包装，各 ~100 行）。
-- `@qingwu/lunar`（历法数据包）、`@qingwu/icons`（样式 tokens 并入 `@qingwu/calendar` 的 CSS 子路径导出，不单设包）。
-- 文档站 + playground + 迁移指南 + 旧 API 兼容层 `@qingwu/calendar-compat`。
+- `@qingwu-ui/calendar`（**产品主体**：内置 headless 状态引擎 + 原生 DOM 渲染层 + 默认样式）、`@qingwu-ui/calendar-react` / `@qingwu-ui/calendar-vue`（生命周期薄包装，各 ~100 行）。
+- `@qingwu-ui/lunar`（历法数据包）、`@qingwu-ui/icons`（样式 tokens 并入 `@qingwu-ui/calendar` 的 CSS 子路径导出，不单设包）。
+- 文档站 + playground + 迁移指南 + 旧 API 兼容层 `@qingwu-ui/calendar-compat`。
 
 ---
 
@@ -216,7 +216,7 @@ qingwu-ui/
 qingwu-ui/
 ├── packages/
 │   ├── calendar/             # ★ 日历家族（按域分组；包名不受目录深度影响）
-│   │   ├── calendar/         # @qingwu/calendar —— 产品主体：内置 headless 状态引擎 + 原生 DOM 渲染层 + 默认样式
+│   │   ├── calendar/         # @qingwu-ui/calendar —— 产品主体：内置 headless 状态引擎 + 原生 DOM 渲染层 + 默认样式
 │   │   │   └── src/
 │   │   │       ├── state/    # reducer 式视图状态机（视图模式/选中模型/焦点格）
 │   │   │       ├── model/    # 日期模型与 date-io 适配（原生 Date 为主，Temporal 预留口）
@@ -226,8 +226,8 @@ qingwu-ui/
 │   │   │       ├── plugins/  # 类型化插件钩子（dayMeta 管线在此注入）
 │   │   │       └── render/   # 正统渲染器：节点复用、Popover/Anchor 定位、SSR 注水
 │   │   │                     # exports: "." 主体 / "./css" tokens+@layer 样式 / "./themes/*"
-│   │   ├── react/            # @qingwu/calendar-react —— ~100 行生命周期包装（非渲染层重写）
-│   │   ├── vue/              # @qingwu/calendar-vue —— ~80 行生命周期包装 + v-model 桥
+│   │   ├── react/            # @qingwu-ui/calendar-react —— ~100 行生命周期包装（非渲染层重写）
+│   │   ├── vue/              # @qingwu-ui/calendar-vue —— ~80 行生命周期包装 + v-model 桥
 │   │   └── compat/           # 旧 API 兼容层（同为原生命令式 API，仅参数映射）
 │   ├── lunar/                # 基于自研 lunar.ts 的按需封装（core/festival/solar-term 子路径，零依赖）
 │   └── icons/                # SVG 图标
@@ -241,7 +241,7 @@ qingwu-ui/
 └── .github/workflows/        # ci.yml / release.yml
 ```
 
-### 6.2 核心引擎设计（@qingwu/calendar 内置模块）
+### 6.2 核心引擎设计（@qingwu-ui/calendar 内置模块）
 
 **分层原则**：状态（纯函数）→ 渲染模型（纯数据）→ 渲染器（**原生 DOM 为正统**；框架包仅为生命周期包装）。三层均可独立单测。
 
@@ -256,7 +256,7 @@ CalendarOptions ──► [State Reducer] ──► ViewState ──► [Render 
 - **dayMeta 管线**：`DayMetaProvider` 接口 —— `getDayMeta(date) → { lunar?, festival?, solarTerm?, holiday?, workday?, custom? }`。lunar 以插件注入，不注入则该管线与数据完全不进 bundle。
 - **插件系统**：继承主流日历库 hooks 命名习惯，但全部强类型 + 生命周期明确（`onInit/onViewChange/onDayRender/onSelect/onDestroy`）。
 
-### 6.3 样式架构（`@qingwu/calendar` 样式子系统，`./css` 与 `./themes/*` 子路径导出）
+### 6.3 样式架构（`@qingwu-ui/calendar` 样式子系统，`./css` 与 `./themes/*` 子路径导出）
 
 ```css
 @layer qingwu.reset, qingwu.tokens, qingwu.base, qingwu.components, qingwu.theme;
@@ -266,7 +266,7 @@ CalendarOptions ──► [State Reducer] ──► ViewState ──► [Render 
 - 主题 = token 覆盖：内置 `light` / `dark`（跟随 `prefers-color-scheme`）/ `qingwu`（青梧东方美学主题，替代旧式多套静态主题文件）。
 - 业务方定制：覆盖 `--qw-*` 变量即可，`@layer` 保证任何业务选择器权重天然高于库内样式。
 - 无障碍内建：`forced-colors`（Windows 高对比）、焦点环、RTL、`prefers-reduced-motion`。
-- 弹层定位：优先 CSS Anchor Positioning，不支持的浏览器降级为 JS 定位（@qingwu/calendar 内 positioning 模块）。
+- 弹层定位：优先 CSS Anchor Positioning，不支持的浏览器降级为 JS 定位（@qingwu-ui/calendar 内 positioning 模块）。
 
 ### 6.4 构建与产物（tsdown + TS7）
 
@@ -275,11 +275,11 @@ CalendarOptions ──► [State Reducer] ──► ViewState ──► [Render 
 | ESM（主） | 每包 `dist/index.mjs`，tree-shakeable，`sideEffects: false` |
 | CJS（兼容） | 过渡期保留，v2 移除 |
 | d.ts | tsdown 内置 dts（TS7 生成），`exports.types` 条件导出 |
-| CDN bundle | 仅 @qingwu/calendar 产出单文件 IIFE（给无构建环境，替代旧 UMD） |
+| CDN bundle | 仅 @qingwu-ui/calendar 产出单文件 IIFE（给无构建环境，替代旧 UMD） |
 | 样式 | tokens CSS + 组件 CSS + 主题 CSS，均按 `exports` 子路径可单独引入 |
 
 - `package.json` 全量现代化：`exports` 条件导出、`type: module`、`files` 白名单、`engines: node >=20`、`sideEffects: ["*.css"]`。
-- 体积卡口：**@qingwu/calendar 主体 gzip ≤ 30KB**、lunar 子路径 gzip ≤ 30KB、CI `size-limit` 超限即红。
+- 体积卡口：**@qingwu-ui/calendar 主体 gzip ≤ 30KB**、lunar 子路径 gzip ≤ 30KB、CI `size-limit` 超限即红。
 
 ### 6.5 质量与发布体系
 
@@ -290,8 +290,8 @@ CalendarOptions ──► [State Reducer] ──► ViewState ──► [Render 
 
 ### 6.6 决策记录：渲染层归属（v2 修订，2026-07-25）
 
-- **背景**：原方案为独立 core 状态引擎 + DOM/React/Vue 三套渲染层。评审后改判；2026-07-31 再修订：状态引擎并入 @qingwu/calendar 包内模块（原独立 calendar-core 包仅 44 行且无人实质依赖，判定独立成包无必要）。
-- **决策**：**原生 TS 实现为主体**——`@qingwu/calendar` 拥有唯一的正统 DOM 渲染层；React/Vue 官方包是 ~100 行的生命周期薄包装（mount/update/destroy + 事件转发），不含任何渲染逻辑；Web Component 封装作为后续 bonus。
+- **背景**：原方案为独立 core 状态引擎 + DOM/React/Vue 三套渲染层。评审后改判；2026-07-31 再修订：状态引擎并入 @qingwu-ui/calendar 包内模块（原独立 calendar-core 包仅 44 行且无人实质依赖，判定独立成包无必要）。
+- **决策**：**原生 TS 实现为主体**——`@qingwu-ui/calendar` 拥有唯一的正统 DOM 渲染层；React/Vue 官方包是 ~100 行的生命周期薄包装（mount/update/destroy + 事件转发），不含任何渲染逻辑；Web Component 封装作为后续 bonus。
 - **理由**：
   1. **兼容红利**：原上游库本身是原生命令式 API（`lib(el, opts)` 形态），同为原生实现使 compat 层退化为参数映射，迁移≈换构造函数调用；若 React-first，兼容层须在 React 状态之上重建命令式语义，成本高一个量级。
   2. **触达面**：中文市场的真实构成 = Vue 后台 + jQuery/原生存量 + 低代码平台（消费原生组件/Web Component）+ React；原生一次打通四层。
@@ -329,31 +329,31 @@ CalendarOptions ──► [State Reducer] ──► ViewState ──► [Render 
 
 - 模块拆解实现：`state`（视图状态机）→ `rules`（enable/disable/min/max）→ `model`（date-io、时区）→ `a11y`（roving tabindex、ARIA grid、全键盘导航：方向键/PageUp·Down/Home/End/Enter/Esc）→ `i18n`（JSON 语言包，首发 zh/en/ja/ko 等 12 种）→ `plugins`（dayMeta 管线）。
 - **行为测试基线**：编写原创 vitest 用例套件，覆盖选择模式 / 规则引擎 / 键盘导航 / 格式化等核心行为（行为兼容的基准线）。
-- 交付物：`@qingwu/calendar@0.1.0` 内置状态引擎（包内纯逻辑模块，零 DOM 依赖，Node 环境可跑全部测试）。
+- 交付物：`@qingwu-ui/calendar@0.1.0` 内置状态引擎（包内纯逻辑模块，零 DOM 依赖，Node 环境可跑全部测试）。
 
 ### Phase 3 ｜ 产品主体：原生渲染层 + 样式体系（第 8–10 周）★ 渲染层正统在此
 
-- `@qingwu/calendar` render 模块：内置 ViewState → DOM 渲染（节点复用代替全量重建，解决 §1.6 重绘问题）；Popover API + Anchor Positioning（降级方案）；SSR 注水就绪；`new QingwuCalendar(el, opts)` 命令式 API（与主流日历库 API 同构，为 compat 层铺路）。
+- `@qingwu-ui/calendar` render 模块：内置 ViewState → DOM 渲染（节点复用代替全量重建，解决 §1.6 重绘问题）；Popover API + Anchor Positioning（降级方案）；SSR 注水就绪；`new QingwuCalendar(el, opts)` 命令式 API（与主流日历库 API 同构，为 compat 层铺路）。
 - 样式子系统（包内 `./css` 与 `./themes/*` 子路径导出）：tokens 管线跑通，@layer 结构落地，三主题 + dark mode + forced-colors + RTL。
 - axe-core 集成进 CI；键盘流 E2E（Playwright）。
 - 交付物：原生可用组件 + 「今天」按钮、年/月单选视图（偿还原上游库长期缺失的历史债）。
 
 ### Phase 4 ｜ 历法能力与中文增强（第 11–13 周）★ 差异化决胜点
 
-- `@qingwu/lunar`：基于自研 lunar.ts 封装，子路径拆分（`/core` 农历日/节日/节气，`/almanac` 宜忌，`/eightchar` 八字）；lunar 插件实现 @qingwu/calendar 内置 `DayMetaProvider` 接口。
+- `@qingwu-ui/lunar`：基于自研 lunar.ts 封装，子路径拆分（`/core` 农历日/节日/节气，`/almanac` 宜忌，`/eightchar` 八字）；lunar 插件实现 @qingwu-ui/calendar 内置 `DayMetaProvider` 接口。
 - 日期格信息密度三档配置（极简/标准/全量）；调休班·休标记；节假日数据年度更新机制（文档化年更流程）。
 - 时区显式支持（IANA + Intl）、今日线、周数（ISO/农历周）。
 - 交付物：`docs` 站内「中国日历」完整 demo；体积验证 lunar 未引入时为 0。
 
 ### Phase 5 ｜ 框架薄包装（第 14 周）★ 因 §6.6 架构修订由 3 周压缩至 1 周
 
-- `@qingwu/calendar-react`（~100 行）：useEffect 创建/destroy + props 转发 + 受控事件；React Hook Form 友好。
-- `@qingwu/calendar-vue`（~80 行）：onMounted/onUnmounted + v-model 桥 + slot 转发。
+- `@qingwu-ui/calendar-react`（~100 行）：useEffect 创建/destroy + props 转发 + 受控事件；React Hook Form 友好。
+- `@qingwu-ui/calendar-vue`（~80 行）：onMounted/onUnmounted + v-model 桥 + slot 转发。
 - 包装层零渲染逻辑 → 无行为漂移问题；测试 = 挂载冒烟 + 事件转发断言，不再跑三端行为矩阵。
 
 ### Phase 6 ｜ 兼容层、文档与首发（第 15–16 周）
 
-- `@qingwu/calendar-compat`：旧库 `(el, options)` 签名兼容 + 运行时 deprecation 提示，覆盖 80% 高频 options 映射（原生 API 同构，此层仅为参数映射函数集）。
+- `@qingwu-ui/calendar-compat`：旧库 `(el, options)` 签名兼容 + 运行时 deprecation 提示，覆盖 80% 高频 options 映射（原生 API 同构，此层仅为参数映射函数集）。
 - 文档站：组件 API、playground、a11y 说明、**旧库迁移指南**、lunar 年更说明。
 - 发布 `0.1.0`（全部包），GitHub Release + npm + 文档站上线；发布博客《为什么我们重写了日历组件》。
 
@@ -408,7 +408,7 @@ W1        W3        W7        W10       W13     W14   W16
 - TS7 全量 typecheck < 10s；tsdown 冷构建 < 5s；CI 全流程 < 8min。
 
 **产物质量**
-- @qingwu/calendar 主体 gzip ≤ 30KB；lunar 子路径 gzip ≤ 30KB；状态/规则模块测试覆盖 ≥ 90%；框架包装层合计 < 300 行源码。
+- @qingwu-ui/calendar 主体 gzip ≤ 30KB；lunar 子路径 gzip ≤ 30KB；状态/规则模块测试覆盖 ≥ 90%；框架包装层合计 < 300 行源码。
 
 **体验与合规**
 - axe-core 零违规；WCAG 2.2 AA；全键盘完成所有选择操作 ≤ 3 次按键（常用路径）；NVDA/VoiceOver 冒烟通过。
@@ -426,7 +426,7 @@ W1        W3        W7        W10       W13     W14   W16
 | 为什么必须重构？ | 上游停摆（852 issues 无人管）+ 3040 行闭包单体 + a11y 结构性缺失 + 农历卖点零实现，补丁成本 > 重写 |
 | 为什么是 TS7？ | 2026-07-08 起 7.0.2 已是 npm latest（native 编译器主线），10× 类型检查提速，新债不如不欠 |
 | 用什么构建？ | tsdown 0.22（Rolldown 系，2026-07-23 仍在活跃迭代），替代已弃用的 rollup2+babel 全家桶 |
-| 架构一句话？ | 原生 TS 为主体（@qingwu/calendar 内置 headless 状态引擎 + 原生 DOM 正统渲染）+ React/Vue 百行薄包装 + token/@layer 样式 + 农历 dayMeta 管线（§6.6） |
+| 架构一句话？ | 原生 TS 为主体（@qingwu-ui/calendar 内置 headless 状态引擎 + 原生 DOM 正统渲染）+ React/Vue 百行薄包装 + token/@layer 样式 + 农历 dayMeta 管线（§6.6） |
 | 差异化是什么？ | 国际全线日历组件均无中国历法能力——这是空白生态位 |
 | 多久见到成果？ | W7 状态引擎可测、W10 原生组件可用、W13 农历差异化落地、**W16 首发 0.1.0**（渲染层归一后提前 2 周） |
 | 最大风险？ | 带宽；对策是 Phase 2+4 构成最小发布闭环，其余可众包/后置 |

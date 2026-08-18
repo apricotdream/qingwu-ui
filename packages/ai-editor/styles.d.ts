@@ -1,1 +1,1 @@
-declare module "@qingwu/ai-editor/styles";
+declare module "@qingwu-ui/ai-editor/styles";

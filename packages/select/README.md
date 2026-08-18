@@ -1,4 +1,4 @@
-# @qingwu/select
+# @qingwu-ui/select
 
 [青梧UI](https://github.com/apricotdream/qingwu-ui) 的 **下拉选择器组件** —— 框架无关，纯 DOM + CSS，零依赖。
 
@@ -13,15 +13,15 @@
 ## 安装
 
 ```bash
-npm install @qingwu/select
-# or: pnpm add @qingwu/select / bun add @qingwu/select
+npm install @qingwu-ui/select
+# or: pnpm add @qingwu-ui/select / bun add @qingwu-ui/select
 ```
 
 ## 使用
 
 ```ts
-import { Select } from "@qingwu/select";
-import "@qingwu/select/style.css";
+import { Select } from "@qingwu-ui/select";
+import "@qingwu-ui/select/style.css";
 
 const el = document.querySelector("#root");
 const select = new Select(el, {
@@ -63,6 +63,7 @@ React / Vue 集成时在 `useEffect` / `onMounted` 中实例化，卸载时调�
 | `stagger` | `number` | `28` | 选项错峰间隔 ms |
 | `animate` | `boolean` | `true` | 手风琴错峰动画开关 |
 | `maxStagger` | `number` | `12` | 超过该选项数降级为整体淡入，`0` 不降级 |
+| `frosted` | `boolean` | `true` | 面板半透明磨砂质感（半透明底 + backdrop-filter 毛玻璃）；`false` 回退不透明实体面板 |
 | `ariaLabel` | `string` | `placeholder` | 触发器无障碍标签 |
 | `onOpenChange` | `(open) => void` | `-` | 展开状态变化回调 |
 | `onChange` | `(value, option) => void` | `-` | 选中值变化回调（取消为 `null`） |

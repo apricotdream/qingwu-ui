@@ -10,6 +10,8 @@
  */
 import { FAB_STORAGE_KEYS, getFabConfig, hideFabOnHost, setFabPosition } from "../shared/fab";
 import { setLocale, t } from "../shared/i18n";
+import { send } from "../shared/messaging";
+import type { Locale } from "../shared/types";
 
 // 用 128 大图：42px 显示 + 高分屏 2x 都无需放大位图，避免模糊
 const FAB_ICON = chrome.runtime.getURL("icons/icon-128.png");
@@ -224,13 +226,7 @@ const DRAG_THRESHOLD = 5;
         dragged = false;
         return;
       }
-      chrome.runtime
-        .sendMessage({
-          id: crypto.randomUUID(),
-          kind: "tab:open-sidepanel",
-          payload: null,
-        })
-        .catch(() => {});
+      openSidePanelPage();
       void clipPageWithToast();
     });
 
@@ -243,24 +239,65 @@ const DRAG_THRESHOLD = 5;
     document.documentElement.appendChild(fab);
   }
 
+  function openSidePanelPage() {
+    chrome.runtime.sendMessage(
+      {
+        id: crypto.randomUUID(),
+        kind: "tab:open-sidepanel",
+        payload: null,
+      },
+      (resp: { ok?: boolean; error?: { message?: string } } | undefined) => {
+        const error = chrome.runtime.lastError?.message || resp?.error?.message;
+        if (error || !resp?.ok) {
+          showToast(`右侧框打开失败：${error ?? "请点击扩展图标打开侧栏"}`, "error", 5000);
+        }
+      },
+    );
+  }
+
+  function extractFallbackDraft() {
+    const title = document.title || location.hostname || "剪藏结果";
+    const text = (
+      document.querySelector("article, main, [role='main']")?.textContent ??
+      document.body?.innerText ??
+      ""
+    )
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+    const markdown = [`# ${title}`, "", text || location.href, "", location.href].join("\n");
+    const now = new Date().toISOString();
+    return {
+      url: location.href,
+      finalUrl: location.href,
+      title,
+      siteName: location.hostname,
+      excerpt: text.slice(0, 200),
+      contentHtml: text || location.href,
+      contentText: text,
+      markdown,
+      images: [],
+      videos: [],
+      links: [{ href: location.href, text: title }],
+      wordCount: text.length,
+      readingMinutes: Math.max(1, Math.ceil(text.length / 600)),
+      strategy: "full-dom",
+      capturedAt: now,
+      warnings: ["后台提取超时，已使用页面内兜底提取"],
+    };
+  }
+
   async function clipPageWithToast() {
     showToast(t("fab.clipping"), "info", 0);
     try {
-      const resp = (await chrome.runtime.sendMessage({
-        id: crypto.randomUUID(),
-        kind: "clip:extract",
-        payload: { mode: "page" },
-      })) as
-        | {
-            ok?: boolean;
-            data?: { title?: string; markdown?: string };
-            error?: { message?: string; retryable?: boolean };
-          }
-        | undefined;
+      const data = await send<{ title?: string; markdown?: string }>(
+        "clip:extract",
+        { mode: "page" },
+        15_000,
+      );
 
-      if (resp?.ok && resp.data) {
-        const title = resp.data.title ? `：${resp.data.title}` : "";
-        const md = resp.data.markdown ?? "";
+      if (data) {
+        const title = data.title ? `：${data.title}` : "";
+        const md = data.markdown ?? "";
         showToast(t("fab.clipped") + title, "success", 6000, {
           label: t("action.copyMd"),
           onClick: () => {
@@ -270,15 +307,16 @@ const DRAG_THRESHOLD = 5;
             );
           },
         });
-      } else if (resp?.error) {
-        const retryHint = resp.error.retryable ? `，${t("fab.retryHint")}` : "";
-        showToast(`${t("fab.clipFailed")}：${resp.error.message}${retryHint}`, "error", 3000);
-      } else {
-        showToast(t("fab.noResponse"), "error", 3000);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : t("fab.connError");
-      showToast(`${t("fab.clipFailed")}：${message}`, "error", 3000);
+      try {
+        const content = extractFallbackDraft();
+        await chrome.storage.local.set({ pendingDraft: { content, savedAt: Date.now() } });
+        showToast("已用兜底方式剪藏，结果已发送到侧栏", "success", 5000);
+      } catch {
+        showToast(`${t("fab.clipFailed")}：${message}`, "error", 3000);
+      }
     }
   }
 
@@ -338,7 +376,11 @@ const DRAG_THRESHOLD = 5;
   async function init() {
     // 语言跟随扩展设置（设置经 settingsStore 镜像到 chrome.storage.local）
     try {
-      const { settings } = await chrome.storage.local.get("settings");
+      // @types/chrome 0.2.x 的 storage.get 默认返回 Record<string, unknown>，
+      // 显式给出值类型避免逐处断言
+      const { settings } = await chrome.storage.local.get<{
+        settings?: { locale?: Locale };
+      }>("settings");
       if (settings?.locale) setLocale(settings.locale);
     } catch {
       /* ignore */

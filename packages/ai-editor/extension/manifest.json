@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "青梧 Web Clipper",
   "short_name": "QingWu Clipper",
-  "version": "0.1.0",
+  "version": "0.2.13",
   "description": "面向青梧 AI 编辑器的智能网页剪藏插件 - AI 摘要、标签提取、多模板、深浅主题、错误透明",
   "permissions": [
     "activeTab",
@@ -13,7 +13,8 @@
     "sidePanel",
     "downloads",
     "clipboardWrite",
-    "notifications"
+    "notifications",
+    "windows"
   ],
   "host_permissions": ["<all_urls>"],
   "action": {

@@ -6,7 +6,7 @@
  * - 错误必须带 code + 用户可读 message + retryable
  */
 
-import type { AIRequest, AIResponse, ClipMode, ExtractedContent } from "./types";
+import type { AIRequest, AIResponse, ClipMode, ExtractedContent, Locale } from "./types";
 
 export type MessageKind =
   | "ping"
@@ -54,6 +54,7 @@ export type SavePayload = {
   summary?: string;
   aiSummary?: string;
   aiTags?: string[];
+  aiTranslation?: { lang: Locale; text: string } | null;
 };
 
 export type AIRunPayload = { request: AIRequest };
