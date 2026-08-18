@@ -1,0 +1,402 @@
+@layer qingwu.carousel {
+  .qcar,
+  .qcar * {
+    box-sizing: border-box;
+  }
+
+  .qcar {
+    --qcar-paper: #f4f6f2;
+    --qcar-card: #fdfdfb;
+    --qcar-ink: #172526;
+    --qcar-ink-2: #41524f;
+    --qcar-ink-3: #70807d;
+    --qcar-line: #d7ddd3;
+    --qcar-blue: #1668b8;
+    --qcar-shadow: 0 24px 60px -42px rgba(23, 37, 38, 0.5);
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 36%);
+    grid-template-rows: minmax(0, 1fr) auto;
+    height: 520px;
+    overflow: hidden;
+    border: 1px solid var(--qcar-line);
+    border-radius: 20px;
+    background: var(--qcar-card);
+    color: var(--qcar-ink);
+    box-shadow: var(--qcar-shadow);
+    outline: none;
+  }
+
+  [data-theme="dark"] .qcar,
+  .qcar[data-theme="dark"] {
+    --qcar-paper: #101415;
+    --qcar-card: #171d1f;
+    --qcar-ink: #e9efeb;
+    --qcar-ink-2: #b3bfbb;
+    --qcar-ink-3: #879592;
+    --qcar-line: #293234;
+    --qcar-blue: #71aefc;
+    --qcar-shadow: 0 24px 60px -42px rgba(0, 0, 0, 0.78);
+  }
+
+  .qcar.is-empty {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    height: auto;
+  }
+
+  /* 左侧视觉列：背景层 + 主体图 */
+  .qcar-visual {
+    position: relative;
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--qcar-paper);
+  }
+
+  .qcar-bg {
+    position: absolute;
+    inset: 0;
+    background-color: var(--qcar-paper);
+    background-image:
+      var(--qcar-bg-image),
+      radial-gradient(circle at 22% 20%, rgba(255, 255, 255, 0.6), transparent 36%),
+      radial-gradient(
+        circle at 80% 80%,
+        color-mix(in srgb, var(--qcar-blue) 12%, transparent),
+        transparent 34%
+      );
+    background-position: center, center, center;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-size: cover, auto, auto;
+  }
+
+  .qcar-figure {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    padding: clamp(20px, 3vw, 40px);
+    object-fit: contain;
+    object-position: center;
+    filter: drop-shadow(0 22px 30px rgba(23, 37, 38, 0.22));
+    user-select: none;
+  }
+
+  /* 右侧信息列：右对齐卡片文案 */
+  .qcar-copy {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    text-align: right;
+    min-width: 0;
+    padding: 32px 56px 32px 32px;
+    border-left: 1px solid var(--qcar-line);
+    background: var(--qcar-card);
+  }
+
+  .qcar-line {
+    opacity: 0;
+    /* 文字行从右侧就近位置向左滑入（从右到左逐行） */
+    transform: translateX(64px);
+  }
+
+  .qcar-eyebrow {
+    margin-bottom: 12px;
+    letter-spacing: 0.2em;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--qcar-blue);
+  }
+
+  .qcar-title {
+    margin: 0;
+    font-size: clamp(34px, 3.6vw, 52px);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+    font-weight: 900;
+    color: var(--qcar-ink);
+  }
+
+  .qcar-subtitle {
+    margin-top: 10px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--qcar-ink-2);
+  }
+
+  .qcar-slash {
+    width: 96px;
+    height: 1px;
+    margin: 18px 0 20px;
+    background: var(--qcar-ink-2);
+    transform: rotate(-28deg);
+    transform-origin: right center;
+    opacity: 0.8;
+  }
+
+  .qcar-desc {
+    max-width: 30ch;
+    margin: 0;
+    color: var(--qcar-ink-2);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .qcar-link {
+    margin-top: 26px;
+    width: fit-content;
+    padding-bottom: 2px;
+    border-bottom: 2px solid color-mix(in srgb, var(--qcar-blue) 72%, transparent);
+    color: var(--qcar-ink);
+    font-size: 15px;
+    font-weight: 800;
+    text-decoration: none;
+    transition:
+      color 0.18s ease-out,
+      border-color 0.18s ease-out;
+  }
+
+  .qcar-link:hover {
+    border-color: var(--qcar-blue);
+    color: var(--qcar-blue);
+  }
+
+  /* 底部缩略图条：仅占左列（图片列）宽度，条内右对齐，右缘与左侧图片右缘对齐；
+     入场动画挂在元素自身，仅首次插入时播放一次，切换图片不再重放 */
+  .qcar-thumbs {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    gap: 10px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--qcar-line);
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: var(--qcar-card);
+    animation: qcar-rail-in 480ms ease-out 240ms both;
+  }
+
+  .qcar-thumbs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .qcar-thumb {
+    flex: 0 0 auto;
+    width: 52px;
+    height: 52px;
+    padding: 3px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background: var(--qcar-card);
+    box-shadow: 0 10px 24px -20px rgba(23, 37, 38, 0.5);
+    opacity: 0.85;
+    transition:
+      border-color 0.3s ease-out,
+      opacity 0.3s ease-out,
+      transform 0.3s ease-out;
+  }
+
+  .qcar-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  /* 缩略图条整体右对齐（用 auto margin 而非 justify-content，避免缩略图过多时左侧溢出不可滚动） */
+  .qcar-thumb:first-child {
+    margin-inline-start: auto;
+  }
+
+  .qcar-thumb:hover,
+  .qcar-thumb.is-active {
+    border-color: color-mix(in srgb, var(--qcar-blue) 85%, transparent);
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+
+  /* 左右箭头：浮在卡片两侧 */
+  .qcar-arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 4;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid color-mix(in srgb, var(--qcar-card) 55%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--qcar-card) 82%, transparent);
+    color: var(--qcar-ink);
+    font-size: 26px;
+    line-height: 1;
+    box-shadow: 0 12px 28px -18px rgba(23, 37, 38, 0.5);
+    backdrop-filter: blur(8px);
+    transform: translateY(-50%);
+    transition:
+      background 0.18s ease-out,
+      border-color 0.18s ease-out,
+      opacity 0.18s ease-out,
+      transform 0.18s ease-out;
+  }
+
+  .qcar-prev {
+    left: 14px;
+  }
+
+  .qcar-next {
+    right: 14px;
+  }
+
+  .qcar-arrow:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--qcar-card) 96%, transparent);
+    border-color: var(--qcar-blue);
+    transform: translateY(-50%) scale(1.06);
+  }
+
+  .qcar-arrow:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .qcar-empty {
+    grid-column: 1 / -1;
+    padding: 44px 0;
+    color: var(--qcar-ink-3);
+    text-align: center;
+  }
+
+  /* 入场动画：背景从左往右滑入先行；角色随后淡入上移（delay 700ms，等背景播完）；
+     右列文字逐行从右往左滑入；缩略图条仅首次淡入上移 */
+  @keyframes qcar-bg-in {
+    from {
+      opacity: 0;
+      transform: translateX(-80px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes qcar-figure-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes qcar-line-in {
+    from {
+      opacity: 0;
+      transform: translateX(64px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes qcar-rail-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .qcar.is-enter .qcar-bg {
+    animation: qcar-bg-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .qcar.is-enter .qcar-figure {
+    animation: qcar-figure-in 900ms cubic-bezier(0.22, 1, 0.36, 1) 700ms both;
+  }
+
+  .qcar.is-enter .qcar-line {
+    animation: qcar-line-in 520ms ease-out both;
+    animation-delay: calc(180ms + var(--qcar-step, 0) * 90ms);
+  }
+
+  @media (max-width: 900px) {
+    .qcar {
+      grid-template-columns: 1fr;
+      grid-template-rows: minmax(300px, 46vh) auto auto;
+      height: auto;
+    }
+
+    .qcar-visual {
+      grid-row: 1;
+      grid-column: 1;
+    }
+
+    .qcar-figure {
+      padding: 18px;
+      object-position: center bottom;
+    }
+
+    .qcar-copy {
+      grid-row: 2;
+      grid-column: 1;
+      align-items: flex-start;
+      text-align: left;
+      padding: 26px 22px 30px;
+      border-top: 1px solid var(--qcar-line);
+      border-left: none;
+    }
+
+    .qcar-title {
+      font-size: 34px;
+    }
+
+    .qcar-thumbs {
+      grid-row: 3;
+      grid-column: 1;
+      padding: 10px 16px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .qcar {
+      border-radius: 16px;
+    }
+
+    .qcar-arrow {
+      width: 34px;
+      height: 34px;
+      font-size: 22px;
+    }
+
+    .qcar-desc {
+      font-size: 13px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .qcar.is-enter .qcar-bg,
+    .qcar.is-enter .qcar-figure,
+    .qcar.is-enter .qcar-line,
+    .qcar-thumbs {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
