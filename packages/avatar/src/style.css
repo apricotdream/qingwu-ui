@@ -1,0 +1,271 @@
+/* ============================================================
+   青梧UI · AvatarEditor 组件样式
+   ============================================================ */
+
+.qav-root,
+.qav-dialog {
+  --qav-teal: var(--teal, #1e605a);
+  --qav-card: var(--card, #ffffff);
+  --qav-line: var(--line, #dcdfd6);
+  --qav-ink: var(--ink, #1d2b2c);
+  --qav-ink-3: var(--ink-3, #68706c);
+}
+.qav-root {
+  display: inline-block;
+  color: var(--qav-ink);
+  font-family: inherit;
+}
+.qav-dialog {
+  color: var(--qav-ink);
+  font-family: inherit;
+}
+.qav-trigger:focus-visible,
+.qav-dialog button:focus-visible,
+.qav-dialog input:focus-visible {
+  outline: 2px solid var(--qav-teal);
+  outline-offset: 2px;
+}
+
+.qav-trigger {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--qav-size);
+  height: var(--qav-size);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--qav-line);
+  border-radius: 50%;
+  background: #f1f5f4;
+  color: var(--qav-teal);
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+.qav-trigger:hover {
+  transform: translateY(-2px);
+  border-color: var(--qav-teal);
+  box-shadow: 0 14px 30px -18px rgba(30, 96, 90, 0.75);
+}
+.qav-trigger svg {
+  width: 38%;
+  height: 38%;
+}
+.qav-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.qav-fallback[hidden] {
+  display: none;
+}
+.qav-badge {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: calc(var(--qav-size) * 0.34);
+  height: calc(var(--qav-size) * 0.34);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--qav-teal);
+  color: #fff;
+}
+.qav-badge svg {
+  width: 55%;
+  height: 55%;
+}
+
+.qav-dialog {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(20, 31, 30, 0.48);
+  backdrop-filter: blur(4px);
+}
+.qav-dialog[hidden] {
+  display: none;
+}
+.qav-panel {
+  width: min(430px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid var(--qav-line);
+  border-radius: 18px;
+  background: var(--qav-card);
+  box-shadow: 0 30px 80px -40px rgba(15, 38, 35, 0.7);
+}
+.qav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.qav-title {
+  margin: 0;
+  font-size: 17px;
+}
+.qav-close {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: #f0f3f1;
+  color: var(--qav-ink);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.qav-close:hover {
+  background: #e1e7e4;
+}
+.qav-close svg {
+  width: 15px;
+  height: 15px;
+}
+
+.qav-editor {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 292px;
+  border: 1px dashed #bbc7c2;
+  border-radius: 16px;
+  background:
+    linear-gradient(45deg, #f5f7f5 25%, transparent 25%, transparent 75%, #f5f7f5 75%),
+    linear-gradient(45deg, #f5f7f5 25%, #fff 25%, #fff 75%, #f5f7f5 75%);
+  background-size: 18px 18px;
+  background-position:
+    0 0,
+    9px 9px;
+}
+.qav-editor.is-dragover {
+  border-color: var(--qav-teal);
+  box-shadow: 0 0 0 3px #1e605a22;
+}
+.qav-canvas {
+  display: block;
+  width: min(288px, 72vw);
+  aspect-ratio: 1;
+  touch-action: none;
+  cursor: grab;
+}
+.qav-canvas:active {
+  cursor: grabbing;
+}
+.qav-empty {
+  position: absolute;
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  color: var(--qav-ink-3);
+  font-size: 14px;
+  cursor: pointer;
+}
+.qav-empty small {
+  font-size: 12px;
+  opacity: 0.75;
+}
+.qav-empty[hidden] {
+  display: none;
+}
+
+.qav-controls {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+.qav-control {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.qav-control-label {
+  font-size: 12px;
+  color: var(--qav-ink-3);
+}
+.qav-rotate {
+  display: flex;
+  gap: 8px;
+}
+.qav-icon-btn,
+.qav-secondary,
+.qav-primary {
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    filter 0.16s ease,
+    transform 0.16s ease;
+}
+.qav-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 30px;
+  background: #f0f3f1;
+  color: var(--qav-ink);
+}
+.qav-icon-btn svg {
+  width: 15px;
+  height: 15px;
+}
+.qav-range {
+  width: 100%;
+  accent-color: var(--qav-teal);
+}
+.qav-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+.qav-secondary,
+.qav-primary {
+  padding: 9px 15px;
+  background: #f0f3f1;
+  color: var(--qav-ink);
+}
+.qav-primary {
+  background: var(--qav-teal);
+  color: #fff;
+}
+.qav-icon-btn:hover:not(:disabled),
+.qav-secondary:hover:not(:disabled),
+.qav-primary:hover:not(:disabled) {
+  filter: brightness(0.96);
+  transform: translateY(-1px);
+}
+.qav-icon-btn:disabled,
+.qav-secondary:disabled,
+.qav-primary:disabled,
+.qav-range:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 480px) {
+  .qav-panel {
+    padding: 14px;
+  }
+  .qav-actions {
+    justify-content: stretch;
+  }
+  .qav-actions button {
+    flex: 1;
+  }
+}
