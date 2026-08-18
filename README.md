@@ -57,6 +57,7 @@ import "@qingwu-ui/ai-editor/styles";
 | [`@qingwu-ui/action-menu`](./packages/action-menu/README.md) | 径向快捷操作菜单：扇形展开、FAB / 自定义触发 | 0.9.0-beta |
 | [`@qingwu-ui/skeleton`](./packages/skeleton/README.md) | 运行时测量自动骨架屏，可快照静态 HTML（SSR） | 0.9.0-beta |
 | [`@qingwu-ui/text-layout`](./packages/text-layout/README.md) | 文本排版引擎：Canvas 测量、虚拟滚动高度、多行截断 | 0.9.0-beta |
+| [`@qingwu-ui/carousel`](./packages/carousel/README.md) | 轮播图 / Hero：双层图分层入场（背景先滑入、角色再淡入上移）、文案逐行滑入、缩略图导航 | 0.9.0-beta |
 
 > **版本策略**：所有 `@qingwu-ui/*` 包统一版本号（当前 **0.9.0-beta**），无变更的包仅对齐版本号，保证全家桶依赖关系一致。
 
@@ -69,7 +70,7 @@ import "@qingwu-ui/ai-editor/styles";
 npm install @qingwu-ui/ai-editor @qingwu-ui/calendar @qingwu-ui/search
 
 # 按需任选
-npm install @qingwu-ui/toast @qingwu-ui/select @qingwu-ui/upload
+npm install @qingwu-ui/toast @qingwu-ui/select @qingwu-ui/upload @qingwu-ui/carousel
 ```
 
 ---
@@ -89,6 +90,34 @@ const cal = new Calendar(document.getElementById("calendar")!, {
 ```
 
 > 完整 API（属性 / 实例方法 / Provider 扩展）见 [`@qingwu-ui/calendar`](./packages/calendar/ui/README.md)。
+
+---
+
+## 快速上手：@qingwu-ui/carousel
+
+轮播图 / Hero 组件：左侧视觉由「背景图 + 角色透明图」双层构成，背景先从左往右滑入、角色随后淡入上移；右列文案逐行从右往左滑入；底部缩略图条右对齐至左图右缘，点击即切换。
+
+```ts
+import { Carousel } from "@qingwu-ui/carousel";
+import "@qingwu-ui/carousel/style.css"; // 样式为独立子路径导出
+
+const carousel = new Carousel(document.getElementById("hero")!, {
+  items: [
+    {
+      value: "01",
+      title: "晨光",
+      background: "/hero-01-bg.png",  // 背景图：先入场
+      image: "/hero-01-char.png",     // 角色透明图：随后入场
+    },
+  ],
+  autoplay: true,
+  interval: 3800,
+});
+
+// carousel.next() / prev() / goTo(i) / update(...) / destroy()
+```
+
+> 完整 API（选项 / 数据模型 / 入场时序）见 [`@qingwu-ui/carousel`](./packages/carousel/README.md)。
 
 ---
 
@@ -157,6 +186,7 @@ qingwu-ui/
 │   ├── notifications/   # @qingwu-ui/notifications —— 通知铃铛
 │   ├── action-menu/     # @qingwu-ui/action-menu —— 径向快捷操作菜单
 │   ├── skeleton/        # @qingwu-ui/skeleton —— 自动骨架屏
+│   ├── carousel/        # @qingwu-ui/carousel —— 轮播图（双层图分层入场 / 缩略图导航）
 │   └── text-layout/     # @qingwu-ui/text-layout —— 文本排版引擎
 ├── examples/nextjs/     # Next.js 演示站（组件 demo 与配置面板）
 ├── tooling/
@@ -193,7 +223,7 @@ bun run release
 ## 路线图
 
 - [x] 0.1.0 – 0.8.0 —— 轻组件矩阵成型，`@qingwu-ui/ai-editor` AI 编辑器与 Web Clipper 扩展纳入全家桶
-- [x] 0.9.0 —— `@qingwu-ui/calendar` 新增 `dateOnly` 纯日期模式；12 包版本统一对齐 0.9.0，全部发布公开 npm
+- [x] 0.9.0 —— `@qingwu-ui/calendar` 新增 `dateOnly` 纯日期模式；13 包版本统一对齐 0.9.0-beta（含新成员 `@qingwu-ui/carousel`），全部发布公开 npm
 - [ ] 1.0.0 —— API 冻结、React / Vue 官方薄包装、文档站
 
 ## 许可证

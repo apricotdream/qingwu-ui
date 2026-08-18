@@ -55,6 +55,7 @@ Full docs (install / props / AI providers / clipper extension) in [`packages/ai-
 | [`@qingwu-ui/action-menu`](./packages/action-menu/README.md) | Radial action menu: fan-out reveal, FAB / custom trigger | 0.9.0-beta |
 | [`@qingwu-ui/skeleton`](./packages/skeleton/README.md) | Runtime-measured auto skeleton, snapshot-to-static-HTML (SSR) | 0.9.0-beta |
 | [`@qingwu-ui/text-layout`](./packages/text-layout/README.md) | Text layout engine: Canvas measurement, virtual scroll heights, multi-line truncation | 0.9.0-beta |
+| [`@qingwu-ui/carousel`](./packages/carousel/README.md) | Carousel / hero: layered two-image entrance (background slides in first, character fades up after), staggered text lines, thumbnail nav | 0.9.0-beta |
 
 > **Versioning**: all `@qingwu-ui/*` packages share one version (currently **0.9.0-beta**); packages with no changes just align their version number, keeping family-wide dependency consistency.
 
@@ -67,7 +68,7 @@ All packages are published to the public npm registry; install on demand:
 npm install @qingwu-ui/ai-editor @qingwu-ui/calendar @qingwu-ui/search
 
 # Pick any subset
-npm install @qingwu-ui/toast @qingwu-ui/select @qingwu-ui/upload
+npm install @qingwu-ui/toast @qingwu-ui/select @qingwu-ui/upload @qingwu-ui/carousel
 ```
 
 ---
@@ -87,6 +88,34 @@ const cal = new Calendar(document.getElementById("calendar")!, {
 ```
 
 > Full API (options / instance methods / provider extension) in [`@qingwu-ui/calendar`](./packages/calendar/ui/README.md).
+
+---
+
+## Quick start: @qingwu-ui/carousel
+
+Carousel / hero component: the left visual is built from two layers — a **background image** that slides in from left to right first, then a **transparent character image** that fades up; right-column text lines slide in one by one from right to left; the bottom thumbnail rail is right-aligned to the left image's right edge and switches on click.
+
+```ts
+import { Carousel } from "@qingwu-ui/carousel";
+import "@qingwu-ui/carousel/style.css"; // style is a separate subpath export
+
+const carousel = new Carousel(document.getElementById("hero")!, {
+  items: [
+    {
+      value: "01",
+      title: "Morning Light",
+      background: "/hero-01-bg.png",  // background layer: enters first
+      image: "/hero-01-char.png",     // transparent character layer: enters second
+    },
+  ],
+  autoplay: true,
+  interval: 3800,
+});
+
+// carousel.next() / prev() / goTo(i) / update(...) / destroy()
+```
+
+> Full API (options / data model / entrance timing) in [`@qingwu-ui/carousel`](./packages/carousel/README.md).
 
 ---
 
@@ -155,6 +184,7 @@ qingwu-ui/
 │   ├── notifications/   # @qingwu-ui/notifications —— notification bell
 │   ├── action-menu/     # @qingwu-ui/action-menu —— radial action menu
 │   ├── skeleton/        # @qingwu-ui/skeleton —— auto skeleton
+│   ├── carousel/        # @qingwu-ui/carousel —— carousel / hero (layered entrance, thumbnail nav)
 │   └── text-layout/     # @qingwu-ui/text-layout —— text layout engine
 ├── examples/nextjs/     # Next.js demo site
 ├── tooling/
@@ -191,7 +221,7 @@ bun run release
 ## Roadmap
 
 - [x] 0.1.0 – 0.8.0 —— light component matrix matured; `@qingwu-ui/ai-editor` + Web Clipper joined the family
-- [x] 0.9.0-beta —— `@qingwu-ui/calendar` adds `dateOnly` mode; all 12 packages aligned to 0.9.0-beta and published publicly
+- [x] 0.9.0-beta —— `@qingwu-ui/calendar` adds `dateOnly` mode; all 13 packages aligned to 0.9.0-beta (including the new `@qingwu-ui/carousel`) and published publicly
 - [ ] 1.0.0 —— API freeze, official React / Vue wrappers, docs site
 
 ## License
