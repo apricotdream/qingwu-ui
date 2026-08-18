@@ -1,4 +1,5 @@
 /** 扩展选项页：配置推送方式、HTTP 端点、AI、模板与语言等。 */
+import { toast } from "@qingwu-ui/toast";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
@@ -11,6 +12,7 @@ import {
 } from "../shared/fab";
 import { setLocale, t } from "../shared/i18n";
 import { send } from "../shared/messaging";
+import { getSettingsWithRetry } from "../shared/settings-client";
 import { extractVars, renderTemplate } from "../shared/templates/engine";
 import type {
   AccentColor,
@@ -32,8 +34,6 @@ import {
   Switch,
   Textarea,
   ThemeProvider,
-  ToastProvider,
-  useToast,
 } from "../shared/ui";
 
 type Section = "general" | "appearance" | "ai" | "templates" | "editor" | "siterules";
@@ -41,14 +41,34 @@ type Section = "general" | "appearance" | "ai" | "templates" | "editor" | "siter
 export function App() {
   const [settings, setSettings] = useState<ClipperSettings | null>(null);
   const [section, setSection] = useState<Section>("general");
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     void (async () => {
-      const s = await send<ClipperSettings>("settings:get");
-      setSettings(s);
-      setLocale(s.locale);
+      try {
+        const s = await getSettingsWithRetry();
+        setSettings(s);
+        setLocale(s.locale);
+      } catch (e) {
+        setLoadError((e as Error).message);
+      }
     })();
   }, []);
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-sm text-ink-500">
+        <div>扩展后台未响应：{loadError}</div>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="px-3 py-1.5 rounded-lg bg-qingwu-600 text-white"
+        >
+          重新加载页面
+        </button>
+      </div>
+    );
+  }
 
   if (!settings) {
     return (
@@ -63,39 +83,34 @@ export function App() {
       onModeChange={(m) => void save({ ...settings, theme: m }, setSettings)}
       onAccentChange={(a) => void save({ ...settings, accent: a }, setSettings)}
     >
-      <ToastProvider>
-        <div className="min-h-screen bg-ink-50 dark:bg-ink-950 text-ink-900 dark:text-ink-100">
-          <div className="max-w-5xl mx-auto px-6 py-8">
-            <Header />
-            <div className="mt-6 grid grid-cols-[200px_1fr] gap-6">
-              <Sidebar section={section} onSection={setSection} />
-              <div className="space-y-4">
-                {section === "general" && (
-                  <GeneralSection settings={settings} onSave={(s) => void save(s, setSettings)} />
-                )}
-                {section === "appearance" && (
-                  <AppearanceSection
-                    settings={settings}
-                    onSave={(s) => void save(s, setSettings)}
-                  />
-                )}
-                {section === "ai" && (
-                  <AISection settings={settings} onSave={(s) => void save(s, setSettings)} />
-                )}
-                {section === "templates" && (
-                  <TemplatesSection settings={settings} onSave={(s) => void save(s, setSettings)} />
-                )}
-                {section === "editor" && (
-                  <EditorSection settings={settings} onSave={(s) => void save(s, setSettings)} />
-                )}
-                {section === "siterules" && (
-                  <SiteRulesSection settings={settings} onSave={(s) => void save(s, setSettings)} />
-                )}
-              </div>
+      <div className="min-h-screen bg-ink-50 dark:bg-ink-950 text-ink-900 dark:text-ink-100">
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          <Header />
+          <div className="mt-6 grid grid-cols-[200px_1fr] gap-6">
+            <Sidebar section={section} onSection={setSection} />
+            <div className="space-y-4">
+              {section === "general" && (
+                <GeneralSection settings={settings} onSave={(s) => void save(s, setSettings)} />
+              )}
+              {section === "appearance" && (
+                <AppearanceSection settings={settings} onSave={(s) => void save(s, setSettings)} />
+              )}
+              {section === "ai" && (
+                <AISection settings={settings} onSave={(s) => void save(s, setSettings)} />
+              )}
+              {section === "templates" && (
+                <TemplatesSection settings={settings} onSave={(s) => void save(s, setSettings)} />
+              )}
+              {section === "editor" && (
+                <EditorSection settings={settings} onSave={(s) => void save(s, setSettings)} />
+              )}
+              {section === "siterules" && (
+                <SiteRulesSection settings={settings} onSave={(s) => void save(s, setSettings)} />
+              )}
             </div>
           </div>
         </div>
-      </ToastProvider>
+      </div>
     </ThemeProvider>
   );
 }
@@ -282,7 +297,6 @@ function AppearanceSection({
 /** 剪藏悬浮球设置：总开关（全局）+ 重置位置 + 已隐藏网站列表（与 content script 实时同步） */
 function FabSettings() {
   const [config, setConfig] = useState<FabConfig | null>(null);
-  const toast = useToast();
 
   useEffect(() => {
     void getFabConfig().then(setConfig);
@@ -325,7 +339,7 @@ function FabSettings() {
           size="md"
           onClick={() => {
             void resetFabPosition();
-            toast.push({ level: "success", message: t("settings.fab.resetPosition") + " ✓" });
+            toast.success(`${t("settings.fab.resetPosition")} ✓`);
           }}
         >
           {t("settings.fab.resetPosition")}
@@ -378,6 +392,18 @@ function FabSettings() {
   );
 }
 
+/** 提供商预设：切换下拉项时自动填充 baseURL 与 model，避免用户拿旧配置打错端点 */
+const PROVIDER_PRESETS: Partial<
+  Record<AIProviderConfig["kind"], { baseURL: string; model: string }>
+> = {
+  openai: { baseURL: "https://api.openai.com/v1", model: "gpt-5.6-luna" },
+  deepseek: { baseURL: "https://api.deepseek.com", model: "deepseek-v4-flash" },
+  qwen: { baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1", model: "qwen3.7-plus" },
+  moonshot: { baseURL: "https://api.moonshot.ai/v1", model: "kimi-k2.6" },
+  zhipu: { baseURL: "https://open.bigmodel.cn/api/paas/v4", model: "glm-5.2" },
+  minimax: { baseURL: "https://api.minimax.io/v1", model: "MiniMax-M3" },
+};
+
 function AISection({
   settings,
   onSave,
@@ -385,43 +411,36 @@ function AISection({
   settings: ClipperSettings;
   onSave: (s: ClipperSettings) => void;
 }) {
-  const toast = useToast();
   const [testing, setTesting] = useState(false);
   const cfg = settings.ai ?? {
     kind: "openai" as const,
     baseURL: "https://api.openai.com/v1",
     apiKey: "",
-    model: "gpt-4o-mini",
+    model: "gpt-5.6-luna",
     temperature: 0.4,
   };
 
   async function test() {
     setTesting(true);
     try {
-      const r = await send<{ ok: boolean; data?: { data: string }; error?: { message: string } }>(
+      const r = await send<{ ok: boolean; data?: string; error?: { message: string } }>(
         "ai:test",
         cfg,
       );
-      if (r.ok && r.data?.data) {
-        toast.push({
-          level: "success",
-          message: "连接成功",
-          detail: `返回：${r.data.data.slice(0, 80)}`,
-        });
+      if (r.ok && r.data) {
+        toast.success("连接成功", { description: `返回：${r.data.slice(0, 80)}` });
       } else {
-        toast.push({
-          level: "error",
-          message: "连接失败",
-          detail: r.error?.message ?? "未知错误",
+        toast.error("连接失败", {
+          description: r.error?.message ?? "未知错误",
           duration: 8000,
+          action: { label: t("action.retry"), onClick: () => void test() },
         });
       }
     } catch (e) {
-      toast.push({
-        level: "error",
-        message: "连接失败",
-        detail: (e as Error).message,
+      toast.error("连接失败", {
+        description: (e as Error).message,
         duration: 8000,
+        action: { label: t("action.retry"), onClick: () => void test() },
       });
     } finally {
       setTesting(false);
@@ -433,16 +452,21 @@ function AISection({
       <Field label={t("settings.ai.provider")}>
         <Select
           value={cfg.kind}
-          onChange={(e) =>
+          onChange={(e) => {
+            const kind = e.target.value as AIProviderConfig["kind"];
+            const preset = PROVIDER_PRESETS[kind];
             onSave({
               ...settings,
-              ai: { ...cfg, kind: e.target.value as AIProviderConfig["kind"] },
-            })
-          }
+              ai: { ...cfg, kind, ...(preset ?? {}) },
+            });
+          }}
         >
           <option value="openai">OpenAI 兼容（OpenAI / DeepSeek / Qwen / Moonshot 等）</option>
           <option value="deepseek">DeepSeek（预设）</option>
           <option value="qwen">通义千问（预设）</option>
+          <option value="moonshot">Kimi / Moonshot（预设）</option>
+          <option value="zhipu">智谱 GLM（预设）</option>
+          <option value="minimax">MiniMax（预设）</option>
           <option value="chrome-built-in">Chrome 内置 AI（Gemini Nano）</option>
           <option value="custom">自定义</option>
         </Select>
@@ -450,10 +474,13 @@ function AISection({
 
       {cfg.kind !== "chrome-built-in" && (
         <>
-          <Field label={t("settings.ai.baseURL")} hint="自动补全 /v1/chat/completions">
+          <Field
+            label={t("settings.ai.baseURL")}
+            hint="DeepSeek 直连 /chat/completions，其他兼容接口按需补齐 /v1"
+          >
             <Input
               value={cfg.baseURL ?? ""}
-              placeholder="https://api.deepseek.com/v1 或 https://api.openai.com/v1"
+              placeholder="https://api.deepseek.com 或 https://api.openai.com/v1"
               onChange={(e) => onSave({ ...settings, ai: { ...cfg, baseURL: e.target.value } })}
             />
           </Field>
@@ -469,7 +496,7 @@ function AISection({
             <Field label={t("settings.ai.model")}>
               <Input
                 value={cfg.model ?? ""}
-                placeholder="deepseek-chat / qwen-plus / gpt-4o-mini"
+                placeholder="deepseek-v4-flash / qwen3.7-plus / gpt-5.6-luna"
                 onChange={(e) => onSave({ ...settings, ai: { ...cfg, model: e.target.value } })}
               />
             </Field>
@@ -492,9 +519,8 @@ function AISection({
           <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-[11px] p-2 rounded-md flex gap-1.5">
             <Icon name="info" size={12} className="mt-0.5 shrink-0" />
             <span>
-              DeepSeek 用户请填 baseURL <code>https://api.deepseek.com</code>，模型填{" "}
-              <code>deepseek-chat</code>。插件会自动补全 <code>/v1/chat/completions</code>，不会出现
-              404。
+              选择「DeepSeek（预设）」或「通义千问（预设）」会自动填入 baseURL
+              与模型。插件会自动识别 DeepSeek 与 OpenAI 兼容接口路径。
             </span>
           </div>
         </>
@@ -527,7 +553,6 @@ function TemplatesSection({
 }) {
   const [activeId, setActiveId] = useState<string>(settings.defaultTemplateId);
   const active = settings.templates.find((t) => t.id === activeId) ?? settings.templates[0];
-  const toast = useToast();
 
   const preview = active
     ? renderTemplate(active, {
@@ -558,7 +583,7 @@ function TemplatesSection({
     };
     onSave({ ...settings, templates: [...settings.templates, tpl] });
     setActiveId(id);
-    toast.push({ level: "success", message: "已新建模板" });
+    toast.success("已新建模板");
   }
 
   function removeActive() {
@@ -655,7 +680,6 @@ function EditorSection({
   settings: ClipperSettings;
   onSave: (s: ClipperSettings) => void;
 }) {
-  const toast = useToast();
   const target: EditorTarget = settings.editorTarget ?? {
     kind: "http",
     endpoint: "http://127.0.0.1:7321/clip",
@@ -664,7 +688,7 @@ function EditorSection({
 
   async function testConnection() {
     if (target.kind !== "http" || !target.endpoint) {
-      toast.push({ level: "warning", message: "请填写 HTTP 端点" });
+      toast.warn("请填写 HTTP 端点");
       return;
     }
     try {
@@ -673,23 +697,13 @@ function EditorSection({
         signal: AbortSignal.timeout(3000),
       });
       if (r.ok || r.status === 404 || r.status === 405) {
-        toast.push({
-          level: "success",
-          message: "已联系到青梧编辑器",
-          detail: `状态码 ${r.status}`,
-        });
+        toast.success("已联系到青梧编辑器", { description: `状态码 ${r.status}` });
       } else {
-        toast.push({
-          level: "warning",
-          message: "已响应但状态异常",
-          detail: `状态码 ${r.status}`,
-        });
+        toast.warn("已响应但状态异常", { description: `状态码 ${r.status}` });
       }
     } catch (e) {
-      toast.push({
-        level: "error",
-        message: t("error.push.network"),
-        detail: (e as Error).message,
+      toast.error(t("error.push.network"), {
+        description: (e as Error).message,
         duration: 8000,
       });
     }

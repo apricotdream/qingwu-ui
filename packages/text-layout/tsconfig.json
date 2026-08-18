@@ -1,4 +1,4 @@
 {
-  "extends": "@qingwu/tsconfig",
+  "extends": "@qingwu-ui/tsconfig",
   "include": ["src"]
 }

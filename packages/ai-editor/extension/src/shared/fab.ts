@@ -37,20 +37,22 @@ function isFabPosition(v: unknown): v is FabPosition {
 
 export async function getFabConfig(): Promise<FabConfig> {
   try {
-    const raw = await chrome.storage.local.get([
-      FAB_STORAGE_KEYS.enabled,
-      FAB_STORAGE_KEYS.position,
-      FAB_STORAGE_KEYS.hiddenHosts,
-    ]);
+    // @types/chrome 0.2.x 的 storage.get 默认返回 Record<string, unknown>，
+    // 显式给出值类型避免逐处断言
+    const raw = await chrome.storage.local.get<{
+      [FAB_STORAGE_KEYS.enabled]?: boolean;
+      [FAB_STORAGE_KEYS.position]?: FabPosition;
+      [FAB_STORAGE_KEYS.hiddenHosts]?: string[];
+    }>([FAB_STORAGE_KEYS.enabled, FAB_STORAGE_KEYS.position, FAB_STORAGE_KEYS.hiddenHosts]);
+    // 解构到局部变量：TS 对 computed key（FAB_STORAGE_KEYS.x）属性访问不做类型收窄
+    const enabled = raw[FAB_STORAGE_KEYS.enabled];
+    const position = raw[FAB_STORAGE_KEYS.position];
+    const hiddenHosts = raw[FAB_STORAGE_KEYS.hiddenHosts];
     return {
-      enabled: raw[FAB_STORAGE_KEYS.enabled] !== false,
-      position: isFabPosition(raw[FAB_STORAGE_KEYS.position])
-        ? raw[FAB_STORAGE_KEYS.position]
-        : null,
-      hiddenHosts: Array.isArray(raw[FAB_STORAGE_KEYS.hiddenHosts])
-        ? raw[FAB_STORAGE_KEYS.hiddenHosts].filter(
-            (h: unknown): h is string => typeof h === "string",
-          )
+      enabled: enabled !== false,
+      position: isFabPosition(position) ? position : null,
+      hiddenHosts: Array.isArray(hiddenHosts)
+        ? hiddenHosts.filter((h: unknown): h is string => typeof h === "string")
         : [],
     };
   } catch {

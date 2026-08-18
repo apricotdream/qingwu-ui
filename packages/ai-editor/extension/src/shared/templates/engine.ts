@@ -32,6 +32,7 @@ const RESERVED = new Set([
   "tags",
   "aiSummary",
   "aiTags",
+  "aiTranslation",
   "wordCount",
   "readingMinutes",
   "lang",
@@ -68,6 +69,8 @@ export function resolveVar(name: string, ctx: TemplateContext): string | undefin
       return aiSummary ?? "";
     case "aiTags":
       return (aiTags ?? []).join(", ");
+    case "aiTranslation":
+      return extra?.aiTranslation ?? "";
     case "wordCount":
       return String(content.wordCount);
     case "readingMinutes":

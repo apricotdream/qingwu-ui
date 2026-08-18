@@ -94,6 +94,12 @@ export function httpStatusToAIError(status: number, body?: string): ClipperError
       raw: body,
     });
   }
+  if (status === 402) {
+    return new ClipperError("auth-failed", "账户余额不足或额度用尽，请到服务方控制台充值", {
+      retryable: false,
+      raw: body,
+    });
+  }
   if (NOT_FOUND_STATUS.has(status)) {
     return new ClipperError("model-not-found", "模型或接口路径不存在，请检查 baseURL 与 model", {
       retryable: false,

@@ -20,6 +20,7 @@ import type { ToastOptions, ToastType } from "../components/toast";
 import { subscribeToast, toast } from "../components/toast";
 import { TocPanel } from "../components/toc";
 import { AISelector } from "./ai/components/ai-selector";
+import { flushPendingRemovals } from "./ai/pending-removal";
 import { formatBytes, getDocAttachmentTotal, validateAttachmentFile } from "./attachment-limits";
 import { getEditorExtensions } from "./extensions";
 import { type BubbleMenuAction, getBubbleMenuActions } from "./extensions/bubble-menu";
@@ -39,8 +40,10 @@ const HIGHLIGHT_COLORS = [
   { color: "#ddd6fe", name: "紫" },
 ];
 
-/** AI 面板固定宽度（与 AISelector 内部一致，避免测量偏差） */
-const AI_PANEL_WIDTH = 288;
+/** AI 面板宽度兜底（无法测量编辑器宽度时用，与 AISelector 内部一致） */
+const AI_PANEL_WIDTH_FALLBACK = 288;
+/** AI 面板宽度上限：宿主正文（如 640px）偏宽，输出文本整宽横排难读，桌面封顶保证阅读宽度 */
+const AI_PANEL_WIDTH_MAX = 480;
 /** 翻转判断用面板高度估算，渲染后 useLayoutEffect 会用真实高度校正 */
 const AI_PANEL_HEIGHT_ESTIMATE = 320;
 
@@ -54,23 +57,35 @@ interface AIPanelLayout {
 }
 
 /** 计算 AI 面板 fixed 定位。调用方必须同步 setState，保证首帧即 fixed，
- *  避免面板先以静态块级元素渲染撑高编辑器导致页面滚动跳变。 */
-function layoutAIPanel(anchor: FloatingPoint, measuredHeight?: number): AIPanelLayout {
+ *  避免面板先以静态块级元素渲染撑高编辑器导致页面滚动跳变。
+ *  宽度默认对齐编辑器根节点（随编辑器宽度），左缘对齐编辑器左缘。 */
+function layoutAIPanel(
+  anchor: FloatingPoint,
+  measuredHeight?: number,
+  opts: { panelWidth?: number; editorLeft?: number } = {},
+): AIPanelLayout {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const pw = Math.min(AI_PANEL_WIDTH, vw - 32);
+  const pw = Math.min(opts.panelWidth || AI_PANEL_WIDTH_FALLBACK, AI_PANEL_WIDTH_MAX, vw - 32);
   const ph = Math.max(measuredHeight || AI_PANEL_HEIGHT_ESTIMATE, 160);
 
   // 移动端：顶部居中全宽
   if (vw < 640) {
+    // 移动端贴近视口顶部：maxHeight 按实际 top 动态算，保证底边不出视口，
+    // 流式文本再长，底部控件（替换/插入/丢弃）也常驻可见
+    const top = Math.max(8, Math.min(anchor.top + 10, vh - 420));
     return {
       style: {
         position: "fixed",
-        top: Math.max(8, Math.min(anchor.top + 10, vh - 420)),
+        top,
         left: 8,
         right: 8,
         width: "auto",
         zIndex: 9999,
+        maxHeight: `calc(100dvh - ${top}px - 16px)`,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       },
       placement: "below",
       arrowLeft: 50,
@@ -78,19 +93,39 @@ function layoutAIPanel(anchor: FloatingPoint, measuredHeight?: number): AIPanelL
   }
 
   const anchorCenter = anchor.left + anchor.width / 2;
-  let left = anchorCenter - pw / 2;
+  // 水平：优先对齐编辑器左缘（宽度随编辑器）；无法测量时以锚点居中兜底
+  let left = typeof opts.editorLeft === "number" ? opts.editorLeft : anchorCenter - pw / 2;
+  left = Math.max(16, Math.min(left, vw - pw - 16));
   const spaceBelow = vh - anchor.top - 16;
   const spaceAbove = anchor.top - 16;
   const placement: AIPanelPlacement =
     spaceBelow < ph + 12 && spaceAbove >= ph + 12 ? "above" : "below";
   let top = placement === "below" ? anchor.top + 10 : anchor.top - ph - 10;
   top = Math.max(16, Math.min(top, vh - ph - 16));
-  left = Math.max(16, Math.min(left, vw - pw - 16));
   // 箭头尽量贴近选区中心，同时夹在面板内避免溢出
   const arrowLeft = Math.max(14, Math.min(((anchorCenter - left) / pw) * 100, 86));
 
+  // maxHeight 按实际 top/placement 动态算，不再写死 vh-32：
+  // - below：面板底边 = top + height ≤ 100dvh - 16，永不掉出视口；
+  // - above：面板底边不得越过锚点上方（anchor.top - 10），内容再长也只在锚点上方滚动。
+  // 流式文本变长时 flex 链收缩文本区滚动，底部控件常驻可见。
+  const maxHeight =
+    placement === "above"
+      ? `${Math.max(anchor.top - 10 - top, 160)}px`
+      : `calc(100dvh - ${top}px - 16px)`;
+
   return {
-    style: { position: "fixed", top, left, width: pw, zIndex: 9999 },
+    style: {
+      position: "fixed",
+      top,
+      left,
+      width: pw,
+      zIndex: 9999,
+      maxHeight,
+      overflow: "hidden",
+      display: "flex",
+      flexDirection: "column",
+    },
     placement,
     arrowLeft,
   };
@@ -171,7 +206,12 @@ export interface QingWuAIEditorProps {
   style?: React.CSSProperties;
   /** 是否显示顶部工具栏（导出按钮），默认 true */
   showToolbar?: boolean;
-  /** 是否显示目录（TOC）侧栏，默认 true */
+  /**
+   * 目录（TOC）默认展开状态，默认 true。
+   * - true  目录控件可用且默认展开（保持既有行为）
+   * - false 目录控件可用但默认收起，由工具栏按钮 / 悬浮球展开
+   * 注意：false 不再关闭目录功能，仅决定初始展开与否。
+   */
   showToc?: boolean;
   /**
    * 是否启用全文搜索（关键词高亮）
@@ -188,8 +228,8 @@ export interface QingWuAIEditorProps {
   immediatelyRender?: boolean;
   /**
    * 全局提示回调（附件超限拦截 / 文档附件超限警告等）。
-   * 由宿主接入自己的 Toast 组件（如 @qingwu/toast）；不传时回退到内置
-   * @qingwu/toast 默认渲染，也可通过 setToastProvider() 全局替换。
+   * 由宿主接入自己的 Toast 组件（如 @qingwu-ui/toast）；不传时回退到内置
+   * @qingwu-ui/toast 默认渲染，也可通过 setToastProvider() 全局替换。
    * 第三参 options 透传展示选项（persist/maxLines/duration）；旧签名自动兼容。
    */
   onToast?: (message: string, type: ToastType, options?: ToastOptions) => void;
@@ -255,6 +295,12 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   const [isWide, setIsWide] = useState(() =>
     typeof window !== "undefined" && typeof window.matchMedia === "function"
       ? window.matchMedia("(min-width: 80rem)").matches
+      : true,
+  );
+  // 工具栏目录按钮的可见断点（64rem 起显示）；<64rem 时目录入口交给悬浮球
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia("(min-width: 64rem)").matches
       : true,
   );
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -385,6 +431,16 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     return () => mq.removeEventListener("change", handler);
   }, []);
 
+  // 监听 64rem 断点（工具栏目录按钮显隐），窄视口下目录入口由悬浮球接管
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const mq = window.matchMedia("(min-width: 64rem)");
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    setIsDesktop(mq.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   const editor = useEditor({
     extensions: getEditorExtensions({
       placeholder: placeholder || t("editor.placeholder"),
@@ -450,6 +506,12 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     (window as any).__editor = editor;
   }, [editor]);
 
+  // 编辑器销毁时 flush 待删孤儿资源（替换产生的孤儿已不在文档中 → 立即删存储）
+  useEffect(() => {
+    if (!editor) return;
+    return () => flushPendingRemovals(editor);
+  }, [editor]);
+
   // 编辑器实例就绪后回调宿主（Web Clipper 接收器据此拿到 editor 调用 insertContent）
   useEffect(() => {
     if (!editor || !onEditorReady) return;
@@ -504,7 +566,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     editor.setEditable(!isReadonly, false);
   }, [editor, isReadonly]);
 
-  // Toast 通道订阅：宿主传入 onToast 则转发；否则回退到内置 @qingwu/toast 默认渲染
+  // Toast 通道订阅：宿主传入 onToast 则转发；否则回退到内置 @qingwu-ui/toast 默认渲染
   useEffect(() => {
     if (!onToast) return;
     return subscribeToast(onToast);
@@ -597,6 +659,24 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
       editor.off("update", handler);
     };
   }, [editor]);
+
+  // 文档是否含标题（h1~h6）：只读态 / 窄屏下据此决定是否亮出目录悬浮球入口
+  const [hasHeadings, setHasHeadings] = useState(false);
+  useEffect(() => {
+    if (!editor) return;
+    const check = () => {
+      let found = false;
+      editor.state.doc.descendants((node) => {
+        if (node.type.name === "heading") found = true;
+      });
+      setHasHeadings(found);
+    };
+    check();
+    editor.on("update", check);
+    return () => {
+      editor.off("update", check);
+    };
+  }, [editor]);
   const characterCount = useMemo(
     () => editor?.storage?.characterCount?.characters?.() ?? 0,
     // charTick 强制重新计算
@@ -642,7 +722,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
         anchor = { top: coords.bottom, left: coords.left, width: 0 };
       }
       aiAnchorRef.current = anchor;
-      const layout = layoutAIPanel(anchor);
+      const rect = editorContainerRef.current?.getBoundingClientRect();
+      const layout = layoutAIPanel(anchor, undefined, {
+        panelWidth: rect?.width,
+        editorLeft: rect?.left,
+      });
       setShowAI(true);
       setAiPanelStyle(layout.style);
       setAiPlacement(layout.placement);
@@ -696,7 +780,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     const anchor = aiAnchorRef.current;
     if (!anchor) return;
     const panel = aiPanelRef.current;
-    const layout = layoutAIPanel(anchor, panel?.offsetHeight || undefined);
+    const rect = editorContainerRef.current?.getBoundingClientRect();
+    const layout = layoutAIPanel(anchor, panel?.offsetHeight || undefined, {
+      panelWidth: rect?.width,
+      editorLeft: rect?.left,
+    });
     setAiPlacement(layout.placement);
     setAiArrowLeft(layout.arrowLeft);
     setAiPanelStyle(layout.style);
@@ -709,7 +797,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
       const anchor = aiAnchorRef.current;
       if (!anchor) return;
       const panel = aiPanelRef.current;
-      const layout = layoutAIPanel(anchor, panel?.offsetHeight || undefined);
+      const rect = editorContainerRef.current?.getBoundingClientRect();
+      const layout = layoutAIPanel(anchor, panel?.offsetHeight || undefined, {
+        panelWidth: rect?.width,
+        editorLeft: rect?.left,
+      });
       setAiPlacement(layout.placement);
       setAiArrowLeft(layout.arrowLeft);
       setAiPanelStyle(layout.style);
@@ -736,11 +828,15 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   );
 
   // 桌面内联侧栏可见 = 用户开启 TOC 且 视口宽屏 且 非全屏。
-  // 悬浮球可见 = TOC 功能启用 且 用户开启 TOC 且 桌面侧栏当前不可见 且 目录抽屉未展开
-  // （窄屏 / 浏览器放大到窄视口 / 网页全屏 / 原生全屏 都落入此分支）。
+  // 悬浮球可见 = 目录未以侧栏/抽屉展示，且存在「打开目录」的入口需要：
+  //   1) 用户已开启 TOC（showTocState）——收起后作为重开入口；或
+  //   2) 文档有标题且工具栏目录按钮不可用（<64rem 窄屏编辑 / 只读态无工具栏）——
+  //      悬浮球成为唯一入口。
   // 抽屉展开时目录已直接展示，悬浮球隐藏避免重叠。
   const desktopTocVisible = showTocState && isWide && !editorWebFS && !editorNativeFS;
-  const fabVisible = showToc && showTocState && !desktopTocVisible && !showTocMobile;
+  const isDesktopToolbar = !isReadonly && isDesktop;
+  const fabVisible =
+    !desktopTocVisible && !showTocMobile && (showTocState || (hasHeadings && !isDesktopToolbar));
   // 目录启用但桌面侧栏不可见（窄视口 / 全屏等）时，挂载后直接展开抽屉展示目录内容，
   // 而不是只亮出悬浮球等用户再点一次。仅首次挂载自动展开一次；
   // 用户手动关闭抽屉后，悬浮球作为折叠态入口保留。
@@ -748,10 +844,10 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   useEffect(() => {
     if (autoOpenedTocRef.current) return;
     autoOpenedTocRef.current = true;
-    if (showToc && showTocState && !desktopTocVisible) {
+    if (showTocState && !desktopTocVisible) {
       setShowTocMobile(true);
     }
-  }, [showToc, showTocState, desktopTocVisible]);
+  }, [showTocState, desktopTocVisible]);
 
   // 桌面目录改为编辑器卡片之外的独立侧栏（flex 兄弟节点 + sticky），
   // 不再用 fixed 浮层：fixed 在「宿主容器满宽」或「祖先存在 transform/filter 包含块」时
@@ -786,9 +882,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                     setShowTocMobile(false);
                   } else {
                     setShowTocState(true);
-                    // 桌面侧栏不可见（64rem~80rem 窄视口 / 全屏等）时，
-                    // 展开目录直接打开抽屉，而不是只亮出悬浮球等二次点击
-                    if (!desktopTocVisible) setShowTocMobile(true);
+                    // 展开后桌面侧栏能否显示取决于 isWide 与全屏态（而非点击时的
+                    // desktopTocVisible，那时 showTocState 尚未更新恒为 false，
+                    // 会导致宽屏下侧栏与抽屉同时出现）。侧栏可显示则不叠开抽屉。
+                    const canShowSidebar = isWide && !editorWebFS && !editorNativeFS;
+                    if (!canShowSidebar) setShowTocMobile(true);
                   }
                 }}
                 title={showTocState ? "隐藏目录" : "显示目录"}
@@ -1104,7 +1202,6 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                 <div className="flex items-center gap-1.5 p-1.5">
                   <input
                     type="url"
-                    autoFocus
                     className="flex-1 px-2 py-1 text-xs rounded-md border border-default-200 bg-background focus:outline-none focus:border-primary"
                     placeholder="https://..."
                     value={linkUrl}
@@ -1149,8 +1246,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
               <div className="fixed inset-0 z-[9998]" onClick={() => setShowAI(false)} />
               <div
                 ref={aiPanelRef}
+                /* 面板 portal 到 body，不在宿主 data-lenis-prevent 子树内；
+                   Lenis 会劫走内部滚轮 → 面板自身挂 prevent，滚轮放行给原生滚动 */
+                data-lenis-prevent
                 style={aiPanelStyle}
-                className={`ai-panel relative bg-background border border-default-200 rounded-xl shadow-xl${
+                className={`ai-panel relative flex flex-col bg-background border border-default-200 rounded-xl shadow-xl${
                   aiPlacement === "above" ? " ai-panel--above" : ""
                 }`}
                 onClick={(e) => e.stopPropagation()}
@@ -1235,7 +1335,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           </Suspense>
         )}
 
-        {/* 全局 toast：宿主经 onToast 回调自定义；未接入时内置 @qingwu/toast 兜底渲染 */}
+        {/* 全局 toast：宿主经 onToast 回调自定义；未接入时内置 @qingwu-ui/toast 兜底渲染 */}
 
         {/* 编辑器主区域 */}
         {/* 编辑器主体 + 目录侧栏 */}
@@ -1294,7 +1394,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
         )}
 
         {/* 移动端目录抽屉 - 不设遮罩层，避免遮挡编辑器内容；关闭走抽屉头 × / 面板收起按钮 */}
-        {showToc && showTocMobile && (
+        {showTocMobile && (
           <div className="qingwu-toc-drawer toc-scroll">
             <div className="qed-drawer-head">
               <span className="qed-drawer-head__title">目录</span>

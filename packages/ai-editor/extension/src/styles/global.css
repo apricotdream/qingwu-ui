@@ -1,6 +1,94 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* tailwind 4：class 暗色模式（ThemeProvider 在 <html> 上切 .dark） */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* tailwind 4 CSS-first 主题令牌（原 tailwind.config.js theme.extend 迁入） */
+@theme {
+  --color-qingwu-50: #f0fdf9;
+  --color-qingwu-100: #ccfbef;
+  --color-qingwu-200: #99f6e0;
+  --color-qingwu-300: #5eead4;
+  --color-qingwu-400: #2dd4bf;
+  --color-qingwu-500: #14b8a6;
+  --color-qingwu-600: #0d9488;
+  --color-qingwu-700: #0f766e;
+  --color-qingwu-800: #115e59;
+  --color-qingwu-900: #134e4a;
+  --color-qingwu-950: #042f2e;
+
+  --color-ink-50: #f6f7f9;
+  --color-ink-100: #eceef2;
+  --color-ink-200: #d5dae2;
+  --color-ink-300: #b0b9c8;
+  --color-ink-400: #8591a6;
+  --color-ink-500: #66728a;
+  --color-ink-600: #515b71;
+  --color-ink-700: #43495c;
+  --color-ink-800: #3a3f4f;
+  --color-ink-900: #1e2230;
+  --color-ink-950: #13161f;
+
+  --font-sans: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+
+  --shadow-soft: 0 2px 12px 0 rgba(20, 30, 50, 0.08);
+  --shadow-pop: 0 8px 32px -4px rgba(20, 30, 50, 0.18);
+  --shadow-glow: 0 0 0 1px rgba(20, 184, 166, 0.2), 0 4px 16px -2px rgba(20, 184, 166, 0.3);
+
+  --animate-fade-in: fade-in 0.18s ease-out;
+  --animate-slide-up: slide-up 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-down: slide-down 0.18s ease-out;
+  --animate-scale-in: scale-in 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-shimmer: shimmer 1.4s linear infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+}
 
 @layer base {
   :root {
@@ -13,7 +101,7 @@
   }
   body {
     @apply bg-white text-ink-900 antialiased;
-    font-family: theme("fontFamily.sans");
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
   html.dark body {

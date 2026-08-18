@@ -14,7 +14,14 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "preset": "recommended"
+      "preset": "recommended",
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noImplicitAnyLet": "error"
+      },
+      "style": {
+        "noNonNullAssertion": "error"
+      }
     }
   },
   "javascript": {
@@ -115,12 +122,7 @@
           "suspicious": {
             "noArrayIndexKey": "off",
             "noAssignInExpressions": "off",
-            "noExplicitAny": "off",
-            "noImplicitAnyLet": "off",
             "noUnknownAtRules": "off"
-          },
-          "style": {
-            "noNonNullAssertion": "off"
           }
         }
       }
@@ -190,12 +192,7 @@
           "suspicious": {
             "noArrayIndexKey": "off",
             "noAssignInExpressions": "off",
-            "noExplicitAny": "off",
-            "noImplicitAnyLet": "off",
             "useIterableCallbackReturn": "off"
-          },
-          "style": {
-            "noNonNullAssertion": "off"
           }
         }
       }
@@ -231,9 +228,67 @@
       }
     },
     {
-      "includes": ["**/*.test.ts"],
+      "includes": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
       "linter": {
         "rules": {
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "packages/ai-editor/src/editor/ai-editor.tsx",
+        "packages/ai-editor/src/editor/attachment-limits.ts",
+        "packages/ai-editor/src/editor/ai/components/ai-selector.tsx",
+        "packages/ai-editor/src/editor/embeds/attachment-view.tsx",
+        "packages/ai-editor/src/editor/embeds/attachment.ts",
+        "packages/ai-editor/src/editor/embeds/audio-view.tsx",
+        "packages/ai-editor/src/editor/embeds/audio.ts",
+        "packages/ai-editor/src/editor/embeds/video-view.tsx",
+        "packages/ai-editor/src/editor/embeds/video.ts",
+        "packages/ai-editor/src/editor/extensions/bubble-menu.tsx",
+        "packages/ai-editor/src/editor/extensions/code-block-view.tsx",
+        "packages/ai-editor/src/editor/extensions/image-upload.ts",
+        "packages/ai-editor/src/editor/extensions/image-view.tsx",
+        "packages/ai-editor/src/editor/extensions/obsidian-markdown.ts",
+        "packages/ai-editor/src/editor/extensions/relative-media.ts",
+        "packages/ai-editor/src/editor/extensions/slash-command.tsx",
+        "packages/ai-editor/src/editor/extensions/table-toolbar.tsx",
+        "packages/ai-editor/src/editor/utils/local-media.ts",
+        "packages/ai-editor/src/editor/utils/resolve-local-media.ts",
+        "packages/ai-editor/src/main.tsx",
+        "packages/ai-editor/tests/full-stack-image-swap.test.ts",
+        "packages/ai-editor/tests/local-media.test.ts",
+        "packages/ai-editor/tests/relative-media-extension.test.ts",
+        "packages/ai-editor/extension/src/background/service-worker.ts",
+        "packages/ai-editor/extension/src/sidepanel/App.tsx",
+        "packages/ai-editor/extension/src/sidepanel/main.tsx",
+        "packages/ai-editor/extension/src/popup/main.tsx",
+        "packages/ai-editor/extension/src/options/main.tsx",
+        "packages/ai-editor/extension/src/shared/storage/db.ts",
+        "packages/ai-editor/src/editor/storage/index.ts",
+        "packages/calendar/ui/src/demo-entry.ts",
+        "packages/calendar/ui/src/lunar.ts",
+        "packages/search/src/demo-entry.ts",
+        "packages/search/src/search.ts",
+        "packages/upload/src/upload.ts",
+        "packages/text-layout/src/engine.ts",
+        "packages/text-layout/src/chip-flow.ts",
+        "packages/skeleton/src/auto-skeleton.ts",
+        "packages/skeleton/src/ssr.ts",
+        "packages/toast/src/toast.ts",
+        "examples/nextjs/app/demo/skeleton/page.tsx",
+        "examples/nextjs/app/demo/calendar-popup/page.tsx",
+        "examples/nextjs/app/demo/text-layout/page.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off",
+            "noImplicitAnyLet": "off"
+          },
           "style": {
             "noNonNullAssertion": "off"
           }

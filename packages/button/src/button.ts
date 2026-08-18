@@ -4,8 +4,8 @@
  *
  * 使用方式：
  * ```ts
- * import { Button } from "@qingwu/button";
- * import "@qingwu/button/style.css";
+ * import { Button } from "@qingwu-ui/button";
+ * import "@qingwu-ui/button/style.css";
  *
  * const btn = new Button({ text: "确认", variant: "primary" });
  * container.append(btn.el);

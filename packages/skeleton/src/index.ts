@@ -1,5 +1,5 @@
 /**
- * @qingwu/skeleton
+ * @qingwu-ui/skeleton
  *
  * 自动骨架屏 —— 运行时 DOM 测量生成像素级骨架加载态
  *

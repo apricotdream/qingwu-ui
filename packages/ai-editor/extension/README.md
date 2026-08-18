@@ -95,11 +95,11 @@ npm run package
 
 | 服务商 | baseURL | 模型示例 |
 |---|---|---|
-| OpenAI | `https://api.openai.com/v1` | `gpt-4o-mini` |
-| DeepSeek | `https://api.deepseek.com` | `deepseek-chat` |
-| 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-plus` |
-| Moonshot | `https://api.moonshot.cn/v1` | `moonshot-v1-8k` |
-| 智谱 | `https://open.bigmodel.cn/api/paas/v4` | `glm-4-flash` |
+| OpenAI | `https://api.openai.com/v1` | `gpt-5.6-luna` |
+| DeepSeek | `https://api.deepseek.com` | `deepseek-v4-flash` |
+| 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen3.7-plus` |
+| Moonshot | `https://api.moonshot.ai/v1` | `kimi-k2.6` |
+| 智谱 | `https://open.bigmodel.cn/api/paas/v4` | `glm-5.2` |
 | Chrome 内置 | （留空） | Gemini Nano |
 
 插件会自动补全 `/chat/completions`，**不会出现 Obsidian Web Clipper 的 404 问题**。
@@ -115,7 +115,7 @@ npm run package
 1. 在青梧编辑器中启动 Clipper 接收器：
 
 ```ts
-import { QingWuAIEditor, startClipperReceiver } from "@qingwu/ai-editor";
+import { QingWuAIEditor, startClipperReceiver } from "@qingwu-ui/ai-editor";
 
 const editor = ...; // 编辑器实例
 

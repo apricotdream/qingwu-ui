@@ -10,9 +10,9 @@ import {
   ICON_TRASH,
   ICON_UPLOAD,
 } from "@icon/icons";
-import type { ActionMenuItem, ActionMenuOptions } from "@qingwu/action-menu";
-import { ActionMenu } from "@qingwu/action-menu";
-import "@qingwu/action-menu/style.css";
+import type { ActionMenuItem, ActionMenuOptions } from "@qingwu-ui/action-menu";
+import { ActionMenu } from "@qingwu-ui/action-menu";
+import "@qingwu-ui/action-menu/style.css";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import DemoCard from "@/components/DemoCard";
 
@@ -205,8 +205,8 @@ export default function ActionMenuPage() {
 
   const snippets = {
     react: [
-      'import { ActionMenu } from "@qingwu/action-menu";',
-      'import "@qingwu/action-menu/style.css";',
+      'import { ActionMenu } from "@qingwu-ui/action-menu";',
+      'import "@qingwu-ui/action-menu/style.css";',
       "",
       "const items = [",
       '  { id: "copy", icon: ICON_COPY, label: "复制", onClick: () => copy() },',
@@ -228,12 +228,12 @@ export default function ActionMenuPage() {
       "<!DOCTYPE html>",
       '<html lang="zh-CN">',
       "<head>",
-      '  <link rel="stylesheet" href="https://unpkg.com/@qingwu/action-menu/style.css" />',
+      '  <link rel="stylesheet" href="https://unpkg.com/@qingwu-ui/action-menu/style.css" />',
       "</head>",
       "<body>",
       '  <div id="root"></div>',
       '  <script type="module">',
-      '    import { ActionMenu } from "https://unpkg.com/@qingwu/action-menu";',
+      '    import { ActionMenu } from "https://unpkg.com/@qingwu-ui/action-menu";',
       `    const menu = new ActionMenu(document.querySelector("#root"), { items, direction: "${props.direction}" });`,
       "  </script>",
       "</body>",

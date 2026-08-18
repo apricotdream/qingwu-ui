@@ -1,8 +1,8 @@
 "use client";
 
-import { toast } from "@qingwu/toast";
+import { toast } from "@qingwu-ui/toast";
 import { useCallback, useEffect, useRef, useState } from "react";
-import "@qingwu/toast/style.css";
+import "@qingwu-ui/toast/style.css";
 import DemoCard from "@/components/DemoCard";
 
 /* ============================================================
@@ -26,7 +26,7 @@ const TYPES = [
   { type: "error" as const, label: "错误反馈", dot: "#FF3B30" },
 ] as const;
 
-/* 与 @qingwu/toast 组件一致的 SVG 图标（样式预览用） */
+/* 与 @qingwu-ui/toast 组件一致的 SVG 图标（样式预览用） */
 const TOAST_ICONS: Record<string, string> = {
   info: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
   success:
@@ -243,8 +243,8 @@ export default function ToastPage() {
 
   const snippets = (() => {
     const react = [
-      'import { toast } from "@qingwu/toast";',
-      'import "@qingwu/toast/style.css";',
+      'import { toast } from "@qingwu-ui/toast";',
+      'import "@qingwu-ui/toast/style.css";',
       "",
       'toast.success("操作成功");',
       'toast.error("操作失败");',
@@ -277,9 +277,9 @@ export default function ToastPage() {
 
     const html = [
       '<script type="module">',
-      '  import { toast } from "https://unpkg.com/@qingwu/toast";',
+      '  import { toast } from "https://unpkg.com/@qingwu-ui/toast";',
       "</script>",
-      '<link rel="stylesheet" href="https://unpkg.com/@qingwu/toast/style.css" />',
+      '<link rel="stylesheet" href="https://unpkg.com/@qingwu-ui/toast/style.css" />',
       "<script>",
       '  toast.success("就绪");',
       "</script>",
@@ -287,8 +287,8 @@ export default function ToastPage() {
 
     const vue = [
       '<script setup lang="ts">',
-      'import { toast } from "@qingwu/toast";',
-      'import "@qingwu/toast/style.css";',
+      'import { toast } from "@qingwu-ui/toast";',
+      'import "@qingwu-ui/toast/style.css";',
       "",
       'onMounted(() => toast("Vue 就绪"));',
       "</script>",
@@ -403,7 +403,7 @@ export default function ToastPage() {
               ⑤ 自适应文本 · text-layout
               ============================================================ */}
           <section>
-            <div className="toast-section-title">自适应文本 · @qingwu/text-layout</div>
+            <div className="toast-section-title">自适应文本 · @qingwu-ui/text-layout</div>
             <div className="toast-text-demo">
               <textarea
                 className="toast-text-input"

@@ -552,6 +552,10 @@
   padding-top: 14px;
   border-top: 1px solid var(--qw-line);
 }
+/* dateOnly：time 行隐藏（父类 display:flex 优先于 UA 的 [hidden] 默认规则，需显式覆盖） */
+.qw-cal-time[hidden] {
+  display: none;
+}
 .qw-cal-time-label {
   font-size: 12px;
   font-weight: 600;
@@ -849,6 +853,9 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.18s;
+  /* popover 面板宽度可能大于输入框（面板 min-width / 详情展开），
+     基础 .qw-cal-overlay 的 overflow 会把面板右侧裁掉，这里放开 */
+  overflow: visible;
 }
 
 .qw-cal-overlay--popover[hidden] {
@@ -857,6 +864,12 @@
 
 .qw-cal-overlay--popover.is-open {
   opacity: 1;
+}
+
+/* 窄面板（表单窄列/小屏）下日期格允许收缩：aspect-ratio:1 使高随宽，
+   避免 46px 最小高把列宽顶到 ~46px 导致 7 列溢出被裁 */
+.qw-cal-overlay--popover .qw-cal-cell {
+  min-height: 0;
 }
 
 .qw-cal-overlay--popover .qw-cal-panel {
@@ -877,6 +890,49 @@
 .qw-cal-overlay--popover.is-open .qw-cal-panel {
   transform: translateY(0);
   opacity: 1;
+}
+
+/* 确认/取消操作栏钉在面板底部：面板被钳制/详情浮层覆盖时按钮始终可见可点 */
+.qw-cal-overlay--popover .qw-cal-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  background: var(--qw-card);
+}
+
+/* ============================================================
+   详情面板悬浮方向（detailPosition）
+   ============================================================ */
+/* inside：详情为面板内右缘覆盖浮层——绝对定位不参与 flex 布局，
+   面板/日期网格宽度不变；带阴影与关闭按钮 */
+.qw-cal-overlay--popover.is-detail-inside .qw-cal-side {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 0;
+  z-index: 3;
+  border-left: 1px solid var(--qw-line);
+  background: var(--qw-card);
+  box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12);
+}
+.qw-cal-overlay--popover.is-detail-inside .qw-cal-side.is-active {
+  width: min(280px, calc(100% - 48px));
+}
+.qw-cal-overlay--popover.is-detail-inside .qw-cal-detail {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+}
+
+/* left：详情在左侧展开——面板行反向让 side 到 main 左侧，
+   placePopover 同时把 overlay 向左延伸（网格锚点不变） */
+.qw-cal-overlay--popover.is-detail-left .qw-cal-panel {
+  flex-direction: row-reverse;
+}
+.qw-cal-overlay--popover.is-detail-left .qw-cal-side {
+  border-left: none;
+  border-right: 1px solid var(--qw-line);
 }
 
 /* popover 内嵌详情栏：窄版（日期格保持原尺寸，详情栏额外加宽面板） */

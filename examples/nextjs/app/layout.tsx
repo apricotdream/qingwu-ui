@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import "./css-order.css";
-import "@qingwu/calendar/style.css";
-import "@qingwu/search/style.css";
-import "@qingwu/toast/style.css";
-import "@qingwu/skeleton/style.css";
+import "@qingwu-ui/calendar/style.css";
+import "@qingwu-ui/search/style.css";
+import "@qingwu-ui/toast/style.css";
+import "@qingwu-ui/skeleton/style.css";
 import "./globals.css";
 import {
   ICON_CHEVRON_DOWN,
@@ -19,7 +19,7 @@ import {
   ICON_SIDEBAR_TOGGLE,
   ICON_SUN,
 } from "@icon/icons";
-import { SearchBox, type SearchItem } from "@qingwu/search";
+import { SearchBox, type SearchItem } from "@qingwu-ui/search";
 import DocToc from "@/components/DocToc";
 import PageHero from "@/components/PageHero";
 import PrevNext from "@/components/PrevNext";
@@ -232,13 +232,13 @@ function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
             aria-haspopup="menu"
             onClick={() => setVersionOpen(!versionOpen)}
           >
-            v0.6.0
+            v0.9.0-beta.1
             <SvgHtml html={ICON_CHEVRON_DOWN} size={12} />
           </button>
           {versionOpen && (
             <div className="qw-version-menu" role="menu">
               <button className="qw-version-item is-current" type="button" role="menuitem">
-                v0.6.0 <span>当前版本</span>
+                v0.9.0-beta.1 <span>当前版本</span>
               </button>
               <Link
                 className="qw-version-item"

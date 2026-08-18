@@ -1,19 +1,25 @@
-# 依赖与构建产物
+# 依赖与构建产�?
 node_modules/
 dist/
+
+# 本地 registry 凭据（含 _auth，禁止入库）
+.npmrc
+**/.npmrc
 .next/
+.next-session-bak/
 .turbo/
 coverage/
 *.tsbuildinfo
+*.d.ts.map
 
-# 包打包产物
+# 包打包产�?
 *.tgz
 *.zip
 
 # 日志
 *.log
 
-# 环境变量（.env.example 保留提交）
+# 环境变量�?env.example 保留提交�?
 .env
 .env.*
 !.env.example
@@ -22,7 +28,7 @@ coverage/
 test-results/
 playwright-report/
 
-# 编辑器
+# 编辑�?
 .vscode/
 .idea/
 *.swp
@@ -36,12 +42,35 @@ Desktop.ini
 # 缓存
 .cache/
 
-# AI 辅助工具本地文件（不提交）
+# 演示站构建时�?packages/ai-editor 同步�?file-viewer 静态资源（方案 A，不入库�?
+examples/nextjs/public/file-viewer/
+
+# ---- AI 工具链本地文件（不提交；他人拉取后不可用 / 无效，一律忽略）----
+
+# Claude Code 配置 / 记忆目录
 .claude/
+.claude.json
+
+# 项目�?AI 指令文件
 CLAUDE.md
 AGENTS.md
 .project-memory.md
-.cursor/
-.cursorrules
+.agents/
 .github/copilot-instructions.md
 COPILOT.md
+
+# AI 生成的临时文�?
+tmp_*
+*.tmp
+*.bak
+
+# 临时测试文件（仅本机联调 / 浏览器测�?Profile�?
+tmp_qingwu_server.cjs
+.edge-test-profile/
+verify-qcar/
+
+# 内部产品文档（不公开�?
+PRODUCT.md
+PRODUCT_*.md
+# �������͸����ű��������� ssh ·������ֹ��⣩
+verify-qcar/push-all-native.cmd

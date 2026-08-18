@@ -1,20 +1,20 @@
-# @qingwu/tag-input
+# @qingwu-ui/tag-input
 
-标签快捷插入组件：输入框 + 下方标签快捷栏。点击标签按钮自动填入输入框；已插入的标签从快捷栏消失，从输入值中删除后自动重现。布局由 `@qingwu/text-layout` 的 `layoutChips` 驱动（展开/收起 + 标签栏高度）。
+标签快捷插入组件：输入框 + 下方标签快捷栏。点击标签按钮自动填入输入框；已插入的标签从快捷栏消失，从输入值中删除后自动重现。布局由 `@qingwu-ui/text-layout` 的 `layoutChips` 驱动（展开/收起 + 标签栏高度）。
 
 零框架依赖 · 纯 TypeScript + 原生 DOM · 受控/非受控双模式 · 全键盘可用。
 
 ## 安装
 
 ```bash
-npm install @qingwu/tag-input
+npm install @qingwu-ui/tag-input
 ```
 
 ## 基础用法
 
 ```ts
-import { TagInput } from "@qingwu/tag-input";
-import "@qingwu/tag-input/style.css";
+import { TagInput } from "@qingwu-ui/tag-input";
+import "@qingwu-ui/tag-input/style.css";
 
 const ti = new TagInput(document.querySelector("#app")!, {
   defaultTags: ["React", "TypeScript", "CSS"],

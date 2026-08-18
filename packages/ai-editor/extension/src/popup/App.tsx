@@ -1,19 +1,12 @@
 /** 扩展弹窗：快捷入口，触发整页 / 选区剪藏并打开侧边栏。 */
+import { toast } from "@qingwu-ui/toast";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { setLocale, t } from "../shared/i18n";
 import { send } from "../shared/messaging";
+import { getSettingsWithRetry } from "../shared/settings-client";
 import type { ClipperSettings, ExtractedContent } from "../shared/types";
-import {
-  Badge,
-  Button,
-  Icon,
-  QingWuLogo,
-  ThemeProvider,
-  ToastProvider,
-  useTheme,
-  useToast,
-} from "../shared/ui";
+import { Badge, Button, Icon, QingWuLogo, ThemeProvider, useTheme } from "../shared/ui";
 
 // popup 直接调 sidePanel.open（popup 是用户手势上下文，
 // 通过消息让 background 调会丢失手势而失败）
@@ -35,9 +28,7 @@ export function App() {
       onModeChange={(mode) => settings && persist({ ...settings, theme: mode }, setSettings)}
       onAccentChange={(accent) => settings && persist({ ...settings, accent }, setSettings)}
     >
-      <ToastProvider>
-        <Inner settings={settings} setSettings={setSettings} />
-      </ToastProvider>
+      <Inner settings={settings} setSettings={setSettings} />
     </ThemeProvider>
   );
 }
@@ -60,11 +51,14 @@ function Inner({
   >([]);
 
   useEffect(() => {
-    void loadSettingsAndLocale(setSettings);
-    void loadRecent(setRecentTitles);
+    // SW 冷启动可能暂无应答：helper 内部已重试，彻底失败时降级为无配置界面而非崩溃
+    void loadSettingsAndLocale(setSettings).catch((e) =>
+      console.warn("[qingwu-clipper] 设置加载失败:", e),
+    );
+    void loadRecent(setRecentTitles).catch((e) =>
+      console.warn("[qingwu-clipper] 最近记录加载失败:", e),
+    );
   }, [setSettings]);
-
-  const toast = useToast();
 
   async function doClip(mode: "page" | "selection" | "bookmark") {
     setBusy(mode);
@@ -95,11 +89,7 @@ function Inner({
             | { text: string; html: string; hasSelection: boolean }
             | undefined;
           if (!sel?.hasSelection) {
-            toast.push({
-              level: "warning",
-              message: "未选中文本",
-              detail: "请先在页面上选中要剪藏的文本",
-            });
+            toast.warn("未选中文本", { description: "请先在页面上选中要剪藏的文本" });
             return;
           }
           payload = { mode, selection: sel.html };
@@ -122,9 +112,7 @@ function Inner({
         tags: [],
         templateId: tpl?.id ?? "default",
       });
-      toast.push({
-        level: "success",
-        message: t("toast.clip.saved"),
+      toast.success(t("toast.clip.saved"), {
         action: {
           label: "打开侧边栏",
           onClick: () => {
@@ -133,19 +121,13 @@ function Inner({
         },
       });
       if (r.warnings?.length) {
-        toast.push({
-          level: "warning",
-          message: r.warnings[0],
-          duration: 6000,
-        });
+        toast.warn(r.warnings[0], { duration: 6000 });
       }
       await loadRecent(setRecentTitles);
     } catch (e) {
       const err = e as Error;
-      toast.push({
-        level: "error",
-        message: t("toast.clip.failed"),
-        detail: err.message,
+      toast.error(t("toast.clip.failed"), {
+        description: err.message,
         duration: 8000,
         action: err.message.includes("超时")
           ? { label: t("action.retry"), onClick: () => void doClip(mode) }
@@ -171,7 +153,7 @@ function Inner({
 }
 
 async function loadSettingsAndLocale(setSettings: (s: ClipperSettings) => void) {
-  const s = await send<ClipperSettings>("settings:get");
+  const s = await getSettingsWithRetry();
   setSettings(s);
   setLocale(s.locale);
 }

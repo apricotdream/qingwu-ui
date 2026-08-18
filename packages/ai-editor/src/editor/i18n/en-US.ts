@@ -74,7 +74,8 @@ export const enUS = {
 
     ai: {
       trigger: "Writing Assistant",
-      triggerDesc: "Select text and pick an AI action. The result can replace or insert into the document.",
+      triggerDesc:
+        "Select text and pick an AI action. The result can replace or insert into the document.",
       close: "Close",
       continue: "Continue",
       continueDesc: "Continue writing from here",
@@ -92,6 +93,18 @@ export const enUS = {
       zapDesc: "Enter a custom command",
       thinking: "Thinking…",
       replace: "Replace selection",
+      replaceAll: "Replace all",
+      replaceTitle: "Replace selection",
+      replaceAllTitle: "Replace all content",
+      replaceText: "The AI result will replace the current selection.",
+      replaceAllText: "The AI result will replace the entire document.",
+      removeNodes: "The following media nodes will be removed:",
+      nodeImage: "Image",
+      nodeAttachment: "Attachment",
+      nodeVideo: "Video",
+      nodeAudio: "Audio",
+      confirmReplace: "Replace",
+      cancel: "Cancel",
       insert: "Insert below",
       discard: "Discard",
       error: "Request failed, please retry",

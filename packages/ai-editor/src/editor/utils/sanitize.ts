@@ -76,6 +76,10 @@ export function sanitizeHtml(html: string): string {
     return purify.sanitize(html, {
       ALLOW_DATA_ATTR: true,
       ADD_ATTR: ["target", "rel"],
+      // blob: 允许：编辑器拖入媒体以 blob URL 占位，会话内同源访问安全；
+      // 默认 DOMPurify 会滤掉 blob: 导致预览/详情回显时媒体 src 被清空。
+      ALLOWED_URI_REGEXP:
+        /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|blob):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
     });
   }
   return regexSanitize(html);

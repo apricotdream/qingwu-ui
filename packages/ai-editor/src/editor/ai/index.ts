@@ -58,13 +58,12 @@ let currentProvider: AIProvider | null = null;
  * 基于 Vercel AI SDK 创建统一的 AI Provider。
  * 所有兼容 OpenAI Chat Completions API 的服务均可使用，统一配置：
  *
- * - OpenAI:     baseURL = "https://api.openai.com/v1",     model = "gpt-4o-mini"
- * - DeepSeek:   baseURL = "https://api.deepseek.com/v1",    model = "deepseek-chat"
- * - Qwen:       baseURL = "https://dashscope.aliyuncs.com/compatible-mode/v1", model = "qwen-plus"
- * - Anthropic:  baseURL = "https://api.anthropic.com/v1",   model = "claude-sonnet-4-20250514"
- * - 智谱 GLM:   baseURL = "https://open.bigmodel.cn/api/paas/v4", model = "glm-4"
- * - MiniMax:    baseURL = "https://api.minimax.chat/v1",     model = "abab6.5s-chat"
- * - Moonshot:   baseURL = "https://api.moonshot.cn/v1",      model = "moonshot-v1-8k"
+ * - OpenAI:     baseURL = "https://api.openai.com/v1",     model = "gpt-5.6-luna"
+ * - DeepSeek:   baseURL = "https://api.deepseek.com/v1",    model = "deepseek-v4-flash"
+ * - Qwen:       baseURL = "https://dashscope.aliyuncs.com/compatible-mode/v1", model = "qwen3.7-plus"
+ * - 智谱 GLM:   baseURL = "https://open.bigmodel.cn/api/paas/v4", model = "glm-5.2"
+ * - MiniMax:    baseURL = "https://api.minimax.io/v1",     model = "MiniMax-M3"
+ * - Moonshot:   baseURL = "https://api.moonshot.ai/v1",      model = "kimi-k2.6"
  */
 export async function createAILanguageModelProvider(
   config: AILanguageModelConfig,

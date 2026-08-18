@@ -6,7 +6,7 @@ import {
   getEditorAttachmentLimits,
   validateAttachmentFile,
 } from "../attachment-limits";
-import { getStorageProvider } from "../storage";
+import { getStorageProvider, ownedUrlChecker } from "../storage";
 import { openImportChoiceDialog } from "../utils/import-choice-dialog";
 import { textHasLocalMediaRefs } from "../utils/local-media";
 
@@ -248,7 +248,9 @@ export const ImageUpload = Extension.create<AttachmentLimits>({
             // 避免这里 preventDefault 后"只插入图片、丢失正文"
             const plain = event.clipboardData?.getData("text/plain") || "";
             const hasFiles = (event.clipboardData?.files?.length ?? 0) > 0;
-            if (hasFiles && textHasLocalMediaRefs(plain)) return false;
+            if (hasFiles && textHasLocalMediaRefs(plain, undefined, ownedUrlChecker())) {
+              return false;
+            }
 
             for (const item of Array.from(items)) {
               if (

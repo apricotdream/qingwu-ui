@@ -4,6 +4,7 @@ export declare const ICON_SEARCH: string;
 export declare const ICON_UPLOAD: string;
 export declare const ICON_UPLOAD_ARROW: string;
 export declare const ICON_MENU: string;
+export declare const ICON_BELL: string;
 export declare const ICON_CLOSE: string;
 export declare const ICON_CHECK: string;
 export declare const ICON_PLUS: string;

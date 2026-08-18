@@ -232,4 +232,23 @@ describe("Select", () => {
     sel.open();
     expect(qsPanel()!.hidden).toBe(false);
   });
+
+  test("frosted 默认开启：面板挂 is-frosted 磨砂类", () => {
+    new Select(root, { options: BASE });
+    expect(qsPanel()!.classList.contains("is-frosted")).toBe(true);
+  });
+
+  test("frosted: false 关闭磨砂：面板回退不透明实体", () => {
+    new Select(root, { options: BASE, frosted: false });
+    expect(qsPanel()!.classList.contains("is-frosted")).toBe(false);
+  });
+
+  test("update({ frosted }) 动态切换磨砂类", () => {
+    const sel = new Select(root, { options: BASE });
+    expect(qsPanel()!.classList.contains("is-frosted")).toBe(true);
+    sel.update({ frosted: false });
+    expect(qsPanel()!.classList.contains("is-frosted")).toBe(false);
+    sel.update({ frosted: true });
+    expect(qsPanel()!.classList.contains("is-frosted")).toBe(true);
+  });
 });

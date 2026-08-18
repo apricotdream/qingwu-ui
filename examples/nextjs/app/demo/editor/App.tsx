@@ -22,8 +22,8 @@ import {
   t,
   toast,
   validateAttachmentFile,
-} from "@qingwu/ai-editor";
-import { toast as qwToast } from "@qingwu/toast";
+} from "@qingwu-ui/ai-editor";
+import { toast as qwToast } from "@qingwu-ui/toast";
 
 // 首页直接渲染 README.md；按当前语言切换中英文内容（传原始 markdown，由编辑器单次解析）
 
@@ -332,6 +332,9 @@ export default function App() {
     }
   }, [editorMode]);
 
+  // 目录（TOC）默认展开状态：true 展开 / false 收起（目录控件仍可用）
+  const [showToc, setShowToc] = useState(true);
+
   // ===== Web Clipper 接收器（浏览器 postMessage 通道）=====
   // 插件通过 chrome.tabs.create 打开本页面后注入脚本 postMessage 推送剪藏内容，
   // 这里监听 message 事件，把 markdown 插入编辑器。
@@ -570,6 +573,23 @@ export default function App() {
               {editorMode === "edit" ? "✏️" : "👁"}
             </button>
 
+            {/* TOC 默认展开开关 */}
+            <button
+              type="button"
+              data-tour="toc-default"
+              className={`px-1.5 sm:px-2 py-1 text-[11px] sm:text-xs rounded-lg border transition-colors shrink-0 ${
+                showToc
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
+                  : "border-default-200 hover:bg-default-100 text-default-500"
+              }`}
+              onClick={() => setShowToc((v) => !v)}
+              title={
+                showToc ? "目录默认展开（点击切为默认收起）" : "目录默认收起（点击切为默认展开）"
+              }
+            >
+              ☰
+            </button>
+
             {/* Editor fullscreen controls */}
             <button
               type="button"
@@ -795,7 +815,7 @@ export default function App() {
                 onChange={(e) => setToastMode(e.target.value as ToastMode)}
                 className="rounded-lg border border-default-200 bg-background px-2 py-1 text-xs text-foreground outline-none transition-colors focus:border-qingwu-400"
               >
-                <option value="default">内置默认 @qingwu/toast</option>
+                <option value="default">内置默认 @qingwu-ui/toast</option>
                 <option value="onToast">onToast 实例级</option>
                 <option value="provider">setToastProvider 全局</option>
               </select>
@@ -822,7 +842,7 @@ export default function App() {
           </div>
           <div className="mt-2 text-[11px] text-default-400">
             {toastMode === "default" &&
-              "内置默认：未传 onToast、未 setToastProvider，提示由随包内置 @qingwu/toast 渲染（开箱即用）。"}
+              "内置默认：未传 onToast、未 setToastProvider，提示由随包内置 @qingwu-ui/toast 渲染（开箱即用）。"}
             {toastMode === "onToast" && "实例级：经 onToast 回调转发给宿主自己的 Toast 组件渲染。"}
             {toastMode === "provider" &&
               "全局级：setToastProvider() 替换默认渲染器，消息带 [setToastProvider] 前缀以示区别。"}
@@ -845,6 +865,7 @@ export default function App() {
         <QingWuAIEditor
           initialContent={readmeContent}
           mode={editorMode}
+          showToc={showToc}
           placeholder={t("editor.placeholder")}
           onEditorReady={onEditorReady}
           maxAttachmentSize={maxAttachmentSize}

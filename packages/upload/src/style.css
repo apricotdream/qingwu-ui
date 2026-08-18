@@ -1,8 +1,8 @@
 /* ============================================================
    青梧UI · Upload 图片上传组件样式
    类名前缀 qw-upload-*
-   注：dist/style.css 由构建脚本合并 @qingwu/button 样式，
-   按钮触发形态无需单独引入 @qingwu/button/style.css
+   注：dist/style.css 由构建脚本合并 @qingwu-ui/button 样式，
+   按钮触发形态无需单独引入 @qingwu-ui/button/style.css
    ============================================================ */
 
 .qw-upload {

@@ -208,8 +208,8 @@ body::before {
   flex: none;
 }
 .qw-header-logo-mark {
-  width: 32px;
-  height: 32px;
+  width: 4rem;
+  height: 4rem;
   flex: none;
   object-fit: contain;
   transition: transform 0.2s ease;

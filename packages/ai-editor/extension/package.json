@@ -1,6 +1,6 @@
 {
   "name": "qingwu-web-clipper",
-  "version": "0.1.0",
+  "version": "0.2.13",
   "description": "青梧 Web Clipper - 面向青梧 AI 编辑器的现代化浏览器剪藏插件（Chrome / Edge / Firefox）",
   "type": "module",
   "private": true,
@@ -23,25 +23,24 @@
     "release:edge": "npm run build:edge && node scripts/build.mjs package edge"
   },
   "dependencies": {
-    "framer-motion": "^11.15.0",
+    "framer-motion": "^12.43.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.287",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/chrome": "^0.2.5",
     "@types/node": "^26.1.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "cross-env": "^7.0.3",
-    "postcss": "^8.5.1",
-    "sharp": "^0.33.5",
-    "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.3",
-    "vite": "^6.0.7"
+    "@vitejs/plugin-react": "^6.0.5",
+    "cross-env": "^10.1.0",
+    "sharp": "^0.35.3",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.0"
   },
   "optionalDependencies": {
-    "sharp": "^0.33.5"
+    "sharp": "^0.35.3"
   }
 }

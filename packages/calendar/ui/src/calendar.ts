@@ -9,7 +9,7 @@
 import { getYearGanzhi } from "./lunar";
 import type { DayMetaProvider, PanelProvider } from "./providers";
 import { DetailPanelProvider, HolidayBadgeProvider, LunarDayMetaProvider } from "./providers";
-import type { CalendarMode, CalendarUiOptions, HolidayConfig } from "./types";
+import type { CalendarMode, CalendarUiOptions, DetailPosition, HolidayConfig } from "./types";
 
 /* ---------- 运行时常量 ---------- */
 
@@ -58,6 +58,8 @@ export class Calendar {
   /* ---- 配置 ---- */
   private root: HTMLElement;
   private readonly mode: CalendarMode;
+  /** dateOnly：仅选日期，隐藏时分秒输入，onChange 回发 YYYY-MM-DD */
+  private readonly dateOnly: boolean;
   private selected: Date;
   private viewDate: Date; // 当前视图的年月
   private minDate: Date | null;
@@ -68,6 +70,8 @@ export class Calendar {
   private readonly onOpenChangeCb?: (open: boolean) => void;
   /** 控制点击日期后右侧详情面板的显示 */
   private readonly showDetailPanel: boolean;
+  /** 详情面板悬浮方式：inside 内覆盖浮层（不改面板宽）/ left 左展开 / right 右展开 */
+  private readonly detailPosition: DetailPosition;
   /** 节假日配置 */
   private readonly holidays: HolidayConfig;
   private readonly animate: boolean;
@@ -121,6 +125,7 @@ export class Calendar {
   constructor(root: HTMLElement, opts: CalendarUiOptions = {}) {
     this.root = root;
     this.mode = opts.mode ?? "modal";
+    this.dateOnly = opts.dateOnly ?? false;
     this.selected = toDate(opts.selected) ?? new Date();
     this.viewDate = new Date(this.selected);
     this.viewDate.setDate(1);
@@ -131,6 +136,7 @@ export class Calendar {
     this.onChangeCb = opts.onChange;
     this.onOpenChangeCb = opts.onOpenChange;
     this.showDetailPanel = opts.showDetailPanel ?? true;
+    this.detailPosition = opts.detailPosition ?? "right";
     this.holidays = opts.holidays ?? {};
     this.animate = !PREFERS_REDUCED;
 
@@ -199,6 +205,8 @@ export class Calendar {
       this.mode === "popover" ? "qw-cal-overlay qw-cal-overlay--popover" : "qw-cal-overlay",
     );
     this.overlay.hidden = true;
+    /* 详情悬浮方向 class：CSS 按 is-detail-inside / is-detail-left / is-detail-right 布局 */
+    this.overlay.classList.add(`is-detail-${this.detailPosition}`);
 
     this.panel = el("div", "qw-cal-panel");
     this.panel.setAttribute("role", "dialog");
@@ -286,6 +294,8 @@ export class Calendar {
       zeroBtn,
       endBtn,
     );
+    /* dateOnly：隐藏时间行（元素保留，renderTime 仍安全引用） */
+    this.timeRow.hidden = this.dateOnly;
     this.mainArea.append(this.timeRow);
 
     /* 底部操作栏（modal / popover 统一提交制：点日期只更新面板，确认才回发 onChange） */
@@ -553,9 +563,10 @@ export class Calendar {
     this.close();
   }
 
-  /** 获取当前选中日期（含时分秒） */
+  /** 获取当前选中日期；dateOnly 回 `YYYY-MM-DD`，否则含时分秒 */
   getSelectedDate(): string {
     const d = this.selected;
+    if (this.dateOnly) return formatDate(d);
     const pad = (n: number) => String(n).padStart(2, "0");
     return `${formatDate(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }
@@ -602,14 +613,29 @@ export class Calendar {
   private placePopover(): void {
     const ir = this.input.getBoundingClientRect();
     const vh = window.innerHeight || 0;
+    const vw = window.innerWidth || 0;
     const gap = 8;
     const base = ir.width > 0 ? ir.width : this.popoverMinWidth;
-    const sideW =
-      this.showDetailPanel && this.detailPanel.classList.contains("is-active")
-        ? this.detailPanel.offsetWidth
-        : 0;
+    const sideActive = this.showDetailPanel && this.detailPanel.classList.contains("is-active");
+    /* inside：详情为面板内覆盖浮层（.qw-cal-side absolute），不参与面板宽度；
+       left/right：详情参与宽度，面板随详情加宽 */
+    /* 读取详情栏宽度前临时取消 width 过渡：过渡中间值（0→240）会让面板宽度测不准 */
+    const prevSideTrans = this.detailPanel.style.transition;
+    this.detailPanel.style.transition = "none";
+    const sideW = sideActive && this.detailPosition !== "inside" ? this.detailPanel.offsetWidth : 0;
+    this.detailPanel.style.transition = prevSideTrans;
+
+    /* 先按 输入框宽+详情宽 定位，再以面板实际宽度兜底：窄输入框下面板
+       min-width 更宽，overlay 若只按输入框宽会把面板右侧裁掉（日期列不完整） */
     this.overlay.style.width = `${base + sideW}px`;
-    this.overlay.style.left = `${ir.left}px`;
+    const panelW = Math.max(base + sideW, this.panel.offsetWidth);
+    this.overlay.style.width = `${panelW}px`;
+
+    /* left：面板向左展开（详情在左，网格锚点保持在输入框处）；
+       right/inside：左缘对齐输入框；最后横向钳进视口 */
+    const leftShift = sideActive && this.detailPosition === "left" ? sideW : 0;
+    const left = Math.max(gap, Math.min(ir.left - leftShift, vw - panelW - gap));
+    this.overlay.style.left = `${left}px`;
 
     /* 复位钳制后测量自然高度 */
     this.panel.style.maxHeight = "";
@@ -897,6 +923,8 @@ export class Calendar {
 
     this.syncInput();
     if (this.showDetailPanel) this.showDetail(date);
+    /* 详情激活后 left/right 面板宽度随之变化，popover 重新锚定 */
+    if (this.mode === "popover") this.placePopover();
     /* 提交制：点日期只更新面板内选中与详情、不收起；确认时才经 confirm() 回发 onChange */
   }
 
@@ -925,6 +953,8 @@ export class Calendar {
 
   private hideDetail(): void {
     this.detailPanel.classList.remove("is-active");
+    /* 详情收起后面板宽度收窄（left/right 形态），popover 重新锚定 */
+    if (this.mode === "popover") this.placePopover();
   }
 
   /* ============================================================
@@ -933,6 +963,10 @@ export class Calendar {
 
   private syncInput(): void {
     const d = this.selected;
+    if (this.dateOnly) {
+      this.input.value = formatDate(this.selected);
+      return;
+    }
     const pad = (n: number) => String(n).padStart(2, "0");
     this.input.value = `${formatDate(this.selected)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }
