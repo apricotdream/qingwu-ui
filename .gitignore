@@ -67,6 +67,7 @@ tmp_*
 # 临时测试文件（仅本机联调 / 浏览器测试 Profile）
 tmp_qingwu_server.cjs
 .edge-test-profile/
+verify-qcar/
 
 # 内部产品文档（不公开）
 PRODUCT.md
