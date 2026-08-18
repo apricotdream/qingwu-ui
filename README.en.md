@@ -218,6 +218,20 @@ bun run release
 
 `bun run publish-check` validates: no `workspace:*` dependencies left in dist (`publish-check:fix` rewrites them), CHANGELOG head matches package.json, and all exports artifacts exist.
 
+### Dual-remote push (gitee + github)
+
+The source repo lives on both gitee (`origin`) and github. One command pushes the current branch to both:
+
+```bash
+bun run push:all   # equivalent to git push origin HEAD && git push github HEAD
+```
+
+The `github` remote is already configured in this repo; for fresh clones:
+
+```bash
+git remote add github git@github.com:apricotdream/qingwu-ui.git
+```
+
 ## Roadmap
 
 - [x] 0.1.0 – 0.8.0 —— light component matrix matured; `@qingwu-ui/ai-editor` + Web Clipper joined the family

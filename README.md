@@ -220,6 +220,20 @@ bun run release
 
 发版前 `bun run publish-check` 自动校验：dist 无 `workspace:*` 依赖残留（`publish-check:fix` 一键替换）、CHANGELOG 首条版本与 package.json 一致、exports 声明产物齐全。
 
+### 双远端推送（gitee + github）
+
+源码仓库同时托管于 gitee（origin）与 github，提交后一条命令推送到两端：
+
+```bash
+bun run push:all   # 等价于 git push origin HEAD && git push github HEAD
+```
+
+首次使用需先注册 github 远端（已在本仓库配置）：
+
+```bash
+git remote add github git@github.com:apricotdream/qingwu-ui.git
+```
+
 ## 路线图
 
 - [x] 0.1.0 – 0.8.0 —— 轻组件矩阵成型，`@qingwu-ui/ai-editor` AI 编辑器与 Web Clipper 扩展纳入全家桶
