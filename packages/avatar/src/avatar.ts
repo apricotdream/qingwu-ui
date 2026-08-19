@@ -68,6 +68,9 @@ export class AvatarEditor {
 
   private readonly outputSize: number;
   private readonly maxZoom: number;
+  private readonly outputFormat: "png" | "jpeg";
+  private readonly quality: number;
+  private readonly backgroundColor: string | undefined;
   private defaultRadius: number;
   private image: HTMLImageElement | null = null;
   private objectUrl: string | null = null;
@@ -85,6 +88,11 @@ export class AvatarEditor {
     this.maxZoom = Math.max(1, opts.maxZoom ?? 3);
     this.defaultRadius = Math.min(50, Math.max(0, opts.radius ?? 50));
     this.radius = this.defaultRadius;
+    this.outputFormat = opts.outputFormat ?? "png";
+    this.quality = Math.max(0, Math.min(1, opts.quality ?? 0.92));
+    // jpeg 无透明通道：圆角外区域必须铺底，否则透明像素编码成黑色
+    this.backgroundColor =
+      opts.backgroundColor ?? (this.outputFormat === "jpeg" ? "#ffffff" : undefined);
     this.onConfirm = opts.onConfirm;
     this.onOpenChange = opts.onOpenChange;
 
@@ -115,6 +123,8 @@ export class AvatarEditor {
     this.dialog.setAttribute("role", "dialog");
     this.dialog.setAttribute("aria-modal", "true");
     this.dialog.setAttribute("aria-label", "编辑头像");
+    // 宿主 Lenis 劫持滚轮防护：编辑层滚动需自管（与 slash-command 弹窗同款）
+    this.dialog.setAttribute("data-lenis-prevent", "");
 
     const panel = el("div", "qav-panel");
     const header = el("header", "qav-header");
@@ -399,6 +409,11 @@ export class AvatarEditor {
 
   private draw(ctx: CanvasRenderingContext2D, guide = true): void {
     ctx.clearRect(0, 0, this.outputSize, this.outputSize);
+    // 圆角外区域底色：jpeg 必须铺底（否则透明变黑）；png 显式传底色时同样生效
+    if (this.backgroundColor) {
+      ctx.fillStyle = this.backgroundColor;
+      ctx.fillRect(0, 0, this.outputSize, this.outputSize);
+    }
     const r = (this.radius / 100) * this.outputSize;
     ctx.save();
     roundRect(ctx, this.outputSize, r);
@@ -452,9 +467,12 @@ export class AvatarEditor {
     if (!ctx) return;
     this.draw(ctx);
 
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+    const mime = this.outputFormat === "jpeg" ? "image/jpeg" : "image/png";
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, mime, this.quality),
+    );
     if (!blob) return;
-    const dataUrl = canvas.toDataURL("image/png");
+    const dataUrl = canvas.toDataURL(mime, this.quality);
 
     this.preview.src = dataUrl;
     this.preview.hidden = false;

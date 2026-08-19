@@ -16,6 +16,12 @@ export interface AvatarEditorOptions {
   outputSize?: number;
   /** 圆角率 0-50（百分比），默认 50 */
   radius?: number;
+  /** 导出格式，默认 png */
+  outputFormat?: "png" | "jpeg";
+  /** 导出质量 0-1，默认 0.92 */
+  quality?: number;
+  /** 导出背景色（jpeg 时默认 #ffffff） */
+  backgroundColor?: string;
   /** 最大缩放倍数（相对完整覆盖编辑区的最小缩放），默认 3 */
   maxZoom?: number;
   /** 接受的图片类型，默认 image/* */
