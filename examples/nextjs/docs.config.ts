@@ -136,7 +136,7 @@ export const COMPONENT_SECTIONS: DocSection[] = [
     title: "基础组件",
     icon: ICON_BOX,
     pages: [
-            {
+      {
         href: "/demo/button",
         title: "Button 按钮",
         en: "Button",
@@ -1004,14 +1004,34 @@ export const COMPONENT_SECTIONS: DocSection[] = [
           {
             title: "配置项",
             props: [
-              { name: "initialUrl", desc: "已有头像地址；跨域资源需允许 CORS，否则本地导出失败", type: "string", default: "-" },
+              {
+                name: "initialUrl",
+                desc: "已有头像地址；跨域资源需允许 CORS，否则本地导出失败",
+                type: "string",
+                default: "-",
+              },
               { name: "size", desc: "展示头像尺寸", type: "number", default: "96" },
               { name: "outputSize", desc: "导出正方形边长", type: "number", default: "256" },
               { name: "radius", desc: "圆角率（0-50%）", type: "number", default: "50" },
-              { name: "maxZoom", desc: "相对完整覆盖编辑区的最大缩放倍数", type: "number", default: "3" },
-              { name: "accept", desc: "文件选择器接受的类型", type: "string", default: '"image/*"' },
+              {
+                name: "maxZoom",
+                desc: "相对完整覆盖编辑区的最大缩放倍数",
+                type: "number",
+                default: "3",
+              },
+              {
+                name: "accept",
+                desc: "文件选择器接受的类型",
+                type: "string",
+                default: '"image/*"',
+              },
               { name: "className", desc: "附加到根节点的类名", type: "string", default: "-" },
-              { name: "ariaLabel", desc: "头像按钮无障碍标签", type: "string", default: '"编辑头像"' },
+              {
+                name: "ariaLabel",
+                desc: "头像按钮无障碍标签",
+                type: "string",
+                default: '"编辑头像"',
+              },
             ],
           },
           {
@@ -1023,17 +1043,42 @@ export const COMPONENT_SECTIONS: DocSection[] = [
                 type: "(result: AvatarEditorResult) => void",
                 default: "-",
               },
-              { name: "onOpenChange", desc: "编辑层展开 / 关闭回调", type: "(open: boolean) => void", default: "-" },
+              {
+                name: "onOpenChange",
+                desc: "编辑层展开 / 关闭回调",
+                type: "(open: boolean) => void",
+                default: "-",
+              },
             ],
           },
           {
             title: "实例方法 / 属性",
             props: [
-              { name: "new AvatarEditor(root, options)", desc: "构造组件并挂载到 root", type: "(el, options) => AvatarEditor", default: "-" },
+              {
+                name: "new AvatarEditor(root, options)",
+                desc: "构造组件并挂载到 root",
+                type: "(el, options) => AvatarEditor",
+                default: "-",
+              },
               { name: "editor.el", desc: "组件根节点", type: "HTMLElement", default: "-" },
-              { name: "editor.open() / close()", desc: "程序化打开 / 关闭编辑层", type: "() => void", default: "-" },
-              { name: "editor.setImageUrl(url)", desc: "更新待编辑图片与触发器回显", type: "(url: string) => void", default: "-" },
-              { name: "editor.destroy()", desc: "销毁 DOM、编辑层与图片对象 URL", type: "() => void", default: "-" },
+              {
+                name: "editor.open() / close()",
+                desc: "程序化打开 / 关闭编辑层",
+                type: "() => void",
+                default: "-",
+              },
+              {
+                name: "editor.setImageUrl(url)",
+                desc: "更新待编辑图片与触发器回显",
+                type: "(url: string) => void",
+                default: "-",
+              },
+              {
+                name: "editor.destroy()",
+                desc: "销毁 DOM、编辑层与图片对象 URL",
+                type: "() => void",
+                default: "-",
+              },
             ],
           },
         ],
@@ -1258,7 +1303,12 @@ export const COMPONENT_SECTIONS: DocSection[] = [
                 type: "string",
                 default: '"消息"',
               },
-              { name: "className", desc: "附加到根容器的自定义类名", type: "string", default: '""' },
+              {
+                name: "className",
+                desc: "附加到根容器的自定义类名",
+                type: "string",
+                default: '""',
+              },
               {
                 name: "width",
                 desc: "面板宽度：trigger 跟随触发器 / auto 内容自适应（min-width 至少等于触发器）",
@@ -1437,7 +1487,3 @@ export function findPrevNext(href: string): { prev?: DocPage; next?: DocPage } {
   if (i < 0) return {};
   return { prev: DOC_FLOW[i - 1], next: DOC_FLOW[i + 1] };
 }
-
-
-
-
