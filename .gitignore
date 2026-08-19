@@ -1,8 +1,8 @@
-# 依赖与构建产�?
+# 渚濊禆涓庢瀯寤轰骇鐗?
 node_modules/
 dist/
 
-# 本地 registry 凭据（含 _auth，禁止入库）
+# 鏈湴 registry 鍑嵁锛堝惈 _auth锛岀姝㈠叆搴擄級
 .npmrc
 **/.npmrc
 .next/
@@ -12,46 +12,46 @@ coverage/
 *.tsbuildinfo
 *.d.ts.map
 
-# 包打包产�?
+# 鍖呮墦鍖呬骇鐗?
 *.tgz
 *.zip
 
-# 日志
+# 鏃ュ織
 *.log
 
-# 环境变量�?env.example 保留提交�?
+# 鐜鍙橀噺锛?env.example 淇濈暀鎻愪氦锛?
 .env
 .env.*
 !.env.example
 
-# 测试产物
+# 娴嬭瘯浜х墿
 test-results/
 playwright-report/
 
-# 编辑�?
+# 缂栬緫鍣?
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# 操作系统
+# 鎿嶄綔绯荤粺
 .DS_Store
 Thumbs.db
 Desktop.ini
 
-# 缓存
+# 缂撳瓨
 .cache/
 
-# 演示站构建时�?packages/ai-editor 同步�?file-viewer 静�?�资源（方案 A，不入库�?
+# 婕旂ず绔欐瀯寤烘椂浠?packages/ai-editor 鍚屾鐨?file-viewer 闈欐?佽祫婧愶紙鏂规 A锛屼笉鍏ュ簱锛?
 examples/nextjs/public/file-viewer/
 
-# ---- AI 工具链本地文件（不提交；他人拉取后不可用 / 无效，一律忽略）----
+# ---- AI 宸ュ叿閾炬湰鍦版枃浠讹紙涓嶆彁浜わ紱浠栦汉鎷夊彇鍚庝笉鍙敤 / 鏃犳晥锛屼竴寰嬪拷鐣ワ級----
 
-# Claude Code 配置 / 记忆目录
+# Claude Code 閰嶇疆 / 璁板繂鐩綍
 .claude/
 .claude.json
 
-# 项目�?AI 指令文件
+# 椤圭洰绾?AI 鎸囦护鏂囦欢
 CLAUDE.md
 AGENTS.md
 .project-memory.md
@@ -59,24 +59,24 @@ AGENTS.md
 .github/copilot-instructions.md
 COPILOT.md
 
-# AI 生成的临时文�?
+# AI 鐢熸垚鐨勪复鏃舵枃浠?
 tmp_*
 *.tmp
 *.bak
 
-# 临时测试文件（仅本机联调 / 浏览器测�?Profile�?
+# 涓存椂娴嬭瘯鏂囦欢锛堜粎鏈満鑱旇皟 / 娴忚鍣ㄦ祴璇?Profile锛?
 tmp_qingwu_server.cjs
 .edge-test-profile/
 verify-qcar/
 
-# 内部产品文档（不公开�?
+# 鍐呴儴浜у搧鏂囨。锛堜笉鍏紑锛?
 PRODUCT.md
 PRODUCT_*.md
-# �������͸����ű��������� ssh ·������ֹ��⣩
+# 本地推送辅助脚本（含本机 ssh 路径，禁止入库）
 verify-qcar/push-all-native.cmd
 
-# GitHub Pages ��̬��������
+# GitHub Pages 静态导出产物
 out/
 
-# ���� git ���ӽű���������汾���ƣ�
+# 本地 git 钩子脚本（不纳入版本控制）
 .githooks/
