@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import "@qingwu-ui/upload/style.css";
 import DemoCard from "@/components/DemoCard";
 import { COMPONENT_SECTIONS } from "@/docs.config";
+import { asset } from "@/lib/assets";
 
 /* ============================================================
    props 面板字段定义
@@ -193,7 +194,7 @@ export default function UploadPage() {
       supportedFormats:
         current.supportedFormats === "all" ? undefined : current.supportedFormats.split(","),
       url: "/api/upload",
-      initialUrls: current.initial === "true" ? ["/logo.png"] : undefined, // 编辑态回显演示
+      initialUrls: current.initial === "true" ? [asset("/logo.png")] : undefined, // 编辑态回显演示
       persist: (current.persist === "off" ? "off" : current.persist) as "off" | "session" | "local",
       previewFit: (current.previewFit === "contain" || current.previewFit === "auto"
         ? current.previewFit

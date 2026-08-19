@@ -4,6 +4,7 @@ import { AvatarEditor, type AvatarEditorResult } from "@qingwu-ui/avatar";
 import "@qingwu-ui/avatar/style.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DemoCard from "@/components/DemoCard";
+import { asset } from "@/lib/assets";
 
 export default function AvatarPage() {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -14,7 +15,7 @@ export default function AvatarPage() {
     const host = hostRef.current;
     if (!host) return;
     const editor = new AvatarEditor(host, {
-      initialUrl: "/logo.png",
+      initialUrl: asset("/logo.png"),
       outputSize: 256,
       onConfirm,
     });
