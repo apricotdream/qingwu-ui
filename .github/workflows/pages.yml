@@ -1,0 +1,65 @@
+# 演示站部署到 GitHub Pages（静态导出）
+# 前置：仓库 Settings → Pages → Source 选择 "GitHub Actions"
+# 访问地址：https://apricotdream.github.io/qingwu-ui/
+# 说明：GitHub Pages 只托管静态文件，导出时临时移出 API 路由（/api/upload、/api/preview 在静态站上不可用）
+name: Pages
+
+on:
+  push:
+    branches: [2026-08]
+  workflow_dispatch:
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: 构建静态导出
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Bun（与 packageManager bun@1.3.13 对齐）
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.13
+          cache: true
+
+      - name: 安装依赖（锁文件冻结）
+        run: bun install --frozen-lockfile
+
+      - name: 构建 workspace 包
+        run: bunx turbo build
+
+      - name: 静态导出演示站（临时移出 API 路由）
+        run: |
+          cd examples/nextjs
+          bun run export
+
+      - name: 配置 Pages
+        uses: actions/configure-pages@v5
+
+      - name: 上传 Pages 产物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: examples/nextjs/out
+
+  deploy:
+    name: 部署
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

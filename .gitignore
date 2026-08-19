@@ -74,3 +74,6 @@ PRODUCT.md
 PRODUCT_*.md
 # 本地推送辅助脚本（含本机 ssh 路径，禁止入库）
 verify-qcar/push-all-native.cmd
+
+# GitHub Pages 静态导出产物
+out/
