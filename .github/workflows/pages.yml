@@ -44,6 +44,9 @@ jobs:
         run: |
           cd examples/nextjs
           bun run export
+        env:
+          # 让代码中的 asset() 资源路径带上部署子路径前缀（/qingwu-ui/logo.png 等）
+          NEXT_PUBLIC_BASE_PATH: /qingwu-ui
 
       - name: 配置 Pages
         uses: actions/configure-pages@v5

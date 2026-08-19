@@ -208,6 +208,17 @@ bun run test       # 运行 vitest 测试
 
 技术基线：TypeScript 7 · tsdown (Rolldown) · Bun + Turborepo · Biome · vitest · size-limit。
 
+## 在线演示
+
+组件演示站部署在 GitHub Pages（仅静态托管，由 `.github/workflows/pages.yml` 在 **push 到 main** 时自动构建导出并部署）：
+
+- **演示站：<https://apricotdream.github.io/qingwu-ui/>**
+- 部署入口页：https://github.com/apricotdream/qingwu-ui/actions（`Pages` 工作流）
+- 说明：
+  - 静态导出（`output: export`），部署于 `/qingwu-ui/` 子路径（`basePath`）；代码中引用公共资源须经 `examples/nextjs/lib/assets.ts` 的 `asset()` 助手（配合 `NEXT_PUBLIC_BASE_PATH` 环境变量，本地开发无需设置）
+  - 静态站不支持 API 路由：`/api/upload`（上传演示）、`/api/preview`（S3 预览代理）在线上不可用，页面本身正常渲染
+  - 本地预览完整功能（含 API）：`cd examples/nextjs && bun run dev` 后访问 http://localhost:3000
+
 ## 发布
 
 语义化版本，手动维护。**版本策略：多包统一版本号**（每次发版所有包对齐同一版本，无变更的包仅对齐版本号）。
