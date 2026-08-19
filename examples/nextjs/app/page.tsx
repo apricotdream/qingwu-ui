@@ -17,7 +17,7 @@ const FEATURE_ICONS = [
 ];
 
 const COMPONENTS = [
-    {
+  {
     href: "/demo/button",
     title: "Button 按钮",
     desc: "药丸风格按钮，默认 / 主色 / 琥珀 / 图标四变体",
@@ -228,4 +228,3 @@ export default function HomePage() {
     </>
   );
 }
-
