@@ -7,6 +7,7 @@
     "dev": "node scripts/sync-file-viewer.mjs && rm -rf .next && next dev --webpack",
     "build": "node scripts/sync-file-viewer.mjs && next build --webpack",
     "start": "node scripts/sync-file-viewer.mjs && next start",
+    "export": "node scripts/pages-export.mjs",
     "e2e": "node scripts/sync-file-viewer.mjs && playwright test",
     "typecheck": "tsc --noEmit"
   },
