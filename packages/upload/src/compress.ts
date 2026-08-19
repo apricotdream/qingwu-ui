@@ -1,9 +1,6 @@
 /**
- * 图片压缩管线
- * - createImageBitmap 解码并自动修正 EXIF 方向（from-image）
- * - canvas 等比缩放至上限
- * - 编码为 webp / avif；目标格式不可编码时按 avif → webp → png 降级
- * - GIF/SVG 不支持压缩，返回空数组，由调用方按原图处理
+ * 图片压缩管线：createImageBitmap 解码（EXIF 修正）→ canvas 等比缩放 → 编码 webp/avif（不可用降级 png）。
+ * GIF/SVG 不支持压缩，返回空数组由调用方按原图处理。
  */
 
 import type { CompressedFile, OutputFormat } from "./types";
@@ -15,11 +12,7 @@ const FALLBACK_CHAIN: Record<OutputFormat, string[]> = {
   original: ["image/*"],
 };
 
-/**
- * 解析格式实际可用的 MIME。
- * @param supported 当前浏览器可编码的 MIME 集合
- * @returns 实际 MIME；全部不可用返回 null
- */
+/** 解析格式实际可用的 MIME；全部不可用返回 null */
 export function resolveMime(format: OutputFormat, supported: ReadonlySet<string>): string | null {
   const chain = FALLBACK_CHAIN[format];
   if (!chain) return null;
@@ -80,11 +73,7 @@ function baseName(name: string): string {
   return dot > 0 ? name.slice(0, dot) : name;
 }
 
-/**
- * 压缩图片，按 formats 产出多份。
- * 返回空数组表示该文件不支持压缩（GIF/SVG）。
- * @param supported 已探测的可用 MIME 集合；不传则内部探测
- */
+/** 压缩图片，按 formats 产出多份；GIF/SVG 不支持返回空数组 */
 export async function compressImage(
   file: File,
   formats: OutputFormat[],

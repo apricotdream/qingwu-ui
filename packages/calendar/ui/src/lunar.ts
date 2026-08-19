@@ -1,21 +1,6 @@
-/**
- * 农历引擎 —— 自研实现，无第三方依赖。
- *
- * 设计原则：
- * - 纯函数，无副作用，无全局状态
- * - 农历数据基于天文台历书（1900-2100 查表法）
- * - 节气采用近似算法 + 年份修正表，无需天文学求解
- * - UTC 计算避免时区漂移
- */
+/** 农历引擎：纯函数无副作用；数据基于天文历书（1900-2100 查表）；节气用近似算法+年份修正；UTC 计算避免时区漂移 */
 
-/* ============================================================
-   农历年数据（1900-2100，共 201 年）
-   编码格式：每项 hex 表示一年
-     bits  0-3 : 闰月月份（0=无闰月，1-12）
-     bits  4-15: 12 个月的大小（bit4=正月 … bit15=腊月；1=大月30天，0=小月29天）
-     bit  16   : 闰月大小（1=30天, 0=29天）
-   来源：依据中国科学院紫金山天文台历书编制
-   ============================================================ */
+/** 农历年数据（1900-2100）：每项 hex 编码一年——bits0-3 闰月月份，bits4-15 各月大小（bit4=正月，1=大月30天），bit16 闰月大小；来源：紫金山天文台历书 */
 const LUNAR_INFO: number[] = [
   // 1900-1909
   0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2,
@@ -65,10 +50,6 @@ const END_YEAR = BASE_YEAR + LUNAR_INFO.length; // 2100 (exclusive)
 /** 一天（UTC）的毫秒数 */
 const DAY_MS = 86400000;
 
-/* ============================================================
-   农历年元数据
-   ============================================================ */
-
 export interface LunarYearMeta {
   /** 闰月月份（0 = 无闰月） */
   leapMonth: number;
@@ -103,10 +84,6 @@ function getLunarYearMeta(lunarYear: number): LunarYearMeta {
   return { leapMonth, monthDays, totalDays };
 }
 
-/* ============================================================
-   公历 ↔ 农历转换
-   ============================================================ */
-
 export interface LunarDate {
   year: number;
   month: number;
@@ -114,21 +91,7 @@ export interface LunarDate {
   isLeap: boolean;
 }
 
-/**
- * 将公历日期映射为 monthDays 数组中的下标。
- *
- * 有闰月时 monthDays 为 13 项，其布局为：
- *   index  0   1  ...  leapMonth-1  leapMonth  leapMonth+1 ...  12
- *   月份   正   二      闰月前       闰月/平月   后一个月       腊月
- *         (1)  (2)      (lm)        (lm|±1)     (lm+1)        (12)
- *
- * 转换规则（leapMonth > 0）：
- *   - i < leapMonth         → 常规月份，显示编号 = i + 1
- *   - i === leapMonth       → 闰月（isLeap=true），显示编号 = leapMonth
- *   - i > leapMonth         → 常规月份，显示编号 = i（被闰月挤占了一位）
- *
- * 无闰月时（leapMonth === 0）直接 i → i + 1。
- */
+/** 公历→monthDays 下标映射：闰月插在 leapMonth 处；idx<leapMonth 显示 i+1，idx===leapMonth 为闰月，idx>leapMonth 显示 i；无闰月直接 i+1 */
 interface _MonthIndex {
   /** monthDays 数组下标 */
   idx: number;
@@ -166,9 +129,7 @@ function _toMonthIndex(meta: LunarYearMeta, lunarMonth: number, isLeap: boolean)
   return { idx: lunarMonth, displayMonth: lunarMonth, isLeap: false };
 }
 
-/**
- * 将 monthDays 下标反解为显示用的月份编号 + 是否闰月。
- */
+/** monthDays 下标反解为显示月份 + 是否闰月 */
 function _fromMonthIndex(
   meta: LunarYearMeta,
   idx: number,
@@ -195,15 +156,7 @@ function _daysFromBase(year: number, month: number, day: number): number {
   return Math.floor((Date.UTC(year, month - 1, day) - Date.UTC(BASE_YEAR, 0, 31)) / DAY_MS);
 }
 
-/**
- * 公历 → 农历
- *
- * 算法：
- *   1. 计算公历日期距 1900-01-31 的天数偏移
- *   2. 依次减去各农历年的天数，定位到所属农历年
- *   3. 依次减去各农历月的天数，定位到所属农历月
- *   4. 剩余天数 + 1 即为农历日
- */
+/** 公历→农历：算距 1900-01-31 偏移，逐年逐月扣减，剩余日+1 */
 export function solarToLunar(solar: Date): LunarDate {
   const offset = _daysFromBase(solar.getFullYear(), solar.getMonth() + 1, solar.getDate());
 
@@ -251,15 +204,7 @@ export function solarToLunar(solar: Date): LunarDate {
   };
 }
 
-/**
- * 农历 → 公历
- *
- * 算法：
- *   1. 累加从 1900 年到目标年之前的所有农历年天数
- *   2. 加上目标月之前各月的天数
- *   3. 加上农历日 - 1 得到总偏移天数
- *   4. 从 1900-01-31 加上偏移得到公历日期
- */
+/** 农历→公历：累加年/月/日偏移，从 1900-01-31 起算 */
 export function lunarToSolar(
   lunarYear: number,
   lunarMonth: number,
@@ -288,10 +233,6 @@ export function lunarToSolar(
 
   return new Date(Date.UTC(BASE_YEAR, 0, 31) + totalDays * DAY_MS);
 }
-
-/* ============================================================
-   农历显示字符串
-   ============================================================ */
 
 const LUNAR_MONTH_NAMES = [
   "",
@@ -356,13 +297,7 @@ export function formatLunarDate(ld: LunarDate): string {
   return `${getLunarMonthName(ld.month, ld.isLeap)}${getLunarDayName(ld.day)}`;
 }
 
-/* ============================================================
-   二十四节气
-   采用"近似日期 + 年份修正"策略：
-   - 每个节气有基础日期（1900-2100 的平均值）
-   - 对特定年份施加 ±1 日修正（修正表来自天文历书对比）
-   精度：99%+ 年份误差 ≤1 日，UI 显示场景足够
-   ============================================================ */
+/** 二十四节气：近似日期 + 年份修正表（精度：99%+ 年份误差 ≤1 日，UI 场景足够） */
 
 export interface SolarTerm {
   name: string;
@@ -425,14 +360,7 @@ const SOLAR_TERM_NAMES: string[] = [
   "冬至",
 ];
 
-/**
- * 节气年份修正表。
- * 键格式 "YYYY-TERM_INDEX"，值 = 修正天数（仅在偏移为非 0 时记录，缺省为 0）。
- * 覆盖 2020-2030 年部分节气，其余年份默认为基础日期。
- *
- * 来源：与中国科学院紫金山天文台发布的节气时刻表比对后提取。
- * 覆盖策略：仅偏移 ≠ 0 的项才列入，保持表轻量。
- */
+/** 节气年份修正表：键 "YYYY-节气序号"，值=修正天数（仅记非 0，覆盖 2020-2030；来源：紫金山天文台） */
 const SOLAR_TERM_ADJ: Record<string, number> = {
   // 2020 年
   "2020-1": -1,
@@ -528,9 +456,7 @@ function _getSolarTermDate(year: number, termIndex: number): { month: number; da
   return { month: base[0], day: base[1] + adj };
 }
 
-/**
- * 获取某天精确对应的节气（若有）。
- */
+/** 获取某天精确对应的节气（若有） */
 export function getSolarTerm(date: Date): SolarTerm | null {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
@@ -545,9 +471,7 @@ export function getSolarTerm(date: Date): SolarTerm | null {
   return null;
 }
 
-/**
- * 获取某天前后 ±3 天范围内可能出现的节气。
- */
+/** 获取某天前后 ±3 天范围内的节气 */
 export function getNearbySolarTerms(date: Date): SolarTerm[] {
   const year = date.getFullYear();
   const doy = _dayOfYear(year, date.getMonth() + 1, date.getDate());
@@ -577,19 +501,11 @@ function _isLeapYear(year: number): boolean {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 }
 
-/* ============================================================
-   天干地支
-   简化算法，适用于 1900-2100 范围。
-   ============================================================ */
-
 const HEAVENLY_STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
 const EARTHLY_BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 const ZODIAC = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
 
-/**
- * 获取年干支与生肖。
- * 算法：以 1900 年（庚子年）为基准。(year - 1900) % 60 得干支序数偏移。
- */
+/** 年干支与生肖：以 1900 庚子年为基准，(year-1900)%60 得序数 */
 export function getYearGanzhi(year: number): { stem: string; branch: string; zodiac: string } {
   // 1900 年 = 庚子 = stem[6], branch[0]
   const offset = (year - 1900) % 60;

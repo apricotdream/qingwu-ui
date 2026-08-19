@@ -1,33 +1,9 @@
-/**
- * 芯片流（Chip Flow）布局
- *
- * 规则：芯片作为不可断行元素与文本混合排版
- *
- * 使用场景：
- *   - 搜索历史的 chip + 文本混合显示
- *   - 邮件收件人 chip 流
- *   - 标签 + 描述文本的 inline 流
- *
- * 算法：
- *   1. 将 items 转换为 segment 序列：每个 chip 是一个原子 segment，break:'never'
- *   2. 文本按正常规则分割
- *   3. 换行时 chip 作为一个整体，不可跨行拆分
- *   4. 每个 chip 宽度 = textWidth + extraWidth（边框/内边距）
- */
+/** 芯片流（Chip Flow）布局：chip 为不可断行原子元素，与文本混合 inline 排版 */
 
 import { measureWidth } from "./engine";
 import type { ChipItem, ChipLayoutResult, ChipLine } from "./types";
 
-/**
- * 对芯片+文本混合内容进行 inline 排版
- *
- * @param items - 芯片流元素数组
- * @param maxWidth - 容器最大宽度 (px)
- * @param font - CSS font 字符串
- * @param chipPaddingX - chip 的水平内边距（左右合计，px）
- * @param lineHeight - 行高 (px)
- * @returns 排版结果，每行包含元素位置信息
- */
+/** 对芯片+文本混合内容进行 inline 排版 */
 export function layoutChips(
   items: ChipItem[],
   maxWidth: number,

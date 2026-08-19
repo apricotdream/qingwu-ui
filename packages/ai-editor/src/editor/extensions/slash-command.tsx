@@ -22,11 +22,7 @@ export interface SlashCommandItem {
 
 export const slashCommandPluginKey = new PluginKey("slashCommand");
 
-/**
- * 创建 SlashCommand 扩展
- *
- * @param getItems - 获取命令列表的函数（用于支持 i18n 动态切换）
- */
+/** 创建 SlashCommand 扩展；getItems 提供命令列表（支持 i18n 动态切换） */
 export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) {
   return Extension.create({
     name: "slashCommand",
@@ -84,7 +80,6 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
             if (!popup) return;
             currentItems = items;
 
-            // 清空
             popup.textContent = "";
 
             // 搜索栏
@@ -146,8 +141,7 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
             }
             popup.appendChild(listEl);
 
-            // 键盘选择时确保选中项滚入可视区：列表在 fixed 弹窗内，ArrowDown/Up 直接改
-            // selectedIndex，若不滚列表，选中项会滑出 300px 可视区外仍停留在原滚动位置。
+            // 键盘选择时确保选中项滚入 fixed 弹窗的可视区
             const selectedEl = listEl.querySelector<HTMLButtonElement>(".slash-item--selected");
             if (selectedEl) {
               const listRect = listEl.getBoundingClientRect();
@@ -200,8 +194,7 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
                 popup.className = "slash-command-popup";
                 popup.style.cssText =
                   "background:#fff;border:1px solid #e4e4e7;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.12);min-width:260px;max-width:340px;";
-                /* 弹窗 portal 到 body，不在宿主 data-lenis-prevent 子树内；
-                   Lenis 会劫走列表滚轮 → 弹窗自身挂 prevent，滚轮放行给原生滚动 */
+                // 弹窗 portal 到 body；挂 data-lenis-prevent，避免 Lenis 劫走列表滚轮
                 popup.setAttribute("data-lenis-prevent", "");
                 container.appendChild(popup);
               }
@@ -273,8 +266,7 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
           editor: this.editor,
           ...suggestionOptions,
         }),
-        // 兜底守卫：无论何种路径（IME/NodeView 选区异常）导致 slash 处于激活态，
-        // 只要当前选区落在代码块/行内代码内，立即强制退出，杜绝代码块内弹出命令栏。
+        // 兜底守卫：选区落入代码块/行内代码时强制退出 slash，杜绝代码块内弹命令栏
         new Plugin({
           key: new PluginKey("slashCodeBlockGuard"),
           appendTransaction: (_trs, _old, state) => {
@@ -299,13 +291,7 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
   });
 }
 
-/**
- * 默认斜杠命令列表（中文）
- *
- * @param t 翻译函数
- * @param defaultLimits 构建时的附件限制兜底（实际运行期优先读 editor.storage.qingwuUI.limits，
- *   宿主可动态更新限制而无需重建扩展）
- */
+/** 默认斜杠命令列表（中文）；defaultLimits 为附件限制兜底（运行期优先读 qingwuUI.limits） */
 export function getDefaultSlashCommands(
   t: (key: string) => string,
   defaultLimits?: Partial<AttachmentLimits>,
@@ -453,8 +439,7 @@ export function getDefaultSlashCommands(
           const files = input.files;
           if (!files || files.length === 0) return;
           for (const file of Array.from(files)) {
-            // 同步校验：超限直接拒绝（doc 含此前已插入的文件，总大小自动累计；
-            // 限制实时读 qingwuUI storage，兜底构建时配置）
+            // 同步校验：超限直接拒绝（doc 含已插入文件，总大小自动累计）
             const activeLimits = getEditorAttachmentLimits(editor) ?? defaultLimits;
             const limitErr = activeLimits
               ? validateAttachmentFile(editor.state.doc, file, activeLimits)

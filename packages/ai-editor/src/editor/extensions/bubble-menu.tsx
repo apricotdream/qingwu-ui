@@ -28,11 +28,7 @@ export interface BubbleMenuAction {
 /** 搜索引擎 URL 模板，{query} 会被替换为选中文本 */
 let searchEngineTemplate = "https://www.bing.com/search?q={query}";
 
-/** 设置搜索引擎 URL 模板，例如：
- *  - Google: "https://www.google.com/search?q={query}"
- *  - Baidu:  "https://www.baidu.com/s?wd={query}"
- *  - DuckDuckGo: "https://duckduckgo.com/?q={query}"
- */
+/** 设置搜索引擎 URL 模板，如 "https://www.google.com/search?q={query}" */
 export function setSearchEngine(template: string) {
   searchEngineTemplate = template;
 }
@@ -44,7 +40,6 @@ export function getSearchEngine(): string {
 
 export function getBubbleMenuActions(t: (key: string) => string): BubbleMenuAction[] {
   return [
-    // ---- 排版组：主行常驻 ----
     {
       key: "bold",
       label: t("editor.bubble.bold"),
@@ -81,7 +76,6 @@ export function getBubbleMenuActions(t: (key: string) => string): BubbleMenuActi
       command: (editor) => editor.isEditable && editor.chain().focus().toggleCode().run(),
     },
 
-    // ---- 操作组：折叠进「⋯」二级菜单 ----
     {
       key: "highlight",
       label: t("editor.bubble.highlight"),
@@ -149,7 +143,6 @@ export function getBubbleMenuActions(t: (key: string) => string): BubbleMenuActi
       },
     },
 
-    // ---- AI：品牌色专属 ----
     {
       key: "ai",
       label: t("editor.ai.trigger"),

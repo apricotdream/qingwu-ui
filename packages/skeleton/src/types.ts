@@ -26,33 +26,17 @@ export interface AutoSkeletonOptions {
   backgroundColor?: string;
   /** 闪光动画时长 (ms，默认 1500) */
   duration?: number;
-  /**
-   * 闪光动画时序函数（CSS animation-timing-function，默认 "ease-in-out"）
-   * 如 "linear" / "ease-out" / "cubic-bezier(0.4, 0, 0.2, 1)"
-   */
+  /** 闪光动画时序函数（CSS animation-timing-function，默认 "ease-in-out"） */
   timingFunction?: string;
-  /**
-   * 错峰步进 (ms，默认 80)：动画块按文档序递增负 animation-delay，
-   * 首帧即处于不同相位，形成级联流水感；0 关闭错峰（全块同步）
-   */
+  /** 错峰步进 (ms，默认 80)：按文档序递增负 delay，首帧级联流水；0 关闭错峰 */
   staggerDelay?: number;
-  /**
-   * 覆盖层 z-index（默认 9999）。覆盖层 portal 挂载于 body，
-   * 默认压在页面上层（保证盖住容器内所有高 z-index 子元素）；
-   * 页面 chrome（sticky/fixed 头部、弹层）需要显示在骨架之上时调低，
-   * 如 sticky header z-index 100 → 传 90。
-   */
+  /** 覆盖层 z-index（默认 9999）；页面 chrome（sticky/fixed 头部、弹层）需在骨架之上时调低 */
   zIndex?: number;
   /** 默认圆角 (px)，用于 borderRadius 为 0 的元素 */
   fallbackBorderRadius?: number;
-  /**
-   * 禁用动画（遵循 prefers-reduced-motion）
-   * 不传时自动检测系统偏好
-   */
+  /** 禁用动画（遵循 prefers-reduced-motion）；不传时自动检测 */
   reducedMotion?: boolean;
-  /**
-   * 骨架最大元素数量（性能保护，默认 500）
-   */
+  /** 骨架最大元素数量（性能保护，默认 500） */
   maxElements?: number;
 }
 
@@ -68,20 +52,13 @@ export interface RenderSkeletonSnapshotOptions {
   backgroundColor?: string;
   /** 动画时长 (ms) */
   duration?: number;
-  /**
-   * 动画时序函数（CSS animation-timing-function，默认 "ease-in-out"）
-   */
+  /** 动画时序函数（CSS animation-timing-function，默认 "ease-in-out"） */
   timingFunction?: string;
-  /**
-   * 错峰步进 (ms，默认 80)：块按文档序递增负 animation-delay，
-   * 首帧即处于不同相位；0 关闭错峰（全块同步）
-   */
+  /** 错峰步进 (ms，默认 80)：按文档序递增负 delay，首帧级联；0 关闭错峰 */
   staggerDelay?: number;
   /** 禁用动画 */
   reducedMotion?: boolean;
-  /**
-   * 最大骨架块数（性能保护，默认 200，超出截断）
-   */
+  /** 最大骨架块数（性能保护，默认 200，超出截断） */
   maxBlocks?: number;
 }
 

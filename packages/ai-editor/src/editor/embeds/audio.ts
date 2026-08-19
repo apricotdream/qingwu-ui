@@ -59,10 +59,8 @@ export const AudioEmbed = Node.create({
   },
 
   parseHTML() {
-    // div 规则需读回 src：旧序列化把 src 只写在子 <audio> 上（ProseMirror 按规则
-    // 顺序匹配，div 先命中即停，子 audio 的 src 重载必丢）；新序列化同时在 div 上
-    // 写 src/data-src（与 videoEmbed 对齐）。无 src 的节点仍按 audioEmbed 解析
-    // （返回 null 仅表示属性缺省），由视图渲染「缺失」态。
+    // div 规则需读回 src：旧序列化只把 src 写在子 <audio> 上，div 先命中即停会丢；
+    // 无 src 节点仍按 audioEmbed 解析，由视图渲染「缺失」态
     return [
       {
         tag: "div[data-audio-embed]",

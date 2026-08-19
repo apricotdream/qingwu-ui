@@ -1,10 +1,4 @@
-/**
- * 消息客户端 - popup/sidepanel/options 调用 background 的统一封装
- *
- * 解决 Obsidian "消息无响应就静默无反馈" 痛点：
- * - 超时必有失败响应
- * - 错误结构化透传到 UI
- */
+/** 消息客户端 - popup/sidepanel/options 调 background 的统一封装；超时必有失败响应 */
 
 import { ClipperError, toClipperError } from "./errors";
 import type { Message, MessageKind, MessageResponse } from "./messages";
@@ -37,8 +31,7 @@ export async function send<T = unknown>(
         if (err)
           reject(new ClipperError("runtime", err.message ?? "runtime error", { retryable: false }));
         else if (resp === undefined || resp === null)
-          // 无应答不是成功：SW 冷启动竞态或被回收时通道会静默关闭。
-          // 若翻译成 ok(null)，调用方会在 null.ok / null.locale 上崩溃且无从诊断。
+          // 无应答不是成功：SW 冷启动竞态时通道静默关闭，翻译成 ok(null) 会让调用方崩溃
           reject(
             new ClipperError("runtime", "扩展后台未应答（可能在启动中），请重试", {
               retryable: true,

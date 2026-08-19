@@ -1,10 +1,4 @@
-/**
- * HTML 清洗工具。
- *
- * 主路径使用 DOMPurify（基于 DOM 解析），可防御正则无法覆盖的 XSS 向量：
- * SVG 命名空间、CSS 表达式、Unicode 解析差异、属性拆分等。
- * 当 DOMPurify 不可用（SSR / 无 document）时回退到正则清洗。
- */
+/** HTML 清洗工具：主路径 DOMPurify（可防正则无法覆盖的 XSS 向量），不可用（SSR/无 document）时回退正则清洗 */
 import DOMPurify from "dompurify";
 
 let purifyReady: boolean | null = null;
@@ -60,15 +54,9 @@ function regexSanitize(html: string): string {
 }
 
 /**
- * 清洗 HTML 内容（DOMPurify 主路径）。
- *
- * 移除：script/style/iframe/object/embed/svg/math/frame/applet/link/meta/base
- * 标签、on* 事件处理器、javascript:/vbscript:/data:text/html 协议、
- * CSS expression() 与 url(javascript:)。
- *
- * 保留：编辑器节点 data-* 属性、class、style（已清洗）、src、href、
- * colspan/rowspan、target/rel。自定义节点（videoEmbed/audioEmbed/attachmentEmbed）
- * 序列化为 <div data-*-embed>，使其数据在 iframe 剥离后仍能保留。
+ * 清洗 HTML（DOMPurify 主路径）。
+ * 移除 script/style/iframe 等标签、on* 事件、javascript:/data:text/html 协议、CSS expression；
+ * 保留 data-*、class、style、src、href 及自定义 embed 节点序列化。
  */
 export function sanitizeHtml(html: string): string {
   const purify = getPurify();
@@ -76,8 +64,7 @@ export function sanitizeHtml(html: string): string {
     return purify.sanitize(html, {
       ALLOW_DATA_ATTR: true,
       ADD_ATTR: ["target", "rel"],
-      // blob: 允许：编辑器拖入媒体以 blob URL 占位，会话内同源访问安全；
-      // 默认 DOMPurify 会滤掉 blob: 导致预览/详情回显时媒体 src 被清空。
+      // blob: 允许（编辑器以 blob URL 占位媒体；默认会滤掉导致回显 src 被清空）
       ALLOWED_URI_REGEXP:
         /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|blob):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
     });
@@ -86,12 +73,9 @@ export function sanitizeHtml(html: string): string {
 }
 
 /**
- * 清洗 SVG 内容（保留 <svg> 标签，移除危险元素/属性）。
- *
- * 用于可信库输出（如 mermaid，其本身已运行在严格模式）。
- * 不能用于用户自建 SVG（应直接拒绝）。
- * 保持基于正则（不使用 DOMPurify svg profile），以避免剥离 mermaid
- * 严格模式在边缘情况遗留的 style/foreignObject 残片。
+ * 清洗 SVG（保留 <svg>，移除危险元素/属性）。
+ * 仅用于可信库输出（如 mermaid），不可用于用户自建 SVG。
+ * 用正则而非 DOMPurify svg profile，避免剥离 mermaid 遗留的 style/foreignObject 残片。
  */
 export function sanitizeSvg(svg: string): string {
   return svg

@@ -17,12 +17,8 @@ function basenameLabel(path: string): string {
   return normalized.split("/").pop() || normalized;
 }
 
-/**
- * markdown-it inline 规则：解析 Obsidian `[[wiki]]` / `[[path|alias]]` / `![[embed]]`。
- * 通过 tiptap-markdown 的 MarkdownParser.setup 钩子注册，使所有 markdown 内容
- * （首页 README 与粘贴）统一经 markdown-it 解析，正确合并多行引用块/列表/分割线，
- * 并支持 Obsidian 嵌入语法（图片/视频/音频/链接）。
- */
+/** markdown-it inline 规则：解析 Obsidian `[[wiki]]` / `[[path|alias]]` / `![[embed]]`，
+ *  经 tiptap-markdown setup 钩子注册，统一解析 markdown 并支持嵌入语法 */
 function obsidianInlineRule(state: any, silent: boolean): boolean {
   const src = state.src.slice(state.pos);
   let m = /^!\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/.exec(src);

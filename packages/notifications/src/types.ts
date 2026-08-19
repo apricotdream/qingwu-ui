@@ -1,7 +1,4 @@
-/* ============================================================
-   青梧UI · 通知铃铛类型定义
-   Qingwu Notifications — framework-agnostic type contracts
-   ============================================================ */
+/** 青梧UI 通知铃铛类型定义（framework-agnostic type contracts） */
 
 /** 单个通知条目（默认渲染 title + sub + glyph + 未读圆点） */
 export interface NotificationItem {

@@ -1,10 +1,6 @@
 /**
- * 附件上传大小限制：类型、文档总大小统计与校验。
- *
- * 校验规则（先查单文件，命中即报单文件超限；再查总大小）：
- * 1. 单文件大小 ≤ maxAttachmentSize
- * 2. 文档内所有附件（attachmentEmbed / videoEmbed / audioEmbed / image 节点
- *    的 size 属性之和）+ 新文件 ≤ maxTotalAttachmentSize
+ * 附件上传大小限制：单文件 ≤ maxAttachmentSize；文档内所有附件 size 之和 + 新文件 ≤ maxTotalAttachmentSize。
+ * 先查单文件，命中即报；再查总大小。
  */
 import type { Node as PMNode } from "@tiptap/pm/model";
 
@@ -40,21 +36,14 @@ export function formatBytes(bytes: number): string {
   return `${text} ${units[i]}`;
 }
 
-/**
- * 从编辑器的 qingwuUI storage 读取当前附件上传限制（宿主运行期更新，
- * 上传路径实时读取；tiptap setOptions 不重建扩展，配置变更走 storage）。
- * editor 用 any：tiptap 的 Storage 类型为空接口，结构类型不兼容。
- */
+/** 从 qingwuUI storage 读取当前附件上限（宿主运行期更新，上传路径实时读；tiptap 不重建扩展）。
+ *  editor 用 any：tiptap Storage 为空接口，结构不兼容。 */
 export function getEditorAttachmentLimits(editor: any): Partial<AttachmentLimits> | undefined {
   return (editor?.storage as { qingwuUI?: { limits?: Partial<AttachmentLimits> } } | undefined)
     ?.qingwuUI?.limits;
 }
 
-/**
- * 校验文件上传是否允许（同步校验，不通过即拒绝插入）。
- *
- * 0 / undefined 视为不限制。返回错误消息；通过返回 null。
- */
+/** 校验文件上传是否允许（同步，不通过即拒绝）；0/undefined 视为不限制。返回错误消息或 null */
 export function validateAttachmentFile(
   doc: PMNode,
   file: File,

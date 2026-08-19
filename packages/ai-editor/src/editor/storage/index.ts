@@ -1,24 +1,14 @@
 export interface StorageProvider {
   readonly name: string;
   readonly type: StorageProviderType;
-  /**
-   * 上传文件。source 为上传出处，默认 "editor"（编辑器内上传）；
-   * 宿主可传 "cover" 等业务语义，供 nameTemplate 的 {src} 占位符使用
-   */
+  /** 上传；source 默认 "editor"，可传业务语义，供 nameTemplate 的 {src} 占位符使用 */
   upload(file: File, source?: string): Promise<string>;
   remove(url: string): Promise<void>;
-  /**
-   * 可选：判断 URL 是否属于宿主自己的存储（本提供商上传返回的地址）。
-   * 宿主实现后，RelativeMedia 等本地引用扫描会把这类 URL 视为"已上传的站内资源"，
-   * 不再当作待解析的本地引用（例如返回相对路径契约下 `/api/assets/...` 的误判）。
-   * 未实现时保持原判定行为。
-   */
+  /** 判断 URL 是否属宿主存储；实现后本地引用扫描视为"已上传站内资源"，避免相对路径契约误判 */
   owns?(url: string): boolean;
 }
 
 export type StorageProviderType = "local" | "oss" | "cos" | "s3" | "custom";
-
-// ---- 存储配置持久化 ----
 
 export interface LocalStorageConfig {
   type: "local";
@@ -67,11 +57,8 @@ export type StorageConfig =
   | S3StorageConfig;
 
 const STORAGE_CONFIG_KEY = "qingwu_storage_config";
-// 安全增强：密钥不再长期持久化到 localStorage，改用 sessionStorage
-// 关闭标签页后自动清除，降低 XSS 窃取密钥的窗口期
+// 密钥只存 sessionStorage，关标签即清，降低 XSS 窃取窗口
 const STORAGE_CONFIG_SESSION_KEY = "qingwu_storage_config_session";
-
-// ---- 单例管理 ----
 
 let currentProvider: StorageProvider | null = null;
 let currentConfig: StorageConfig | null = null;
@@ -100,10 +87,7 @@ export function getStorageProvider(): StorageProvider {
   return currentProvider;
 }
 
-/**
- * 生成"宿主 URL 归属"判定函数：提供商实现 owns 时返回其包装，否则恒 false
- * （保持原本地引用判定行为）。每次调用读取当前 provider，无缓存问题。
- */
+/** 生成 URL 归属判定：提供商实现 owns 时返回其包装，否则恒 false（保持原判定行为） */
 export function ownedUrlChecker(): (src: string) => boolean {
   const p = currentProvider;
   if (!p || typeof p.owns !== "function") return () => false;
@@ -124,10 +108,7 @@ export function getStorageInfo(): {
   };
 }
 
-/**
- * 从 sessionStorage 恢复上次的存储配置
- * 兼容旧 localStorage 配置：首次读取时自动迁移到 sessionStorage 并删除 localStorage 中的副本
- */
+/** 从 sessionStorage 恢复配置；兼容旧 localStorage 配置并自动迁移 */
 export function loadStorageConfig(): StorageConfig | null {
   try {
     const sessionRaw = sessionStorage.getItem(STORAGE_CONFIG_SESSION_KEY);

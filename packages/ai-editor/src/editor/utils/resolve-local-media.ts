@@ -1,19 +1,7 @@
 /**
- * 本地媒体解析流程：粘贴进来的相对路径图片/附件 → 读取真实文件 → 上传存储 → 换链。
- *
- * 两级获取策略（由 `RelativeMedia` 扩展编排）：
- * 1. **剪贴板文件匹配**：部分来源（如直接复制了图片文件）会把文件本体放入剪贴板，
- *    按 basename 匹配后**静默**上传，不打扰用户；
- * 2. **目录授权解析**（File System Access API，仅 Chromium）：先弹项目风格弹窗说明原因，
- *    用户同意后唤起系统目录选择器，按相对路径（精确 → 去头段 → basename 兜底）找回文件。
- *
- * 不支持目录读取的浏览器（Safari/Firefox）降级为"拖拽文件进编辑器"引导
- * （拖拽上传由 ImageUpload 扩展既有 handleDrop 完成）。
- *
- * 安全与体验约定（对应产品原则"温和但明确"）：
- * - 读盘只在用户明确点击授权后发生，绝不静默进行；
- * - 每个文件先过附件限额校验，超限说人话拒绝；
- * - 结束统一 toast 汇总：成功数 / 仅本次可见 / 未找到清单，不留下无声碎图。
+ * 本地媒体解析：粘贴的相对路径附件 → 读取真实文件 → 上传存储 → 换链。
+ * 两级策略：剪贴板文件按 basename 静默匹配上传；否则目录授权后按相对路径找回。
+ * 不支持目录读取的浏览器降级为拖拽引导；读盘仅发生在用户授权后。
  */
 import { toast } from "../../components/toast";
 import { getEditorAttachmentLimits, validateAttachmentFile } from "../attachment-limits";
@@ -33,7 +21,7 @@ export interface ResolveReport {
   uploaded: number;
   sessionOnly: number;
   limitRejected: number;
-  /** 换链成功但存储 URL 在浏览器里渲染/解码失败——不计入"已上传"，如实上报 */
+  /** 换链成功但浏览器渲染失败，不计入已上传 */
   renderFailed: number;
   missing: LocalMediaRef[];
   /** 在目录里找到了同名文件，但读不出字节（云同步占位文件等） */
@@ -106,9 +94,8 @@ function swapLinkHref(view: any, matchHref: string, newHref: string): boolean {
 }
 
 /**
- * 把引用按"同一文件"归组（归一化路径相同即同一文件）。
- * 同一文件常同时以 `<img>` 节点与 `Open: xxx` 链接两种形态出现（Obsidian 导出常见形状），
- * 归组后整组只读取/上传一次、只计一次，组内所有节点与链接共享同一个存储 URL。
+ * 按同一文件归组：同一文件常同时有 <img> 节点与 Open: 链接两种形态，
+ * 归组后整组只读取/上传一次、共享同一 URL。
  */
 export function groupRefsByFile(refs: LocalMediaRef[]): LocalMediaRef[][] {
   const map = new Map<string, LocalMediaRef[]>();
@@ -121,11 +108,8 @@ export function groupRefsByFile(refs: LocalMediaRef[]): LocalMediaRef[][] {
 }
 
 /**
- * 处理"指向同一文件"的一组引用：限额校验 → 节点先 objectURL 预览 → **只上传一次** →
- * 组内所有媒体节点与链接统一换成同一个持久 URL，结果只计一次。
- *
- * 修复一张图既有 `<img>` 节点又有同路径 `Open:` 链接时，同文件被上传两次、
- * "已上传"计数翻倍（5 张图报成 10 个）的问题。
+ * 处理指向同一文件的一组引用：限额校验 → 节点先 objectURL 预览 → 只上传一次 →
+ * 统一换持久 URL，只计一次（修复同文件被上传两次、计数翻倍的问题）。
  */
 export async function processResolvedFileGroup(
   view: any,
@@ -165,7 +149,7 @@ export async function processResolvedFileGroup(
     }
   }
 
-  // 含媒体节点：全部先换 objectURL 立即预览，再统一上传、统一换成持久 URL
+  // 含媒体节点：先换 objectURL 预览，再统一上传换持久 URL
   const objectUrl = URL.createObjectURL(file);
   let nodeSwapped = false;
   for (const ref of nodeRefs) {
@@ -188,8 +172,7 @@ export async function processResolvedFileGroup(
 
   if (!nodeSwapped && linkRefs.length === 0) return "sessionOnly"; // 节点已删且无链接可换
 
-  // 只有图片真实渲染出来才计"已上传"（探针与 ImageView 私有桶回退一致）；
-  // 非图片节点（video/audio/attachment）无 Image 解码探针可用，按换链成功计数
+  // 图片需探针真实渲染才计已上传；非图片无解码探针，按换链成功计数
   if (nodeSwapped && refs.some((r) => r.kind === "image")) {
     return (await verifyImageRenderable(url)) ? "uploaded" : "renderFailed";
   }
@@ -207,9 +190,7 @@ export async function processResolvedFile(
 }
 
 /**
- * 用剪贴板里随文本一起粘贴的文件（basename → File）匹配引用。
- * 按文件归组后整组匹配：一个剪贴板文件服务同组的全部引用（节点 + 链接），
- * 命中即从 clipboardFiles 中消费；返回命中（整组）与未命中两组。
+ * 用剪贴板携带的文件（basename → File）按组匹配引用；命中整组消费，返回命中与未命中。
  */
 export function matchClipboardFiles(
   refs: LocalMediaRef[],
@@ -231,8 +212,7 @@ export function matchClipboardFiles(
 }
 
 /**
- * 在已授权的目录里按文件归组找回并上传换链：同组只查找/读取/上传一次、只计一次；
- * 找不到记入 missing，读不出记入 readFailed（均以组为代表，不重复计数）。
+ * 在授权目录按组找回并上传换链；找不到记 missing，读不出记 readFailed（每组计一次）。
  */
 export async function resolveRefsFromDirectory(
   view: any,
@@ -266,7 +246,7 @@ function namesSummary(refs: LocalMediaRef[]): string {
   return `${names.slice(0, 3).join("、")} 等 ${names.length} 个文件`;
 }
 
-/** 汇总 toast：上传成功 / 仅本次可见 / 读取失败 / 未找到，全部说清楚 */
+/** 汇总 toast：成功/仅本次/读取失败/未找到全部说清 */
 export function reportResolveResult(report: ResolveReport): void {
   const parts: string[] = [];
   if (report.uploaded > 0) parts.push(`${report.uploaded} 个已上传至存储`);
@@ -300,11 +280,8 @@ export function reportResolveResult(report: ResolveReport): void {
 }
 
 /**
- * 授权说明弹窗（纯 DOM，非 React 上下文可用）。
- * 在唤起系统目录选择器之前，先向用户解释"为什么要读文件夹"，
- * 避免突兀的系统弹窗被当成恶意行为。全部走 textContent，无 innerHTML。
- *
- * @returns "pick" 用户同意选择文件夹；"cancel" 用户放弃
+ * 授权说明弹窗（纯 DOM）：选目录前向用户解释读取原因，避免系统弹窗突兀；全 textContent 防 XSS。
+ * @returns "pick" 同意选文件夹；"cancel" 放弃
  */
 export function openDirectoryConsentDialog(count: number): Promise<"pick" | "cancel"> {
   return new Promise((resolve) => {
@@ -366,7 +343,7 @@ export function openDirectoryConsentDialog(count: number): Promise<"pick" | "can
   });
 }
 
-/** 非 Chromium 降级提示：引导拖拽（同样不静默） */
+/** 非 Chromium 降级提示：引导拖拽 */
 export function openDragHintDialog(count: number): void {
   const overlay = document.createElement("div");
   overlay.className =
@@ -415,10 +392,7 @@ export function openDragHintDialog(count: number): void {
   document.body.appendChild(overlay);
 }
 
-/**
- * 兜底弹窗：文件夹解析失败的引用，引导用户直接用系统文件选择器选文件。
- * 系统对话框走 OS 外壳，云同步占位文件 / 文件夹名匹配不上都能绕过。
- */
+/** 兜底弹窗：文件夹解析失败时引导用系统文件选择器（绕开云占位/匹配不上） */
 export function openPickFilesDialog(names: string[]): Promise<"pick" | "cancel"> {
   return new Promise((resolve) => {
     const overlay = document.createElement("div");
@@ -478,8 +452,8 @@ export function openPickFilesDialog(names: string[]): Promise<"pick" | "cancel">
 }
 
 /**
- * 兜底：从系统文件选择器选中的真实文件，按文件归组、以 basename 匹配后上传换链；
- * 同组只上传一次、只计一次；用户取消或选了但仍有未匹配的组，记入 missing（交汇总 toast 说明）。
+ * 兜底：用系统选择器选中的文件按 basename 匹配上传换链；
+ * 取消或未匹配的组记入 missing，交汇总 toast 说明。
  */
 export async function resolveRefsByFilePicker(
   view: any,
@@ -490,7 +464,7 @@ export async function resolveRefsByFilePicker(
   const groups = groupRefsByFile(refs);
   const files = await pickLocalFiles();
   if (!files) {
-    // 取消/失败：全部留在占位状态，交汇总 toast 说明（每组记一个，不重复）
+    // 取消/失败：每组记一个 missing，交汇总 toast
     for (const group of groups) report.missing.push(group[0]);
     return report;
   }

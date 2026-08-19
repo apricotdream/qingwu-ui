@@ -204,8 +204,7 @@ export class Carousel {
     this.syncChrome();
   }
 
-  /** 按 showArrows / showThumbs 保持箭头与缩略图在 DOM 中的存在与顺序；仅在显隐状态变化时增删，
-      避免 update() 时无谓的 remove/append 重放缩略图入场动画 */
+  /** 按 showArrows/showThumbs 增删箭头与缩略图；仅显隐变化时动，避免 update() 重放入场动画 */
   private syncChrome(): void {
     const hasArrows = this.prevBtn.isConnected;
     const hasThumbs = this.thumbs.isConnected;

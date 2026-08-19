@@ -15,7 +15,6 @@ export const MdImportDialog: FC<Props> = ({ open, filename, onRender, onAttach, 
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-[calc(100vw-32px)] max-w-[420px] bg-background rounded-2xl shadow-2xl border border-default-200 overflow-hidden animate-in">
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-default-100">
           <div className="flex items-center gap-2">
             <span className="text-xl">📄</span>

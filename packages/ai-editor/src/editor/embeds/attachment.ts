@@ -19,12 +19,8 @@ export const AttachmentEmbed = Node.create({
         default: null,
         parseHTML: (element) =>
           element.getAttribute("data-src") || element.querySelector("a")?.getAttribute("href"),
-        // ⚠️ 不写 renderHTML：tiptap v3 getRenderedAttributes 对有 renderHTML
-        // 的 addAttribute 只返回 data-* 结果（如 {"data-src": val}），不会
-        // 同时返回原始属性名（{"src": val}）。节点 renderHTML 通过 HTMLAttributes.src
-        // 取值，若 renderHTML 覆盖为 data-src → HTMLAttributes.src=undefined → 序列化
-        // 丢失全部属性、节点沦为空壳（详情页显示"附件已丢失"）。
-        // 节点自身的 renderHTML 已写 data-* 属性，addAttribute 的 renderHTML 在此纯属冗余。
+        // ⚠️ 不写 renderHTML：tiptap 对有 renderHTML 的 addAttribute 只返回 data-* 结果，
+        // 覆盖成 data-src 会使 HTMLAttributes.src=undefined → 序列化丢失属性、节点沦为空壳
       },
       name: {
         default: "",

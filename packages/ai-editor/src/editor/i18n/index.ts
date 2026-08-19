@@ -60,7 +60,7 @@ export function tf(
   for (let i = 0; i < args.length; i++) {
     template = template.replaceAll(`{${i}}`, String(args[i]));
   }
-  // 如果模板只有一个命名占位符且只有1个参数，直接替换
+  // 单命名占位符且单参数时直接替换
   if (args.length === 1 && /\{\w+\}/.test(template)) {
     template = template.replace(/\{\w+\}/, String(args[0]));
   }

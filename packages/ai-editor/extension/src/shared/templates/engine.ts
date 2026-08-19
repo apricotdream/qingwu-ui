@@ -1,11 +1,4 @@
-/**
- * 模板引擎 - 解决 Obsidian 模板变量不可靠、切换模板后变量失效的痛点
- *
- * - 强类型变量表
- * - 切换模板不影响变量求值（变量始终从 content 重新求值）
- * - 未识别变量原样保留 + 警告
- * - 日期变量使用 dayjs-style 模式（{{YYYY}}/{{MM}}/{{DD}}）
- */
+/** 模板引擎 - 强类型变量表，变量始终从 content 重求值；未识别变量原样保留+警告 */
 
 import type { ExtractedContent, Template } from "../types";
 

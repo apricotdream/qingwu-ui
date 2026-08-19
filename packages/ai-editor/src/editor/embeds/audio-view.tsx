@@ -18,8 +18,7 @@ export function AudioEmbedView({ node, deleteNode, editor }: any) {
     };
   }, [src]);
 
-  // 主动签名预加载，避免 <audio> 先用原始 URL 加载失败再 onError 重试的闪烁
-  // 远程音频先签名预加载完成再渲染 <audio>，避免 src 由原始 URL 切到签名 blob 时重载闪烁
+  // 远程音频先签名预加载完成再渲染，避免 src 切到签名 blob 时重载闪烁
   const isLocalAudio = !!src && (src.startsWith("blob:") || src.startsWith("data:"));
   const [audioUrl, setAudioUrl] = useState<string | null>(isLocalAudio ? src : null);
   const [audioReady, setAudioReady] = useState<boolean>(isLocalAudio);
@@ -128,7 +127,7 @@ export function AudioEmbedView({ node, deleteNode, editor }: any) {
         {/* Audio player */}
         <div className="audio-embed-player">
           {!src ? (
-            // 无 src：历史坏节点（上传中断/round-trip 丢 src）或对象被删，渲染缺失态而非永久转圈
+            // 无 src：历史坏节点或对象被删，渲染缺失态而非永久转圈
             <div className="audio-embed-loading audio-embed-missing">
               <span className="audio-embed-missing-icon" aria-hidden="true">
                 !

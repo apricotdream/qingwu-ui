@@ -110,7 +110,7 @@ function Inner({
     return () => chrome.runtime.onMessage.removeListener(listener);
   }, [settings]);
 
-  // 恢复悬浮球暂存的 pendingDraft（sidepanel 未开时悬浮球点击捕获的内容）
+  // 恢复悬浮球暂存的 pendingDraft
   const restoredRef = useRef(false);
   useEffect(() => {
     if (!settings) return;
@@ -1314,8 +1314,7 @@ function HistoryTab({ activeId, onOpen }: { activeId?: string; onOpen: (r: ClipR
                 }`}
                 onClick={async () => {
                   setActive(r);
-                  // clip:list 返回的是精简列表项（不含 content），
-                  // 点击需先 clip:get 拿完整记录，否则 ClipTab 拿到 draft.content=undefined 会白板
+                  // clip:list 返回精简列表项（无 content），点击需先 clip:get 拿完整记录
                   const full = await send<ClipRecord>("clip:get", { id: r.id });
                   onOpen(full);
                 }}

@@ -4,7 +4,7 @@ export type { Editor } from "@tiptap/core";
 // 图片上传弹窗
 export { ImageUploadDialog } from "../components/image-upload-dialog";
 export type { ToastListener, ToastType } from "../components/toast";
-// Toast 提示通道（对外开放自定义：setToastProvider 全局替换 / onToast 实例级覆盖）
+// Toast 提示通道（setToastProvider 全局 / onToast 实例级覆盖）
 export { setToastProvider, subscribeToast, toast } from "../components/toast";
 export type { TocPanelProps } from "../components/toc";
 // 目录面板
@@ -43,9 +43,7 @@ export type {
   ClipperResponse,
   IncomingClip,
 } from "./clipper/receiver";
-// Web Clipper 接收器（让浏览器扩展可推送剪藏到编辑器）
-// 仅导出纯浏览器实现；Node HTTP 接收器（startClipperReceiver / stopClipperReceiver）
-// 经独立子入口 `@qingwu-ui/ai-editor/clipper` 暴露，避免 node:http 进入浏览器产物。
+// Web Clipper 接收器（纯浏览器实现；Node HTTP 版经独立子入口暴露，避免 node:http 进浏览器产物）
 export { startBrowserClipperReceiver } from "./clipper/receiver";
 // 扩展
 export {
@@ -91,7 +89,7 @@ export { createOSSStorage } from "./storage/providers/oss";
 export type { S3StorageOptions } from "./storage/providers/s3";
 export { createS3Storage } from "./storage/providers/s3";
 export type { ConfirmProvider } from "./utils/delete-confirm";
-// 删除确认（默认内置项目 DeleteConfirmDialog，可经 setConfirmProvider 全局覆盖）
+// 删除确认（默认内置 DeleteConfirmDialog，可 setConfirmProvider 全局覆盖）
 export { setConfirmProvider } from "./utils/delete-confirm";
 export type { DeleteConfirmDialogProps } from "./utils/delete-confirm-dialog";
 // 安全工具

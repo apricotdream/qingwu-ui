@@ -1,33 +1,12 @@
 /**
- * 表格列宽自动计算
- *
- * 规则：比例分配 + 最小宽度约束 + 溢出截断
- *
- * 算法：
- *   1. prepare() 所有单元格文本
- *   2. 对每列：layout() 每个单元格在无宽度限制下 → 取最大"自然宽度"
- *   3. 按比例将可用宽度分配给各列
- *   4. 小于最小宽度的列固定为最小值，剩余空间重新分配
- *   5. 溢出列标注 truncated=true
- *
- * 与浏览器 table-layout: auto 对比：
- *   - 浏览器：需要完整渲染才能确定列宽，大表格性能差
- *   - Pretext 方案：测量阶段与渲染分离，无需 DOM 参与
+ * 表格列宽自动计算：按自然宽度比例分配，受最小/最大宽度约束，溢出列截断。
+ * 测量阶段与渲染分离，避免浏览器 table-layout 需完整渲染的性能问题。
  */
 
 import { layout } from "./engine";
 import type { ColumnWidthResult } from "./types";
 
-/**
- * 计算表格列的最佳宽度分配
- *
- * @param rows - 表格数据，每行为 string 数组（每列一个单元格文本）
- * @param availableWidth - 表格可用总宽度 (px)
- * @param font - CSS font 字符串
- * @param minColumnWidth - 每列最小宽度 (px)，默认 60
- * @param maxColumnWidth - 每列最大宽度 (px)，默认无上限
- * @returns 列宽分配结果
- */
+/** 计算表格列的最佳宽度分配 */
 export function computeColumnWidths(
   rows: string[][],
   availableWidth: number,
@@ -50,7 +29,6 @@ export function computeColumnWidths(
   for (const row of rows) {
     for (let c = 0; c < colCount; c++) {
       const cellText = row[c] ?? "";
-      // 单行测量（不限宽度）获取文本自然宽度
       const result = layout(cellText, { maxWidth: Infinity, lineHeight: 1 }, font);
       const cellWidth = result.lines.length > 0 ? (result.lines[0]?.width ?? 0) : 0;
       naturalWidths[c] = Math.max(naturalWidths[c] ?? 0, cellWidth);
@@ -110,14 +88,7 @@ export function computeColumnWidths(
   return { widths, total, truncated };
 }
 
-/**
- * 对单行数据进行截断，使每个单元格适配其列宽
- *
- * @param row - 一行数据
- * @param columnWidths - 每列的分配宽度
- * @param font - CSS font 字符串
- * @returns 截断后的行数据
- */
+/** 截断单行数据，使每个单元格适配其列宽 */
 export function fitRowToColumns(
   row: string[],
   columnWidths: number[],

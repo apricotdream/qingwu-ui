@@ -69,7 +69,6 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
   );
   const [hasProvider, setHasProvider] = useState(false);
 
-  // 恢复已保存配置
   useEffect(() => {
     const saved = loadAIConfig();
     if (saved) {
@@ -161,7 +160,6 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
       )}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-[calc(100vw-32px)] max-w-[460px] max-h-[85vh] bg-background rounded-2xl shadow-2xl border border-default-200 overflow-hidden animate-in">
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-default-100">
           <h2 className="text-base font-semibold">写作助手设置</h2>
           <button
@@ -173,7 +171,6 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
           </button>
         </div>
 
-        {/* Current status */}
         {hasProvider && (
           <div className="mx-5 mt-4 p-3 rounded-xl bg-green-50 border border-green-100">
             <div className="flex items-center gap-2 text-xs text-green-700 mb-1">
@@ -193,9 +190,7 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
           </div>
         )}
 
-        {/* Form */}
         <div className="p-5 max-h-[50vh] overflow-y-auto space-y-3">
-          {/* Presets */}
           <div>
             <label className="block text-xs text-default-500 mb-2">快速选择</label>
             <div className="flex flex-wrap gap-1.5">

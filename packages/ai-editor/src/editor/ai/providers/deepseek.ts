@@ -2,11 +2,8 @@ import type { AIConfig, AIProvider } from "../index";
 import { createOpenAICompatProvider } from "./openai-compat";
 
 /**
- * DeepSeek AI 提供商
- *
- * 获取 API Key: https://platform.deepseek.com/api_keys
- * 默认模型: deepseek-v4-flash
- * 也可用: deepseek-reasoner (DeepSeek-R1)
+ * DeepSeek 提供商。API Key: https://platform.deepseek.com/api_keys
+ * 默认模型 deepseek-v4-flash；可用 deepseek-reasoner (R1)
  */
 export function createDeepSeekProvider(config: Partial<AIConfig> & { apiKey: string }): AIProvider {
   return createOpenAICompatProvider({

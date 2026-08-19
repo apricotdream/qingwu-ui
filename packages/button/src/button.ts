@@ -1,16 +1,4 @@
-/**
- * Button 组件 —— 青梧UI 通用按钮
- * 零框架依赖，纯 DOM + CSS
- *
- * 使用方式：
- * ```ts
- * import { Button } from "@qingwu-ui/button";
- * import "@qingwu-ui/button/style.css";
- *
- * const btn = new Button({ text: "确认", variant: "primary" });
- * container.append(btn.el);
- * ```
- */
+/** Button 组件；零框架依赖，纯 DOM + CSS */
 
 export type ButtonVariant = "default" | "primary" | "amber" | "icon";
 

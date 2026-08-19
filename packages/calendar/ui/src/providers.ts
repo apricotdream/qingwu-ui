@@ -1,15 +1,4 @@
-/**
- * 青梧UI · 日历扩展接口（Provider）
- *
- * 双接口设计：
- * - DayMetaProvider：日期格 meta（农历 / 节日 / 节气小字、休 / 工角标）
- * - PanelProvider：详情面板内容块（黄历 / 天气卡片等）
- *
- * 契约 A（同步契约）：接口全部同步；异步内容（如天气 API）由
- * provider 自行处理加载 / 失败态，核心对异步零感知。
- *
- * 内置 provider 默认注册，用户 provider 追加在后（注册顺序即渲染顺序）。
- */
+/** 日历扩展 Provider：DayMetaProvider 提供日期格 meta（农历/节日/节气/休工角标），PanelProvider 提供详情面板内容块；全同步契约，异步内容由 provider 自行处理 */
 
 import {
   type AlmanacInfo,
@@ -30,10 +19,6 @@ import {
   solarToLunar,
 } from "./lunar";
 import type { HolidayConfig } from "./types";
-
-/* ============================================================
-   接口定义
-   ============================================================ */
 
 /** 日期格 meta（由 DayMetaProvider 返回，按注册顺序合并） */
 export interface DayMeta {
@@ -66,10 +51,6 @@ export interface PanelProvider {
   destroy?(): void;
 }
 
-/* ============================================================
-   工具
-   ============================================================ */
-
 const WEEKDAY_LABELS_SHORT = ["日", "一", "二", "三", "四", "五", "六"];
 
 function formatDate(date: Date): string {
@@ -78,10 +59,6 @@ function formatDate(date: Date): string {
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
-
-/* ============================================================
-   内置 Provider（默认注册）
-   ============================================================ */
 
 /** 内置：农历 / 节日 / 节气小字（日期格） */
 export class LunarDayMetaProvider implements DayMetaProvider {
@@ -119,7 +96,7 @@ export class HolidayBadgeProvider implements DayMetaProvider {
     if (workdays.includes(iso)) return { badge: "工", cellClass: "is-workday" };
     if (holidays.includes(iso)) return { badge: "休", cellClass: "is-holiday" };
 
-    // 内置节日兜底（未配置 holidays 时仍标记春节 / 国庆节 / 劳动节）
+    // 兜底：未配置 holidays 时仍标记春节/国庆/劳动节
     const lunar = solarToLunar(date);
     const lunarFest = getLunarFestival(lunar.month, lunar.day);
     const solarFest = getSolarFestival(date.getMonth() + 1, date.getDate());
