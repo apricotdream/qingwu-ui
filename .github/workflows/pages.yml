@@ -5,8 +5,9 @@
 name: Pages
 
 on:
+  # 部署流：合并 2026-08 → main 后自动部署；也可手动 workflow_dispatch
   push:
-    branches: [2026-08]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -46,6 +47,11 @@ jobs:
 
       - name: 配置 Pages
         uses: actions/configure-pages@v5
+        with:
+          # 自动启用 Pages（若尚未启用）：GITHUB_TOKEN 无此权限，需仓库 Secrets 提供 PAGES_TOKEN（repo 或 Pages 写权限的 PAT）
+          # 若已手动启用或未配置 secret，则走默认 github.token，不影响正常部署
+          enablement: true
+          token: ${{ secrets.PAGES_TOKEN || github.token }}
 
       - name: 上传 Pages 产物
         uses: actions/upload-pages-artifact@v3
