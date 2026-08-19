@@ -80,3 +80,9 @@ out/
 
 # 本地 git 钩子脚本（不纳入版本控制）
 .githooks/
+
+# Claude Code 项目 MCP 配置（可能含本机路径/密钥）
+.mcp.json
+
+# AI 视觉工具本地产物（截图/路由缓存，不入库）
+.dsh-vision-router/
