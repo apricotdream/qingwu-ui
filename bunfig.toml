@@ -1,0 +1,4 @@
+# 固定公共 registry，防止 bun.lock 再次写入内网/私有 registry 地址导致 CI 无法安装
+# （本机如使用私有镜像，可被 ~/.npmrc 或本地 .npmrc 覆盖，但提交的 lockfile 必须是公共地址）
+[install]
+registry = "https://registry.npmmirror.com"

@@ -12,7 +12,9 @@ on:
   pull_request:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # 同一 commit 的 push 与 pull_request（synchronize）事件共享一个组，避免 PR 期间双跑
+  # push 事件取 github.sha；pull_request 事件取其 head.sha（与 push 的 sha 一致）
+  group: ci-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -50,3 +52,26 @@ jobs:
 
       - name: 校验演示站构建产物（examples/nextjs 必须产出 .next/BUILD_ID）
         run: test -d examples/nextjs/.next && test -f examples/nextjs/.next/BUILD_ID
+
+  security:
+    name: Secret / 漏洞门禁
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 检出代码（完整历史，密钥扫描需要）
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 密钥扫描（gitleaks，发现泄露即阻断）
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 依赖漏洞扫描（OSV-Scanner，CVSS >= 7.0 即阻断）
+        run: |
+          curl -sSfL -o osv-scanner https://github.com/google/osv-scanner/releases/download/v2.5.1/osv-scanner_linux_amd64
+          chmod +x osv-scanner
+          # 有漏洞时 osv-scanner 退出码为 1，交由门禁脚本按阈值决定是否失败
+          ./osv-scanner --lockfile bun.lock --format json > osv.json || true
+          node .github/scripts/osv-gate.mjs osv.json 7.0
