@@ -244,7 +244,7 @@ const VERSIONS = [
     date: "2026-07-28",
     tag: "首个公开版",
     changes: [
-      { type: "feat", text: "首次发布青梧 UI 组件库，MIT 协议开源" },
+      { type: "feat", text: "首次发布青梧 UI 组件库，Apache-2.0 协议开源" },
       {
         type: "feat",
         text: "@qingwu-ui/button 按钮：胶囊形（pill）风格，default / primary / amber / icon 四种变体，纯 DOM + CSS",
