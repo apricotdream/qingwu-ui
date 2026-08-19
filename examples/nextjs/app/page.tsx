@@ -116,7 +116,7 @@ export default function HomePage() {
       <section className="hero">
         <div className="hero-badge">
           <span className="hero-badge-dot" />
-          开源 · MIT 协议
+          开源 · Apache-2.0 协议
         </div>
         <h1>
           以<span className="hero-gradient">中国历法</span>为内核的
