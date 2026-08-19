@@ -126,4 +126,67 @@ describe("AvatarEditor", () => {
     expect(calls).toContain("quadraticCurveTo");
     editor.destroy();
   });
+
+  test("jpeg 格式未传底色时兜底白色（防透明像素编码成黑角）", () => {
+    const editor = new AvatarEditor(root, { outputFormat: "jpeg" }) as never as {
+      outputFormat: string;
+      backgroundColor: string | undefined;
+      quality: number;
+      destroy: () => void;
+    };
+    expect(editor.outputFormat).toBe("jpeg");
+    expect(editor.quality).toBeCloseTo(0.92);
+    expect(editor.backgroundColor).toBe("#ffffff");
+    editor.destroy();
+  });
+
+  test("png 格式保持透明圆角（默认无底色）", () => {
+    const editor = new AvatarEditor(root, {}) as never as {
+      outputFormat: string;
+      backgroundColor: string | undefined;
+      destroy: () => void;
+    };
+    expect(editor.outputFormat).toBe("png");
+    expect(editor.backgroundColor).toBeUndefined();
+    editor.destroy();
+  });
+
+  test("显式底色在绘制时先铺底后裁剪", () => {
+    const editor = new AvatarEditor(root, { backgroundColor: "#123456" }) as never as {
+      backgroundColor: string | undefined;
+      draw: (ctx: Record<string, unknown>) => void;
+      destroy: () => void;
+    };
+    const calls: string[] = [];
+    const ctx: Record<string, unknown> = {
+      calls,
+      clearRect: () => calls.push("clearRect"),
+      fillRect: () => calls.push("fillRect"),
+      save: () => calls.push("save"),
+      restore: () => calls.push("restore"),
+      clip: () => calls.push("clip"),
+      translate: () => calls.push("translate"),
+      rotate: () => calls.push("rotate"),
+      scale: () => calls.push("scale"),
+      drawImage: () => calls.push("drawImage"),
+      beginPath: () => calls.push("beginPath"),
+      stroke: () => calls.push("stroke"),
+      moveTo: () => calls.push("moveTo"),
+      lineTo: () => calls.push("lineTo"),
+      closePath: () => calls.push("closePath"),
+      quadraticCurveTo: () => calls.push("quadraticCurveTo"),
+      roundRect: () => calls.push("roundRect"),
+    };
+    editor.draw(ctx);
+    expect(calls.indexOf("clearRect")).toBeLessThan(calls.indexOf("fillRect"));
+    expect(calls.indexOf("fillRect")).toBeLessThan(calls.indexOf("clip"));
+    editor.destroy();
+  });
+
+  test("编辑层挂 data-lenis-prevent（防宿主 Lenis 劫持滚轮）", () => {
+    const editor = new AvatarEditor(root);
+    const dialog = document.body.querySelector<HTMLElement>(".qav-dialog")!;
+    expect(dialog.hasAttribute("data-lenis-prevent")).toBe(true);
+    editor.destroy();
+  });
 });
