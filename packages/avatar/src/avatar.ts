@@ -91,7 +91,8 @@ export class AvatarEditor {
     this.outputFormat = opts.outputFormat ?? "png";
     this.quality = Math.max(0, Math.min(1, opts.quality ?? 0.92));
     // jpeg 无透明通道：圆角外区域必须铺底，否则透明像素编码成黑色
-    this.backgroundColor = opts.backgroundColor ?? (this.outputFormat === "jpeg" ? "#ffffff" : undefined);
+    this.backgroundColor =
+      opts.backgroundColor ?? (this.outputFormat === "jpeg" ? "#ffffff" : undefined);
     this.onConfirm = opts.onConfirm;
     this.onOpenChange = opts.onOpenChange;
 
@@ -467,7 +468,9 @@ export class AvatarEditor {
     this.draw(ctx);
 
     const mime = this.outputFormat === "jpeg" ? "image/jpeg" : "image/png";
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, mime, this.quality));
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, mime, this.quality),
+    );
     if (!blob) return;
     const dataUrl = canvas.toDataURL(mime, this.quality);
 
