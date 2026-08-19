@@ -42,7 +42,7 @@ Desktop.ini
 # 缂撳瓨
 .cache/
 
-# 婕旂ず绔欐瀯寤烘椂浠?packages/ai-editor 鍚屾鐨?file-viewer 闈欐�佽祫婧愶紙鏂规 A锛屼笉鍏ュ簱锛?
+# 婕旂ず绔欐瀯寤烘椂浠?packages/ai-editor 鍚屾鐨?file-viewer 闈欐?佽祫婧愶紙鏂规 A锛屼笉鍏ュ簱锛?
 examples/nextjs/public/file-viewer/
 
 # ---- AI 宸ュ叿閾炬湰鍦版枃浠讹紙涓嶆彁浜わ紱浠栦汉鎷夊彇鍚庝笉鍙敤 / 鏃犳晥锛屼竴寰嬪拷鐣ワ級----
@@ -77,3 +77,6 @@ verify-qcar/push-all-native.cmd
 
 # GitHub Pages 静态导出产物
 out/
+
+# 本地 git 钩子脚本（不纳入版本控制）
+.githooks/

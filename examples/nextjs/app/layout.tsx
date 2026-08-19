@@ -30,6 +30,7 @@ import {
   HREF_BY_TITLE,
   SEARCH_ITEMS,
 } from "@/docs.config";
+import { asset } from "@/lib/assets";
 
 /* ---- 内联 Icon 渲染组件 ---- */
 function SvgHtml({ html, size = 15 }: { html: string; size?: number }) {
@@ -187,7 +188,7 @@ function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
         </button>
         <Link href="/" className="qw-header-brand">
           <img
-            src="/logo.png"
+            src={asset("/logo.png")}
             alt="青梧 UI"
             width={32}
             height={32}
@@ -307,8 +308,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="icon" href={asset("/favicon.ico")} />
+        <link rel="apple-touch-icon" href={asset("/logo.png")} />
         <title>青梧 UI — 中国历法组件库</title>
       </head>
       <body>
