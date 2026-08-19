@@ -1,8 +1,4 @@
-/* ============================================================
-   青梧UI · Confirm 全局单例
-   - 懒初始化（SSR 安全）
-   - 可调用对象：confirm(trigger, opts) 或 confirm.dismiss() / confirm.configure()
-   ============================================================ */
+/** 青梧UI · Confirm 全局单例：懒初始化（SSR 安全），confirm(trigger, opts) 可调用 */
 
 import { ConfirmDialog } from "./confirm";
 import type { ConfirmOptions, ConfirmResult } from "./types";

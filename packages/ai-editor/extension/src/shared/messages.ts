@@ -1,10 +1,4 @@
-/**
- * 消息协议 - popup / sidepanel / content / background 之间通信
- *
- * 解决 Obsidian 中"找不到对应处理函数就静默无响应"的痛点：
- * - 每条消息必须有响应（ok 或 error）
- * - 错误必须带 code + 用户可读 message + retryable
- */
+/** 消息协议 - popup/sidepanel/content/background 通信；每条消息必有响应，错误带 code+message+retryable */
 
 import type { AIRequest, AIResponse, ClipMode, ExtractedContent, Locale } from "./types";
 

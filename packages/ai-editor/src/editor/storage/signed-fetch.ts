@@ -1,6 +1,4 @@
-/**
- * S3 签名 GET 请求 — 用于附件预览时对私有桶发起认证读取
- */
+/** S3 签名 GET 请求：附件预览时对私有桶发起认证读取 */
 
 import type { S3StorageOptions } from "./providers/s3";
 
@@ -103,12 +101,9 @@ async function signGetHeaders(
 }
 
 /**
- * 生成预签名 URL（带 query string 签名参数）
- * 用于 <img>/<video>/<audio> 等无法添加自定义请求头的场景
+ * 生成预签名 URL（query string 签名，供无自定义请求头的媒体标签）
  * @param expires 过期秒数，默认 3600（1小时）
- *
- * 安全建议：URL 一旦泄漏在有效期内可被任意访问，故默认 1 小时而非 7 天。
- * 图片/视频标签加载时实时生成新 URL 即可。
+ * 安全建议：URL 泄漏即可被访问，默认 1 小时而非 7 天，加载时实时生成即可
  */
 export async function signUrl(
   url: string,
@@ -185,9 +180,7 @@ function belongsToS3Config(url: string, config: S3StorageOptions): boolean {
   }
 }
 
-/**
- * 对属于已配置 S3 的 URL 注入签名头，否则透传
- */
+/** 对已配置 S3 的 URL 注入签名头，否则透传 */
 export async function signPreviewUrlHeaders(url: string): Promise<Headers | null> {
   const cfg = currentS3Config;
   if (!cfg) return null;
@@ -195,10 +188,7 @@ export async function signPreviewUrlHeaders(url: string): Promise<Headers | null
   return signGetHeaders(url, cfg.region, cfg.accessKeyId, cfg.secretAccessKey);
 }
 
-/**
- * 对属于已配置 S3 的 URL 生成预签名 URL（签名在 query string，不触发 CORS 预检）
- * 不属于已配置 S3 时返回 null
- */
+/** 对已配置 S3 的 URL 生成预签名 URL（query string 签名不触发 CORS 预检），不属于则返回 null */
 export async function signPreviewUrl(url: string, expires: number = 3600): Promise<string | null> {
   const cfg = currentS3Config;
   if (!cfg) return null;

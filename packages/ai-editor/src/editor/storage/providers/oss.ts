@@ -24,8 +24,7 @@ interface OSSConfig {
  * })
  * ```
  *
- * 本函数为兼容旧 API 保留，内部转调 `createS3Storage`。
- * 历史实现仅设置 `x-oss-access-key-id` 头而无签名，私有桶会返回 403。
+ * 兼容旧 API 保留，内部转调 createS3Storage；历史实现仅设 `x-oss-access-key-id` 头而无签名，私有桶返回 403。
  */
 export function createOSSStorage(config: OSSConfig): StorageProvider {
   return createS3Storage({

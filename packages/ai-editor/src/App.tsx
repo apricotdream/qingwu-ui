@@ -84,17 +84,11 @@ function getInitialFont(): "sans" | "serif" | "mono" {
 }
 
 /**
- * 初始化存储服务 - 优先 S3 配置，兼容旧 OSS/COS，最后用本地存储
- *
- * 从模块顶层移到组件 useEffect 内，避免：
- * 1. 库模式下宿主 import 时副作用被意外触发
- * 2. sessionStorage 损坏导致整页模块加载失败
- * 3. 测试环境无需 mock 即可隔离
+ * 初始化存储服务：优先 S3，兼容旧 OSS/COS，兜底本地存储。
+ * 移入 useEffect 避免库模式 import 副作用、损坏配置导致整页加载失败。
  */
 function initStorageService() {
-  // 存储初始化 - 优先 S3 配置，兼容旧 OSS/COS，最后用本地存储
-  // try/catch 防止 localStorage 中的旧/损坏配置导致 createS3Storage 抛异常，
-  // 进而使整个 App 模块加载失败、页面空白；失败时 fallback 到 local storage
+  // 兜底：旧/损坏配置抛异常时回退本地存储，避免整页空白
   try {
     const savedConfig = loadStorageConfig();
     if (savedConfig?.type === "s3") {
@@ -171,10 +165,7 @@ function initStorageService() {
   }
 }
 
-/**
- * 初始化写作助手服务 - 从 sessionStorage 恢复
- * API Key 不再持久化到 localStorage，降低 XSS 窃取风险
- */
+/** 初始化写作助手：从 sessionStorage 恢复；API Key 不落 localStorage 防 XSS */
 function initAIService() {
   try {
     const raw = sessionStorage.getItem(AI_CONFIG_SESSION_KEY);
@@ -193,7 +184,6 @@ function initAIService() {
 
 export default function App() {
   const [currentLocale, setCurrentLocale] = useState<Locale>("zh-CN");
-  // 编辑器首页内容随语言切换：中文用 README.md，英文用 README.en.md（原始 markdown）
   const readmeContent = useMemo(
     () => (currentLocale === "en-US" ? readmeRawEn : readmeRawZh).replace(/\.\/public\//g, "/"),
     [currentLocale],
@@ -310,9 +300,7 @@ export default function App() {
     }
   }, [editorMode]);
 
-  // ===== Web Clipper 接收器（浏览器 postMessage 通道）=====
-  // 插件通过 chrome.tabs.create 打开本页面后注入脚本 postMessage 推送剪藏内容，
-  // 这里监听 message 事件，把 markdown 插入编辑器。
+  // Web Clipper 接收器：插件打开本页后 postMessage 推送剪藏，此处监听插入 markdown
   const editorRef = useRef<Editor | null>(null);
   const onEditorReady = useCallback((editor: Editor) => {
     editorRef.current = editor;
@@ -379,7 +367,6 @@ export default function App() {
     setLocale(next);
   }, [currentLocale]);
 
-  // ===== driver.js 引导 tour =====
   const startTour = useCallback(() => {
     const steps: DriveStep[] = [
       {
@@ -475,7 +462,6 @@ export default function App() {
 
   return (
     <div className={`min-h-screen bg-background text-foreground ${fontClass}`}>
-      {/* Header */}
       <header className="sticky top-0 z-40 border-b border-default-200 bg-background/80 backdrop-blur-md">
         <div className="max-w-4xl mx-auto flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -488,7 +474,6 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-            {/* Mode toggle */}
             <button
               type="button"
               data-tour="mode-toggle"
@@ -503,7 +488,6 @@ export default function App() {
               {editorMode === "edit" ? "✏️" : "👁"}
             </button>
 
-            {/* Editor fullscreen controls */}
             <button
               type="button"
               data-tour="fullscreen"
@@ -529,8 +513,6 @@ export default function App() {
             >
               ⛛
             </button>
-            {/* Content save controls */}
-            {/* 写作助手设置 */}
             <button
               type="button"
               data-tour="ai-settings"
@@ -541,7 +523,6 @@ export default function App() {
               🤖
             </button>
 
-            {/* Storage settings */}
             <button
               type="button"
               className="px-1.5 sm:px-2 py-1 text-sm text-default-500 hover:text-default-700 transition-colors shrink-0"
@@ -551,7 +532,6 @@ export default function App() {
               ☁️
             </button>
 
-            {/* Web Clipper 接收器设置 */}
             <button
               type="button"
               className={`px-1.5 sm:px-2 py-1 text-sm transition-colors shrink-0 ${
@@ -565,7 +545,6 @@ export default function App() {
               ✂️
             </button>
 
-            {/* Tour / 引导 */}
             <button
               type="button"
               className="px-1.5 sm:px-2 py-1 text-sm text-default-400 hover:text-default-600 transition-colors shrink-0"
@@ -575,7 +554,6 @@ export default function App() {
               ❓
             </button>
 
-            {/* Language toggle */}
             <button
               type="button"
               data-tour="lang-toggle"
@@ -585,7 +563,6 @@ export default function App() {
               {currentLocale === "zh-CN" ? "EN" : "中"}
             </button>
 
-            {/* Font switcher — mobile hidden */}
             <select
               data-tour="font-selector"
               className="hidden sm:block px-2 py-1 text-xs border border-default-200 rounded-lg bg-transparent hover:bg-default-100 transition-colors cursor-pointer"
@@ -597,7 +574,6 @@ export default function App() {
               <option value="mono">{t("app.font.mono")}</option>
             </select>
 
-            {/* 移动端字体切换 - 紧凑按钮组 */}
             <div className="sm:hidden flex items-center gap-0.5">
               <button
                 type="button"
@@ -640,7 +616,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* Editor */}
       <main ref={mainRef} className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {showClipperBanner && (
           <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl border border-qingwu-200 bg-qingwu-50 dark:border-qingwu-800 dark:bg-qingwu-900/20 text-sm">
@@ -693,20 +668,17 @@ export default function App() {
         />
       </main>
 
-      {/* Footer */}
       <footer className="max-w-4xl mx-auto px-6 py-8 text-center text-xs text-default-300">
         <p>{t("app.footer.line1")}</p>
         <p className="mt-1">{t("app.footer.license")}</p>
       </footer>
 
-      {/* 写作助手设置对话框 */}
       {showAISettings && (
         <Suspense fallback={<DialogFallback />}>
           <AISettingsDialog open={showAISettings} onClose={() => setShowAISettings(false)} />
         </Suspense>
       )}
 
-      {/* Storage Settings Dialog */}
       {showStorageSettings && (
         <Suspense fallback={<DialogFallback />}>
           <StorageSettingsDialog
@@ -716,7 +688,6 @@ export default function App() {
         </Suspense>
       )}
 
-      {/* Web Clipper 接收器设置面板 */}
       {showClipperSettings && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center">
           <div
@@ -740,7 +711,6 @@ export default function App() {
                 扩展剪藏网页后，通过本地接收器（http://127.0.0.1:7321）或浏览器通道推送至此编辑器。扩展可在
                 Chrome / Edge / Firefox 加载。
               </div>
-              {/* 扩展安装与使用教程 */}
               <div className="rounded-lg bg-default-50 dark:bg-default-900/30 p-3 space-y-2">
                 <div className="text-xs font-medium text-foreground">安装与使用</div>
                 <ol className="text-[11px] text-default-600 dark:text-default-300 space-y-1 list-decimal pl-4">
@@ -770,7 +740,6 @@ export default function App() {
                   <li>推送：侧边栏保存后「推送到编辑器」（需下方开关开启）</li>
                 </ol>
               </div>
-              {/* 接收器开关 */}
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm font-medium text-foreground">接收剪藏</div>
@@ -795,7 +764,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* 编辑器页面路径配置 */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">编辑器页面路径</label>
                 <div className="text-[11px] text-default-500">

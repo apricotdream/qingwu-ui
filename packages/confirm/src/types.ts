@@ -1,7 +1,4 @@
-/* ============================================================
-   青梧UI · Confirm 确认框类型定义
-   Qingwu Confirm — framework-agnostic type contracts
-   ============================================================ */
+/** 青梧UI · Confirm 确认框类型定义（framework-agnostic 类型契约） */
 
 /** 关闭结果：确认 / 取消 / 逃逸（Esc / 遮罩 / 程序化 dismiss） */
 export type ConfirmResult = "confirm" | "cancel" | "dismiss";
@@ -23,10 +20,7 @@ export interface ConfirmOptions {
   danger?: boolean;
   /** 标题上方可选图标（内联 SVG 字符串，由调用方提供） */
   icon?: string;
-  /**
-   * 确认回调。返回 Promise 时进入 loading 态（按钮禁用 + 转菊花），
-   * 成功后缩回并 resolve('confirm')；reject 则保持对话框打开、还原 loading 并向调用方抛错。
-   */
+  /** 确认回调；返回 Promise 时进入 loading，成功后缩回 resolve('confirm')，reject 保持打开并抛错 */
   onConfirm?: () => void | Promise<void>;
   /** 遮罩点击行为，默认 "dismiss"（与取消按钮的语义区分：逃逸 ≠ 明确拒绝） */
   backdrop?: BackdropAction;

@@ -56,9 +56,8 @@ interface AIPanelLayout {
   arrowLeft: number;
 }
 
-/** 计算 AI 面板 fixed 定位。调用方必须同步 setState，保证首帧即 fixed，
- *  避免面板先以静态块级元素渲染撑高编辑器导致页面滚动跳变。
- *  宽度默认对齐编辑器根节点（随编辑器宽度），左缘对齐编辑器左缘。 */
+/** 计算 AI 面板 fixed 定位；调用方必须同步 setState 保证首帧即 fixed，
+ *  避免静态块级渲染撑高编辑器导致滚动跳变。宽度默认对齐编辑器根节点 */
 function layoutAIPanel(
   anchor: FloatingPoint,
   measuredHeight?: number,
@@ -71,8 +70,7 @@ function layoutAIPanel(
 
   // 移动端：顶部居中全宽
   if (vw < 640) {
-    // 移动端贴近视口顶部：maxHeight 按实际 top 动态算，保证底边不出视口，
-    // 流式文本再长，底部控件（替换/插入/丢弃）也常驻可见
+    // 贴近视口顶部：maxHeight 按实际 top 动态算，底部控件常驻可见
     const top = Math.max(8, Math.min(anchor.top + 10, vh - 420));
     return {
       style: {
@@ -105,10 +103,7 @@ function layoutAIPanel(
   // 箭头尽量贴近选区中心，同时夹在面板内避免溢出
   const arrowLeft = Math.max(14, Math.min(((anchorCenter - left) / pw) * 100, 86));
 
-  // maxHeight 按实际 top/placement 动态算，不再写死 vh-32：
-  // - below：面板底边 = top + height ≤ 100dvh - 16，永不掉出视口；
-  // - above：面板底边不得越过锚点上方（anchor.top - 10），内容再长也只在锚点上方滚动。
-  // 流式文本变长时 flex 链收缩文本区滚动，底部控件常驻可见。
+  // maxHeight 按实际 top/placement 动态算，保证面板不出视口；流式变长时 flex 收缩文本区滚动
   const maxHeight =
     placement === "above"
       ? `${Math.max(anchor.top - 10 - top, 160)}px`
@@ -208,29 +203,18 @@ export interface QingWuAIEditorProps {
   showToolbar?: boolean;
   /**
    * 目录（TOC）默认展开状态，默认 true。
-   * - true  目录控件可用且默认展开（保持既有行为）
-   * - false 目录控件可用但默认收起，由工具栏按钮 / 悬浮球展开
-   * 注意：false 不再关闭目录功能，仅决定初始展开与否。
+   * true 控件可用且默认展开；false 控件可用但默认收起（仅决定初始展开，不关闭功能）
    */
   showToc?: boolean;
-  /**
-   * 是否启用全文搜索（关键词高亮）
-   * - true  启用 Ctrl+F / Cmd+F 唤起搜索浮层（默认）
-   * - false 禁用搜索功能，不拦截快捷键
-   */
+  /** 是否启用全文搜索：true 唤起 Ctrl+F 搜索浮层（默认），false 禁用且不拦截快捷键 */
   showSearch?: boolean;
-  /**
-   * 编辑器实例就绪回调 - 把内部 Editor 暴露给宿主
-   * （Web Clipper 接收器用它调用 commands.insertContent 写入剪藏）
-   */
+  /** 编辑器实例就绪回调（Web Clipper 接收器据此调用 commands.insertContent） */
   onEditorReady?: (editor: Editor) => void;
   /** 是否立即渲染编辑器；SSR/Next.js 场景建议配合 dynamic import ssr:false 后传 true */
   immediatelyRender?: boolean;
   /**
-   * 全局提示回调（附件超限拦截 / 文档附件超限警告等）。
-   * 由宿主接入自己的 Toast 组件（如 @qingwu-ui/toast）；不传时回退到内置
-   * @qingwu-ui/toast 默认渲染，也可通过 setToastProvider() 全局替换。
-   * 第三参 options 透传展示选项（persist/maxLines/duration）；旧签名自动兼容。
+   * 全局提示回调（附件超限拦截等）；宿主可接入自己的 Toast，不传时回退内置 @qingwu-ui/toast。
+   * 第三参 options 透传展示选项；旧签名自动兼容。
    */
   onToast?: (message: string, type: ToastType, options?: ToastOptions) => void;
 }
@@ -289,9 +273,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   }, [showToc]);
   // 注意：state 名为 searchOpen，避免与 prop showSearch 冲突
   const [searchOpen, setSearchOpen] = useState(false);
-  // 视口是否达到桌面断点（与 TOC 悬浮框的 80rem 一致）。
-  // 用 JS 监听而非纯 CSS，以便在「全屏」等 CSS 媒体查询感知不到的场景下，
-  // 统一决定桌面侧栏与悬浮球的互斥显隐。
+  // 视口是否达桌面断点（80rem）：用 JS 监听而非纯 CSS，统一决策侧栏与悬浮球互斥显隐
   const [isWide, setIsWide] = useState(() =>
     typeof window !== "undefined" && typeof window.matchMedia === "function"
       ? window.matchMedia("(min-width: 80rem)").matches
@@ -410,7 +392,6 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && (e.key === "f" || e.key === "F")) {
         const root = editorContainerRef.current;
-        // 编辑器不可见时不拦截
         if (!root) return;
         e.preventDefault();
         e.stopPropagation();
@@ -473,9 +454,8 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
 
         event.preventDefault();
 
-        // 剪贴板若带文件（Obsidian 复制嵌入等场景），暂存给 RelativeMedia：
-        // 插入完成后由它按文件名匹配、上传换链；匹配不到的走目录授权解析。
-        // 此路径会越过 RelativeMedia 插件的 handlePaste，暂停标记也要在这里清除
+        // 剪贴板若带文件（Obsidian 嵌入），暂存给 RelativeMedia 按文件名匹配上传换链；
+        // 此路径越过其 handlePaste，暂停标记也在此清除
         const relStorage = (
           editorRef.current?.storage as
             | { relativeMedia?: { clipboardFiles: Map<string, File>; pausedUntilPaste: boolean } }
@@ -533,8 +513,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     };
   }, [editor]);
 
-  // placeholder 变化时（如 i18n 切换）通过 setOptions 更新扩展配置，
-  // 避免通过 key 强制 remount 编辑器导致内容/光标/undo 栈丢失
+  // placeholder 变化时 setOptions 更新扩展，避免 remount 导致内容/光标/undo 丢失
   useEffect(() => {
     if (!editor) return;
     editor.setOptions({
@@ -548,9 +527,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [placeholder, maxLength, maxAttachmentSize, maxTotalAttachmentSize]);
 
-  // initialContent 变化时（如 Demo 切换 locale）通过 setContent 更新文档，
-  // 避免通过 key 强制 remount 编辑器导致 undo 栈丢失
-  // 用 ref 记录上次值，避免初次挂载和 prop 引用变化时重复 setContent
+  // initialContent 变化时 setContent 更新文档，避免 remount 丢 undo；用 ref 记录上次值防重复
   const lastInitialContentRef = useRef<string>(initialContent);
   useEffect(() => {
     if (!editor) return;
@@ -584,8 +561,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     }
   }, [editor, maxTotalAttachmentSize]);
 
-  // 同步附件上传限制到 qingwuUI storage：上传路径运行期实时读取。
-  // 不能走 setOptions({ extensions })——tiptap 不重建扩展，配置变更无效。
+  // 同步附件上限到 qingwuUI storage：上传路径运行期读取；tiptap 不重建扩展，setOptions 变更无效
   useEffect(() => {
     if (!editor) return;
     const storage = (editor.storage as any).qingwuUI as
@@ -609,8 +585,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   }, []);
 
   const bubbleActions = getBubbleMenuActions((key) => t(key));
-  // 主行紧凑展示高频键，低频键折叠进「⋯」二级菜单，避免气泡换行增高。
-  // 主行 = 排版组（B/I/U/S/代码）+ AI 专属 + ⋯；高亮/链接/表格/复制/搜索 进 ⋯ 下拉。
+  // 主行紧凑展示高频键（排版组 + AI + ⋯），低频键（高亮/链接/表格/复制/搜索）折叠进「⋯」下拉
   const mainActions = bubbleActions.filter((action) => !action.more);
   const moreActions = bubbleActions.filter((action) => action.more);
   const formatActions = mainActions.filter((action) => action.key !== "ai");
@@ -692,8 +667,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     };
   }, []);
 
-  // 组件卸载时若有未关闭的 mdDialog，resolve(null) 释放 insertMdFile 中挂起的 Promise
-  // 否则 URL.createObjectURL(file) 也不会被 revoke，造成内存泄漏
+  // 组件卸载时若有未关闭的 mdDialog，resolve(null) 释放挂起的 Promise，避免 objectURL 泄漏
   useEffect(() => {
     return () => {
       if (mdDialog) mdDialog.resolve(null);
@@ -701,11 +675,8 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 打开写作助手面板 — 工具栏「AI 编写」按钮与扩展（slash / 气泡菜单）共用。
-  // anchorEl 传入时（工具栏按钮）锚定该元素下沿，面板贴近按钮弹出；
-  // 否则有选区时锚定选区下沿，无选区时锚定光标坐标。
-  // 关键：同步算好 fixed 坐标与 showAI 一起 setState，首帧即 fixed，
-  // 从源头消除「面板先以静态块级元素渲染撑高编辑器 → 页面滚动跳变」的问题。
+  // 打开写作助手面板：工具栏按钮与 slash/气泡菜单共用。锚定按钮/选区/光标，
+  // 同步算好 fixed 坐标与 showAI 一起 setState，首帧即 fixed 避免滚动跳变
   const openAIPanel = useCallback(
     (anchorEl?: HTMLElement | null) => {
       if (!editor?.isEditable) return;
@@ -735,9 +706,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     [editor],
   );
 
-  // 注册全局回调（供 slash 命令和代码块等触发）
-  // 注册 UI 回调到 (editor.storage as any).qingwuUI（替代 window.__qingwu_* 全局变量）
-  // 多编辑器实例各自独立，不污染全局命名空间
+  // 注册 UI 回调到 qingwuUI storage（替代 window 全局变量；多实例独立，不污染命名空间）
   useEffect(() => {
     if (!editor) return;
     const storage = (editor.storage as any).qingwuUI as
@@ -749,8 +718,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           parseMd?: (schema: any, text: string) => unknown;
         }
       | undefined;
-    // 防御：扩展未注册/未就绪时 storage 为 undefined（消费方产物与扩展注册不一致、
-    // 或 tiptap 多实例等情形）。读取方均用可选链，写入方此处同样判空，避免硬崩溃。
+    // 防御：扩展未就绪时 storage 为 undefined；读取方用可选链，此处判空避免硬崩溃
     if (!storage) return;
     storage.openImageDialog = () => setShowImageDialog(true);
     storage.openVideoDialog = () => setShowVideoDialog(true);
@@ -772,9 +740,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     };
   }, [editor, openAIPanel]);
 
-  // 写作助手面板定位校正：渲染后用真实高度做智能翻转 + 箭头定位。
-  // 用 useLayoutEffect（绘制前执行），配合 openAIPanel 里同步写入的初始 fixed 样式，
-  // 全程面板都是 fixed，不会以静态元素撑高编辑器 → 无滚动跳变。
+  // 渲染后用真实高度做智能翻转 + 箭头定位：useLayoutEffect 绘制前执行，配合初始 fixed 样式全程无滚动跳变
   useLayoutEffect(() => {
     if (!showAI || !editor) return;
     const anchor = aiAnchorRef.current;
@@ -827,19 +793,12 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     [editor],
   );
 
-  // 桌面内联侧栏可见 = 用户开启 TOC 且 视口宽屏 且 非全屏。
-  // 悬浮球可见 = 目录未以侧栏/抽屉展示，且存在「打开目录」的入口需要：
-  //   1) 用户已开启 TOC（showTocState）——收起后作为重开入口；或
-  //   2) 文档有标题且工具栏目录按钮不可用（<64rem 窄屏编辑 / 只读态无工具栏）——
-  //      悬浮球成为唯一入口。
-  // 抽屉展开时目录已直接展示，悬浮球隐藏避免重叠。
+  // 桌面侧栏可见 = 开启 TOC 且宽屏且非全屏；悬浮球 = 目录未以侧栏/抽屉展示时的入口（收起重开 / 窄屏唯一入口）
   const desktopTocVisible = showTocState && isWide && !editorWebFS && !editorNativeFS;
   const isDesktopToolbar = !isReadonly && isDesktop;
   const fabVisible =
     !desktopTocVisible && !showTocMobile && (showTocState || (hasHeadings && !isDesktopToolbar));
-  // 目录启用但桌面侧栏不可见（窄视口 / 全屏等）时，挂载后直接展开抽屉展示目录内容，
-  // 而不是只亮出悬浮球等用户再点一次。仅首次挂载自动展开一次；
-  // 用户手动关闭抽屉后，悬浮球作为折叠态入口保留。
+  // 目录启用但侧栏不可见时，挂载后自动展开抽屉一次；用户关闭后悬浮球作入口
   const autoOpenedTocRef = useRef(false);
   useEffect(() => {
     if (autoOpenedTocRef.current) return;
@@ -849,9 +808,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     }
   }, [showTocState, desktopTocVisible]);
 
-  // 桌面目录改为编辑器卡片之外的独立侧栏（flex 兄弟节点 + sticky），
-  // 不再用 fixed 浮层：fixed 在「宿主容器满宽」或「祖先存在 transform/filter 包含块」时
-  // 会落在编辑器卡片边框内，看起来与编辑器粘连。侧栏布局在任意宿主宽度下都保持分离。
+  // 桌面目录用 flex 兄弟 + sticky 侧栏，不用 fixed 浮层（fixed 在祖先 transform/filter 包含块下会错位）
 
   if (!editor) {
     return (
@@ -882,9 +839,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                     setShowTocMobile(false);
                   } else {
                     setShowTocState(true);
-                    // 展开后桌面侧栏能否显示取决于 isWide 与全屏态（而非点击时的
-                    // desktopTocVisible，那时 showTocState 尚未更新恒为 false，
-                    // 会导致宽屏下侧栏与抽屉同时出现）。侧栏可显示则不叠开抽屉。
+                    // 展开后按当前 isWide/全屏态决定是否叠开抽屉（点击时 showTocState 未更新恒为 false）
                     const canShowSidebar = isWide && !editorWebFS && !editorNativeFS;
                     if (!canShowSidebar) setShowTocMobile(true);
                   }
@@ -1082,7 +1037,6 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                 </button>
               ))}
 
-              {/* 分隔线 */}
               <span className="w-px h-4 bg-default-200 mx-0.5 shrink-0" aria-hidden="true" />
 
               {/* AI 专属 - 品牌色 */}
@@ -1103,7 +1057,6 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                 <SparklesIcon />
               </button>
 
-              {/* 分隔线 */}
               <span className="w-px h-4 bg-default-200 mx-0.5 shrink-0" aria-hidden="true" />
 
               {/* 「⋯」低频操作入口 - 展开竖向下拉 */}
@@ -1125,7 +1078,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                 <MoreIcon />
               </button>
 
-              {/* 「⋯」竖向二级菜单 - 图标 + 文字，宽度贴合最长字段，独立浮层不增高气泡 */}
+              {/* 「⋯」二级菜单：图标+文字，独立浮层不增高气泡 */}
               {showMoreMenu && (
                 <div
                   role="menu"
@@ -1235,10 +1188,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           </>
         )}
 
-        {/* 写作助手面板 - 浮动在锚点（工具栏按钮/选区/光标）下方，点击外部关闭。
-            portal 到 body：宿主页面动画可能在编辑器祖先残留 transform/filter，
-            会把 fixed 的包含块从视口抢成该祖先，面板坐标随之漂移（如落到屏幕底部）；
-            body 下无此干扰，fixed 坐标始终相对视口。 */}
+        {/* 写作助手面板：portal 到 body，避免祖先 transform/filter 抢走 fixed 包含块导致坐标漂移 */}
         {!isReadonly &&
           showAI &&
           createPortal(
@@ -1337,10 +1287,8 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
 
         {/* 全局 toast：宿主经 onToast 回调自定义；未接入时内置 @qingwu-ui/toast 兜底渲染 */}
 
-        {/* 编辑器主区域 */}
         {/* 编辑器主体 + 目录侧栏 */}
         <div ref={contentAreaRef} className="flex editor-body">
-          {/* 编辑区 */}
           <div className="relative min-w-0 flex-1">
             <EditorContent editor={editor} />
             {!isReadonly && <TableToolbar editor={editor} />}
@@ -1370,9 +1318,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           <SearchBar editor={editor} onClose={() => setSearchOpen(false)} />
         )}
 
-        {/* 目录悬浮球 - 当桌面内联侧栏不可见（窄屏 / 浏览器放大 / 网页全屏 / 原生全屏）
-          且用户开启了 TOC、目录抽屉未展开时出现，点击打开目录抽屉。
-          抽屉展开时目录已直接展示，悬浮球隐藏。 */}
+        {/* 目录悬浮球：桌面侧栏不可见（窄屏/放大/全屏）且目录未展开时出现，点击打开抽屉 */}
         {fabVisible && (
           <button
             type="button"

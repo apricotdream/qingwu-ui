@@ -1,13 +1,4 @@
-/**
- * 内容脚本：注入网页，提供选区获取、可拖拽常驻悬浮球与剪藏消息处理（含防重复注入）。
- *
- * 悬浮球交互：
- * - 页面加载即常驻显示（总开关开启且当前网站未隐藏时）
- * - 按住左键拖拽移动，松手后位置保存到 chrome.storage.local（全局共享）
- * - 拖拽移动超过阈值（5px）不触发剪藏点击
- * - 右键弹出菜单，可隐藏当前网站的悬浮球
- * - 剪藏 toast 跟随悬浮球弹出
- */
+/** 内容脚本：选区获取 + 可拖拽常驻悬浮球 + 剪藏消息处理（含防重复注入）；位置存 chrome.storage.local */
 import { FAB_STORAGE_KEYS, getFabConfig, hideFabOnHost, setFabPosition } from "../shared/fab";
 import { setLocale, t } from "../shared/i18n";
 import { send } from "../shared/messaging";
@@ -320,7 +311,6 @@ const DRAG_THRESHOLD = 5;
     }
   }
 
-  // ===== 右键菜单（隐藏当前网站的悬浮球）=====
   function showFabMenu(x: number, y: number) {
     const menu = ensureFabMenu();
     const menuW = 190;
@@ -372,12 +362,10 @@ const DRAG_THRESHOLD = 5;
     return menuEl;
   }
 
-  // ===== 初始化 =====
   async function init() {
     // 语言跟随扩展设置（设置经 settingsStore 镜像到 chrome.storage.local）
     try {
-      // @types/chrome 0.2.x 的 storage.get 默认返回 Record<string, unknown>，
-      // 显式给出值类型避免逐处断言
+      // @types/chrome 的 storage.get 默认返回 Record<string, unknown>，显式给值类型避免断言
       const { settings } = await chrome.storage.local.get<{
         settings?: { locale?: Locale };
       }>("settings");

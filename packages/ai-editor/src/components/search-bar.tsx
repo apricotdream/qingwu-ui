@@ -8,16 +8,9 @@ interface SearchBarProps {
 }
 
 /**
- * 编辑器内搜索浮层
- * - Ctrl+F / Cmd+F 唤起，ESC 关闭
- * - Enter 下一个，Shift+Enter 上一个
- * - 实时显示匹配数与当前位置
- *
- * 搜索触发策略：
- * - keyword/caseSensitive/wholeWord 变化 -> 用 rAF 合并同帧多次调用，下一帧前执行 setSearch
- * - 不再用 composingRef 跳过 composition 期间搜索（这会导致中文输入法最后一步 setKeyword
- *   因值未变化而不触发 useEffect，搜索永远不执行）
- * - input 事件 stopPropagation 防止冒泡到 ProseMirror contenteditable
+ * 编辑器内搜索浮层：Ctrl/Cmd+F 唤起，Enter/Shift+Enter 下/上一个。
+ * keyword/选项变化用 rAF 合并同帧调用；不用 composingRef 跳过 composition（中文输入法末步不触发搜索）；
+ * input 事件 stopPropagation 防冒泡到 ProseMirror。
  */
 export const SearchBar: FC<SearchBarProps> = ({ editor, onClose }) => {
   const [keyword, setKeyword] = useState("");
@@ -30,8 +23,7 @@ export const SearchBar: FC<SearchBarProps> = ({ editor, onClose }) => {
   const searchParamsRef = useRef({ keyword, caseSensitive, wholeWord });
   searchParamsRef.current = { keyword, caseSensitive, wholeWord };
 
-  // 监听 editor 文档更新，刷新匹配数显示 - 用 rAF throttle 避免频繁渲染
-  // 仅订阅 update（文档变化），不订阅 transaction（含选区变化），避免光标移动触发重渲染
+  // 监听 update 刷新匹配数：rAF throttle；不订阅 transaction，避免光标移动重渲染
   useEffect(() => {
     if (!editor) return;
     let raf = 0;
@@ -55,8 +47,7 @@ export const SearchBar: FC<SearchBarProps> = ({ editor, onClose }) => {
     return () => clearTimeout(id);
   }, []);
 
-  // 搜索执行：keyword/选项变化时用 rAF 合并，下一帧执行 setSearch
-  // rAF 自然合并同帧多次调用，比 setTimeout 更跟手；且在浏览器渲染前执行不会掉帧
+  // 搜索执行：rAF 合并同帧调用，比 setTimeout 更跟手且不掉帧
   useEffect(() => {
     if (!editor) return;
     const raf = requestAnimationFrame(() => {
@@ -79,7 +70,6 @@ export const SearchBar: FC<SearchBarProps> = ({ editor, onClose }) => {
         /* ignore */
       }
     };
-    // 仅卸载时执行
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

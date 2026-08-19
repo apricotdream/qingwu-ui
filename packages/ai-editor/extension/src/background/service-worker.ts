@@ -1,11 +1,4 @@
-/**
- * Background service worker - 消息中枢 + AI 调用 + 推送青梧编辑器
- *
- * 解决 Obsidian 痛点：
- * - 错误透明：所有操作返回结构化结果（ok/err）
- * - AI 失败有重试 & 降级提示
- * - 推送失败显示原始错误码（endpoint 不存在/网络不可达）
- */
+/** Background service worker：消息中枢 + AI 调用 + 推送青梧编辑器（结构化 ok/err，AI 失败可重试/降级） */
 
 import { runAI, testAI } from "../shared/ai/provider";
 import { ClipperError, toClipperError } from "../shared/errors";
@@ -34,7 +27,6 @@ import type {
   ExtractedContent,
 } from "../shared/types";
 
-// ===== 启动初始化 =====
 chrome.runtime.onInstalled.addListener(async () => {
   await loadSettings();
   await ensureContextMenus();
@@ -46,8 +38,7 @@ chrome.runtime.onStartup.addListener(async () => {
   await ensureSidePanelDefault();
 });
 
-// 配置 side panel：设置默认 path + 点击扩展图标直接打开 side panel
-// （openPanelOnActionClick 是最可靠的打开方式，由 Chrome 内部处理用户手势）
+// 配置 side panel 默认 path + 点击扩展图标打开（openPanelOnActionClick 由 Chrome 内部处理用户手势）
 async function ensureSidePanelDefault() {
   if (!chrome.sidePanel?.setOptions) return;
   try {
@@ -93,7 +84,6 @@ async function ensureContextMenus() {
   }
 }
 
-// ===== 上下文菜单 =====
 chrome.contextMenus?.onClicked.addListener(async (info, tab) => {
   const tabId = tab?.id;
   if (!tabId) return;
@@ -119,11 +109,9 @@ chrome.contextMenus?.onClicked.addListener(async (info, tab) => {
   }, 200);
 });
 
-// ===== 快捷键 =====
 chrome.commands?.onCommand.addListener((command) => {
   if (command === "open-sidepanel") {
-    // sidePanel.open 必须在用户手势同步上下文调用，
-    // 不能先 await（会丢失手势）。用 windowId 常量避免异步 query。
+    // sidePanel.open 须在用户手势同步上下文调用，不能先 await
     openSidePanelForCurrentWindow();
     return;
   }
@@ -169,7 +157,6 @@ function openSidePanelForTab(tabId: number) {
   }
 }
 
-// ===== 消息中枢 =====
 registerHandler({
   ping: () => ok({ pong: true, at: Date.now() }),
 
@@ -456,8 +443,7 @@ registerHandler({
     return ok({ delivered: true });
   },
 
-  // 悬浮球来自 content script，跨进程调用 sidePanel.open 容易丢用户手势。
-  // 这里直接打开完整侧栏窗口，保留设置 / 历史 / AI / 复制 / 预览等完整功能。
+  // 悬浮球跨进程调 sidePanel.open 易丢手势，这里直接开完整侧栏窗口
   "tab:open-sidepanel": async (_msg, sender) => {
     const tabId = sender.tab?.id;
     try {
@@ -473,7 +459,6 @@ registerHandler({
   },
 });
 
-// ===== 在页面上下文执行（注入脚本） =====
 type PageExtractStrategy = "readability" | "site-rule" | "manual-selection" | "full-dom";
 type PageExtractedImage = {
   src: string;
@@ -489,9 +474,7 @@ function extractInPage(
   payload: ExtractPayload,
   siteRules: import("../shared/types").SiteRule[],
 ): ExtractedContent | null {
-  // 注意：此函数会被序列化注入到页面，不能引用外部变量
-  // 我们重新声明一个简化版的提取逻辑（与 readability.ts 同构）
-  // 为避免 import 在注入上下文失败，直接使用 page 内的全局函数
+  // 此函数被序列化注入页面，不能引用外部变量/import，故重声明简化提取逻辑
   const doc = document;
 
   const NEGATIVE = [
@@ -587,8 +570,7 @@ function extractInPage(
   }
 
   if (payload.mode === "selection" && (payload as any).selection) {
-    // 用户从右键菜单触发，selectionText 已在 background 提取，但这里走不到
-    // 此分支仅用于内部直传 selection 的场景
+    // 右键菜单的选区已由 background 提取，此分支仅内部直传 selection
   }
 
   // 站点规则
@@ -764,14 +746,11 @@ function extractInPage(
   };
 }
 
-// ===== 推送青梧编辑器 =====
 async function pushToEditor(
   record: ClipRecord,
   target: import("../shared/types").EditorTarget,
 ): Promise<{ ok: true } | { ok: false; error: string; retryable: boolean }> {
-  // 浏览器降级通道：HTTP 不可用时（纯 Web dev 模式无 node:http），
-  // 通过 chrome.tabs.create 打开编辑器页面 + 注入 postMessage 推送 markdown。
-  // 编辑器页面监听 window.message 事件接收。
+  // 浏览器降级通道：HTTP 不可用时打开编辑器页 + postMessage 推送（宿主监听 window.message）
   async function fallbackBrowserPush(): Promise<
     { ok: true } | { ok: false; error: string; retryable: boolean }
   > {
@@ -789,8 +768,7 @@ async function pushToEditor(
       if (!tab.id) return { ok: false, error: "无法打开编辑器页面", retryable: true };
       // 等待页面加载完成（最多 8 秒；dev 冷启动首次编译可能较慢）
       await waitForTabComplete(tab.id, 8_000);
-      // 等页面接收器就绪（宿主页暴露 __qingwuReady）再投递，避免消息早于接收器注册而被丢弃；
-      // 缩短等待并失败透明：未就绪直接报错，不再「静默等满后盲目投递」
+      // 等宿主暴露 __qingwuReady 再投递，避免消息早于接收器注册被丢弃
       const pageReady = await waitForPageReady(tab.id, 4_000);
       if (!pageReady) {
         return {
@@ -890,7 +868,6 @@ async function pushToEditor(
   }
 }
 
-// ===== 工具 =====
 function unique<T>(arr: T[]): T[] {
   return [...new Set(arr)];
 }
@@ -924,8 +901,7 @@ function waitForTabComplete(tabId: number, timeoutMs: number): Promise<void> {
   });
 }
 
-// 等待宿主页面暴露 __qingwuReady 标志（表示剪藏接收器已注册），最多 timeoutMs；
-// 返回是否就绪：true=可安全投递；false=超时未就绪，由调用方决定失败方式（不再盲目投递）。
+// 等宿主暴露 __qingwuReady 才可安全投递，超时返回 false
 async function waitForPageReady(tabId: number, timeoutMs: number): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {

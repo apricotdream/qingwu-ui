@@ -11,9 +11,7 @@ const FileViewer = lazy(() => import("@file-viewer/react"));
 
 const openPreviewSources = new Set<string>();
 
-// IDM 绕过策略：优先通过 /api/preview 服务端代理获取文件（代理 URL 不含扩展名，
-// IDM 无法按扩展名拦截），回退到 XHR（部分旧版 IDM 不 hook XHR），最终兜底为直接 fetch。
-// 获取成功后用 application/octet-stream 创建 Blob URL，避免 IDM 识别文件类型。
+// IDM 绕过：优先 /api/preview 代理（URL 无扩展名），回退 XHR，最终直接 fetch；Blob 用 octet-stream 防识别
 
 const FILE_VIEWER_OPTIONS = {
   rendererMode: "replace" as const,
@@ -21,7 +19,7 @@ const FILE_VIEWER_OPTIONS = {
   theme: "light" as const,
   // 关闭 Shadow DOM，让外部 MutationObserver 能移除内部 <a download> 防止 IDM 拦截
   styleIsolation: "scoped" as const,
-  // 附件卡片提供统一下载入口，关闭预览器内置下载，避免 PDF 出现重复"下载"提示
+  // 关闭预览器内置下载，避免与卡片下载重复
   toolbar: {
     position: "bottom-right" as const,
     download: false,
@@ -50,8 +48,7 @@ const FILE_VIEWER_OPTIONS = {
   },
 };
 
-// 附件按扩展名懒加载对应 renderer：只下载用到的引擎，
-// 避免静态 import preset-office 让全部重型引擎（pdf/excel/word/ppt/ofd）进入首屏。
+// 按扩展名懒加载渲染引擎，避免全部重型引擎进入首屏
 type RendererFamily = "pdf" | "word" | "spreadsheet" | "presentation" | "archive" | "text";
 
 const EXT_RENDERER: Record<string, RendererFamily> = {
@@ -221,11 +218,7 @@ function encodePreviewPath(url: string): string {
   return btoa(encodeURIComponent(url)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-/**
- * 通过 /api/preview 代理获取文件 buffer。
- * 代理 URL 不含文件扩展名，可绕过 IDM 的扩展名拦截。
- * 若 /api/preview 端点不存在或返回 SPA fallback HTML，则返回 null（调用方回退到直接请求）。
- */
+/** 经 /api/preview 代理获取文件 buffer；端点缺失时返回 null */
 async function fetchViaPreviewProxy(
   targetUrl: string,
   signal?: AbortSignal,
@@ -257,10 +250,7 @@ async function fetchViaPreviewProxy(
   }
 }
 
-/**
- * 用 XMLHttpRequest 获取 ArrayBuffer，替代 fetch。
- * 部分 IDM 版本只 hook fetch 不 hook XHR，用 XHR 可绕过拦截。
- */
+/** XHR 获取 ArrayBuffer：部分 IDM 只 hook fetch 不 hook XHR */
 function fetchArrayBufferXHR(
   url: string,
   headers?: Record<string, string>,
@@ -347,8 +337,7 @@ export function AttachmentView({ node, deleteNode, selected, editor }: any) {
   const [renderer, setRenderer] = useState<unknown>(undefined);
   const [rendererError, setRendererError] = useState(false);
   const src: string = node.attrs.src || "";
-  // 名称兜底链：attrs.name → URL 文件名 → 无 src 时标记「附件已丢失」
-  // （历史版本存库的节点缺 data-src/data-name，或对象存储中的文件已被删除）。
+  // 名称兜底：attrs.name → URL 文件名 → 附件已丢失（历史节点可能缺 data-src/data-name）
   const name: string =
     node.attrs.name ||
     (src ? src.split("/").pop()?.split("?")[0] || "" : "") ||
@@ -358,7 +347,7 @@ export function AttachmentView({ node, deleteNode, selected, editor }: any) {
   // 丢失态：src 缺失 → 无法预览/下载，仅保留删除，避免给用户可点但必然失败的按钮
   const lost = !src;
 
-  // 按扩展名懒加载渲染引擎；切换文件类型时先清空旧引擎，避免用错误引擎挂载新文件
+  // 按扩展名懒加载渲染引擎；切换类型时先清空旧引擎
   useEffect(() => {
     if (!showPreview) {
       setRenderer(undefined);
@@ -492,8 +481,7 @@ export function AttachmentView({ node, deleteNode, selected, editor }: any) {
     };
   }, [fsMode, restoreAfterFullscreen]);
 
-  // Backspace/Delete 键删除附件（附件节点被选中时触发）
-  // 多选时共享标志位防止重复弹框
+  // Backspace/Delete 删除附件（选中时触发）；共享标志位防多选重复弹框
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Backspace" && e.key !== "Delete") return;
@@ -537,12 +525,12 @@ export function AttachmentView({ node, deleteNode, selected, editor }: any) {
       let buffer: ArrayBuffer | null = null;
       let lastError: Error | null = null;
 
-      // 方法0: /api/preview 代理 — 所有 URL 优先走代理，代理 URL 无扩展名绕过 IDM
+      // 方法0：/api/preview 代理（URL 无扩展名绕过 IDM）
       if (!buffer && !isPresigned) {
         buffer = await fetchViaPreviewProxy(src, controller.signal);
       }
 
-      // 方法1: S3 预签名 + /api/preview 代理，回退 XHR
+      // 方法1：S3 预签名，代理失败回退 XHR
       if (!buffer && !isPresigned) {
         try {
           const presignedUrl = await signPreviewUrl(src);
@@ -580,7 +568,7 @@ export function AttachmentView({ node, deleteNode, selected, editor }: any) {
         }
       }
 
-      // 方法3: 直接 XHR（公开 URL 或预签名 URL，/api/preview 不可用时的兜底）
+      // 方法3：直接 XHR（兜底）
       if (!buffer) {
         try {
           buffer = await fetchArrayBufferXHR(

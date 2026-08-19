@@ -83,8 +83,7 @@ export const ExportDialog: FC<ExportDialogProps> = ({ open, onClose, editor }) =
 
   const handlePDF = useCallback(() => {
     if (!editor) return;
-    // sanitize：剥离 script/on*/javascript:/svg 等危险内容
-    // 额外兜底过滤 iframe/object/embed，防止新窗口 document.write 执行任意脚本
+    // sanitize 剥离危险内容 + 过滤 iframe/object/embed，防 document.write 执行脚本
     const raw = editor.getHTML();
     const safeHtml = sanitizeHtml(raw)
       .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, "")

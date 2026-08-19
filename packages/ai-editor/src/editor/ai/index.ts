@@ -1,7 +1,5 @@
 import { generateText, streamText } from "ai";
 
-// ---- 类型定义 ----
-
 export type AIMode = "continue" | "improve" | "shorter" | "longer" | "fix" | "translate" | "zap";
 
 export interface AIRequest {
@@ -33,8 +31,6 @@ export interface AIConfig {
   headers?: Record<string, string>;
 }
 
-// ---- 系统提示词 ----
-
 export function buildSystemPrompt(mode: AIMode, instruction?: string): string {
   const prompts: Record<AIMode, string> = {
     continue:
@@ -55,21 +51,15 @@ export function buildSystemPrompt(mode: AIMode, instruction?: string): string {
 let currentProvider: AIProvider | null = null;
 
 /**
- * 基于 Vercel AI SDK 创建统一的 AI Provider。
- * 所有兼容 OpenAI Chat Completions API 的服务均可使用，统一配置：
- *
- * - OpenAI:     baseURL = "https://api.openai.com/v1",     model = "gpt-5.6-luna"
- * - DeepSeek:   baseURL = "https://api.deepseek.com/v1",    model = "deepseek-v4-flash"
- * - Qwen:       baseURL = "https://dashscope.aliyuncs.com/compatible-mode/v1", model = "qwen3.7-plus"
- * - 智谱 GLM:   baseURL = "https://open.bigmodel.cn/api/paas/v4", model = "glm-5.2"
- * - MiniMax:    baseURL = "https://api.minimax.io/v1",     model = "MiniMax-M3"
- * - Moonshot:   baseURL = "https://api.moonshot.ai/v1",      model = "kimi-k2.6"
+ * 基于 Vercel AI SDK 创建统一 Provider（兼容 OpenAI Chat Completions 的服务均可使用）。
+ * 各服务 baseURL/model：OpenAI api.openai.com/v1 / gpt-5.6-luna；DeepSeek api.deepseek.com/v1 / deepseek-v4-flash；
+ * Qwen dashscope.aliyuncs.com/compatible-mode/v1 / qwen3.7-plus；智谱 open.bigmodel.cn/api/paas/v4 / glm-5.2；
+ * MiniMax api.minimax.io/v1 / MiniMax-M3；Moonshot api.moonshot.ai/v1 / kimi-k2.6。
  */
 export async function createAILanguageModelProvider(
   config: AILanguageModelConfig,
 ): Promise<AIProvider> {
-  // @ai-sdk/openai 为可选 peer 依赖：不安装时主入口仍可正常引入，
-  // 仅在调用本函数（默认 provider）时才加载；自定义 provider 走 setAIProvider() 无需安装。
+  // @ai-sdk/openai 为可选 peer 依赖：仅默认 provider 时才动态加载；自定义 provider 走 setAIProvider()
   let createOpenAI: typeof import("@ai-sdk/openai").createOpenAI;
   try {
     ({ createOpenAI } = await import("@ai-sdk/openai"));
@@ -82,8 +72,7 @@ export async function createAILanguageModelProvider(
     apiKey: config.apiKey,
     baseURL: config.baseURL,
   });
-  // 必须显式用 chat()：@ai-sdk/openai 的默认调用 openai(model) 走 Responses API（POST /responses），
-  // 而 DeepSeek / 通义 / GLM 等兼容端点只实现了 /chat/completions，默认调用会 404。
+  // 必须显式 openai.chat()：默认 openai(model) 走 Responses API，而 DeepSeek/通义/GLM 兼容端点只实现 /chat/completions
   const model = openai.chat(config.model);
 
   return {

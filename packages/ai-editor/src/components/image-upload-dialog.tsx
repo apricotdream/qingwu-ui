@@ -143,15 +143,12 @@ export const ImageUploadDialog: FC<ImageUploadDialogProps> = ({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-      {/* 遮罩 */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose} />
 
-      {/* 弹窗 */}
       <div
         className="relative w-[calc(100vw-32px)] max-w-[420px] max-h-[90vh] bg-background rounded-2xl shadow-2xl border border-default-200 overflow-hidden animate-in"
         onPaste={tab === "upload" ? handlePaste : undefined}
       >
-        {/* 头部 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-default-100">
           <h2 className="text-base font-semibold">插入图片</h2>
           <button
@@ -163,7 +160,6 @@ export const ImageUploadDialog: FC<ImageUploadDialogProps> = ({
           </button>
         </div>
 
-        {/* Tab 切换 */}
         <div className="flex border-b border-default-100 px-5">
           {(["upload", "url"] as Tab[]).map((t) => (
             <button
@@ -184,17 +180,14 @@ export const ImageUploadDialog: FC<ImageUploadDialogProps> = ({
           ))}
         </div>
 
-        {/* 内容区 */}
         <div className="p-5">
           {tab === "upload" ? (
             <div className="space-y-4">
-              {/* 存储服务商信息 */}
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-default-50 text-xs text-default-500">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                 存储服务：{storageInfo.name}
               </div>
 
-              {/* 拖拽/点击上传区域 */}
               {!preview && (
                 <div
                   className={`relative flex flex-col items-center justify-center gap-3 py-10 px-4 rounded-xl border-2 border-dashed transition-all cursor-pointer ${
@@ -244,7 +237,6 @@ export const ImageUploadDialog: FC<ImageUploadDialogProps> = ({
                 </div>
               )}
 
-              {/* 预览 + 上传进度 */}
               {preview && (
                 <div className="space-y-3">
                   <div className="relative rounded-xl overflow-hidden bg-default-100">
@@ -295,7 +287,6 @@ export const ImageUploadDialog: FC<ImageUploadDialogProps> = ({
                 </div>
               )}
 
-              {/* 错误提示 */}
               {error && (
                 <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-danger-50 text-sm text-danger">
                   <svg
@@ -316,7 +307,6 @@ export const ImageUploadDialog: FC<ImageUploadDialogProps> = ({
               )}
             </div>
           ) : (
-            /* URL 输入 */
             <div className="space-y-4">
               <div>
                 <label className="block text-xs text-default-500 mb-1.5">图片链接地址</label>
@@ -357,7 +347,6 @@ export const ImageUploadDialog: FC<ImageUploadDialogProps> = ({
           )}
         </div>
 
-        {/* 底部提示 */}
         <div className="px-5 py-3 border-t border-default-100 text-[11px] text-default-300 text-center">
           图片将上传至 {storageInfo.name}
         </div>

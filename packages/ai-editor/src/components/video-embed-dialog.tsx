@@ -99,7 +99,6 @@ export const VideoEmbedDialog: FC<Props> = ({ open, onClose, onInsert }) => {
     onClose();
   }, [onClose]);
 
-  // Paste handler inside dialog
   useEffect(() => {
     if (!open) return;
     const el = dialogRef.current;
@@ -115,7 +114,7 @@ export const VideoEmbedDialog: FC<Props> = ({ open, onClose, onInsert }) => {
     return () => el.removeEventListener("paste", handler);
   }, [open]);
 
-  // 空格键切换预览播放/暂停（仅在直链预览时，且焦点不在输入框）
+  // 空格键切换预览播放/暂停（仅直链预览，焦点不在输入框）
   useEffect(() => {
     if (!open || type !== "direct") return;
     const onKey = (e: KeyboardEvent) => {
@@ -141,7 +140,6 @@ export const VideoEmbedDialog: FC<Props> = ({ open, onClose, onInsert }) => {
         ref={dialogRef}
         className="relative w-[calc(100vw-32px)] max-w-[520px] max-h-[90vh] bg-background rounded-2xl shadow-2xl border border-default-200 overflow-hidden animate-in"
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-default-100">
           <div className="flex items-center gap-2">
             <svg
@@ -169,7 +167,6 @@ export const VideoEmbedDialog: FC<Props> = ({ open, onClose, onInsert }) => {
         </div>
 
         <div className="p-5 space-y-4">
-          {/* URL Input - single input, no tabs */}
           <div>
             <label className="block text-xs font-medium text-default-600 mb-1.5">
               粘贴视频链接
@@ -192,7 +189,6 @@ export const VideoEmbedDialog: FC<Props> = ({ open, onClose, onInsert }) => {
             </p>
           </div>
 
-          {/* Type indicator */}
           {url.trim() && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-default-400">识别为：</span>
@@ -218,7 +214,6 @@ export const VideoEmbedDialog: FC<Props> = ({ open, onClose, onInsert }) => {
             </div>
           )}
 
-          {/* Copyright notice for platform videos */}
           {isPlatform && url.trim() && (
             <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-xs">
               <svg
@@ -246,7 +241,6 @@ export const VideoEmbedDialog: FC<Props> = ({ open, onClose, onInsert }) => {
             </div>
           )}
 
-          {/* Preview */}
           {type === "direct" && isValid ? (
             <div
               id={previewId}
@@ -307,7 +301,6 @@ export const VideoEmbedDialog: FC<Props> = ({ open, onClose, onInsert }) => {
             </div>
           )}
 
-          {/* Error */}
           {error && (
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-danger-50 dark:bg-danger-900/20 text-sm text-danger">
               <svg
@@ -327,7 +320,6 @@ export const VideoEmbedDialog: FC<Props> = ({ open, onClose, onInsert }) => {
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex gap-2 pt-1">
             <button
               type="button"

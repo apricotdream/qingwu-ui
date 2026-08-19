@@ -8,8 +8,7 @@ import { getSettingsWithRetry } from "../shared/settings-client";
 import type { ClipperSettings, ExtractedContent } from "../shared/types";
 import { Badge, Button, Icon, QingWuLogo, ThemeProvider, useTheme } from "../shared/ui";
 
-// popup 直接调 sidePanel.open（popup 是用户手势上下文，
-// 通过消息让 background 调会丢失手势而失败）
+// popup 是用户手势上下文，直接调 sidePanel.open；经 background 转发会丢手势
 function openSidePanelFromPopup() {
   try {
     void chrome.sidePanel?.open({ windowId: chrome.windows.WINDOW_ID_CURRENT });

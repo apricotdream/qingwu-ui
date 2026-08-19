@@ -1,11 +1,4 @@
-/**
- * 文本段类型
- * - cjk: 中日韩字符，可前后断行
- * - latin: 拉丁/阿拉伯等，只能在单词边界断行
- * - space: 空白字符（软断点）
- * - break: 强制换行（\n）
- * - punct: CJK 标点，不应出现在行首
- */
+/** 文本段类型：cjk 中日韩可断 / latin 单词边界断 / space 软断点 / break 强制换行 / punct 标点禁行首 */
 export type SegmentType = "cjk" | "latin" | "space" | "break" | "punct";
 
 /** 排版后的文本段，含测量宽度 */

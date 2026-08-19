@@ -1,10 +1,4 @@
-/* ============================================================
-   青梧UI · 头像编辑组件（AvatarEditor）
-   - 点击头像打开编辑层：选择 / 拖拽图片
-   - 拖动定位、缩放、左右 90° 旋转、圆角率实时调节
-   - Canvas 本地导出，回调同时给出 Blob 与 dataURL
-   - 零框架依赖，纯 DOM + CSS
-   ============================================================ */
+/** 青梧UI 头像编辑组件：选图、拖拽、缩放、旋转、圆角调节，Canvas 导出 Blob 与 dataURL */
 
 import { ICON_CLOSE, ICON_EDIT, ICON_REFRESH, ICON_RETRY } from "../../../icon/icons";
 import type { AvatarEditorOptions, AvatarEditorResult } from "./types";
@@ -22,11 +16,7 @@ function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
-/**
- * 在 size×size 正方形上绘制圆角路径。
- * 优先使用原生 roundRect（真实圆弧：半径达到 size/2 时四段角弧圆心重合于正方形中心，
- * 得到正圆）；老环境回退到二次贝塞尔近似（抛物线角弧，最圆时仍轻微外凸）。
- */
+/** 在 size×size 上绘制圆角路径：优先 roundRect，老环境回退二次贝塞尔近似 */
 function roundRect(ctx: CanvasRenderingContext2D, size: number, radius: number): void {
   const r = Math.max(0, Math.min(size / 2, radius));
   ctx.beginPath();

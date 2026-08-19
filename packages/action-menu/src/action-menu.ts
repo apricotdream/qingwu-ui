@@ -1,10 +1,4 @@
-/* ============================================================
-   青梧UI · 扇形动作菜单（ActionMenu）
-   - 悬浮展开扇形 · 两段式披露：打开仅图标，hover 扇区沿切向伸出该扇区 label（旋转钳制 ±45°）
-   - hover 扇区不收起菜单，点击扇区才触发动作并收起
-   - FAB 内置触发 / 外部元素锚定 双模式 · ESC / 外部点击 收起 · 键盘导航
-   - ARIA: menu / menuitem + aria-activedescendant
-   ============================================================ */
+/** 青梧UI 扇形动作菜单：hover 伸 label、点击触发并收起，支持键盘导航与 ARIA */
 
 import { ICON_PLUS } from "../../../icon/icons";
 import type { ActionMenuItem, ActionMenuOptions, ActionMenuPosition } from "./types";
@@ -32,7 +26,6 @@ function el(tag: string, cls?: string, html?: string): HTMLElement {
   return n;
 }
 
-/* ---- 扇形几何 ---- */
 const TAU = Math.PI * 2;
 const DEG = Math.PI / 180;
 /** label 圆心到扇区图标的径向间距 px */
@@ -54,12 +47,7 @@ interface ItemLayout {
   rot: number;
 }
 
-/**
- * 计算每个扇区的位置与 label 旋转：
- * - 图标圆心：沿 angle 方向、距触发中心 radius px
- * - label 圆心：沿 angle 方向再向外 LABEL_GAP px
- * - label 旋转：沿切向（angle + 90°），先归一化到 [-90°, 90°] 防倒置，再钳制 ±45° 保证可读
- */
+/** 计算扇区位置与 label 旋转：沿切向，归一化防倒置并钳制 ±45° 保证可读 */
 function layoutItems(
   count: number,
   direction: "left" | "right",
@@ -88,9 +76,7 @@ function layoutItems(
 
 let UID = 0;
 
-/* ============================================================ */
 export class ActionMenu {
-  /* ---- 配置 ---- */
   private root: HTMLElement;
   private items: ActionMenuItem[];
   private direction: "left" | "right";
@@ -106,7 +92,6 @@ export class ActionMenu {
   private readonly onOpenChangeCb?: (open: boolean) => void;
   private readonly onActionCb?: (item: ActionMenuItem, index: number) => void;
 
-  /* ---- 运行时状态 ---- */
   private isOpen = false;
   private active = -1;
   private triggerHovered = false;
@@ -114,12 +99,10 @@ export class ActionMenu {
   private hoverTimer: ReturnType<typeof setTimeout> | null = null;
   private hideTimer: ReturnType<typeof setTimeout> | null = null;
 
-  /* ---- DOM 引用 ---- */
   private trigger!: HTMLElement;
   private fan!: HTMLElement;
   private itemsWrap!: HTMLElement;
 
-  /* ---- 监听器 ---- */
   private onDocPointerDown: ((e: PointerEvent) => void) | null = null;
   private onWinScroll: (() => void) | null = null;
 
@@ -143,9 +126,6 @@ export class ActionMenu {
     this.build(opts);
   }
 
-  /* ============================================================
-     Build：创建触发器 + 扇区面板（挂 body）
-     ============================================================ */
   private build(opts: ActionMenuOptions): void {
     this.root.classList.add("qam-root");
     if (this.customClass) this.root.classList.add(this.customClass);
@@ -193,9 +173,6 @@ export class ActionMenu {
     this.fan.addEventListener("click", this.onFanClick);
   }
 
-  /* ============================================================
-     渲染扇区
-     ============================================================ */
   private renderItems(): void {
     this.itemsWrap.textContent = "";
     const layouts = layoutItems(this.items.length, this.direction, this.spread, this.radius);
@@ -248,9 +225,6 @@ export class ActionMenu {
     }
   }
 
-  /* ============================================================
-     展开 / 收起 / 定位
-     ============================================================ */
   open(): void {
     if (this.isOpen || this.items.length === 0) return;
     this.isOpen = true;
@@ -326,9 +300,6 @@ export class ActionMenu {
     this.fan.style.height = `${(half * 2).toFixed(1)}px`;
   }
 
-  /* ============================================================
-     触发 / 交互
-     ============================================================ */
   private onTriggerEnter = (): void => {
     this.triggerHovered = true;
     this.fanHovered = true; // 扇形覆盖触发器，指针必然在其命中圆内
@@ -384,9 +355,7 @@ export class ActionMenu {
     this.close();
   }
 
-  /* ============================================================
-     键盘导航（焦点保持在触发器，aria-activedescendant 指向扇区）
-     ============================================================ */
+  /** 键盘导航：焦点保持在触发器，aria-activedescendant 指向扇区 */
   private onTriggerKey = (e: KeyboardEvent): void => {
     switch (e.key) {
       case "ArrowDown":
@@ -471,10 +440,6 @@ export class ActionMenu {
     const next = this.nextEnabled(from, delta > 0 ? 1 : -1);
     if (next >= 0) this.setActive(next);
   }
-
-  /* ============================================================
-     Public API
-     ============================================================ */
 
   /** 是否展开 */
   get expanded(): boolean {

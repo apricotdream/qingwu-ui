@@ -1,8 +1,4 @@
-/**
- * 青梧 Web Clipper - 共享类型定义
- *
- * 解决 Obsidian Web Clipper 类型不严格导致的运行期模板/变量 bug。
- */
+/** 青梧 Web Clipper 共享类型（严格类型化，避免 Obsidian 运行期模板/变量 bug） */
 
 export type Locale = "zh-CN" | "en-US";
 export type ThemeMode = "light" | "dark" | "auto";

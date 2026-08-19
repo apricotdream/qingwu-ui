@@ -174,8 +174,7 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
 
   const executeAI = useCallback(
     async (mode: AIMode) => {
-      // 快照选区：无选区时 AI context 为全文、插入走「全文替换/插入到下方」；
-      // 有选区时 context 为选区文本、插入走「替换/插入到下方」
+      // 快照选区：无选区则 context 全文 + 全文替换/插下方；有选区则 context 选区文本 + 替换/插下方
       const sel = editor.state.selection;
       selectionRef.current = { from: sel.from, to: sel.to, empty: sel.empty };
       setIsLoading(true);
@@ -208,9 +207,7 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
     [editor, customInstruction],
   );
 
-  // 流式自动滚底跟随：文本增长时滚到底（最新内容始终可见）；
-  // 用户主动上滚即暂停跟随，滚回底部恢复。
-  // 监听挂载以 streamingText 是否出现为依赖：文本区是条件渲染，挂载后再绑定。
+  // 流式自动滚底：文本增长滚到底；用户上滚即暂停，滚回底部恢复。以 streamingText 出现为依赖（文本区条件渲染）
   useEffect(() => {
     const el = streamingBoxRef.current;
     if (!el) return;
@@ -287,7 +284,7 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
     setError(null);
   }, []);
 
-  /* 确认弹窗里的「将移除节点」按类型统计 */
+  /* 将移除节点按类型统计 */
   const willRemoveCounts: Record<string, number> = {};
   for (const m of confirmState?.willRemove ?? []) {
     willRemoveCounts[m.type] = (willRemoveCounts[m.type] ?? 0) + 1;
@@ -296,7 +293,6 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
   return (
     <>
       <div className="ai-selector w-full flex-1 min-h-0 flex flex-col">
-        {/* 头部：标题 + 关闭 */}
         <div className="flex items-center justify-between pl-3 pr-1.5 py-1.5 border-b border-default-100 shrink-0">
           <span className="flex items-center gap-1.5 text-xs font-medium text-default-500">
             <SparklesIcon className="text-primary" />
@@ -333,7 +329,6 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
           ))}
         </div>
 
-        {/* 状态区：flex 列，流式文本区可伸缩滚动，操作按钮常驻底部 */}
         <div className="px-3 pb-3 flex-1 min-h-0 flex flex-col">
           {!selectedMode && (
             <p className="text-[11px] text-default-400 leading-relaxed">

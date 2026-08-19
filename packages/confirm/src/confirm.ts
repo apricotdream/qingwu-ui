@@ -1,12 +1,4 @@
-/* ============================================================
-   青梧UI · Confirm 确认框组件
-   - 纯 DOM 渲染，零第三方依赖
-   - 缩放同源转场：从触发控件中心 morph 出现 / 确认取消后缩回
-   - 互斥单例：同时仅一个确认框，新调用替换旧框（旧框 resolve 'dismiss'）
-   - 异步确认：onConfirm 返回 Promise 时进入 loading 态，成功才缩回
-   - role=dialog / aria-modal / 焦点陷阱 / Esc / 关闭后焦点回归触发按钮
-   - SSR 安全：无 window 时 resolve 'dismiss'
-   ============================================================ */
+/** 青梧UI · Confirm 确认框：纯 DOM 零依赖、morph 转场、互斥单例、异步确认、可访问、SSR 安全 */
 
 import type { BackdropAction, ConfirmOptions, ConfirmResult } from "./types";
 
@@ -63,7 +55,7 @@ function el(tag: string, cls?: string): HTMLElement {
   return n;
 }
 
-/** 渲染正文：解析 **关键词** 为强调色节点。全部走 textContent，无 innerHTML，杜绝 XSS。 */
+/** 渲染正文：**关键词** 为强调色；纯 textContent 无 XSS */
 function renderRich(container: HTMLElement, text: string): void {
   const parts = text.split(/\*\*(.+?)\*\*/g);
   for (let i = 0; i < parts.length; i++) {
@@ -101,7 +93,6 @@ interface Session {
   exitTimer: ReturnType<typeof setTimeout> | null;
 }
 
-/* ============================================================ */
 export class ConfirmDialog {
   private opts: ConfirmOptions = {};
   private current: Session | null = null;
@@ -112,12 +103,7 @@ export class ConfirmDialog {
 
   /* ---- 核心 ---- */
 
-  /**
-   * 打开确认框，返回 Promise<ConfirmResult>。
-   * - 互斥：已有一个确认框时，旧框瞬关并 resolve('dismiss')，再开新框
-   * - 从触发控件中心 morph 出现；测量失败时降级为纯居中淡入
-   * - Promise 在关闭动画结束后 settle（reduced-motion 下同步 settle）
-   */
+  /** 打开确认框：互斥替换旧框，morph 出现，关闭动画后 settle */
   confirm(trigger: HTMLElement | string, options?: ConfirmOptions): Promise<ConfirmResult> {
     if (typeof document === "undefined" || typeof window === "undefined") {
       return Promise.resolve("dismiss");
@@ -292,7 +278,7 @@ export class ConfirmDialog {
     s.onKey = (e: KeyboardEvent) => this._onKey(e, s);
     document.addEventListener("keydown", s.onKey);
 
-    /* 双 rAF：确保初始态（opacity 0 / scale 0.02）已绘制再切换，触发过渡 */
+    /* 双 rAF：初始态已绘制再切换，触发过渡 */
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         s.panel.classList.add("qc-open");
@@ -306,7 +292,7 @@ export class ConfirmDialog {
     });
   }
 
-  /** 测量触发控件中心相对视口中心的偏移；测量失败返回 null（降级纯居中淡入） */
+  /** 触发控件中心相对视口偏移；失败返回 null（降级居中） */
   private _measureOrigin(trigger: HTMLElement | null): { tx: number; ty: number } | null {
     if (!trigger?.isConnected) return null;
     let rect: DOMRect;
@@ -378,7 +364,7 @@ export class ConfirmDialog {
           this._close("confirm");
         },
         (err: unknown) => {
-          /* 失败：保持对话框打开，还原 loading，向调用方抛错 */
+          /* 失败：保持打开、还原 loading、抛错 */
           this._clearLoading(s);
           if (!s.settled) {
             s.settled = true;
@@ -399,7 +385,7 @@ export class ConfirmDialog {
   private _close(result: ConfirmResult, instant = false): void {
     const s = this.current;
     if (!s) return;
-    /* loading 期间屏蔽逃逸（Esc / 遮罩 / dismiss）；instant 程序化替换除外 */
+    /* loading 屏蔽逃逸（Esc/遮罩/dismiss）；instant 除外 */
     if (s.loading && result !== "confirm" && !instant) return;
     if (s.closed && !instant) return;
     s.closed = true;
