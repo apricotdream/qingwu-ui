@@ -8,7 +8,6 @@ export type VideoSource = "bilibili" | "xiaohongshu" | "direct" | "unknown";
 function detectSource(src: string): VideoSource {
   if (/bilibili\.com|BV[a-zA-Z0-9]{10}|av\d+/i.test(src)) return "bilibili";
   if (/xiaohongshu\.com|xhslink\.com/i.test(src)) return "xiaohongshu";
-  // 常用视频格式：mp4 / m3u8 / webm / ogg / flv / mkv / mov / avi / wmv / ts / m4v / 3gp / f4v / rmvb
   if (
     /\.(mp4|m3u8|webm|ogg|flv|mkv|mov|avi|wmv|ts|m4v|3gp|f4v|rmvb)(\?|$)/i.test(src) ||
     /\/.*\.(mp4|m3u8|mov|webm|flv|mkv)/i.test(src)

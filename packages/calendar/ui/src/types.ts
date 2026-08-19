@@ -1,6 +1,4 @@
-/**
- * 日历组件类型定义
- */
+/** 日历组件类型定义 */
 
 import type { DayMetaProvider, PanelProvider } from "./providers";
 
@@ -15,11 +13,7 @@ export interface HolidayConfig {
 /** 展示形态：modal（默认，全屏居中弹窗）/ popover（紧凑浮层，锚定输入框下方） */
 export type CalendarMode = "modal" | "popover";
 
-/** 详情面板悬浮方式：
- * - `right`（默认）：右侧展开，面板随详情加宽
- * - `left`：左侧展开，面板向左加宽，网格锚点不变
- * - `inside`：面板内右缘覆盖浮层，不改变面板/网格宽度
- */
+/** 详情面板悬浮方式：right 右侧展开（默认）/ left 左展开 / inside 面板内覆盖浮层 */
 export type DetailPosition = "inside" | "left" | "right";
 
 /** 日历组件选项 */

@@ -31,10 +31,10 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
   const source = storedSource !== "unknown" ? storedSource : detectSource(src);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [playerLoading, setPlayerLoading] = useState(false);
-  /* 视频编码不受浏览器支持（HEVC/H.265 常见，浏览器缺解码器）：true 时显示友好占位而非黑屏播放器 */
+  /* 视频编码不受浏览器支持（HEVC/H.265 常见）时显示友好占位 */
   const [formatError, setFormatError] = useState(false);
   const isEditable = editor?.isEditable ?? true;
-  /* 只读态（预览/详情）且 src 仍是 blob：媒体未上传完成，显示「上传中」动画而非黑屏播放器 */
+  /* 只读态且 src 仍为 blob：上传未完成，显示「上传中」动画 */
   const isUploading = !isEditable && src.startsWith("blob:");
 
   // 删除确认框（复用 delete-confirm 标志，多选时防重复弹框）
@@ -105,7 +105,7 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
   }, []);
 
   const handleDirectNativeFS = useCallback(() => {
-    // 优先全屏外层 .video-embed--direct（已有 :fullscreen 撑满样式），避免内层容器全屏后控件文字被裁
+    // 优先全屏外层容器（已有 :fullscreen 样式），避免控件文字被裁
     const el =
       (containerRef.current?.closest(".video-embed--direct") as HTMLElement | null) ||
       containerRef.current;
@@ -130,7 +130,7 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
       return;
     }
     let cancelled = false;
-    // 签名/转换期间持续显示加载占位，避免用未签名 URL 初始化播放器触发 403 闪现「不支持的音频/视频格式」
+    // 签名期间显示加载占位，避免未签名 URL 触发 403 闪现
     setPlayerLoading(true);
     (async () => {
       try {
@@ -179,8 +179,7 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
     setPlayerLoading(true);
     setFormatError(false);
     const el = containerRef.current;
-    /* 捕获阶段监听容器内 <video> 的 MEDIA_ERR_SRC_NOT_SUPPORTED（code 4，error 不冒泡）：
-       HEVC/H.265 等浏览器无解码器的编码会触发，此时改显友好占位而非黑屏 */
+    /* 捕获阶段监听 <video> MEDIA_ERR_SRC_NOT_SUPPORTED（code 4，不冒泡），显示友好占位 */
     const onMediaError = (e: Event) => {
       const t = e.target as HTMLMediaElement;
       if (t?.error && t.error.code === 4 && !cancelled) setFormatError(true);
@@ -208,7 +207,7 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
         });
         // 将播放器实例挂载到 DOM 上，供 ProseMirror 插件空格键切换播放
         (el as any).__xgplayer = playerRef.current;
-        // 遮罩持续到首帧就绪（loadeddata/canplay），并设兜底超时，避免构造完成后短暂闪现「不支持的音频/视频格式」
+        // 遮罩持续到首帧就绪，并设兜底超时，避免短暂闪现错误
         const hideLoading = () => {
           if (!cancelled) setPlayerLoading(false);
         };

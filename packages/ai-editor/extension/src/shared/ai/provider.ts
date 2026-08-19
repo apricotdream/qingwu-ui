@@ -1,12 +1,4 @@
-/**
- * AI Provider - 与青梧编辑器统一的 LangChain 风格接口
- *
- * 解决 Obsidian Web Clipper AI 脆弱痛点：
- * - DeepSeek / 通义千问 / OpenAI / Chrome 内置 AI 统一适配
- * - 严格校验 baseURL（自动补 /chat/completions）
- * - 失败必有 code + retryable，错误透明
- * - 30s 超时 + 一次自动重试（网络/限流）
- */
+/** AI Provider - 多模型统一适配；baseURL 自动补 /chat/completions，失败必带 code+retryable，30s 超时+网络重试 */
 
 import { ClipperError, httpStatusToAIError, toClipperError } from "../errors";
 import type { AIErrorCode, AIProviderConfig, AIRequest, AIResponse, Locale } from "../types";

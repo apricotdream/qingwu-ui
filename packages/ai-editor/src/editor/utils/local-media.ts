@@ -1,38 +1,23 @@
 /**
- * 本地媒体（相对路径图片 / 附件）识别与解析工具。
- *
- * 背景：从 Obsidian / Typora 等复制 Markdown 粘贴进来时，文中的图片与附件往往是
- * **相对路径**（`./img/a.png`、`attachments/x.pdf`）或本地协议（`file://`、`app://`）。
- * 浏览器沙箱无法按路径直接读取用户磁盘，这些引用粘贴后会变成死链。
- *
- * 本模块只负责"**识别 + 定位**"：
- * 1. 判断一个 src/href 是否是本地引用（`isLocalMediaSrc`）；
- * 2. 归一化路径，便于跨平台匹配（`normalizeLocalSrc`）;
- * 3. 在用户授权的目录里把相对路径找回成真实 `File`（File System Access API）。
- *
- * 真正"读取字节 → 上传存储 → 换链"的编排，见 `relative-media.ts` / `resolve-local-media.ts`。
+ * 本地媒体（相对路径图片/附件）识别与定位：判断本地引用 → 归一化路径 → 授权目录找回 File。
+ * 粘贴自 Obsidian/Typora 的相对路径或 file:// 引用浏览器无法直读，需此模块解析。
  */
 
-/** 常见媒体/附件扩展名，用于判断剪贴板文本里是否"可能含本地资源引用" */
+/** 媒体/附件扩展名，判断文本是否可能含本地引用 */
 const MEDIA_EXT_RE =
   /\.(png|jpe?g|gif|webp|bmp|svg|avif|mp4|m4v|webm|ogg|mov|avi|mkv|mp3|wav|flac|m4a|aac|opus|pdf|docx?|xlsx?|pptx?|odt|rtf|txt|md|csv|zip|rar|7z|json)(\?|#|$)/i;
 
-/** 不应被当作"本地文件"的伪协议 / 锚点 */
+/** 伪协议（不应视为本地文件） */
 const NON_FILE_SCHEME_RE = /^(?:mailto:|tel:|javascript:|about:|data:|blob:)/i;
 
 /**
- * 判断一个 src/href 是否是"需要解析的本地引用"。
- *
- * 返回 true 的情形：相对路径（`./a.png`、`a.png`、`../a.png`、`dir/a.png`）、
- * `file://...`、`app://...`（Obsidian）、Windows 绝对路径（`C:\`、`C:/`）。
- *
- * 返回 false 的情形：`http(s)://`、协议相对 `//`、`data:`、`blob:`、锚点、伪协议。
+ * 判断 src/href 是否为本地引用。
+ * true：相对路径、file://、app://、Windows 绝对路径；false：http(s)、data:、blob:、锚点、伪协议。
  */
 export function isLocalMediaSrc(src: string | null | undefined): src is string {
   if (!src) return false;
   const s = src.trim();
   if (!s) return false;
-  // 已可加载 / 已处理的来源，不需要解析
   if (/^(?:https?:)?\/\//i.test(s)) return false; // http:// https:// //
   if (NON_FILE_SCHEME_RE.test(s)) return false;
   if (s.startsWith("#")) return false; // 页内锚点
@@ -40,15 +25,12 @@ export function isLocalMediaSrc(src: string | null | undefined): src is string {
   return true;
 }
 
-/** 路径是否"看起来指向一个文件"（带扩展名），用于过滤 `[[笔记名]]`、`#锚点` 等非文件链接 */
+/** 路径是否带扩展名（用于过滤 [[笔记名]]、#锚点 等非文件链接） */
 export function looksLikeFilePath(path: string): boolean {
   return MEDIA_EXT_RE.test(path);
 }
 
-/**
- * 归一化本地路径，便于跨平台 / 跨写法匹配：
- * 去掉 `file://`、`app://` 前缀，URL 解码，反斜杠转正斜杠，去掉 `./` 与开头 `/`、盘符。
- */
+/** 归一化本地路径：去 file://、app:// 前缀，URL 解码，统一斜杠，去 ./、开头 / 与盘符 */
 export function normalizeLocalSrc(src: string): string {
   let s = src.trim();
   s = s.replace(/^(?:file|app):\/\/(?:localhost)?/i, "");
@@ -71,7 +53,7 @@ export function basenameOf(path: string): string {
   return (parts[parts.length - 1] || normalized).toLowerCase();
 }
 
-// ---- File System Access API（仅 Chromium，需安全上下文） ----
+// File System Access API（仅 Chromium，需安全上下文）
 
 /** 结构化的目录句柄类型（FileSystemDirectoryHandle 的最小可用子集） */
 export type FsDirectoryHandle = {
@@ -93,10 +75,7 @@ export function fsAccessSupported(): boolean {
   );
 }
 
-/**
- * 弹出系统目录选择器，返回用户授权的目录句柄。
- * 用户取消（AbortError）或 API 抛错时返回 null。
- */
+/** 弹出系统目录选择器；取消或抛错返回 null */
 export async function pickDirectory(): Promise<FsDirectoryHandle | null> {
   if (!fsAccessSupported()) return null;
   try {
@@ -122,11 +101,8 @@ export function filePickerSupported(): boolean {
 }
 
 /**
- * 弹出系统文件选择器（可多选），返回真实 `File` 列表。
- * 用户取消（AbortError）或 API 抛错时返回 null。
- *
- * 目录授权解析失败后的兜底：系统对话框走 OS 外壳，能拿到真实字节——
- * 绕过"云同步占位文件"和"文件夹名匹配不上"两类读盘问题。
+ * 弹出系统文件选择器（可多选），返回真实 File 列表；取消或抛错返回 null。
+ * 目录授权解析失败后的兜底，绕过云同步占位文件与文件夹名匹配不上两类问题。
  */
 export async function pickLocalFiles(): Promise<File[] | null> {
   if (!filePickerSupported()) return null;
@@ -145,18 +121,14 @@ export async function pickLocalFiles(): Promise<File[] | null> {
   }
 }
 
-/** 目录查找结果：file 为空时，readError 区分"没找到"与"找到了但读不出来" */
+/** 目录查找结果：file 为空时 readError 区分「没找到」与「找到了读不出」 */
 export interface FindFileResult {
   file: File | null;
-  /**
-   * 找到了同名文件句柄但 `getFile()` 失败。
-   * 典型场景：OneDrive / WPS 云盘等**云同步占位文件**——资源管理器里"存在"，
-   * 但浏览器 File System Access API 读不到字节。
-   */
+  /** 找到同名句柄但 getFile() 失败（云同步占位文件：存在但读不出字节） */
   readError?: unknown;
 }
 
-/** 按路径段逐级下钻取文件；任一段不存在返回空结果，读到字节才算命中 */
+/** 按路径段逐级下钻取文件；任一段不存在返回空结果 */
 async function tryExactPath(root: FsDirectoryHandle, parts: string[]): Promise<FindFileResult> {
   if (parts.length === 0) return { file: null };
   let dir = root;
@@ -179,7 +151,7 @@ async function tryExactPath(root: FsDirectoryHandle, parts: string[]): Promise<F
   }
 }
 
-/** 在目录里按 basename 递归查找（带遍历预算，防止超大目录拖垮主线程） */
+/** 按 basename 递归查找（带遍历预算防卡主线程） */
 async function searchByBasename(
   root: FsDirectoryHandle,
   basename: string,
@@ -200,7 +172,7 @@ async function searchByBasename(
             try {
               return { file: await entry.getFile() };
             } catch (err) {
-              // 同名但读不出来（云占位等）：记住错误，继续找别的同名文件
+              // 同名但读不出（云占位等）：记错误继续找
               readError = err;
             }
           }
@@ -219,15 +191,9 @@ async function searchByBasename(
 }
 
 /**
- * 在用户授权的目录里，把一个相对/本地路径找回成真实 `File`。
- *
- * 策略（从精确到宽松）：
- * 1. 完整路径逐级下钻；
- * 2. 逐段去掉开头路径段再试（兼容粘贴进来的是"库绝对路径"，而用户授权的是子目录）；
- * 3. 按 basename 递归查找（兼容 Obsidian"最短路径"写法）。
- *
- * 返回 `{ file, readError }`：`file` 为 null 且带 `readError` 时表示
- * "找到了文件但读不出字节"（云同步占位文件的典型表现），与"目录里没有"区分开。
+ * 在授权目录里把相对/本地路径找回成 File。
+ * 策略由精确到宽松：完整路径下钻 → 去开头段重试 → basename 递归；
+ * file 为 null 且带 readError 表示「找到但读不出」（云占位）。
  */
 export async function findFileInDirectory(
   root: FsDirectoryHandle,
@@ -252,7 +218,7 @@ export async function findFileInDirectory(
   return { file: null, readError };
 }
 
-// ---- 文档扫描：找出待解析的本地媒体引用 ----
+// 文档扫描：找出待解析的本地媒体引用
 
 export type LocalMediaKind = "image" | "video" | "audio" | "attachment";
 
@@ -264,7 +230,7 @@ export interface LocalMediaRef {
   /** 小写 basename，用于剪贴板文件名匹配 */
   basename: string;
   kind: LocalMediaKind;
-  /** true = 链接型附件（文本上的 link mark），false = 媒体节点（image/video/audio/attachment） */
+  /** true = 链接型附件，false = 媒体节点 */
   isLink: boolean;
 }
 
@@ -276,16 +242,9 @@ const MEDIA_NODE_KIND: Record<string, LocalMediaKind> = {
 };
 
 /**
- * 扫描 ProseMirror 文档（或 Fragment 包装节点），收集所有"本地媒体引用"：
- * - image / videoEmbed / audioEmbed / attachmentEmbed 节点中 src 为本地引用的；
- * - 文本上 link mark 的 href 为本地文件路径的（链接型附件，如 `[[a.pdf]]`）。
- *
- * 同类引用按 src 去重；**链接型与节点型不互相去重**——同一文件可能既被图片节点
- * 嵌入、又被链接引用（如 `[Open: x.png](x.jpeg)`），两者都要解析换链。
- * 粘贴后由 RelativeMedia 扩展据此驱动解析与上传。
- *
- * @param isOwned 宿主 URL 归属判定（可选）：命中表示"已是本站存储资源"，
- *   跳过不视为待解析的本地引用（见 StorageProvider.owns）。
+ * 扫描文档收集本地媒体引用：媒体节点 src 或链接 mark 的 href 为本地路径者。
+ * 按 src 去重，但链接型与节点型不互相去重（同一文件可能既被嵌入又被链接，两者都要换链）。
+ * @param isOwned 宿主 URL 归属判定：命中表示已是本站存储资源，跳过
  */
 export function collectLocalMediaRefs(
   rootNode: {
@@ -346,14 +305,11 @@ export function collectLocalMediaRefs(
   return refs;
 }
 
-// ---- 剪贴板文本探测（供粘贴分流用） ----
+// 剪贴板文本探测（供粘贴分流用）
 
 /**
- * 粗判剪贴板文本/HTML 里是否"可能含本地媒体引用"。
- * 只用于粘贴分流（决定要不要让位给本地媒体解析），不保证精确；
- * 精确的引用清单以插入后文档节点为准（`collectLocalMediaRefs`）。
- *
- * @param isOwned 宿主 URL 归属判定（可选）：命中的候选不算本地引用。
+ * 粗判文本/HTML 是否可能含本地媒体引用，仅用于粘贴分流，不保证精确。
+ * @param isOwned 命中的候选不算本地引用
  */
 export function textHasLocalMediaRefs(
   text: string,

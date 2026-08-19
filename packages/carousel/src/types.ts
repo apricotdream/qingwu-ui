@@ -19,7 +19,7 @@ export interface CarouselOptions {
   className?: string;
   autoplay?: boolean;
   interval?: number;
-  /** 播放速度倍率，实际间隔 = interval / speed，下限 250ms；speed=2 为两倍速 */
+  /** 播放速度倍率，实际间隔 = interval / speed，下限 250ms */
   speed?: number;
   loop?: boolean;
   showArrows?: boolean;

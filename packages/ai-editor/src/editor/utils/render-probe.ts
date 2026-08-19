@@ -1,11 +1,7 @@
 /**
- * 图片渲染探针：验证一个 URL 在当前浏览器里**真的能解码显示**。
- *
- * 用于本地媒体解析的"诚实计数"：换链后只有探针通过才计入"已上传"，
- * 避免 toast 宣称成功而页面上仍是碎图/占位。
- *
- * 与 ImageView 的私有桶回退保持一致：直接解码失败时，若 URL 属于已配置
- * 的 S3，再试一次签名请求 + blob 解码。
+ * 图片渲染探针：验证 URL 在当前浏览器能解码显示。
+ * 用于「诚实计数」——探针通过才计已上传，避免 toast 谎报成功；
+ * 与 ImageView 一致：直接解码失败且属已配置 S3 时，走签名请求 + blob 二次解码。
  */
 import { signPreviewUrlHeaders } from "../storage/signed-fetch";
 
@@ -29,10 +25,7 @@ function probeDecode(url: string, timeoutMs: number): Promise<boolean> {
   });
 }
 
-/**
- * 校验 URL 可被浏览器渲染为图片。
- * 直接解码失败且属于已配置 S3 时，走签名请求 + blob 二次解码（同 ImageView 回退）。
- */
+/** 校验 URL 可被浏览器渲染为图片 */
 export async function verifyImageRenderable(url: string, timeoutMs = 8000): Promise<boolean> {
   if (await probeDecode(url, timeoutMs)) return true;
   try {

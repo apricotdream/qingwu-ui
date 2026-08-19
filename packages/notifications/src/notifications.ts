@@ -1,9 +1,4 @@
-/* ============================================================
-   青梧UI · 通知铃铛组件（Notifications）
-   - 铃铛触发器 · 未读红点徽标 · 手风琴错峰展开动画 · 向上/向下自适应翻转
-   - 零框架依赖，纯 DOM + CSS
-   - ARIA: button + menu / menuitem（键盘可达）
-   ============================================================ */
+/** 青梧UI 通知铃铛组件：零框架依赖，纯 DOM + CSS，ARIA 键盘可达 */
 
 import { ICON_BELL } from "../../../icon/icons";
 import type { NotificationItem, NotificationsOptions } from "./types";
@@ -36,9 +31,7 @@ let UID = 0;
 /** 单轮摆动时长 ms，与 style.css 中 @keyframes qntf-ring 的时长保持一致 */
 const RING_BURST = 900;
 
-/* ============================================================ */
 export class Notifications {
-  /* ---- 配置 ---- */
   private root: HTMLElement;
   private items: NotificationItem[];
   private emptyText: string;
@@ -55,7 +48,6 @@ export class Notifications {
   private readonly onItemClickCb?: (item: NotificationItem) => void;
   private readonly onOpenChangeCb?: (open: boolean) => void;
 
-  /* ---- 运行时状态 ---- */
   private isOpen = false;
   private unreadCount = 0;
   private active = -1;
@@ -63,13 +55,11 @@ export class Notifications {
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
   private ringTimer: ReturnType<typeof setTimeout> | null = null;
 
-  /* ---- DOM 引用 ---- */
   private trigger!: HTMLButtonElement;
   private badge!: HTMLElement;
   private list!: HTMLUListElement;
   private panel!: HTMLElement;
 
-  /* ---- 监听器 ---- */
   private onDocPointerDown: ((e: PointerEvent) => void) | null = null;
   private onWinScroll: (() => void) | null = null;
 
@@ -98,16 +88,13 @@ export class Notifications {
     }
   }
 
-  /* ============================================================
-     Build：一次性创建全部 DOM
-     ============================================================ */
+  /** Build：一次性创建全部 DOM */
   private build(opts: NotificationsOptions): void {
     const ariaLabel = opts.ariaLabel ?? "消息";
 
     this.root.classList.add("qntf");
     if (this.customClass) this.root.classList.add(this.customClass);
 
-    /* 触发器：铃铛按钮 + 红点徽标 */
     this.trigger = el("button", "qntf-trigger") as HTMLButtonElement;
     this.trigger.type = "button";
     this.trigger.setAttribute("aria-haspopup", "menu");
@@ -152,9 +139,7 @@ export class Notifications {
     });
   }
 
-  /* ============================================================
-     渲染
-     ============================================================ */
+  /** 渲染 */
   private renderItems(): void {
     this.list.textContent = "";
     if (this.items.length === 0) {
@@ -201,7 +186,6 @@ export class Notifications {
     this.badge.classList.toggle("is-visible", this.unreadCount > 0);
   }
 
-  /** 清空响铃定时器 */
   private clearRingTimer(): void {
     if (this.ringTimer !== null) {
       clearTimeout(this.ringTimer);
@@ -209,12 +193,7 @@ export class Notifications {
     }
   }
 
-  /**
-   * 铃铛摆动状态机：
-   * - persistent：未读期间 `is-ringing` 常驻，CSS 无限摆动
-   * - intermittent：响一轮（RING_BURST ms）后静默，间隔 ringInterval 再响
-   * - 面板展开 / 未读清空 / ring=false / prefers-reduced-motion 任一命中即停摆
-   */
+  /** 铃铛摆动状态机：persistent 常驻 / intermittent 间歇重响；面板展开、未读清空、ring=false、reduced-motion 时停摆 */
   private applyRing(): void {
     this.clearRingTimer();
     const shouldRing = this.ring && !PREFERS_REDUCED && this.unreadCount > 0 && !this.isOpen;
@@ -233,9 +212,8 @@ export class Notifications {
     }
   }
 
-  /* ============================================================
-     展开 / 关闭 / 定位
-     ============================================================ */
+  /** 展开 / 关闭 / 定位 */
+
   /** 打开下拉面板 */
   open(): void {
     if (this.isOpen) return;
@@ -321,7 +299,7 @@ export class Notifications {
     this.dir = flipUp ? "up" : "down";
     this.panel.classList.toggle("is-up", flipUp);
 
-    /* 右缘对齐触发器右缘、向左展开（铃铛通常在头部右侧，向左开可避免面板探出视口右缘） */
+    /* 左展开：避免面板探出视口右缘（铃铛通常在右侧） */
     let left = Math.max(8, tr.right - panelW);
     if (this.width === "auto" && panelW > window.innerWidth - 16) {
       left = Math.max(8, window.innerWidth - panelW - 8);
@@ -350,9 +328,7 @@ export class Notifications {
     });
   }
 
-  /* ============================================================
-     条目激活（点击 / 键盘）
-     ============================================================ */
+  /** 条目激活（点击 / 键盘） */
   private activate(index: number): void {
     const item = this.items[index];
     if (!item) return;
@@ -389,9 +365,7 @@ export class Notifications {
     this.setActive(next);
   }
 
-  /* ============================================================
-     键盘导航（焦点保持在触发器，aria-activedescendant 指向列表）
-     ============================================================ */
+  /** 键盘导航：焦点保持在触发器，aria-activedescendant 指向列表 */
   private onTriggerKey(e: KeyboardEvent): void {
     switch (e.key) {
       case "ArrowDown":
@@ -437,9 +411,7 @@ export class Notifications {
     }
   }
 
-  /* ============================================================
-     Public API
-     ============================================================ */
+  /** Public API */
 
   /** 是否展开 */
   get expanded(): boolean {

@@ -1,19 +1,7 @@
 /**
- * 静态骨架屏 HTML 渲染（快照渲染器）
- *
- * 几何来源：extractElementInfo 的真实 DOM 测量快照
- * （构建时对真实页面测量，非估算）。
- *
- * 与运行时 AutoSkeleton 使用同一测量引擎，几何按构造相等：
- * 构建时快照 → 静态 HTML，运行时覆盖层 → 动态 DOM，
- * 两者形状一致，refetch 场景无缝切换。
- *
- * 动画样式按容器：颜色/时长/时序函数以 CSS 变量（--qs-sk-*）
- * 内联在容器 div 上，块规则读变量——多份快照同页共存互不覆盖。
- *
- * 块级渐变位移：满足门槛（宽 ≥ 48px 且高 ≥ 8px）的块带
- * is-shimmer 类，::before 渐变层 transform 滑动；门槛常量与
- * 运行时 AutoSkeleton 共用，两条路径动画行为一致。
+ * 静态骨架屏 HTML 渲染（快照渲染器）：几何来自 extractElementInfo 真实测量快照，
+ * 与运行时 AutoSkeleton 同引擎（refetch 无缝切换）；样式走容器级 --qs-sk-* 变量，
+ * 门槛常量共用，两条路径动画行为一致。
  */
 
 import { MIN_ANIMATED_HEIGHT, MIN_ANIMATED_WIDTH } from "./styles";
@@ -22,24 +10,8 @@ import type { RenderSkeletonSnapshotOptions, SkeletonElement } from "./types";
 const DEFAULT_MAX_BLOCKS = 200;
 const DEFAULT_FALLBACK_BORDER_RADIUS = 4;
 
-/**
- * 将测量快照渲染为 CSS-only 骨架屏 HTML
- *
- * @param snapshot - extractElementInfo 的测量结果（骨架块几何）
- * @param options - 渲染配置
- * @returns 包含内联样式和全部骨架块（含块级渐变动画层）的完整 HTML 字符串
- *
- * @example
- * ```ts
- * import { extractElementInfo, renderSkeletonSnapshot } from "@qingwu-ui/skeleton";
- *
- * // 构建时：对真实页面测量
- * const snapshot = extractElementInfo(document.querySelector(".card-list")!);
- *
- * // 生成静态骨架（桌面断点，宽 1280）
- * const html = renderSkeletonSnapshot(snapshot, { width: 1280 });
- * ```
- */
+/** 将测量快照渲染为 CSS-only 骨架屏 HTML（内联样式 + 全部骨架块）。
+ *  例：const snap = extractElementInfo(dom); renderSkeletonSnapshot(snap, { width: 1280 }) */
 export function renderSkeletonSnapshot(
   snapshot: SkeletonElement[],
   options: RenderSkeletonSnapshotOptions,

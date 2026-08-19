@@ -1,10 +1,4 @@
-/* ============================================================
-   青梧UI · Toast 轻提示组件
-   - 纯 DOM 渲染，零第三方依赖
-   - ARIA live region 内建 / prefers-reduced-motion 自动克制
-   - 6 种定位 / 4 种语义类型 / Promise 链 / 队列管理
-   - 文本自适应行数：@qingwu-ui/text-layout 精确排版
-   ============================================================ */
+/** Toast 轻提示：纯 DOM 零依赖，内建 ARIA live region + prefers-reduced-motion 克制，文本自适应行数（text-layout 排版） */
 
 import { layout } from "@qingwu-ui/text-layout";
 import type {
@@ -15,7 +9,6 @@ import type {
   ToastType,
 } from "./types";
 
-/* ---------- 运行时常量 ---------- */
 const PREFERS_REDUCED =
   typeof window !== "undefined"
     ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -36,7 +29,6 @@ function msgMaxWidth(): number {
   return vw <= 480 ? Math.max(140, vw - 98) : 290;
 }
 
-/* ---------- SVG 图标 ---------- */
 const ICONS: Record<ToastType, string> = {
   info: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
   success: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>`,
@@ -44,7 +36,6 @@ const ICONS: Record<ToastType, string> = {
   error: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
 };
 
-/* ---------- 工具 ---------- */
 let _next = 1;
 function uid(): string {
   return `qt${_next++}${Date.now().toString(36)}`;
@@ -57,10 +48,7 @@ function el(tag: string, cls?: string, html?: string): HTMLElement {
   return n;
 }
 
-/**
- * 渲染一行文本：解析 **关键词** 标记为语义色强调节点。
- * 全部走 textContent，无 innerHTML，杜绝 XSS。
- */
+/** 渲染一行：解析 **关键词** 为强调节点；仅 textContent，防 XSS */
 function renderLine(container: HTMLElement, text: string): void {
   const parts = text.split(/\*\*(.+?)\*\*/g);
   for (let i = 0; i < parts.length; i++) {
@@ -76,7 +64,6 @@ function renderLine(container: HTMLElement, text: string): void {
   }
 }
 
-/* ---------- 内部条目 ---------- */
 interface ToastEntry {
   id: string;
   type: ToastType;
@@ -116,7 +103,6 @@ function vibrateError(): void {
   }
 }
 
-/* ============================================================ */
 export class Toaster {
   /** 每个定位一个容器，互不干扰（参照 sonner / react-toastify） */
   private containers = new Map<ToastPosition, HTMLElement>();
@@ -145,8 +131,6 @@ export class Toaster {
     return c;
   }
 
-  /* ---- 核心 ---- */
-
   /** 显示一条轻提示，返回唯一 id */
   show(message: string, options?: ToastOptions): string {
     const type = options?.type ?? this.opts.type;
@@ -170,7 +154,6 @@ export class Toaster {
       timer: null,
     };
 
-    /* 队列检查 */
     if (this.toasts.size >= this.opts.maxVisible) {
       this.queue.push(entry);
       return id;
@@ -180,24 +163,18 @@ export class Toaster {
     return id;
   }
 
-  /** 快捷：info */
   info(message: string, options?: ToastOptions): string {
     return this.show(message, { ...options, type: "info" });
   }
-  /** 快捷：success */
   success(message: string, options?: ToastOptions): string {
     return this.show(message, { ...options, type: "success" });
   }
-  /** 快捷：warning */
   warn(message: string, options?: ToastOptions): string {
     return this.show(message, { ...options, type: "warning" });
   }
-  /** 快捷：error */
   error(message: string, options?: ToastOptions): string {
     return this.show(message, { ...options, type: "error" });
   }
-
-  /* ---- Promise 链 ---- */
 
   /** 跟随 Promise 三态：loading → success | error */
   promise<T>(promise: Promise<T>, messages: PromiseMessages<T>, options?: ToastOptions): string {
@@ -231,8 +208,6 @@ export class Toaster {
     return id;
   }
 
-  /* ---- 关闭 ---- */
-
   /** 关闭指定 id 的 toast；不传 id 则关闭全部 */
   dismiss(id?: string): void {
     if (id) {
@@ -248,8 +223,6 @@ export class Toaster {
     for (const entry of this.toasts.values()) this._exit(entry);
     this.queue.length = 0;
   }
-
-  /* ---- 配置 ---- */
 
   /** 更新全局默认配置 */
   configure(options: Partial<ToasterOptions>): void {
@@ -267,10 +240,6 @@ export class Toaster {
     this.containers.clear();
   }
 
-  /* ============================================================
-     内部方法
-     ============================================================ */
-
   private buildElement(
     id: string,
     message: string,
@@ -280,10 +249,8 @@ export class Toaster {
     description?: string,
     action?: ToastOptions["action"],
   ): HTMLElement {
-    /* qt-truncate：仅显式 maxLines（截断模式）时启用，CSS 才允许行省略号兜底；
-       默认不限行（完整显示）时禁用 text-overflow，绝不出省略号。
-       qt-rich：带 description/action 的富内容，禁用主消息 max-width 入场动画，
-       避免说明行先于文本撑开导致的布局跳动 */
+    /* qt-truncate：仅显式 maxLines 截断时启用，默认不限行绝不出省略号；
+       qt-rich：富内容禁用主消息入场动画，避免说明行撑开布局跳动 */
     const rich = Boolean(description || action);
     const toastEl = el(
       "div",
@@ -291,7 +258,6 @@ export class Toaster {
     );
     toastEl.setAttribute("data-qt-id", id);
 
-    /* 图标 */
     const iconEl = el("span", "qt-icon");
     iconEl.innerHTML = ICONS[type];
     toastEl.appendChild(iconEl);
@@ -370,7 +336,6 @@ export class Toaster {
   }
 
   private mount(entry: ToastEntry): void {
-    /* 常驻数量上限：该位置常驻已达上限 → 挤掉最老的常驻（FIFO） */
     if (entry.duration === 0) {
       this.evictPersistIfNeeded(entry);
     }
@@ -384,7 +349,6 @@ export class Toaster {
       vibrateError();
     }
 
-    /* 入场动画 */
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         entry.element.classList.add("qt-enter");

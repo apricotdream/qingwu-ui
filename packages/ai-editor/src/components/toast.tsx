@@ -1,11 +1,6 @@
 /**
- * 共享 Toast 提示通道
- *
- * 模块级事件机制：非 React 上下文（TipTap 扩展、上传流程）也可调用 `toast()`。
- * 渲染优先级（高 → 低）：
- * 1. 实例级：`QingWuAIEditor` 通过 `onToast` 回调订阅，把消息转发给宿主自己的 Toast 组件；
- * 2. 全局级：宿主调用 `setToastProvider()` 设置自定义渲染器，替换内置默认；
- * 3. 内置默认：无任何订阅时回退到 `@qingwu-ui/toast`（随包内置样式），提示不再静默丢弃。
+ * 共享 Toast 通道：模块级事件机制，非 React 上下文也可调用。
+ * 渲染优先级：实例级 onToast > setToastProvider 自定义渲染器 > 内置 @qingwu-ui/toast。
  */
 import { toast as qwToast } from "@qingwu-ui/toast";
 

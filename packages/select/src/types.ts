@@ -1,7 +1,4 @@
-/* ============================================================
-   青梧UI · 下拉选择器类型定义
-   Qingwu Select — framework-agnostic type contracts
-   ============================================================ */
+/** 青梧UI 下拉选择器类型定义（framework-agnostic type contracts） */
 
 /** 单个下拉选项 */
 export interface SelectOption {

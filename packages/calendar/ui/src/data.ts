@@ -1,22 +1,8 @@
-/**
- * 历法数据 —— 节日、节气详情、宜忌（黄历）等静态数据。
- * 数据覆盖 2025-2027 年中国法定节假日，常见节日，节气说明。
- *
- * 数据来源与免责声明：
- * - 法定节假日 / 调休安排：来源为国务院办公厅历年《关于部分节假日安排的通知》
- *   （公开政务数据），逐年由维护者核对更新，以官方公告为准；
- * - 节日渊源与节气物候文字：库作者编写的传统文化概述（公有领域知识），非百科
- *   原文转载；
- * - 黄历宜忌：**简化示意数据**，由基础规则生成，非专业黄历推算结果，仅供展示，
- *   不作为行事决策依据（正式版可替换为专业黄历数据源）。
- */
+/** 历法数据：2025-2027 法定节假日、常见节日、节气详情；黄历宜忌为简化示意数据，仅供展示 */
 
 import type { SolarTerm } from "./lunar";
 
-/* ============================================================
-   农历节日（按农历日期索引）
-   格式："月-日" => { name, origin }
-   ============================================================ */
+/** 农历节日（按 "月-日" 索引） */
 
 export interface FestivalInfo {
   name: string;
@@ -93,10 +79,6 @@ export function getLunarFestival(lunarMonth: number, lunarDay: number): Festival
   return LUNAR_FESTIVALS[key] ?? null;
 }
 
-/* ============================================================
-   公历节日
-   ============================================================ */
-
 const SOLAR_FESTIVALS: Record<string, FestivalInfo> = {
   "1-1": {
     name: "元旦",
@@ -144,10 +126,6 @@ export function getSolarFestival(month: number, day: number): FestivalInfo | nul
   const key = `${month}-${day}`;
   return SOLAR_FESTIVALS[key] ?? null;
 }
-
-/* ============================================================
-   节气详情
-   ============================================================ */
 
 export interface SolarTermDetail {
   name: string;
@@ -358,11 +336,7 @@ export function getSolarTermDetail(termName: string): SolarTermDetail | null {
   return SOLAR_TERM_DETAILS[termName] ?? null;
 }
 
-/* ============================================================
-   黄历宜忌数据
-   按日期（公历月-日）提供简化的宜忌信息
-   正式版可由专业黄历数据源替换
-   ============================================================ */
+/** 黄历宜忌（简化示意数据，正式版可替换） */
 
 export interface AlmanacInfo {
   suitable: string[]; // 宜
@@ -372,9 +346,9 @@ export interface AlmanacInfo {
   favorable: string; // 吉神
 }
 
-/** 通用宜忌（按农历月日提供基础宜忌，正式版需完整黄历数据） */
+/** 通用宜忌（按农历月日的基础数据，正式版需完整黄历） */
 function getBaseAlmanac(lunarMonth: number, lunarDay: number): AlmanacInfo {
-  // 基础宜忌模板，按农历日期的天干地支周期给出
+  // 按农历日期的天干地支周期给出基础宜忌
   const dayMod = (lunarMonth * 30 + lunarDay) % 12;
   const earthlyBranch = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"][
     dayMod

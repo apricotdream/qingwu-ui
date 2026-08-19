@@ -219,8 +219,7 @@ export function ImageView({ node, deleteNode, editor }: any) {
             height={height || undefined}
             onClick={openWebFS}
             onError={() => {
-              // 私有桶 fallback：fetch + 签名头 -> blob URL
-              // 用 ref 标志位防止死循环（blob URL 也失败时不再重试）
+              // 私有桶 fallback：fetch+签名头 → blob URL；ref 标志防死循环
               if (mainFallbackTriedRef.current || imgError) return;
               mainFallbackTriedRef.current = true;
               (async () => {

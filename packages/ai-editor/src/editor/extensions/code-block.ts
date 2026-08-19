@@ -42,10 +42,8 @@ lowlight.registerAlias("xml", ["vue", "html"]); // html 已是别名，补充 vu
 lowlight.registerAlias("javascript", ["react", "jsx"]);
 lowlight.registerAlias("typescript", ["tsx"]);
 
-// CodeBlockLowlight 内置 lowlight 装饰插件：
-//   - 指定语言（含缩写别名）→ 按该语言高亮
-//   - 未指定语言 → highlightAuto 自动检测高亮（保留该行为）
-// 自定义 NodeView 仅负责工具栏（语言选择/复制/下载/mermaid），高亮交给 lowlight 插件
+// 高亮由 CodeBlockLowlight 内置 lowlight 插件处理（指定语言高亮，未指定则自动检测）；
+// 自定义 NodeView 仅负责工具栏（语言选择/复制/下载/mermaid）
 export const CodeBlock = CodeBlockLowlight.extend({
   addNodeView() {
     return ReactNodeViewRenderer(CodeBlockView);

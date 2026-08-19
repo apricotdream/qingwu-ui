@@ -1,11 +1,4 @@
-/**
- * IndexedDB 存储层 - 历史记录 + 设置
- *
- * 解决 Obsidian 长期累积后查询慢的痛点：
- * - 用 indexedDB 而非 localStorage（容量大、可索引）
- * - 标签、路径、时间均建索引
- * - 提供全文搜索（标题 + 内容前 N 字）
- */
+/** IndexedDB 存储层 - 历史记录+设置；建索引支持全文搜索（替代 localStorage 容量/查询限制） */
 
 import type { ClipperSettings, ClipRecord } from "../types";
 

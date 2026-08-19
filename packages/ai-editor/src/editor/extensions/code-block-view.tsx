@@ -4,8 +4,7 @@ import { isDeleteConfirmActive, setDeleteConfirmActive } from "../utils/delete-c
 import { DeleteConfirmDialog } from "../utils/delete-confirm-dialog";
 import { sanitizeSvg } from "../utils/sanitize";
 
-// 语言图标依赖可选 peer 依赖 devicon 的样式（宿主 import "devicon/devicon.min.css"）；
-// 未引入时图标位留空，语言名称与功能不受影响。
+// 语言图标依赖可选 peer 依赖 devicon 样式（宿主 import "devicon/devicon.min.css"）；未引入时图标位留空
 
 type BeautifulMermaid = typeof import("beautiful-mermaid");
 let beautifulMermaidModule: BeautifulMermaid | null = null;
@@ -255,10 +254,8 @@ export function CodeBlockView({
     return () => window.removeEventListener("keydown", onKey, true);
   }, [selected, editor, isEditable]);
 
-  // 行号与代码折行高度对齐：
-  // 行号列与代码列是两套独立盒子，代码一旦软换行，"逻辑行≠可视行"，行号就会错位。
-  // 这里用一个隐藏镜像复刻代码区的折行（相同字号/字体/宽度/white-space），
-  // 测量每条逻辑行折行后的真实高度，再把这个高度赋给对应行号，使其与代码逐行对齐。
+  // 行号与代码逐行对齐：代码软换行后"逻辑行≠可视行"，
+  // 用隐藏镜像复刻折行，测量每条逻辑行真实高度赋给对应行号。
   const setHeightsIfChanged = useCallback((next: number[]) => {
     setLineHeights((prev) => {
       if (prev.length === next.length && prev.every((v, i) => v === next[i])) return prev;

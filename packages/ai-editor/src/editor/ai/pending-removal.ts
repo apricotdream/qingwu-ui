@@ -1,13 +1,6 @@
 /**
- * 全文替换/选区替换后的孤儿资源延迟删除。
- *
- * 设计（宿主确认）：
- * - 替换后「旧文档有、新文档无」的媒体 URL 为孤儿，异步从存储删除；
- * - 删除有 30s 延迟窗口：期间用户 undo（Ctrl+Z）把 URL 还原回文档，
- *   事务监听会取消对应定时器，避免「undo 后图片 404」；
- * - 编辑器销毁（组件卸载）时 flush 剩余孤儿。
- *
- * 状态挂在 editor 实例上（WeakMap），不随 AISelector 组件卸载而丢失。
+ * 全文/选区替换后的孤儿媒体延迟删除：30s 延迟窗口内 undo 可救回（事务监听取消定时器），
+ * 编辑器销毁时 flush 剩余孤儿。状态挂在 editor 实例（WeakMap），不随组件卸载丢失。
  */
 import type { Editor } from "@tiptap/core";
 import { removeStoredResource } from "../storage/remove-resource";
@@ -47,10 +40,7 @@ function ensureState(editor: Editor): PendingState {
   return state;
 }
 
-/**
- * 调度孤儿资源延迟删除。同一 URL 已在待删队列时不重复挂。
- * undo 还原 URL → 事务监听取消对应定时器。
- */
+/** 调度孤儿资源延迟删除；同一 URL 已在队列不重复挂，undo 还原时取消对应定时器 */
 export function scheduleOrphanRemoval(editor: Editor, orphans: string[]): void {
   const urls = [...new Set(orphans.filter(Boolean))];
   if (urls.length === 0) return;

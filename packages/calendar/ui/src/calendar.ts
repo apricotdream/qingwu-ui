@@ -1,17 +1,9 @@
-/* ============================================================
-   青梧UI · 日历组件（Calendar）
-   - 输入框+日历图标触发 → 弹出日历面板
-   - 日期格：公历 + 农历 + 节日 + 节气 + 休假标记
-   - 点击日期 → 右侧详情面板（节日渊源/节气/黄历宜忌）
-   - 零框架依赖，纯 DOM + CSS
-   ============================================================ */
+/** 青梧UI 日历组件：输入框触发弹出面板，日期格含农历/节日/节气/休假标记，详情面板展示渊源/节气/黄历；纯 DOM+CSS */
 
 import { getYearGanzhi } from "./lunar";
 import type { DayMetaProvider, PanelProvider } from "./providers";
 import { DetailPanelProvider, HolidayBadgeProvider, LunarDayMetaProvider } from "./providers";
 import type { CalendarMode, CalendarUiOptions, DetailPosition, HolidayConfig } from "./types";
-
-/* ---------- 运行时常量 ---------- */
 
 type ViewMode = "day" | "month" | "year";
 
@@ -22,14 +14,11 @@ const PREFERS_REDUCED =
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"];
 
-/* ---------- SVG 图标（由 icon/icons.ts 提供） ---------- */
 import { ICO_ARROW_LEFT, ICO_ARROW_RIGHT, ICO_CALENDAR } from "../../../../icon/icons";
 
 const CALENDAR_ICON = ICO_CALENDAR;
 const ARROW_LEFT = ICO_ARROW_LEFT;
 const ARROW_RIGHT = ICO_ARROW_RIGHT;
-
-/* ---------- 工具函数 ---------- */
 
 function el(tag: string, cls?: string, html?: string): HTMLElement {
   const n = document.createElement(tag);
@@ -52,10 +41,7 @@ function formatDate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-/* ============================================================ */
-
 export class Calendar {
-  /* ---- 配置 ---- */
   private root: HTMLElement;
   private readonly mode: CalendarMode;
   /** dateOnly：仅选日期，隐藏时分秒输入，onChange 回发 YYYY-MM-DD */
@@ -76,27 +62,23 @@ export class Calendar {
   private readonly holidays: HolidayConfig;
   private readonly animate: boolean;
 
-  /* ---- Provider（默认内置，用户追加在后） ---- */
   private readonly dayMetaProviders: DayMetaProvider[];
   private readonly panelProviders: PanelProvider[];
 
-  /* ---- 状态 ---- */
   private isOpen = false;
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
 
-  /* ---- popover 专属 ---- */
   private scrollListener: (() => void) | null = null;
   private scrollTargets: Array<Window | HTMLElement> = [];
   private readonly popoverMinWidth = 320;
 
-  /* ---- 提交制快照：open 时记录已确认状态，取消/被动收起时回滚 ---- */
+  /* 提交制快照：open 时记录，取消/收起时回滚 */
   private snapshot: {
     selected: Date;
     time: { hour: number; minute: number; second: number };
     inputValue: string;
   } | null = null;
 
-  /* ---- DOM 引用 ---- */
   private triggerWrap!: HTMLElement;
   private input!: HTMLInputElement;
   private iconBtn!: HTMLButtonElement;
@@ -110,7 +92,6 @@ export class Calendar {
   private todayBtn!: HTMLButtonElement;
   private confirmBtn!: HTMLButtonElement;
 
-  /* ---- 视图 + 时间 ---- */
   private viewMode: ViewMode = "day";
   private timeRow!: HTMLElement;
   private hourInput!: HTMLInputElement;
@@ -118,7 +99,6 @@ export class Calendar {
   private secondInput!: HTMLInputElement;
   private selectedTime = { hour: 0, minute: 0, second: 0 };
 
-  /* ---- 事件 ---- */
   private docKey: ((e: KeyboardEvent) => void) | null = null;
   private docClick: ((e: MouseEvent) => void) | null = null;
 
@@ -178,12 +158,7 @@ export class Calendar {
     this.syncInput();
   }
 
-  /* ============================================================
-     Build：创建 DOM
-     ============================================================ */
-
   private build(): void {
-    /* 触发区 */
     this.triggerWrap = el("div", "qw-cal-trigger");
 
     this.input = el("input", "qw-cal-input") as HTMLInputElement;
@@ -199,13 +174,13 @@ export class Calendar {
 
     this.triggerWrap.append(this.input, this.iconBtn);
 
-    /* 遮罩 + 面板（popover 形态为锚定输入框的紧凑浮层，无全屏遮罩） */
+    /* 遮罩+面板；popover 为锚定输入框的紧凑浮层，无全屏遮罩 */
     this.overlay = el(
       "div",
       this.mode === "popover" ? "qw-cal-overlay qw-cal-overlay--popover" : "qw-cal-overlay",
     );
     this.overlay.hidden = true;
-    /* 详情悬浮方向 class：CSS 按 is-detail-inside / is-detail-left / is-detail-right 布局 */
+    /* 详情悬浮方向 class（is-detail-inside/left/right） */
     this.overlay.classList.add(`is-detail-${this.detailPosition}`);
 
     this.panel = el("div", "qw-cal-panel");
@@ -213,10 +188,8 @@ export class Calendar {
     this.panel.setAttribute("aria-modal", "true");
     this.panel.setAttribute("aria-label", "选择日期");
 
-    /* 主区域 */
     this.mainArea = el("div", "qw-cal-main");
 
-    /* 标题栏 */
     const header = el("div", "qw-cal-header");
 
     const prevBtn = el("button", "qw-cal-nav-btn qw-cal-prev", ARROW_LEFT) as HTMLButtonElement;
@@ -238,20 +211,17 @@ export class Calendar {
     header.append(prevBtn, this.titleEl, nextBtn, this.todayBtn);
     this.mainArea.append(header);
 
-    /* 星期头部 */
     const weekRow = el("div", "qw-cal-weekdays");
     for (const w of WEEKDAY_LABELS) {
       weekRow.append(el("span", "qw-cal-weekday", w));
     }
     this.mainArea.append(weekRow);
 
-    /* 日期网格 */
     this.grid = el("div", "qw-cal-grid");
     this.grid.setAttribute("role", "grid");
     this.grid.setAttribute("aria-label", "日期网格");
     this.mainArea.append(this.grid);
 
-    /* 时间选择器 */
     this.timeRow = el("div", "qw-cal-time");
     this.hourInput = el("input", "qw-cal-time-input") as HTMLInputElement;
     this.hourInput.type = "number";
@@ -298,7 +268,7 @@ export class Calendar {
     this.timeRow.hidden = this.dateOnly;
     this.mainArea.append(this.timeRow);
 
-    /* 底部操作栏（modal / popover 统一提交制：点日期只更新面板，确认才回发 onChange） */
+    /* 底部操作栏（提交制：确认才回发 onChange） */
     const actions = el("div", "qw-cal-actions");
     const cancelBtn = el("button", "qw-cal-cancel-btn", "取消") as HTMLButtonElement;
     cancelBtn.type = "button";
@@ -309,11 +279,9 @@ export class Calendar {
     actions.append(cancelBtn, this.confirmBtn);
     this.mainArea.append(actions);
 
-    /* 详情面板 */
     this.detailPanel = el("div", "qw-cal-side");
     this.detailContent = el("div", "qw-cal-detail");
 
-    /* 关闭一侧面板按钮 */
     const sideCloseBtn = el("button", "qw-cal-side-close", "×") as HTMLButtonElement;
     sideCloseBtn.type = "button";
     sideCloseBtn.setAttribute("aria-label", "关闭详情");
@@ -332,10 +300,6 @@ export class Calendar {
     }
   }
 
-  /* ============================================================
-     Bind：事件绑定
-     ============================================================ */
-
   private bind(): void {
     this.input.addEventListener("click", () => this.open());
     this.iconBtn.addEventListener("click", () => this.open());
@@ -344,7 +308,6 @@ export class Calendar {
       if (e.target === this.overlay) this.cancel();
     });
 
-    /* 时间输入变更 */
     const syncTime = () => {
       this.selectedTime.hour = Math.min(23, Math.max(0, parseInt(this.hourInput.value) || 0));
       this.selectedTime.minute = Math.min(59, Math.max(0, parseInt(this.minuteInput.value) || 0));
@@ -358,7 +321,7 @@ export class Calendar {
     this.minuteInput.addEventListener("change", syncTime);
     this.secondInput.addEventListener("change", syncTime);
 
-    /* 日格点击（处理三种视图） */
+    /* 日格点击（年/月/日三视图） */
     this.grid.addEventListener("click", (e) => {
       const cell = (e.target as HTMLElement).closest<HTMLElement>(
         ".qw-cal-cell, .qw-cal-month-cell, .qw-cal-year-cell",
@@ -409,7 +372,7 @@ export class Calendar {
         e.preventDefault();
         this.cancel();
       }
-      /* Enter=确认；焦点在按钮上时交给原生 click（今天/取消/确认/月年格） */
+      /* Enter=确认；焦点在按钮上时交给原生 click */
       if (e.key === "Enter" && (e.target as HTMLElement | null)?.tagName !== "BUTTON") {
         e.preventDefault();
         this.confirm();
@@ -436,10 +399,6 @@ export class Calendar {
     document.addEventListener("mousedown", this.docClick);
   }
 
-  /* ============================================================
-     Public API
-     ============================================================ */
-
   /** 打开日历面板 */
   open(): void {
     if (this.isOpen) return;
@@ -460,7 +419,7 @@ export class Calendar {
       second: this.selected.getSeconds(),
     };
 
-    /* 提交制快照：取消 / Esc / 点外部 / 滚动收起时回滚到此状态 */
+    /* 提交制快照：取消/Esc/点外部/滚动收起时回滚 */
     this.snapshot = {
       selected: new Date(this.selected),
       time: { ...this.selectedTime },
@@ -470,11 +429,11 @@ export class Calendar {
     this.overlay.hidden = false;
 
     if (this.mode === "popover") {
-      /* popover：不锁 body 滚动，不设 transform-origin（由 CSS 负责轻量位移动画） */
+      /* popover：不锁 body 滚动、不设 transform-origin（CSS 负责位移动画） */
       this.bindPopoverScroll();
     } else {
       document.body.style.overflow = "hidden";
-      /* 锚定动画：transform-origin 指向输入框位置（视觉从输入框弱出） */
+      /* 锚定动画：transform-origin 指向输入框位置 */
       const ir = this.input.getBoundingClientRect();
       const pr = this.panel.getBoundingClientRect();
       if (pr.width > 0 && pr.height > 0) {
@@ -495,15 +454,15 @@ export class Calendar {
     }
 
     this.render();
-    /* 详情面板：modal / popover 打开时均渲染当前选中日期（popover 内嵌详情栏需先激活再量宽） */
+    /* 打开时渲染选中日期详情（popover 需先激活再量宽） */
     if (this.showDetailPanel) {
       this.showDetail(this.selected);
     } else {
       this.hideDetail();
     }
-    /* popover 形态：render 后测量面板尺寸做下方/上方锚定与宽度 */
+    /* popover：render 后测量尺寸做上下锚定 */
     if (this.mode === "popover") this.placePopover();
-    /* 焦点移入面板首个高频可交互元素（今天按钮；不可用时聚焦面板） */
+    /* 焦点移入今天按钮（不可用时聚焦面板） */
     this.panel.tabIndex = -1;
     const focusTarget = this.todayBtn.classList.contains("is-hidden") ? this.panel : this.todayBtn;
     focusTarget.focus();
@@ -556,7 +515,7 @@ export class Calendar {
     if (this.snapshot) {
       this.selected = new Date(this.snapshot.selected);
       this.selectedTime = { ...this.snapshot.time };
-      /* 输入框按快照原样恢复（宿主可能以空值表达"未设置"，不能经 syncInput 覆写） */
+      /* 输入框按快照恢复（宿主可能用空值表"未设置"，不能经 syncInput 覆写） */
       this.input.value = this.snapshot.inputValue;
       this.snapshot = null;
     }
@@ -603,13 +562,7 @@ export class Calendar {
     this.overlay.remove();
   }
 
-  /* ============================================================
-     popover 形态辅助
-     ============================================================ */
-
-  /** popover 锚定（fixed）：宽度 = 触发区宽 + 详情栏宽（激活时），左缘对齐；
-   *  下方放不下向上翻，两侧都放不下选空间大的一侧，并以 max-height 钳制面板高度
-   *  （.qw-cal-main / .qw-cal-detail 内部滚动），保证面板永不被视口裁切到不可达 */
+  /** popover 锚定：宽=触发区+详情栏，左缘对齐；放不下向上翻，仍放不下钳制高度内滚 */
   private placePopover(): void {
     const ir = this.input.getBoundingClientRect();
     const vh = window.innerHeight || 0;
@@ -617,22 +570,19 @@ export class Calendar {
     const gap = 8;
     const base = ir.width > 0 ? ir.width : this.popoverMinWidth;
     const sideActive = this.showDetailPanel && this.detailPanel.classList.contains("is-active");
-    /* inside：详情为面板内覆盖浮层（.qw-cal-side absolute），不参与面板宽度；
-       left/right：详情参与宽度，面板随详情加宽 */
-    /* 读取详情栏宽度前临时取消 width 过渡：过渡中间值（0→240）会让面板宽度测不准 */
+    /* inside 详情为面板内覆盖，不参与宽度；left/right 详情参与面板宽度 */
+    /* 测宽前临时取消 width 过渡（过渡中间值会测不准） */
     const prevSideTrans = this.detailPanel.style.transition;
     this.detailPanel.style.transition = "none";
     const sideW = sideActive && this.detailPosition !== "inside" ? this.detailPanel.offsetWidth : 0;
     this.detailPanel.style.transition = prevSideTrans;
 
-    /* 先按 输入框宽+详情宽 定位，再以面板实际宽度兜底：窄输入框下面板
-       min-width 更宽，overlay 若只按输入框宽会把面板右侧裁掉（日期列不完整） */
+    /* 先按 输入框+详情宽 定位，再以面板实际宽度兜底（防窄输入框裁掉右侧） */
     this.overlay.style.width = `${base + sideW}px`;
     const panelW = Math.max(base + sideW, this.panel.offsetWidth);
     this.overlay.style.width = `${panelW}px`;
 
-    /* left：面板向左展开（详情在左，网格锚点保持在输入框处）；
-       right/inside：左缘对齐输入框；最后横向钳进视口 */
+    /* left：向左展开（网格锚点保持输入框处）；right/inside：左缘对齐输入框 */
     const leftShift = sideActive && this.detailPosition === "left" ? sideW : 0;
     const left = Math.max(gap, Math.min(ir.left - leftShift, vw - panelW - gap));
     this.overlay.style.left = `${left}px`;
@@ -666,7 +616,7 @@ export class Calendar {
       }
       node = node.parentElement;
     }
-    /* 滚动属被动收起，等同取消：未确认的选择不回发 */
+    /* 滚动即被动收起（等同取消，未确认的选择不回发） */
     const onScroll = () => this.cancel();
     for (const s of scrollables) {
       s.addEventListener("scroll", onScroll, { passive: true });
@@ -683,10 +633,6 @@ export class Calendar {
     this.scrollTargets = [];
     this.scrollListener = null;
   }
-
-  /* ============================================================
-     渲染
-     ============================================================ */
 
   private render(): void {
     this.renderTitle();
@@ -813,16 +759,12 @@ export class Calendar {
     const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
     const selIso = formatDate(this.selected);
 
-    // 当月第一天是星期几？(0=周日, ..., 6=周六)
-    const firstDay = new Date(y, m, 1).getDay(); // 0=周日 → 需映射为周一=0
-    const startPad = firstDay === 0 ? 6 : firstDay - 1; // 周一=0, 周日=6
-
-    // 当月天数
+    // 当月第一天（getDay：0=周日 → 映射为周一=0）
+    const firstDay = new Date(y, m, 1).getDay();
+    const startPad = firstDay === 0 ? 6 : firstDay - 1;
     const daysInMonth = new Date(y, m + 1, 0).getDate();
-
-    // 上月天数（用于补齐）
+    // 上月天数（补齐前一月格子）
     const prevMonthDays = new Date(y, m, 0).getDate();
-
     // 总格数（补齐到 6 行）
     const totalCells = Math.ceil((startPad + daysInMonth) / 7) * 7;
 
@@ -835,14 +777,12 @@ export class Calendar {
       let isCurrentMonth: boolean;
 
       if (cellDay < 1) {
-        // 上月
         const prevM = m === 0 ? 11 : m - 1;
         const prevY = m === 0 ? y - 1 : y;
         date = new Date(prevY, prevM, prevMonthDays + cellDay);
         iso = formatDate(date);
         isCurrentMonth = false;
       } else if (cellDay > daysInMonth) {
-        // 下月
         const nextM = m === 11 ? 0 : m + 1;
         const nextY = m === 11 ? y + 1 : y;
         date = new Date(nextY, nextM, cellDay - daysInMonth);
@@ -871,12 +811,10 @@ export class Calendar {
       if (isWeekend) cell.classList.add("is-weekend");
       if (this.isDisabled(date)) cell.classList.add("is-disabled");
 
-      // 日期数字
       const dayNum = el("span", "qw-cal-cell-num", String(date.getDate()));
       cell.append(dayNum);
 
-      // 格子 meta：按注册顺序合并 DayMetaProvider 结果；
-      // sub / badge 取最后一个非空（追加在后的用户 provider 可覆盖内置），cellClass 全部合并
+      // 合并 DayMetaProvider：sub/badge 取最后一个非空（用户 provider 可覆盖内置），cellClass 全合并
       let sub = "";
       let subClass = "qw-cal-cell-sub";
       let badge = "";
@@ -903,10 +841,6 @@ export class Calendar {
     this.grid.append(frag);
   }
 
-  /* ============================================================
-     日期选择 + 详情
-     ============================================================ */
-
   private selectDate(date: Date, rerender: boolean): void {
     this.selected = new Date(
       date.getFullYear(),
@@ -923,13 +857,13 @@ export class Calendar {
 
     this.syncInput();
     if (this.showDetailPanel) this.showDetail(date);
-    /* 详情激活后 left/right 面板宽度随之变化，popover 重新锚定 */
+    /* 详情激活改变面板宽度，popover 重新锚定 */
     if (this.mode === "popover") this.placePopover();
-    /* 提交制：点日期只更新面板内选中与详情、不收起；确认时才经 confirm() 回发 onChange */
+    /* 提交制：点日期只更新面板，确认才回发 onChange */
   }
 
   private showDetail(date: Date): void {
-    /* 清空并重建：× 按钮 + 各 PanelProvider 内容块（按注册顺序） */
+    /* 清空重建：× 按钮 + PanelProvider 内容块 */
     this.detailContent.textContent = "";
     const sideCloseBtn = el("button", "qw-cal-side-close", "×") as HTMLButtonElement;
     sideCloseBtn.type = "button";
@@ -953,13 +887,9 @@ export class Calendar {
 
   private hideDetail(): void {
     this.detailPanel.classList.remove("is-active");
-    /* 详情收起后面板宽度收窄（left/right 形态），popover 重新锚定 */
+    /* 详情收起面板变窄，popover 重新锚定 */
     if (this.mode === "popover") this.placePopover();
   }
-
-  /* ============================================================
-     辅助
-     ============================================================ */
 
   private syncInput(): void {
     const d = this.selected;

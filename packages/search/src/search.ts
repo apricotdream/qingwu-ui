@@ -1,14 +1,8 @@
-/* ============================================================
-   青梧UI · 搜索框组件（SearchBox）
-   - 自渲染触发条 → 模态面板 → 结果列表 → toast
-   - 打字机轮播占位 / 键盘导航 / 结果入场动画 / 焦点陷阱
-   - 零框架依赖，纯 DOM + CSS
-   ============================================================ */
+/** 青梧UI 搜索框（SearchBox）：零依赖纯 DOM，触发条 → 模态面板 → 结果列表 → toast */
 
 import type { SearchFn, SearchItem, SearchOptions } from "./types";
 import { Typewriter } from "./typewriter";
 
-/* ---------- 运行时常量 ---------- */
 const PREFERS_REDUCED =
   typeof window !== "undefined"
     ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -19,7 +13,7 @@ const IS_MAC =
     ? /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)
     : false;
 
-/* ---------- SVG 图标（由 icon/icons.ts 提供） ---------- */
+/** SVG 图标（由 icon/icons.ts 提供） */
 import { ICO_MENU, ICO_SEARCH, ICON_CLOSE, SEARCH_ART } from "../../../icon/icons";
 
 const ICO = {
@@ -29,7 +23,6 @@ const ICO = {
   art: SEARCH_ART,
 } as const;
 
-/* ---------- 工具函数 ---------- */
 function el(tag: string, cls?: string, html?: string): HTMLElement {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
@@ -52,9 +45,7 @@ function escapeHTML(s: string): string {
   return s.replace(/[&<>"]/g, (c) => HTML_ESCAPES[c] ?? c);
 }
 
-/* ============================================================ */
 export class SearchBox {
-  /* ---- 配置 ---- */
   private root: HTMLElement;
   private words: string[];
   private items: SearchItem[];
@@ -73,7 +64,6 @@ export class SearchBox {
   private readonly spriteUrl?: string;
   private readonly spriteFrames: number;
 
-  /* ---- 运行时状态 ---- */
   private cat = "全部";
   private visible: SearchItem[] = [];
   private active = -1;
@@ -87,7 +77,6 @@ export class SearchBox {
   private lastResults: SearchItem[] = [];
   private searchBusy = false;
 
-  /* ---- DOM 引用 ---- */
   private trigger: HTMLButtonElement | null = null;
   private triggerTw: HTMLElement | null = null;
   private overlay!: HTMLElement;
@@ -108,7 +97,6 @@ export class SearchBox {
   private toasts!: HTMLElement;
   private focusables: HTMLElement[] = [];
 
-  /* ---- 引擎 ---- */
   private twTrigger: Typewriter | null = null;
   private twModal: Typewriter;
   private docKey: ((e: KeyboardEvent) => void) | null = null;
@@ -143,9 +131,7 @@ export class SearchBox {
     this.twModal = new Typewriter(this.ph, this.words, { reduced: this.staticMode });
   }
 
-  /* ============================================================
-     Build：一次性创建全部 DOM
-     ============================================================ */
+  /** Build：一次性创建全部 DOM */
   private build(): void {
     /* 触发条（trigger: false 时不渲染，宿主自定义入口） */
     if (this.withTrigger) {
@@ -163,7 +149,6 @@ export class SearchBox {
       this.triggerTw = qs(trigger, ".qs-tw");
     }
 
-    /* 遮罩 + 面板 */
     this.overlay = el("div", "qs-overlay");
     this.overlay.hidden = true;
     this.panel = el("div", "qs-panel");
@@ -171,7 +156,6 @@ export class SearchBox {
     this.panel.setAttribute("aria-modal", "true");
     this.panel.setAttribute("aria-label", "搜索");
 
-    /* 搜索栏 */
     this.bar = el("div", "qs-bar");
     this.bar.innerHTML = ICO.search;
     const inputWrap = el("div", "qs-input-wrap");
@@ -187,7 +171,7 @@ export class SearchBox {
     this.ph = el("span", "qs-ph");
     this.ph.setAttribute("aria-hidden", "true");
 
-    /* 清空键：移入输入框内部，有文字时浮现（小 ⌫） */
+    /** 清空键：有文字时浮现（小 ⌫） */
     this.clearBtn = el("button", "qs-clear", "⌫") as HTMLButtonElement;
     this.clearBtn.type = "button";
     this.clearBtn.setAttribute("aria-label", "清除搜索内容");
@@ -200,7 +184,6 @@ export class SearchBox {
     this.menuBtn.setAttribute("aria-pressed", "false");
     this.menuBtn.title = "筛选类别";
 
-    /* 关闭键：输入条最右侧，关闭整个面板 */
     this.closeBtn = el("button", "qs-iconbtn qs-close", ICO.close) as HTMLButtonElement;
     this.closeBtn.type = "button";
     this.closeBtn.setAttribute("aria-label", "关闭搜索");
@@ -208,13 +191,11 @@ export class SearchBox {
 
     this.bar.append(inputWrap, this.menuBtn, this.closeBtn);
 
-    /* 筛选条 */
     this.filterbar = el("div", "qs-filterbar", "<span>当前筛选</span>");
     this.filterChip = el("button", "qs-filter-chip") as HTMLButtonElement;
     this.filterChip.type = "button";
     this.filterbar.append(this.filterChip);
 
-    /* 内容区 */
     const body = el("div", "qs-body");
     this.empty = el("div", "qs-empty");
     this.empty.innerHTML =
@@ -224,7 +205,7 @@ export class SearchBox {
     this.emptyText = qs(this.empty, ".qs-empty-text");
     this.emptySub = qs(this.empty, ".qs-empty-sub");
 
-    /* 加载态：精灵条 steps 帧动画（与博客列表页同款机制），无 URL 时降级为纯文案 */
+    /** 加载态：精灵条 steps 帧动画（无 URL 时降级为文案） */
     this.loading = el("div", "qs-loading");
     this.loading.hidden = true;
     if (this.spriteUrl) {
@@ -245,7 +226,6 @@ export class SearchBox {
     this.list.hidden = true;
     body.append(this.empty, this.loading, this.list);
 
-    /* 底部快捷键栏 */
     const foot = el(
       "div",
       "qs-foot",
@@ -257,19 +237,15 @@ export class SearchBox {
     this.panel.append(this.bar, this.filterbar, body, foot);
     this.overlay.append(this.panel);
 
-    /* toast 容器 */
     this.toasts = el("div", "qs-toasts");
 
     if (this.trigger) this.root.append(this.trigger);
-    /* 遮罩与 toast 挂到 document.body：脱离宿主 DOM，避免宿主的
-       transform/filter/overflow 等属性把 fixed 定位污染成包含块裁剪 */
+    /** 遮罩/toast 挂 body：避免宿主 transform/filter/overflow 污染 fixed 定位 */
     document.body.append(this.overlay, this.toasts);
     this.focusables = [this.input, this.clearBtn, this.menuBtn, this.closeBtn];
   }
 
-  /* ============================================================
-     Bind：事件绑定
-     ============================================================ */
+  /** Bind：事件绑定 */
   private bind(): void {
     this.trigger?.addEventListener("click", () => {
       this.open();
@@ -310,12 +286,10 @@ export class SearchBox {
       if (opt) this.setActive(Number(opt.dataset.index), false);
     });
 
-    /* 点遮罩关闭 */
     this.overlay.addEventListener("mousedown", (e) => {
       if (e.target === this.overlay) this.close();
     });
 
-    /* 面板内键盘：方向键 / 回车结果导航 */
     this.panel.addEventListener("keydown", (e) => this.onPanelKey(e));
 
     /* 全局唤起 */
@@ -348,9 +322,7 @@ export class SearchBox {
     document.addEventListener("keydown", this.docKey, true);
   }
 
-  /* ============================================================
-     Public API
-     ============================================================ */
+  /** Public API */
 
   /** 打开搜索面板 */
   open(): void {
@@ -409,9 +381,7 @@ export class SearchBox {
     this.root.textContent = "";
   }
 
-  /* ============================================================
-     键盘处理
-     ============================================================ */
+  /** 键盘处理 */
 
   private onPanelKey(e: KeyboardEvent): void {
     if (document.activeElement !== this.input) return;
@@ -459,9 +429,7 @@ export class SearchBox {
     }
   }
 
-  /* ============================================================
-     筛选类别
-     ============================================================ */
+  /** 筛选类别 */
   private cycleCategory(): void {
     const idx = this.categories.indexOf(this.cat);
     const next = this.categories[(idx + 1) % this.categories.length];
@@ -486,9 +454,7 @@ export class SearchBox {
     if (this.isOpen) this.input.focus();
   }
 
-  /* ============================================================
-     结果渲染 / 高亮 / 选择
-     ============================================================ */
+  /** 结果渲染 / 高亮 / 选择 */
   private syncHasValue(): void {
     this.bar.classList.toggle("has-value", this.input.value.length > 0);
     this.clearBtn.disabled = this.input.value.length === 0;
@@ -527,7 +493,7 @@ export class SearchBox {
     const raw = this.input.value.trim();
     const q = raw.toLowerCase();
 
-    /* 无输入 → 空状态（不发异步请求，并中止在途请求） */
+    /** 无输入 → 空状态（中止在途请求） */
     if (!q) {
       this.abortCtl?.abort();
       this.showIdle();
@@ -616,9 +582,7 @@ export class SearchBox {
     this.setActive(0, false);
   }
 
-  /* ============================================================
-     异步模式：防抖 → 请求 → loading / 结果 / 错误
-     ============================================================ */
+  /** 异步模式：防抖 → 请求 → loading/结果/错误 */
 
   /** 防抖：输入停顿 debounceMs 后才发起请求 */
   private scheduleSearch(raw: string): void {
@@ -716,7 +680,6 @@ export class SearchBox {
     this.close();
   }
 
-  /* ---- toast ---- */
   private toast(msg: string): void {
     const t = el("div", "qs-toast", '<span class="tick">✓</span><span></span>');
     const textNode = t.lastChild;

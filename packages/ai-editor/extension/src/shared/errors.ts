@@ -1,11 +1,4 @@
-/**
- * 错误处理 - 解决 Obsidian Web Clipper 静默失败的痛点
- *
- * 规则：
- * - 所有外部调用必须捕获并包装为 ClipperError
- * - AI 错误必须包含 code + 用户可读 message + retryable
- * - 错误默认冒泡到 UI，并附带可重试与降级方案
- */
+/** 错误处理 - 所有外部调用统一包装为 ClipperError；AI 错误必带 code + 用户可读 message + retryable */
 
 import type { AIErrorCode } from "./types";
 

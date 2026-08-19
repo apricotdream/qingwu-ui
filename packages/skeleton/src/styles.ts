@@ -1,20 +1,10 @@
 /**
- * 骨架屏 CSS 样式
- *
- * 全部规则静态化 + CSS 变量驱动：
- * 颜色/时长/时序函数通过 per-instance 变量（--qs-sk-*）表达，
- * 变量由 AutoSkeleton 写在 overlay 元素上、renderSkeletonSnapshot
- * 内联在容器 div 上。注入的 CSS 无任何实例参数 → 可安全单例化，
- * 多容器并存零互相覆盖。
+ * 骨架屏 CSS 样式：全部规则静态化，颜色/时长/时序走容器级 --qs-sk-* 变量
+ * （AutoSkeleton 写 overlay、renderSkeletonSnapshot 内联容器 div），
+ * 无实例参数 → 可单例注入，多容器并存互不覆盖。
  */
 
-/**
- * 测量态样式 —— 使文本透明、隐藏媒体元素
- * 保留元素背景和边框，让骨架流光显示在其上方
- *
- * 原地测量：真实内容留在原位，仅通过根容器上的
- * qs-skeleton-measuring 类透明化，不移动任何子节点。
- */
+/** 测量态样式：文本透明、媒体元素隐藏，保留背景/边框；原地测量不移动子节点 */
 export const SKELETON_MEASURING_STYLES = `
   .qs-skeleton-measuring *:not([data-skeleton-ignore], [data-skeleton-ignore] *) {
     color: transparent !important;
@@ -33,9 +23,7 @@ export const SKELETON_MEASURING_STYLES = `
   }
 `;
 
-/**
- * 覆盖层容器样式（挂载于 body，定位到根容器坐标）
- */
+/** 覆盖层容器样式（挂载于 body，定位到根容器坐标） */
 export const SKELETON_OVERLAY_STYLES = `
   .qs-skeleton-overlays {
     position: absolute;
@@ -45,22 +33,14 @@ export const SKELETON_OVERLAY_STYLES = `
   }
 `;
 
-/**
- * 块级渐变位移的动画门槛（共享常量，两条渲染路径强制一致）：
- * 块宽 ≥ 48px 且高 ≥ 8px 才建动画层——渐变色带高亮区约占块宽一半，
- * 低于此宽度扫过不可感知（闪一下而非扫过），纯静态灰块更干净且零层开销。
- */
+/** 块级渐变位移的动画门槛（两渲染路径共享）：宽 ≥ 48px 且高 ≥ 8px 才建动画层，
+ *  低于此宽度流光不可感知，静态灰块更干净 */
 export const MIN_ANIMATED_WIDTH = 48;
 export const MIN_ANIMATED_HEIGHT = 8;
 
-/**
- * 骨架块样式（纯背景色，读容器级变量）
- *
- * 块级渐变位移：满足门槛的块带 is-shimmer 类，其 ::before
- * 伪元素渐变层做 transform 滑动（合成器线程，零主线程 repaint），
- * 块 overflow:hidden 裁切圆角外溢出。错峰：每块 --qs-sk-delay
- * 负延迟递增（文档序），首帧即级联流水。
- */
+/** 骨架块样式（纯背景色，读容器级变量）：is-shimmer 块的 ::before 渐变层
+ *  transform 滑动（合成器线程零 repaint），overflow:hidden 裁切圆角溢出；
+ *  错峰负延迟按文档序递增。 */
 export const SKELETON_BLOCK_STYLES = `
   .qs-skeleton-overlay {
     position: absolute;
@@ -96,12 +76,7 @@ export const SKELETON_BLOCK_STYLES = `
   }
 `;
 
-/**
- * 静态样式全量（单例注入，无实例参数）
- *
- * 动画：每块 ::before 渐变层 transform 滑动（合成器线程，
- * 零主线程 repaint）；时长/颜色/时序函数全部读容器级变量。
- */
+/** 静态样式全量（单例注入，无实例参数）：动画走合成器线程，全部读容器级变量 */
 export const SKELETON_STATIC_STYLES = [
   SKELETON_MEASURING_STYLES,
   SKELETON_OVERLAY_STYLES,
