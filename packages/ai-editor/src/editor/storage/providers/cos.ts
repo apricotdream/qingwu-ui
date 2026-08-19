@@ -24,11 +24,8 @@ interface COSConfig {
  * })
  * ```
  *
- * 本函数为兼容旧 API 保留，内部转调 `createS3Storage`。
- * 历史实现未设置任何鉴权头，私有桶会返回 403。
- *
- * 注意：COS 的 bucket 命名约定为 `<name>-<appid>`，使用本函数时请确保
- * 传入的 `bucket` 字段已包含 appid 后缀。
+ * 兼容旧 API 保留，内部转调 createS3Storage；历史实现无鉴权头，私有桶返回 403。
+ * 注意：bucket 需含 `<name>-<appid>` 后缀。
  */
 export function createCOSStorage(config: COSConfig): StorageProvider {
   return createS3Storage({

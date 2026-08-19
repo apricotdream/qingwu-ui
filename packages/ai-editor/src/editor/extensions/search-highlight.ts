@@ -2,20 +2,8 @@ import { type CommandProps, Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
-/**
- * 全文搜索高亮扩展
- *
- * 设计：基于 ProseMirror Decoration 实现，不污染文档内容。
- * - 匹配位置存储在 plugin state 中，文档变更时重新计算
- * - 当前匹配项用不同 class 标识，可滚动到视图
- * - 大小写敏感/整词匹配可配置
- *
- * 命令：
- * - setSearch(keyword, opts)  设置关键词并立即匹配
- * - nextMatch()               跳到下一个匹配
- * - prevMatch()               跳到上一个匹配
- * - clearSearch()             清除高亮
- */
+/** 全文搜索高亮扩展：基于 ProseMirror Decoration 不污染文档；
+ *  命令 setSearch / nextMatch / prevMatch / clearSearch，支持大小写/整词匹配 */
 
 export interface SearchOptions {
   caseSensitive?: boolean;
@@ -85,16 +73,8 @@ function buildDecorations(doc: import("@tiptap/pm/model").Node, state: SearchSta
   return DecorationSet.create(doc, decos);
 }
 
-/**
- * 滚动当前匹配项到视图中央（如不在视野内）
- *
- * 策略：
- * 1. 优先查找当前匹配项对应的 DOM 元素（.search-highlight--active span），
- *    用 scrollIntoView 让浏览器自动找最近的可滚动祖先（window 或编辑器内部容器）
- * 2. 先检查 getBoundingClientRect 是否在视口内（留 120px 顶部边距给 sticky header，
- *    80px 底部边距），在视野内则不滚动，避免搜索时跳动
- * 3. fallback：若 span 未渲染（时序问题），用 view.coordsAtPos 计算 + window.scrollBy
- */
+/** 滚动当前匹配项到视图中央：优先 scrollIntoView（span 已渲染），
+ *  不在视野内才滚动；span 未渲染时用 coordsAtPos 回退 */
 function scrollCurrentIntoView(view: import("@tiptap/pm/view").EditorView, state: SearchState) {
   if (state.currentIndex < 0 || state.currentIndex >= state.matches.length) return;
   const m = state.matches[state.currentIndex];

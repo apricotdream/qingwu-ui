@@ -130,12 +130,7 @@ function highlightText(text: string, query: string): ReactNode {
 }
 
 /**
- * 现代化文档目录面板：
- * - 自动收集编辑器内 h1~h6 标题，构建树形结构
- * - 支持全部折叠/全部展开
- * - 有子标题的标题支持单独折叠/展开
- * - 点击平滑滚动并高亮
- * - IntersectionObserver 滚动时高亮当前标题
+ * 文档目录面板：自动收集 h1~h6 建树、支持折叠/展开、点击平滑滚动并高亮当前标题。
  */
 export const TocPanel: FC<TocPanelProps> = ({ editor, className = "", onClose }) => {
   const [items, setItems] = useState<TocItem[]>([]);
@@ -190,8 +185,7 @@ export const TocPanel: FC<TocPanelProps> = ({ editor, className = "", onClose })
         if (bestId) setActiveId(bestId);
       },
       {
-        // 消费方可能把编辑器放在可滚动容器内（而非 window 滚动），
-        // 用最近滚动祖先作 root 才能正确观测标题可见性
+        // 用最近滚动祖先作 root，适配非 window 滚动的容器
         root: findScrollParent(editor.view.dom),
         rootMargin: "0px 0px -72% 0px",
         threshold: [0, 1],

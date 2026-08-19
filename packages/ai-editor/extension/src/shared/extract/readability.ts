@@ -1,14 +1,4 @@
-/**
- * 内容提取器 - 解决 Obsidian Web Clipper 提取失败的痛点
- *
- * 策略链：
- *  1) site-rule：用户/内置站点规则优先匹配
- *  2) readability：通用正文算法
- *  3) selection：用户选区
- *  4) full-dom：兜底
- *
- * 每个失败都给出 warnings，不静默吞错。
- */
+/** 内容提取器 - 策略链 site-rule → readability → selection → full-dom 兜底，失败给 warnings 不静默 */
 
 import type {
   ExtractedContent,

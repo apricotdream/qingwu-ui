@@ -1,9 +1,4 @@
-/* ============================================================
-   青梧UI · 下拉选择器组件（Select）
-   - 单选 · 手风琴错峰展开动画 · 选项禁用 · 向上/向下自适应翻转
-   - 零框架依赖，纯 DOM + CSS
-   - ARIA: combobox / listbox / option + aria-activedescendant
-   ============================================================ */
+/** 青梧UI 下拉选择器：单选 · 错峰动画 · 自适应翻转 · 零依赖纯 DOM + ARIA */
 
 import { ICON_CHECK, ICON_CHEVRON_DOWN } from "../../../icon/icons";
 import type { SelectOption, SelectOptions } from "./types";
@@ -33,9 +28,7 @@ function el(tag: string, cls?: string, html?: string): HTMLElement {
 
 let UID = 0;
 
-/* ============================================================ */
 export class Select {
-  /* ---- 配置 ---- */
   private root: HTMLElement;
   private options: SelectOption[];
   private placeholder: string;
@@ -49,24 +42,20 @@ export class Select {
   private readonly onOpenChangeCb?: (open: boolean) => void;
   private readonly onChangeCb?: (value: string | null, option: SelectOption | null) => void;
 
-  /* ---- 受控 / 非受控 ---- */
   private readonly controlledValue: boolean;
   private displayValue: string | null;
 
-  /* ---- 运行时状态 ---- */
   private isOpen = false;
   private isDisabled = false;
   private active = -1;
   private dir: "down" | "up" = "down";
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
 
-  /* ---- DOM 引用 ---- */
   private trigger!: HTMLButtonElement;
   private valueEl!: HTMLElement;
   private list!: HTMLUListElement;
   private panel!: HTMLElement;
 
-  /* ---- 监听器 ---- */
   private onDocPointerDown: ((e: PointerEvent) => void) | null = null;
   private onWinScroll: (() => void) | null = null;
 
@@ -95,9 +84,7 @@ export class Select {
     }
   }
 
-  /* ============================================================
-     Build：一次性创建全部 DOM
-     ============================================================ */
+  /* 一次性创建全部 DOM */
   private build(opts: SelectOptions): void {
     const ariaLabel = opts.ariaLabel ?? (this.placeholder || "请选择");
 
@@ -105,7 +92,6 @@ export class Select {
     if (this.customClass) this.root.classList.add(this.customClass);
     this.root.classList.toggle("is-disabled", this.isDisabled);
 
-    /* 触发器 */
     this.trigger = el("button", "qsel-trigger") as HTMLButtonElement;
     this.trigger.type = "button";
     this.trigger.setAttribute("role", "combobox");
@@ -140,7 +126,7 @@ export class Select {
     });
     this.trigger.addEventListener("keydown", (e) => this.onTriggerKey(e));
 
-    /* 阻止 pointerdown 默认行为：聚焦在触发器上，避免列表抢占焦点破坏 aria-activedescendant */
+    /* 阻止 pointerdown，避免列表抢占焦点破坏 aria-activedescendant */
     this.list.addEventListener("pointerdown", (e) => e.preventDefault());
     this.list.addEventListener("click", (e) => {
       const opt = (e.target as HTMLElement).closest<HTMLElement>(".qsel-opt");
@@ -148,9 +134,6 @@ export class Select {
     });
   }
 
-  /* ============================================================
-     渲染
-     ============================================================ */
   private renderOptions(): void {
     this.list.textContent = "";
     const frag = document.createDocumentFragment();
@@ -195,9 +178,6 @@ export class Select {
     return this.options.find((o) => o.value === this.displayValue) ?? null;
   }
 
-  /* ============================================================
-     展开 / 关闭 / 定位
-     ============================================================ */
   /** 打开下拉面板 */
   open(): void {
     if (this.isOpen || this.isDisabled) return;
@@ -261,7 +241,7 @@ export class Select {
     this.isOpen ? this.close() : this.open();
   }
 
-  /** 计算面板位置：宽度跟随触发器、向上/向下翻转、错峰方向随之反向 */
+  /** 计算面板位置：宽度跟随触发器、向上/向下翻转 */
   private position(): void {
     const tr = this.trigger.getBoundingClientRect();
     const gap = 8;
@@ -310,9 +290,6 @@ export class Select {
     });
   }
 
-  /* ============================================================
-     选中 / 高亮
-     ============================================================ */
   private select(index: number): void {
     const opt = this.options[index];
     if (!opt || opt.disabled) return;
@@ -339,9 +316,7 @@ export class Select {
     });
   }
 
-  /* ============================================================
-     键盘导航（焦点保持在触发器，aria-activedescendant 指向列表）
-     ============================================================ */
+  /* 键盘导航（焦点保持在触发器，aria-activedescendant 指向列表） */
   private onTriggerKey(e: KeyboardEvent): void {
     if (this.isDisabled) return;
     switch (e.key) {
@@ -432,10 +407,6 @@ export class Select {
     const next = this.nextEnabled(from, delta > 0 ? 1 : -1);
     if (next >= 0) this.setActive(next);
   }
-
-  /* ============================================================
-     Public API
-     ============================================================ */
 
   /** 当前选中值（无选中为 null） */
   get value(): string | null {

@@ -1,10 +1,4 @@
-/**
- * 页面侧配置读取 —— 带冷启动重试。
- *
- * SW 冷启动/被回收的瞬间，settings:get 可能无应答（messaging 层会显式报错）。
- * 这里重试数次后再抛出，由页面决定错误态展示。
- * 禁止静默回退 defaultSettings()：若用户已有真实配置，回退后再保存会将其覆盖。
- */
+/** 页面侧配置读取 - settings:get 带冷启动重试；禁止静默回退默认值，否则会覆盖用户真实配置 */
 
 import { send } from "./messaging";
 import { defaultSettings } from "./storage/db";

@@ -1,20 +1,8 @@
 /**
- * RelativeMedia 扩展：粘贴外部 Markdown（Obsidian / Typora 等）后，自动发现并解析
- * 文中的"本地相对路径图片/附件"。
- *
- * 工作方式：
- * - 不依赖剪贴板文本里是否有 `[[`，而是**观察粘贴后落入文档的节点**——
- *   image / videoEmbed / audioEmbed / attachmentEmbed 的本地 src，以及链接型附件的本地 href。
- *   这样 Obsidian（markdown 粘贴）与 Typora（HTML 粘贴）都能被统一捕获。
- * - 用 `appendTransaction` 在每次文档变化后微任务里扫描新出现的本地引用。
- * - **文档是唯一事实来源**：只要某个 src 仍以本地形式存在于文档中，下一轮编排就会
- *   处理它——撤销（Ctrl+Z 回滚换链）、重新粘贴同路径引用都不会被永久跳过。
- * - **失败不骚扰**：一轮编排以遗留（用户取消 / 未找到 / 读取失败）结束时，暂停探测
- *   直到下一次粘贴（两条粘贴路径都会清 `pausedUntilPaste`），避免每次击键重复弹窗。
- * - 解析编排（先剪贴板文件静默上传，再目录授权 / 拖拽降级）委托 `resolve-local-media.ts`。
- *
- * 剪贴板文件暂存在扩展 storage（`clipboardFiles`），由本扩展与 `ai-editor` 的粘贴处理共同写入，
- * 以兼容不同来源的粘贴分流顺序；`pausedUntilPaste` 同理在两条粘贴路径中清除。
+ * RelativeMedia 扩展：粘贴外部 Markdown 后自动解析本地相对路径图片/附件。
+ * 观察粘贴后落入文档的节点（本地 src/href），appendTransaction 微任务扫描；
+ * 文档为唯一事实来源，失败（取消/未找到/读取失败）暂停至下次粘贴。
+ * 解析编排委托 resolve-local-media.ts。
  */
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
@@ -138,8 +126,7 @@ export const RelativeMedia = Extension.create({
       void runResolution(fresh)
         .then(() => {
           if (editor.isDestroyed) return;
-          // 收尾：busy 期间若出现了本轮之外的新引用（多事务粘贴等），重新扫描补齐；
-          // 本轮处理过的 src（含失败/取消的）不立即重跑，避免二次弹窗——留给下次粘贴重试
+          // 收尾：补扫 busy 期间出现的新引用；本轮已处理的 src 不重跑，留给下次粘贴重试
           const next = collectLocalMediaRefs(editor.state.doc, isOwned).filter(
             (r) => !runSrcs.has(r.src),
           );
@@ -149,8 +136,7 @@ export const RelativeMedia = Extension.create({
         .finally(() => {
           busy = false;
           if (!editor || editor.isDestroyed) return;
-          // 仍有未解析的本地引用（取消/未找到等）：暂停探测直到下一次粘贴，
-          // 避免用户每次击键都触发扫描与弹窗
+          // 仍有未解析引用：暂停探测至下次粘贴，避免每次击键都弹窗
           storage.pausedUntilPaste = collectLocalMediaRefs(editor.state.doc, isOwned).length > 0;
         });
     };
@@ -160,8 +146,7 @@ export const RelativeMedia = Extension.create({
         key: new PluginKey("relativeMedia"),
         props: {
           handlePaste(_view, event) {
-            // 暂存剪贴板文件（若有），供后续按名匹配；新粘贴 = 新的重试意图，解除暂停；
-            // 不拦截粘贴本身
+            // 暂存剪贴板文件供按名匹配；新粘贴解除暂停；不拦截粘贴
             const files = event.clipboardData?.files;
             storage.clipboardFiles = new Map(
               Array.from(files ?? []).map((f) => [f.name.toLowerCase(), f] as const),

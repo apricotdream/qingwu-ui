@@ -1,10 +1,4 @@
-/**
- * MD 导入选择弹窗（纯 DOM，非 React 上下文可用）
- *
- * 作为 `window.confirm` 的替换：当编辑器未接入宿主 `chooseMd`（MdImportDialog）
- * 时，拖入 MD 文件用项目风格弹窗让用户选择「渲染 / 附加 / 取消」。
- * 全部走 textContent，无 innerHTML，杜绝 XSS。
- */
+/** MD 导入选择弹窗（纯 DOM）：window.confirm 的替代，拖入 MD 时选「渲染 / 附加 / 取消」；全 textContent 防 XSS */
 
 export type MdImportChoice = "render" | "attach" | null;
 

@@ -1,20 +1,10 @@
-/* ============================================================
-   青梧UI · 图片上传组件（ImageUpload）
-   - 拖拽/点击选择，多文件 + 数量限制
-   - 客户端压缩：原图 / webp / avif 多份产出，格式按配置三选一
-   - avif 不可编码时自动降级 webp → png
-   - 每个上传项独立进度条（内置 XHR 真实进度，或自定义 uploadFn）
-   - 零框架依赖，纯 DOM + CSS
-   ============================================================ */
+/** 青梧UI · 图片上传组件：拖拽/点击选图、客户端压缩（原图/webp/avif，不可编码自动降级）、独立进度条，零依赖纯 DOM。 */
 
 import { Button } from "@qingwu-ui/button";
 import { compressImage, detectEncodeMimes } from "./compress";
 import type { CompressedFile, OutputFormat, UploadItem, UploadOptions } from "./types";
 
-/* ============================================================
-   持久化：未完成上传项（File + 元数据）存入 IndexedDB
-   IndexedDB 不可用时（如测试环境）降级内存 Map，行为等价
-   ============================================================ */
+/** 持久化：未完成项存 IndexedDB；不可用时降级内存 Map */
 
 type PersistStrategy = "session" | "local";
 
@@ -130,10 +120,6 @@ function matchesAccept(file: File, accept: string[]): boolean {
   });
 }
 
-/* ============================================================
-   URL 导入辅助
-   ============================================================ */
-
 /** scheme 白名单：仅 http/https/data；解析失败或其它协议返回原因 */
 function checkUrl(raw: string): { ok: true } | { ok: false; reason: string } {
   let u: URL;
@@ -171,10 +157,7 @@ async function fetchWithTimeout(
   }
 }
 
-/**
- * HEAD 预检：Content-Length 超限返回 { tooLarge: true }；
- * HEAD 不可用（405/CORS 等）返回 null，由调用方降级直接 GET。
- */
+/** HEAD 预检：超限返回 tooLarge；HEAD 不可用（405/CORS 等）返回 null 由调用方降级 GET */
 async function headCheck(
   url: string,
   maxBytes: number,
@@ -190,10 +173,7 @@ async function headCheck(
   }
 }
 
-/**
- * 读取文件头签名（magic bytes）识别真实图片格式。
- * 后缀不可信，识别结果作为 accept 校验 / 文件名 / 压缩判断的权威依据。
- */
+/** 读文件头签名识别真实格式；后缀不可信，识别结果作为权威依据 */
 async function detectImageType(blob: Blob): Promise<string | null> {
   const head = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
   if (head.length < 4) return null;
@@ -466,9 +446,6 @@ export class ImageUpload {
     void persistWriteAll(strategy, entries);
   }
 
-  /* ============================================================
-     Build / Bind
-     ============================================================ */
   private build(): void {
     this.el = el("div", "qw-upload");
 
@@ -613,9 +590,6 @@ export class ImageUpload {
     });
   }
 
-  /* ============================================================
-     文件接入
-     ============================================================ */
   private setHint(msg: string): void {
     this.hint.textContent = msg;
     this.hint.hidden = false;
@@ -645,11 +619,7 @@ export class ImageUpload {
     if (rejected > 0) this.setHint(`${rejected} 个文件被拒绝：类型/大小不符或已达数量上限`);
   }
 
-  /**
-   * 压缩 → 生成上传项 → 开始上传。
-   * @param meta source/originalUrl 溯源信息（URL 导入时传入）
-   * @returns 生成的上传项（尚未完成上传，status 为 pending）
-   */
+  /** 压缩 → 生成上传项 → 开始上传；meta 为 URL 导入的溯源信息 */
   private async ingest(
     file: File,
     meta?: { source?: "local" | "url"; originalUrl?: string },
@@ -736,9 +706,6 @@ export class ImageUpload {
     return pending;
   }
 
-  /* ============================================================
-     上传
-     ============================================================ */
   private async upload(item: UploadItem): Promise<void> {
     this.setStatus(item, "uploading");
     item.progress = 0;
@@ -822,14 +789,7 @@ export class ImageUpload {
     });
   }
 
-  /* ============================================================
-     URL 导入
-     ============================================================ */
-
-  /**
-   * 从 URL 导入图片：HEAD 预检 → GET 下载 → magic bytes 识别 → 校验 → 走压缩/上传同一管线。
-   * 失败时在列表留下 error 条目（可删除）并返回 null。
-   */
+  /** 从 URL 导入图片：HEAD 预检 → 下载 → magic 识别 → 校验 → 走压缩/上传管线；失败留 error 条目并返回 null */
   async addFromUrl(url: string): Promise<UploadItem | null> {
     const raw = url.trim();
     const checked = checkUrl(raw);
@@ -957,9 +917,6 @@ export class ImageUpload {
     }
   }
 
-  /* ============================================================
-     渲染
-     ============================================================ */
   private setStatus(item: UploadItem, status: UploadItem["status"]): void {
     item.status = status;
   }
@@ -984,11 +941,7 @@ export class ImageUpload {
     return `${hintCount}单张 ≤ ${this.opts.maxSizeMB} MB · 支持 ${fmtHint}`;
   }
 
-  /**
-   * 单文件模式（maxCount=1）下容器承载大图预览：成功/上传中且有预览的项替换默认提示，
-   * 列表同步隐藏；空态/失败态恢复默认提示（失败项仍走列表展示）。
-   * 只切换子元素 hidden，不重建容器——URL 导入入口（容器内）不受影响。
-   */
+  /** 单文件模式容器承载大图预览：成功/上传中项替换提示并隐藏列表；只切 hidden 不重建容器（URL 入口不受影响） */
   private renderDropzone(): void {
     if (!this.dropzone || this.opts.maxCount !== 1) return;
     const item = this.items.find((i) => i.status === "success" || i.status === "uploading");
@@ -1136,23 +1089,14 @@ export class ImageUpload {
     if (row) this.updateItemDom(row, item);
   }
 
-  /* ============================================================
-     Public API
-     ============================================================ */
-
   getItems(): UploadItem[] {
     return [...this.items];
   }
 
-  /** 移除一个上传项（上传中会中止请求） */
   /** 程序化添加文件（等同用户选择/拖入组件），走完整压缩上传管线 */
   addFiles(files: File[]): void {
     this.handleFiles(files);
   }
-
-  /* ============================================================
-     按钮形态：状态机 + 内嵌进度
-     ============================================================ */
 
   /** 同步按钮形态状态（其他形态为空操作） */
   private syncBtn(
@@ -1173,10 +1117,7 @@ export class ImageUpload {
     }
   }
 
-  /**
-   * 按钮形态渲染：自管按钮内部 DOM（Button.text setter 用 textContent 会清掉进度条子元素）。
-   * 进度条为半透明白条叠在主色按钮上，宿主主题化时无需额外覆盖。
-   */
+  /** 按钮形态渲染：自管内部 DOM（text setter 会清掉进度条子元素）；进度条叠加无需宿主覆盖 */
   private renderBtn(label: string, pct: number | null): void {
     const btnEl = this.btn?.el;
     if (!btnEl) return;
@@ -1205,6 +1146,7 @@ export class ImageUpload {
     this.input.click();
   }
 
+  /** 移除一个上传项（上传中会中止请求） */
   remove(id: string): void {
     const xhr = this.xhrs.get(id);
     if (xhr) {

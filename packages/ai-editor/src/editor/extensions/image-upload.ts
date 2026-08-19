@@ -134,12 +134,8 @@ function createNode(schema: any, file: File, placeholderSrc: string) {
   }
 }
 
-/**
- * 上传文件并替换文档中 src === placeholderSrc 的占位节点。
- * 供拖拽/粘贴（uploadAndInsert）与斜杠命令共用。
- * 上传失败时释放占位 blob URL，避免泄漏（占位节点保留在文档中，用户可手动删除）。
- *
- * @returns 换链成功返回存储 URL；未换链（存储未配置/上传失败/节点已不存在）返回 null
+/** 上传文件并替换文档中 src === placeholderSrc 的占位节点；失败时释放占位 blob URL。
+ *  @returns 换链成功返回存储 URL；未换链返回 null
  */
 export async function uploadPlaceholder(
   view: any,
@@ -243,9 +239,8 @@ export const ImageUpload = Extension.create<AttachmentLimits>({
             const items = event.clipboardData?.items;
             if (!items) return false;
 
-            // 文本含本地媒体引用且剪贴板同时带文件（如 Obsidian 复制嵌入内容）：
-            // 让位给默认粘贴流程插入完整文本，本地文件交给 RelativeMedia 解析，
-            // 避免这里 preventDefault 后"只插入图片、丢失正文"
+            // 文本含本地媒体引用且剪贴板带文件时让位给默认粘贴（RelativeMedia 解析），
+            // 避免"只插入图片、丢失正文"
             const plain = event.clipboardData?.getData("text/plain") || "";
             const hasFiles = (event.clipboardData?.files?.length ?? 0) > 0;
             if (hasFiles && textHasLocalMediaRefs(plain, undefined, ownedUrlChecker())) {

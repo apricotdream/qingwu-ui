@@ -10,16 +10,14 @@ export interface DeleteConfirmDialogProps {
   message?: string;
   confirmText?: string;
   cancelText?: string;
-  /** 确认删除（异步），返回前可展示「删除中」动画 */
+  /** 确认删除（异步），期间展示「删除中」动画 */
   onConfirm: () => void | Promise<void>;
   onCancel: () => void;
 }
 
 /**
- * 共享删除确认弹窗。
- * - 通过 createPortal 渲染到 document.body，脱离编辑器 contenteditable，
- *   避免 Ctrl+A 全选时把弹窗文字也选中（ProseMirror 重同步选区也无法高亮外部 DOM）。
- * - 内置「删除中」动画：onConfirm 为异步时自动展示遮罩，直至 resolve。
+ * 共享删除确认弹窗：createPortal 到 body 脱离 contenteditable，避免全选时选中弹窗文字；
+ * 内置「删除中」动画（onConfirm 异步时展示遮罩）。
  */
 export function DeleteConfirmDialog({
   open,
@@ -32,7 +30,7 @@ export function DeleteConfirmDialog({
 }: DeleteConfirmDialogProps) {
   const [deleting, setDeleting] = useState(false);
   const delegatedRef = useRef(false);
-  // 宿主经 setConfirmProvider 设置自定义确认渲染器时，交由宿主接管，默认仍用本项目弹窗
+  // 宿主经 setConfirmProvider 自定义渲染器时交由宿主接管
   const provider = getConfirmProvider();
 
   useEffect(() => {
@@ -45,7 +43,7 @@ export function DeleteConfirmDialog({
     provider({ open, title, message, confirmText, cancelText, onConfirm, onCancel });
   }, [open, provider, title, message, confirmText, cancelText, onConfirm, onCancel]);
 
-  // 关闭时复位 deleting，避免下次打开残留
+  // 关闭时复位 deleting，避免残留
   useEffect(() => {
     if (!open) setDeleting(false);
   }, [open]);

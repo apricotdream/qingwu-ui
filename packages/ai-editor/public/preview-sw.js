@@ -1,8 +1,4 @@
-/**
- * 预览代理 Service Worker - 最简透传，不处理数据
- * 页面 fetch /preview-proxy/{base64} 不含 .pdf/.zip，IDM 不拦截
- * SW 直接透传 fetch 响应，不做任何数据处理避免二进制损坏
- */
+/** 预览代理 SW：纯透传 fetch，不处理数据避免二进制损坏；URL 不含 .pdf/.zip，IDM 不拦截 */
 const PREVIEW_PROXY_PREFIX = "/preview-proxy/";
 
 self.addEventListener("fetch", (event) => {
@@ -20,7 +16,6 @@ self.addEventListener("fetch", (event) => {
   }
   if (!targetUrl.startsWith("https://")) return;
 
-  // 纯透传：直接返回 fetch 响应，不提取/重建，避免二进制损坏
-  // no-store 防止 SW 缓存损坏数据
+  // 纯透传，不提取/重建响应避免二进制损坏；no-store 防止 SW 缓存损坏数据
   event.respondWith(fetch(targetUrl, { cache: "no-store" }));
 });

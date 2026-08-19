@@ -14,15 +14,9 @@ export interface S3StorageOptions {
   /** 自定义访问域名（CDN），用于返回可访问的资源 URL */
   customDomain?: string;
   uploadPrefix?: string;
-  /**
-   * 对象键文件名模板，留空默认「{ts}{tz}_{src}_{name}_{rand}{ext}」。
-   * 占位符：{ts}=时间戳、{tz}=时区(如 +0800)、{src}=出处(editor/cover)、
-   * {name}=原名(去扩展名)、{ext}=扩展名(含点，如 .jpg)、{rand}=随机串
-   */
+  /** 对象键文件名模板，默认「{ts}{tz}_{src}_{name}_{rand}{ext}」；{ts}=时间戳 {tz}=时区 {src}=出处 {name}=原名 {ext}=扩展名 {rand}=随机串 */
   nameTemplate?: string;
 }
-
-// ── AWS Signature V4 最小实现 ──
 
 function sha256Hex(data: string | Uint8Array): Promise<string> {
   const bytes = typeof data === "string" ? new TextEncoder().encode(data) : data;
@@ -121,8 +115,6 @@ async function signS3Request(
   return headers;
 }
 
-// ── S3 Provider ──
-
 export function createS3Storage(config: S3StorageOptions): StorageProvider {
   const endpoint = config.endpoint.replace(/\/+$/, "");
   const endpointUrl = new URL(endpoint);
@@ -156,10 +148,9 @@ export function createS3Storage(config: S3StorageOptions): StorageProvider {
     type: "s3",
 
     async upload(file: File, source: string = "editor"): Promise<string> {
-      /* {ext} 含点号（如 ".jpg"），默认模板「{ts}{tz}_{src}_{name}_{rand}{ext}」直接可用 */
+      /* {ext} 含点号（如 ".jpg"） */
       const ext = `.${file.name.split(".").pop() || "bin"}`;
       const prefix = config.uploadPrefix || "qingwu";
-      /* 默认「{ts}{tz}_{src}_{name}_{rand}{ext}」；留空模板也走默认 */
       const template = config.nameTemplate || "{ts}{tz}_{src}_{name}_{rand}{ext}";
       const ts = Date.now();
       const rnd = Math.random().toString(36).slice(2);

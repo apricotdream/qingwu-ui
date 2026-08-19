@@ -2,15 +2,8 @@ import type { AIConfig, AIProvider, AIRequest } from "../index";
 import { buildSystemPrompt } from "../index";
 
 /**
- * OpenAI 兼容的 AI 提供商
- *
- * 适用于所有兼容 OpenAI API 格式的服务：
- * - DeepSeek (api.deepseek.com)
- * - 通义千问 (dashscope.aliyuncs.com/compatible-mode/v1)
- * - MiniMax (api.minimax.chat)
- * - 智谱 GLM (open.bigmodel.cn/api/paas/v4)
- * - 月之暗面 Moonshot (api.moonshot.cn)
- * - OpenAI (api.openai.com)
+ * OpenAI 兼容提供商，适用于所有兼容 OpenAI API 格式的服务：
+ * DeepSeek / 通义千问 / MiniMax / 智谱 GLM / Moonshot / OpenAI
  */
 export function createOpenAICompatProvider(config: AIConfig): AIProvider {
   const { apiKey, baseURL, model, headers: extraHeaders } = config;

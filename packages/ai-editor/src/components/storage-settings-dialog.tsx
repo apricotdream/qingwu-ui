@@ -29,7 +29,6 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
     null,
   );
 
-  // S3 表单
   const [s3Endpoint, setS3Endpoint] = useState("");
   const [s3Bucket, setS3Bucket] = useState("");
   const [s3Region, setS3Region] = useState("auto");
@@ -39,7 +38,6 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
   const [s3UploadPrefix, setS3UploadPrefix] = useState("qingwu");
   const [s3NameTemplate, setS3NameTemplate] = useState("{ts}{tz}_{src}_{name}_{rand}{ext}");
 
-  // 恢复已保存的 S3 配置
   useEffect(() => {
     const saved = loadStorageConfig();
     if (saved?.type === "s3") {
@@ -258,7 +256,6 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
       )}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-[calc(100vw-32px)] max-w-[460px] max-h-[85vh] bg-background rounded-2xl shadow-2xl border border-default-200 overflow-hidden animate-in">
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-default-100">
           <h2 className="text-base font-semibold">存储设置</h2>
           <button
@@ -270,7 +267,6 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
           </button>
         </div>
 
-        {/* Current status */}
         {info && (
           <div className="mx-5 mt-4 p-3 rounded-xl bg-default-50 border border-default-100">
             <div className="flex items-center gap-2 text-xs text-default-500 mb-1">
@@ -288,7 +284,6 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
           </div>
         )}
 
-        {/* Tabs */}
         <div className="flex border-b border-default-100 px-5 mt-4">
           {PROVIDER_TABS.map(({ key, label, icon }) => (
             <button
@@ -310,7 +305,6 @@ export const StorageSettingsDialog: FC<Props> = ({ open, onClose }) => {
           ))}
         </div>
 
-        {/* Forms */}
         <div className="p-5 max-h-[50vh] overflow-y-auto">
           {tab === "local" && (
             <div className="space-y-4">

@@ -1,9 +1,4 @@
-/**
- * i18n - 解决 Obsidian 中日期/语言解析在中文环境异常的痛点
- *
- * - 使用 dayjs + locale 包，显式切换 zh-CN / en-US
- * - 字典结构强类型，缺 key 自动 fallback 到 en-US
- */
+/** i18n - dayjs + locale 显式切换 zh-CN/en-US；字典强类型，缺 key fallback en-US */
 
 import type { Locale } from "../types";
 

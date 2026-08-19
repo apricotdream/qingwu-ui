@@ -1,31 +1,9 @@
 /**
- * 文本排版引擎 —— Pretext 风格的两阶段架构
- *
- * 核心规则（基于 CSS Text Module Level 3）：
- *
- * 规则 1: 两阶段分离
- *   prepare() → 一次性文本预处理（字素分割 + Canvas 宽度测量 + LRU 缓存）
- *   layout()  → 纯算术换行计算，O(n) 复杂度，可每帧调用
- *
- * 规则 2: Unicode 感知分割
- *   使用 Intl.Segmenter 进行字素簇（grapheme cluster）分割
- *   CJK 字符按单个字符断行，Emoji ZWJ 序列作为不可分割单元
- *
- * 规则 3: CSS 兼容换行优先级
- *   ① 强制换行（\n）优先级最高
- *   ② 空格为软断点（soft break opportunity）
- *   ③ CJK 字符前后均为断点，但标点禁止在行首
- *   ④ 拉丁单词只能在空格处断行
- *   ⑤ 无断点时走 overflow-wrap: break-word（按字符强制断开）
- *
- * 规则 4: 缓存策略
- *   宽度缓存以 (text, font) 为 key，全局共享
- *   避免同一文本重复测量，prepare() 后的 segment 可复用
+ * 文本排版引擎：prepare() 一次预处理（字素分割 + 宽度测量 + 缓存），layout() 纯算术 O(n) 换行。
+ * 断行优先级：强制换行 > 空格软断点 > CJK 可断（标点禁行首）> 拉丁仅空格断 > 无断点时 overflow-wrap。
  */
 
 import type { LayoutLine, LayoutOptions, LayoutResult, Segment, SegmentType } from "./types";
-
-// ─── 全局 Canvas 测量上下文（惰性单例） ───
 
 let _canvas: HTMLCanvasElement | null = null;
 let _ctx: CanvasRenderingContext2D | null = null;
@@ -37,8 +15,6 @@ function getCtx(): CanvasRenderingContext2D | null {
   _ctx = _canvas.getContext("2d");
   return _ctx;
 }
-
-// ─── 宽度缓存 ───
 
 const _widthCache = new Map<string, Map<string, number>>();
 
@@ -53,7 +29,7 @@ function getCachedWidth(text: string, font: string): number {
 
   const c = getCtx();
   if (!c) {
-    // SSR/非浏览器环境回退：拉丁字符 ~8px，CJK 字符 ~1em
+    // 非浏览器环境回退
     w = estimateWidth(text, font);
   } else {
     c.font = font;
@@ -63,7 +39,7 @@ function getCachedWidth(text: string, font: string): number {
   return w;
 }
 
-/** 非浏览器环境下的宽度估算 */
+/** 非浏览器环境的宽度估算 */
 function estimateWidth(text: string, font: string): number {
   const fontSize = parseFloat(font) || 16;
   let w = 0;
@@ -79,8 +55,6 @@ function estimateWidth(text: string, font: string): number {
   }
   return w;
 }
-
-// ─── Unicode 字符分类 ───
 
 function isCJK(cp: number): boolean {
   return (
@@ -129,16 +103,12 @@ function isLineEndForbidden(cp: number): boolean {
   );
 }
 
-// ─── 文本分割 ───
-
-/** 将文本分割为可排版段，并测量宽度 */
+/** 分割文本为可排版段并测量宽度 */
 function segmentText(text: string, font: string): Segment[] {
   const segments: Segment[] = [];
 
-  // 使用 Intl.Segmenter 进行字素簇分割
   let graphemes: string[] = [];
   if (typeof Intl !== "undefined" && Intl.Segmenter) {
-    // 使用 'en' locale 以兼容大多数文本
     try {
       const seg = new Intl.Segmenter("zh", { granularity: "grapheme" });
       for (const s of seg.segment(text)) {
@@ -176,8 +146,6 @@ function segmentText(text: string, font: string): Segment[] {
   return segments;
 }
 
-// ─── 换行排版 ───
-
 interface BreakState {
   /** 当前行起始 segment index */
   lineStart: number;
@@ -206,16 +174,7 @@ function buildLine(segments: Segment[], start: number, end: number, width: numbe
   return { text, width };
 }
 
-/**
- * 核心排版函数 —— 将文本按指定宽度换行
- *
- * 算法（单次遍历，O(n)）：
- * 1. 遍历所有 segment，累加宽度
- * 2. 记录最后一个"可断点"位置
- * 3. 当累计宽度超出 maxWidth 时，回退到最近的可断点
- * 4. 无断点时执行 overflow-wrap 策略
- * 5. 标点贴在上一字符后，不单独出现在行首
- */
+/** 按指定宽度换行（单次遍历，O(n)） */
 export function layout(
   text: string,
   options: LayoutOptions,
@@ -241,10 +200,9 @@ export function layout(
 
     const newWidth = st.lineWidth + seg.width;
 
-    // ── 空格：记录为可断点 ──
     if (seg.type === "space") {
       if (newWidth > maxWidth && st.lineWidth > 0) {
-        // 空格导致溢出，在上一断点处换行
+        // 溢出时回退到上一断点
         if (st.lastBreakIdx >= 0) {
           lines.push(buildLine(segments, st.lineStart, st.lastBreakIdx + 1, st.lastBreakWidth));
           st.lineStart = st.lastBreakIdx + 1;
@@ -260,15 +218,12 @@ export function layout(
         st.lastBreakIdx = i;
         st.lastBreakWidth = st.lineWidth;
       }
-      // 检查 maxLines
       if (maxLines && lines.length >= maxLines) break;
       continue;
     }
 
-    // ── CJK 字符：可前后断行 ──
     if (seg.type === "cjk") {
       if (newWidth > maxWidth && st.lineWidth > 0) {
-        // 在 CJK 字符前断行
         lines.push(buildLine(segments, st.lineStart, i, st.lineWidth));
         st.lineStart = i;
         st.lineWidth = seg.width;
@@ -282,23 +237,20 @@ export function layout(
       continue;
     }
 
-    // ── CJK 标点：禁止出现在行首 ──
     if (seg.type === "punct") {
       if (st.lineWidth === 0 && lines.length > 0) {
-        // 标点在行首，回退：将上一行最后一个 CJK 字符移到当前行
+        // 标点贴到上一行末尾字符后
         const lastLine = lines[lines.length - 1]!;
         if (lastLine.text.length > 0) {
-          // 简化处理：把标点宽度加到当前行（后续渲染时会自然贴在前一字符后）
           st.lineWidth = seg.width;
         }
       } else if (newWidth > maxWidth) {
-        // 将前一字符和标点一起移到下一行
         if (st.lastBreakIdx >= 0) {
           lines.push(buildLine(segments, st.lineStart, st.lastBreakIdx + 1, st.lastBreakWidth));
           st.lineStart = st.lastBreakIdx + 1;
           st.lineWidth = computeSegmentWidth(segments, st.lineStart, i + 1);
         } else {
-          st.lineWidth = newWidth; // 溢出也保留在同一行
+          st.lineWidth = newWidth;
         }
         st.lastBreakIdx = -1;
       } else {
@@ -308,10 +260,8 @@ export function layout(
       continue;
     }
 
-    // ── 拉丁/其他文字：单词边界断行 ──
     if (newWidth > maxWidth && st.lineWidth > 0) {
       if (st.lastBreakIdx >= 0) {
-        // 回退到上一空格处
         lines.push(buildLine(segments, st.lineStart, st.lastBreakIdx + 1, st.lastBreakWidth));
         st.lineStart = st.lastBreakIdx + 1;
         st.lineWidth = computeSegmentWidth(segments, st.lineStart, i + 1);
@@ -322,7 +272,7 @@ export function layout(
         st.lineStart = i;
         st.lineWidth = seg.width;
       } else {
-        st.lineWidth = newWidth; // 溢出但不断行
+        st.lineWidth = newWidth;
       }
     } else {
       st.lineWidth = newWidth;
@@ -331,7 +281,6 @@ export function layout(
     if (maxLines && lines.length >= maxLines) break;
   }
 
-  // ── 收尾：最后一行 ──
   const hasMore = st.lineStart < segments.length;
   if (hasMore && (!maxLines || lines.length < maxLines)) {
     const endWidth = computeSegmentWidth(segments, st.lineStart, segments.length);
@@ -346,28 +295,12 @@ export function layout(
   };
 }
 
-// ─── 公开 API ───
-
-/**
- * 准备文本用于快速排版（Pretext prepare 阶段）
- *
- * 一次性完成：字素分割 + 宽度测量 + 缓存
- * 返回的 segments 可在多次 layout 调用中复用
- *
- * @param text - 待排版的文本
- * @param font - CSS font 字符串，如 "16px Inter"
- * @returns 预处理后的文本段数组
- */
+/** 预处理文本段（分割 + 测宽 + 缓存），返回结果可在多次 layoutSegments 中复用 */
 export function prepare(text: string, font: string = "16px system-ui"): Segment[] {
   return segmentText(text, font);
 }
 
-/**
- * 对已 prepare 的文本段进行排版（Pretext layout 阶段）
- *
- * 纯算术计算，不触发任何 DOM/Canvas 操作
- * 可在每帧、每次 resize 时自由调用
- */
+/** 对已 prepare 的文本段纯算术排版，不触发 DOM/Canvas，可每帧调用 */
 export function layoutSegments(segments: Segment[], options: LayoutOptions): LayoutResult {
   const { maxWidth, lineHeight, maxLines, overflowWrap = "break-word" } = options;
   const lines: LayoutLine[] = [];

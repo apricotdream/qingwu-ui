@@ -1,8 +1,4 @@
-/* ============================================================
-   青梧UI · Toast 全局单例
-   - 懒初始化（SSR 安全）
-   - 可调用对象：toast("msg") 或 toast.success("msg")
-   ============================================================ */
+/** Toast 全局单例：懒初始化（SSR 安全），可调用 toast("msg") 或 toast.success("msg") */
 
 import { Toaster } from "./toast";
 import type { PromiseMessages, ToasterOptions, ToastOptions } from "./types";

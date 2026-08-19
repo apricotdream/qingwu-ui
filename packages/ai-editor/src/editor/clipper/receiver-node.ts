@@ -1,35 +1,6 @@
 /**
- * 青梧编辑器 · Web Clipper 接收器 —— Node 实现
- *
- * 在浏览器扩展（青梧 Web Clipper）与编辑器之间架起 HTTP 桥梁。
- * 需要 Node 18+ 或支持 `node:http` 的环境（编辑器桌面壳 / Electron / Tauri 等）。
- *
- * 该模块**不**从浏览器主入口导出，而是经独立子入口 `@qingwu-ui/ai-editor/clipper` 暴露，
- * 以免 `node:http` 被打包进浏览器产物。
- *
- * 用法：
- * ```ts
- * import { startClipperReceiver, stopClipperReceiver } from "@qingwu-ui/ai-editor/clipper";
- *
- * // 启动监听（默认 127.0.0.1:7321）
- * const server = await startClipperReceiver({
- *   onClip: async (clip) => {
- *     editor.commands.setContent(clip.markdown);
- *   },
- * });
- * ```
- *
- * 浏览器扩展只需配置 endpoint 为 `http://127.0.0.1:7321/clip`。
- *
- * 接口契约（统一响应格式，消除旧版字段冗余 / 错误码不一致）：
- * - 成功：`{ ok: true, data?: T }`
- * - 失败：`{ ok: false, error: { code: ClipperErrorCode; message: string } }`
- * - 错误码稳定不变（大写下划线），扩展侧可据此精确处理，见 ClipperErrorCode。
- *
- * 安全：
- * - 仅监听 127.0.0.1
- * - 启用 CORS 允许扩展跨域（chrome 扩展 origin 无 host）
- * - 可选 token 校验
+ * Node 实现：node:http 起本地 HTTP 服务接收扩展剪藏（需 Node 18+ / Electron / Tauri）。
+ * 经子入口 @qingwu-ui/ai-editor/clipper 暴露，避免 node:http 进浏览器产物；仅监听 127.0.0.1 + 可选 token。
  */
 import type {
   ClipperErrorCode,
@@ -40,12 +11,7 @@ import type {
   IncomingClip,
 } from "./types";
 
-/**
- * 启动 HTTP 接收器。
- *
- * 注意：需要 Node 18+ 或支持 `node:http` 的环境（编辑器桌面壳 / Electron / Tauri 等）。
- * 在纯浏览器场景下请使用主入口的 startBrowserClipperReceiver。
- */
+/** 启动 HTTP 接收器；纯浏览器场景请用主入口的 startBrowserClipperReceiver */
 export async function startClipperReceiver(opts: ClipperReceiverOptions): Promise<ClipperReceiver> {
   const port = opts.port ?? 7321;
   const host = opts.host ?? "127.0.0.1";
