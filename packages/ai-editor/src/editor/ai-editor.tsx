@@ -173,8 +173,8 @@ const DialogFallback = () => (
 );
 
 export interface QingWuAIEditorProps {
-  /** 初始内容 (HTML 字符串，会自动做安全清洗) */
-  initialContent?: string;
+  /** 初始内容：HTML 字符串（自动清洗 / markdown 识别）或 ProseMirror JSON 文档对象（原样使用，不再重解析） */
+  initialContent?: string | object;
   /** 内容变化回调 */
   onChange?: (html: string, json: object) => void;
   /** placeholder 文本 */
@@ -240,9 +240,12 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
 }) => {
   const isReadonly = mode === "view" || readonly;
 
-  // 清洗初始 HTML，移除危险标签和属性
+  // 清洗初始 HTML，移除危险标签和属性；JSON 文档对象原样透传（宿主回显用 getJSON 产物，避免 string→markdown 重解析失真）
   const safeContent = useMemo(
-    () => (looksLikeMarkdown(initialContent) ? initialContent : sanitizeHtml(initialContent)),
+    () =>
+      typeof initialContent === "object" && initialContent !== null
+        ? initialContent
+        : (looksLikeMarkdown(initialContent) ? initialContent : sanitizeHtml(initialContent)),
     [initialContent],
   );
   const [showAI, setShowAI] = useState(false);
@@ -528,12 +531,15 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   }, [placeholder, maxLength, maxAttachmentSize, maxTotalAttachmentSize]);
 
   // initialContent 变化时 setContent 更新文档，避免 remount 丢 undo；用 ref 记录上次值防重复
-  const lastInitialContentRef = useRef<string>(initialContent);
+  const lastInitialContentRef = useRef<string | object>(initialContent);
   useEffect(() => {
     if (!editor) return;
     if (initialContent === lastInitialContentRef.current) return;
     lastInitialContentRef.current = initialContent;
-    const safe = looksLikeMarkdown(initialContent) ? initialContent : sanitizeHtml(initialContent);
+    const safe =
+      typeof initialContent === "object" && initialContent !== null
+        ? initialContent
+        : (looksLikeMarkdown(initialContent) ? initialContent : sanitizeHtml(initialContent));
     // emit: false 避免触发 onChange，防止覆盖父组件状态
     editor.commands.setContent(safe, { emitUpdate: false });
   }, [editor, initialContent]);
