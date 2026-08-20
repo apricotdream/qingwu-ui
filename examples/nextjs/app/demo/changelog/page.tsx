@@ -3,6 +3,41 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "0.9.0-beta.12",
+    date: "2026-08-20",
+    tag: "ai-editor beta 系列",
+    changes: [
+      {
+        type: "fix",
+        text: "ai-editor 代码块移除 2000px 高度硬裁：超高代码块（>约 84 行）不再底部被裁且无滚动条，改为随内容自然撑高、滚动交给外层容器；折叠态仍收至 56px（beta.12）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 粘贴/回显媒体时 sanitize 放行 blob: URI：拖入媒体的占位 src 不再被 DOMPurify 清空（视频嵌入 src 变空、无法触发上传中占位的问题修复）（beta.11）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 视频嵌入健壮性：编码不受浏览器支持（HEVC/H.265 缺失）时显示友好占位（说明原因 + 引导安装 HEVC 扩展或转码 H.264）；只读态 src 仍为 blob: 时显示「视频上传中…」动画占位，替代黑屏（beta.9 / beta.10）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 代码块行号列与内容底部错位修复：通用 pre 样式排除自定义代码块（.cb-code-pre），卡片视觉移入自身，行号与代码逐行对齐（beta.7）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 修复 slash 命令框列表滚轮被宿主 Lenis 劫持无法滚动、键盘导航选中项滚出可视区（列表自动滚动跟随）（beta.4）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 修复工具栏「目录」按钮在宽屏点击时抽屉与侧栏同时出现（双面板重叠）（beta.3）",
+      },
+      {
+        type: "feat",
+        text: "ai-editor TOC 目录语义统一为「默认展开状态」：showToc={false} 仅默认收起（控件仍可用）；只读态/窄屏工具栏按钮不可见时由目录悬浮球接管入口（beta.2）",
+      },
+    ],
+  },
+  {
     version: "0.9.0-beta.1",
     date: "2026-08-15",
     tag: "Select 磨砂面板选项",
