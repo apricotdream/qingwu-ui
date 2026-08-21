@@ -3,6 +3,25 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "0.9.0-beta.14",
+    date: "2026-08-22",
+    tag: "ai-editor beta 系列",
+    changes: [
+      {
+        type: "feat",
+        text: "ai-editor TOC 目录滚动自动跟踪：滚动内容时目录实时高亮当前所在章节，激活项自动滚动保持在目录视野内（桌面悬浮面板 / 移动抽屉均生效）；滚动到底激活末节、首个标题之上清空高亮；点击目录跳转的平滑滚动期间高亮锁定目标不闪烁；目录折叠遮住激活项时降级高亮最近可见祖先（beta.14）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 代码块解析兼容 Obsidian 逐行 div 包裹：代码块不再只保留第一行、后续行丢失（beta.13）",
+      },
+      {
+        type: "feat",
+        text: "ai-editor initialContent 支持 ProseMirror JSON 文档对象：宿主回显可直传 getJSON() 产物，避免 string→markdown 二次解析破坏代码块围栏（beta.13）",
+      },
+    ],
+  },
+  {
     version: "0.9.0-beta.12",
     date: "2026-08-20",
     tag: "ai-editor beta 系列",
