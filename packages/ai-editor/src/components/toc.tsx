@@ -129,23 +129,43 @@ function highlightText(text: string, query: string): ReactNode {
   return parts.length ? parts : text;
 }
 
+/** 滚动跟踪基准线：距滚动容器顶部的距离。与标题的 scroll-margin-top: 5rem 对齐，
+ * 点击跳转落定后的标题位置恰好满足高亮条件 */
+const BASELINE_PX = 84;
+/** 点击跳转锁的兜底超时（ms）：平滑滚动因异常未能完成时解锁 */
+const LOCK_TIMEOUT_MS = 3000;
+
 /**
- * 文档目录面板：自动收集 h1~h6 建树、支持折叠/展开、点击平滑滚动并高亮当前标题。
+ * 文档目录面板：自动收集 h1~h6 建树、支持折叠/展开、点击平滑滚动；
+ * 内容滚动时目录自动跟踪高亮当前标题，并让激活项保持在目录视野内。
  */
 export const TocPanel: FC<TocPanelProps> = ({ editor, className = "", onClose }) => {
   const [items, setItems] = useState<TocItem[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const visibleMap = useRef<Map<string, number>>(new Map());
-  // 缓存上一次 headings 摘要，仅在结构实际变化时重建 observer
+  // 缓存上一次 headings 摘要，仅在结构实际变化时重收集
   const lastSignatureRef = useRef<string>("");
+  // items 的 ref 镜像：滚动扫描回调读取最新值，避免闭包过期
+  const itemsRef = useRef<TocItem[]>([]);
+  const navRef = useRef<HTMLElement | null>(null);
+  // 编辑器内容的滚动容器；null 表示 window 滚动
+  const scrollParentRef = useRef<HTMLElement | null>(null);
+  // 点击跳转锁：平滑滚动期间禁止中间标题抢占高亮
+  const lockRef = useRef<{ id: string; timer: ReturnType<typeof setTimeout> } | null>(null);
+  const rafRef = useRef(0);
 
-  const rebuild = useCallback(() => {
-    const root = editor.view.dom;
-    const heads = Array.from(root.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6"));
-    const list: TocItem[] = heads.map((el, i) => {
+  const unlock = useCallback(() => {
+    if (lockRef.current) {
+      clearTimeout(lockRef.current.timer);
+      lockRef.current = null;
+    }
+  }, []);
+
+  /** 现场收集标题并赋锚点 id：ProseMirror 会替换 DOM 节点，引用不可长期持有 */
+  const collectHeadings = useCallback((): TocItem[] => {
+    const heads = Array.from(editor.view.dom.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6"));
+    return heads.map((el, i) => {
       if (!el.id) el.id = slugify(el.textContent || "", i);
       return {
         id: el.id,
@@ -154,46 +174,92 @@ export const TocPanel: FC<TocPanelProps> = ({ editor, className = "", onClose })
         el,
       };
     });
-    // 比较 headings 摘要：level+text，避免打字时频繁重建 observer
+  }, [editor]);
+
+  /** 扫描标题位置，取最后一个已越过基准线的标题为激活项（滚动位置的纯函数） */
+  const scan = useCallback(() => {
+    // 缓存节点被 ProseMirror 替换（isConnected 失效）时现场重收集
+    let list = itemsRef.current;
+    if (!list.length || list.some((it) => !it.el.isConnected)) {
+      list = collectHeadings();
+      itemsRef.current = list;
+    }
+    if (!list.length) return;
+    const container = scrollParentRef.current;
+    const containerTop = container ? container.getBoundingClientRect().top : 0;
+    const line = containerTop + BASELINE_PX;
+    const atBottom = container
+      ? container.scrollHeight - container.scrollTop - container.clientHeight < 2
+      : document.documentElement.scrollHeight - window.scrollY - window.innerHeight < 2;
+
+    let next = "";
+    for (const it of list) {
+      if (!it.el.isConnected) continue;
+      if (it.el.getBoundingClientRect().top <= line) next = it.id;
+    }
+    // 滚动到底时强制激活最后一个标题（末节可能永远到不了基准线）
+    if (atBottom) {
+      for (let i = list.length - 1; i >= 0; i--) {
+        if (list[i].el.isConnected) {
+          next = list[i].id;
+          break;
+        }
+      }
+    }
+
+    // 点击跳转锁定中：未到达前不让扫描覆盖高亮，到达后自动解锁
+    const lock = lockRef.current;
+    if (lock) {
+      const target = list.find((it) => it.id === lock.id);
+      const arrived =
+        !target ||
+        !target.el.isConnected ||
+        atBottom ||
+        target.el.getBoundingClientRect().top <= line;
+      if (!arrived) return;
+      unlock();
+    }
+
+    setActiveId(next);
+  }, [collectHeadings, unlock]);
+
+  /** rAF 节流调度一次扫描 */
+  const scheduleScan = useCallback(() => {
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = 0;
+      scan();
+    });
+  }, [scan]);
+
+  const rebuild = useCallback(() => {
+    const list = collectHeadings();
+    // 比较 headings 摘要：level+text，避免打字时频繁更新列表
     const signature = list.map((it) => `${it.level}:${it.text}`).join("|");
     if (signature === lastSignatureRef.current) return;
     lastSignatureRef.current = signature;
+    itemsRef.current = list;
     setItems(list);
+    scheduleScan();
+  }, [collectHeadings, scheduleScan]);
 
-    observerRef.current?.disconnect();
-    visibleMap.current.clear();
-    if (!heads.length) return;
-
-    const ob = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          const id = (e.target as HTMLElement).id;
-          if (e.isIntersecting) {
-            visibleMap.current.set(id, e.boundingClientRect.top);
-          } else {
-            visibleMap.current.delete(id);
-          }
-        }
-        let bestId = "";
-        let bestTop = Infinity;
-        visibleMap.current.forEach((top, id) => {
-          if (top < bestTop && top >= 0) {
-            bestTop = top;
-            bestId = id;
-          }
-        });
-        if (bestId) setActiveId(bestId);
-      },
-      {
-        // 用最近滚动祖先作 root，适配非 window 滚动的容器
-        root: findScrollParent(editor.view.dom),
-        rootMargin: "0px 0px -72% 0px",
-        threshold: [0, 1],
-      },
-    );
-    heads.forEach((h) => ob.observe(h));
-    observerRef.current = ob;
-  }, [editor]);
+  // 监听内容滚动容器（或 window）与视口变化，rAF 节流重算激活标题
+  useEffect(() => {
+    const container = findScrollParent(editor.view.dom);
+    scrollParentRef.current = container;
+    const target: HTMLElement | Window = container ?? window;
+    target.addEventListener("scroll", scheduleScan, { passive: true });
+    window.addEventListener("resize", scheduleScan);
+    // 用户手动接管滚动（滚轮/触摸）时立即解除点击跳转锁
+    target.addEventListener("wheel", unlock, { passive: true });
+    target.addEventListener("touchstart", unlock, { passive: true });
+    return () => {
+      target.removeEventListener("scroll", scheduleScan);
+      window.removeEventListener("resize", scheduleScan);
+      target.removeEventListener("wheel", unlock);
+      target.removeEventListener("touchstart", unlock);
+    };
+  }, [editor, scheduleScan, unlock]);
 
   useEffect(() => {
     // debounce 300ms，避免连续打字时频繁触发 rebuild
@@ -215,9 +281,13 @@ export const TocPanel: FC<TocPanelProps> = ({ editor, className = "", onClose })
       editor.off("update", handler);
       if (timer) clearTimeout(timer);
       cancelAnimationFrame(raf);
-      observerRef.current?.disconnect();
+      unlock();
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
     };
-  }, [editor, rebuild]);
+  }, [editor, rebuild, unlock]);
 
   const scrollTo = useCallback(
     (item: TocItem) => {
@@ -238,16 +308,31 @@ export const TocPanel: FC<TocPanelProps> = ({ editor, className = "", onClose })
       }
       if (!el) return;
 
+      // 锁定高亮到目标：平滑滚动期间中间标题不会抢走高亮，scan 到达后自动解锁
+      unlock();
+      lockRef.current = { id: item.id, timer: setTimeout(unlock, LOCK_TIMEOUT_MS) };
+      setActiveId(item.id);
       // scrollIntoView 自动适配任何滚动容器（window 或内层 div），
       // 配合 globals.css 的 scroll-margin-top 留出顶部偏移
       el.scrollIntoView({ behavior: "smooth", block: "start" });
-      setActiveId(item.id);
     },
-    [editor],
+    [editor, unlock],
   );
 
   const tree = useMemo(() => buildTree(items), [items]);
   const parentIds = useMemo(() => collectParentIds(tree), [tree]);
+  // 子 id -> 父 id：折叠降级时上溯最近可见祖先
+  const parentMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const walk = (ns: TocNode[], parent: string) => {
+      for (const n of ns) {
+        if (parent) map.set(n.id, parent);
+        walk(n.children, n.id);
+      }
+    };
+    walk(tree, "");
+    return map;
+  }, [tree]);
   const isSearching = searchQuery.trim().length > 0;
   const filteredTree = useMemo(
     () => (isSearching ? filterTree(tree, searchQuery.trim()) : tree),
@@ -258,6 +343,33 @@ export const TocPanel: FC<TocPanelProps> = ({ editor, className = "", onClose })
     () => flattenTree(filteredTree, isSearching ? new Set() : collapsed),
     [filteredTree, collapsed, isSearching],
   );
+  const visibleSet = useMemo(() => new Set(visibleItems.map((it) => it.id)), [visibleItems]);
+  // 折叠降级：激活项被祖先折叠遮住时，改为高亮其最近的可见祖先
+  const effectiveActiveId = useMemo(() => {
+    let id = activeId;
+    while (id && !visibleSet.has(id)) id = parentMap.get(id) ?? "";
+    return id;
+  }, [activeId, visibleSet, parentMap]);
+
+  // 目录自滚动：让激活项始终留在目录视野内（仅出视野时移动，避免抖动）
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav || !effectiveActiveId) return;
+    const container = nav.closest(".toc-scroll");
+    if (!(container instanceof HTMLElement)) return;
+    const itemEl = nav.querySelector<HTMLElement>(
+      `[data-toc-id="${CSS.escape(effectiveActiveId)}"]`,
+    );
+    if (!itemEl) return;
+    const pad = 8;
+    const cRect = container.getBoundingClientRect();
+    const iRect = itemEl.getBoundingClientRect();
+    if (iRect.top < cRect.top + pad) {
+      container.scrollTop -= cRect.top + pad - iRect.top;
+    } else if (iRect.bottom > cRect.bottom - pad) {
+      container.scrollTop += iRect.bottom - (cRect.bottom - pad);
+    }
+  }, [effectiveActiveId]);
 
   const toggleCollapse = useCallback((id: string) => {
     setCollapsed((prev) => {
@@ -289,7 +401,7 @@ export const TocPanel: FC<TocPanelProps> = ({ editor, className = "", onClose })
   }
 
   return (
-    <nav className={`toc-panel ${className}`} aria-label="目录">
+    <nav ref={navRef} className={`toc-panel ${className}`} aria-label="目录">
       <div className="toc-title">
         {onClose ? (
           <button
@@ -430,7 +542,8 @@ export const TocPanel: FC<TocPanelProps> = ({ editor, className = "", onClose })
             return (
               <li
                 key={it.id}
-                className={`toc-item ${activeId === it.id ? "is-active" : ""}`}
+                data-toc-id={it.id}
+                className={`toc-item ${effectiveActiveId === it.id ? "is-active" : ""}`}
                 style={{ paddingLeft: `${(it.level - 1) * 12 + 12}px` }}
               >
                 {hasChildren ? (
