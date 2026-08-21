@@ -1,5 +1,16 @@
 # @qingwu-ui/ai-editor
 
+## 0.9.0-beta.13
+### Patch Changes
+
+- 代码块解析兼容 Obsidian 逐行 div 包裹：`<pre><code><div>行</div>…</code></pre>` 时 ProseMirror 对 content:text* 的 codeBlock 只保留首行、后续行丢失（表现为「代码块只包住第一句」）。`parseHTML` 增加 `getContent`：存在行级 div 时按行拼接 `\n` 取全量文本，否则取 `textContent`。
+- `initialContent` 支持 ProseMirror JSON 文档对象：对象原样透传（跳过 looksLikeMarkdown/sanitize 字符串预处理），宿主回显可直传 `getJSON()` 产物，避免 string→markdown 二次解析把代码块围栏破坏。
+
+## 0.9.0-beta.12
+### Patch Changes
+
+- 代码块移除 2000px 高度硬裁：`.cb-code-area` 的 `max-height:2000px; overflow:hidden` 会让超过约 84 行（2000px/24px 行高）的代码块底部被裁且无滚动条，表现为「代码块被截断」（宿主粘贴 Obsidian 长代码块时复现）。改为 `max-height:none` 随内容自然撑高，滚动交给外层容器；折叠态 `.cb-code-area--collapsed` 仍收至 56px（`overflow:hidden` 兜底）。副作用：折叠/展开无 max-height 过渡动画（跳变）
+
 ## 0.9.0-beta.11
 ### Patch Changes
 
