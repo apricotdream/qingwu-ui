@@ -58,13 +58,13 @@ export const CodeBlock = CodeBlockLowlight.extend({
       ...rule,
       getContent: (node: Node, schema: Schema) => {
         const el = node as Element;
-        const code = el.querySelector(':scope > code');
-        const lineDivs = Array.from((code ?? el).querySelectorAll(':scope > div'));
+        const code = el.querySelector(":scope > code");
+        const lineDivs = Array.from((code ?? el).querySelectorAll(":scope > div"));
         if (lineDivs.length > 0) {
-          const text = lineDivs.map((d) => d.textContent ?? '').join('\n');
+          const text = lineDivs.map((d) => d.textContent ?? "").join("\n");
           return text ? Fragment.from(schema.text(text)) : Fragment.empty;
         }
-        const text = el.textContent ?? '';
+        const text = el.textContent ?? "";
         return text ? Fragment.from(schema.text(text)) : Fragment.empty;
       },
     }));
