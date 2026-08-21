@@ -68,6 +68,55 @@ describe("Carousel", () => {
     expect(car.value).toBe("a");
   });
 
+  test("触屏左滑下一张、右滑上一张", () => {
+    const car = new Carousel(root, { items: ITEMS });
+    const visual = root.querySelector(".qcar-visual")!;
+    visual.dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", clientX: 300 }));
+    visual.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch", clientX: 220 }));
+    expect(car.value).toBe("b");
+    visual.dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", clientX: 200 }));
+    visual.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch", clientX: 280 }));
+    expect(car.value).toBe("a");
+  });
+
+  test("触屏点按（位移不足阈值）不切换", () => {
+    const car = new Carousel(root, { items: ITEMS });
+    const visual = root.querySelector(".qcar-visual")!;
+    visual.dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", clientX: 300 }));
+    visual.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch", clientX: 310 }));
+    expect(car.value).toBe("a");
+  });
+
+  test("鼠标拖拽不触发滑动切换", () => {
+    const car = new Carousel(root, { items: ITEMS });
+    const visual = root.querySelector(".qcar-visual")!;
+    visual.dispatchEvent(new PointerEvent("pointerdown", { pointerType: "mouse", clientX: 300 }));
+    visual.dispatchEvent(new PointerEvent("pointerup", { pointerType: "mouse", clientX: 100 }));
+    expect(car.value).toBe("a");
+  });
+
+  test("pointercancel 取消滑动后不切换", () => {
+    const car = new Carousel(root, { items: ITEMS });
+    const visual = root.querySelector(".qcar-visual")!;
+    visual.dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", clientX: 300 }));
+    visual.dispatchEvent(new PointerEvent("pointercancel", { pointerType: "touch" }));
+    visual.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch", clientX: 100 }));
+    expect(car.value).toBe("a");
+  });
+
+  test("斜滑（纵向分量占优）不切卡，横滑占优才切", () => {
+    const car = new Carousel(root, { items: ITEMS });
+    const visual = root.querySelector(".qcar-visual")!;
+    // dx=100, dy=100：|dx| ≤ 1.2×|dy| → 不切
+    visual.dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", clientX: 300, clientY: 100 }));
+    visual.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch", clientX: 200, clientY: 200 }));
+    expect(car.value).toBe("a");
+    // dx=120, dy=80：120 > 1.2×80 → 切下一张
+    visual.dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", clientX: 300, clientY: 100 }));
+    visual.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch", clientX: 180, clientY: 180 }));
+    expect(car.value).toBe("b");
+  });
+
   test("自动播放和销毁", () => {
     const car = new Carousel(root, { items: ITEMS, autoplay: true, interval: 1000 });
     vi.advanceTimersByTime(1000);

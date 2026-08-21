@@ -49,6 +49,32 @@ export class Carousel {
   private index = 0;
   private autoTimer: ReturnType<typeof setTimeout> | null = null;
   private paused = false;
+  private swiping = false;
+  private swipeStartX = 0;
+  private swipeStartY = 0;
+
+  private readonly onSwipeStart = (event: PointerEvent): void => {
+    if (event.pointerType === "mouse") return;
+    this.swiping = true;
+    this.swipeStartX = event.clientX;
+    this.swipeStartY = event.clientY;
+  };
+
+  private readonly onSwipeEnd = (event: PointerEvent): void => {
+    if (!this.swiping) return;
+    this.swiping = false;
+    const deltaX = event.clientX - this.swipeStartX;
+    const deltaY = event.clientY - this.swipeStartY;
+    if (Math.abs(deltaX) < 48) return;
+    /* 纵向分量拒绝：斜滑只让页面原生滚动、不切卡，避免「图也换、页也跳」双重动作 */
+    if (Math.abs(deltaX) <= Math.abs(deltaY) * 1.2) return;
+    if (deltaX < 0) this.next();
+    else this.prev();
+  };
+
+  private readonly onSwipeCancel = (): void => {
+    this.swiping = false;
+  };
 
   private visual!: HTMLElement;
   private background!: HTMLDivElement;
@@ -140,6 +166,9 @@ export class Carousel {
     this.root.onkeydown = null;
     this.root.onpointerenter = null;
     this.root.onpointerleave = null;
+    this.visual.removeEventListener("pointerdown", this.onSwipeStart);
+    this.visual.removeEventListener("pointerup", this.onSwipeEnd);
+    this.visual.removeEventListener("pointercancel", this.onSwipeCancel);
     this.root.replaceChildren();
     this.root.className = this.root.className
       .split(" ")
@@ -183,6 +212,13 @@ export class Carousel {
     figureWrap.append(this.figure);
 
     this.visual.append(this.background, figureWrap);
+
+    /* 触屏横滑切换：touch-action: pan-y 保证纵向滚动不被劫持，横向滑动交给手势；
+       阈值 48px 过滤点按，鼠标拖拽不启用（桌面走箭头/键盘） */
+    this.visual.style.touchAction = "pan-y";
+    this.visual.addEventListener("pointerdown", this.onSwipeStart);
+    this.visual.addEventListener("pointerup", this.onSwipeEnd);
+    this.visual.addEventListener("pointercancel", this.onSwipeCancel);
 
     this.copy = document.createElement("div");
     this.copy.className = "qcar-copy";
