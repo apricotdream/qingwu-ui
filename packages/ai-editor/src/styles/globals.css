@@ -1015,12 +1015,15 @@
   position: relative;
   display: flex;
   overflow: hidden;
-  max-height: 2000px;
+  /* 不设高度上限：超高代码块随内容自然撑高，滚动交给外层容器，
+     避免「代码块被截断」的观感（原 2000px 硬裁 ≈ 84 行/24px）。 */
+  max-height: none;
   transition: max-height 0.3s ease;
 }
 
 .cb-code-area--collapsed {
   max-height: 56px;
+  overflow: hidden;
 }
 
 /* 琛屽彿鏍?*/

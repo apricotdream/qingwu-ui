@@ -1,4 +1,5 @@
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
+import { Fragment, type Schema } from "@tiptap/pm/model";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 // common 预设未包含 dockerfile，单独注册
 import dockerfile from "highlight.js/lib/languages/dockerfile";
@@ -47,5 +48,25 @@ lowlight.registerAlias("typescript", ["tsx"]);
 export const CodeBlock = CodeBlockLowlight.extend({
   addNodeView() {
     return ReactNodeViewRenderer(CodeBlockView);
+  },
+  parseHTML() {
+    /* 兼容 Obsidian 等来源把代码行逐行包在 <div>（.code-block-line / .cm-line）里：
+       ProseMirror 对 content: text* 的 codeBlock 遇到嵌套块级 div 时只保留首行文本，
+       后续行全部丢失（表现为「代码块只包住第一句」）。
+       用 getContent 强制提取全部文本：若 <pre> 内有行级 div 则按行拼接 \n，否则取 textContent。 */
+    return (this.parent?.() ?? []).map((rule) => ({
+      ...rule,
+      getContent: (node: Node, schema: Schema) => {
+        const el = node as Element;
+        const code = el.querySelector(":scope > code");
+        const lineDivs = Array.from((code ?? el).querySelectorAll(":scope > div"));
+        if (lineDivs.length > 0) {
+          const text = lineDivs.map((d) => d.textContent ?? "").join("\n");
+          return text ? Fragment.from(schema.text(text)) : Fragment.empty;
+        }
+        const text = el.textContent ?? "";
+        return text ? Fragment.from(schema.text(text)) : Fragment.empty;
+      },
+    }));
   },
 }).configure({ lowlight });
