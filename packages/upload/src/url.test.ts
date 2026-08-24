@@ -103,7 +103,7 @@ describe("URL 导入", () => {
       ["https://a.com/a.bmp", "bmp", "image/bmp"],
     ];
     for (const [url, kind, expectMime] of cases) {
-      stubFetch(async (method) => imageResponse(imageBlob(kind)));
+      stubFetch(async (_method) => imageResponse(imageBlob(kind)));
       const uploader = new ImageUpload(root, { compress: false });
       const item = await uploader.addFromUrl(url);
       expect(item!.mime, url).toBe(expectMime);
@@ -214,7 +214,7 @@ describe("URL 导入", () => {
   });
 
   test("supportedFormats 白名单拒绝识别结果不符的图片", async () => {
-    stubFetch(async (method) => imageResponse(imageBlob("jpeg")));
+    stubFetch(async (_method) => imageResponse(imageBlob("jpeg")));
     const uploader = new ImageUpload(root, { compress: false, supportedFormats: ["png"] });
 
     const item = await uploader.addFromUrl("https://a.com/a.jpg");
@@ -225,7 +225,7 @@ describe("URL 导入", () => {
   });
 
   test("无扩展名 URL → 回退文件名 url-image.<ext>", async () => {
-    stubFetch(async (method) => imageResponse(imageBlob("png")));
+    stubFetch(async (_method) => imageResponse(imageBlob("png")));
     const uploader = new ImageUpload(root, { compress: false });
 
     const item = await uploader.addFromUrl("https://a.com/image?id=1");
@@ -235,7 +235,7 @@ describe("URL 导入", () => {
   });
 
   test("maxCount 对 URL 导入生效", async () => {
-    stubFetch(async (method) => imageResponse(imageBlob("png")));
+    stubFetch(async (_method) => imageResponse(imageBlob("png")));
     const uploader = new ImageUpload(root, { compress: false, maxCount: 1 });
 
     const item = await uploader.addFromUrl("https://a.com/first.png");
@@ -262,7 +262,7 @@ describe("URL 导入", () => {
   });
 
   test("UI：多行批量导入 + 部分失败提示 + 面板关闭", async () => {
-    stubFetch(async (method, url) => {
+    stubFetch(async (_method, url) => {
       if (url.includes("bad")) throw new TypeError("Failed to fetch");
       return imageResponse(imageBlob("png"));
     });
@@ -295,7 +295,7 @@ describe("URL 导入", () => {
   });
 
   test("无扩展名 SVG 识别为 svg+xml 并跳过压缩（原图上传）", async () => {
-    stubFetch(async (method) => imageResponse(imageBlob("svg")));
+    stubFetch(async (_method) => imageResponse(imageBlob("svg")));
     const uploader = new ImageUpload(root, { compress: true, formats: ["webp"] });
 
     const item = await uploader.addFromUrl("https://a.com/vector");

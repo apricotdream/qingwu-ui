@@ -387,6 +387,32 @@
     .qcar-desc {
       font-size: 13px;
     }
+
+    /* 悬浮缩略图变体（opt-in，加 .qcar--thumbs-float 启用）：
+       缩略图条与图片区同格重叠、毛玻璃胶囊悬浮在卡片底部，
+       缩略图出流后卡片少一行、整体变矮；仅真手机断点生效 */
+    .qcar--thumbs-float {
+      grid-template-rows: minmax(300px, 46vh) auto;
+    }
+
+    .qcar--thumbs-float .qcar-thumbs {
+      grid-row: 1;
+      grid-column: 1;
+      align-self: end;
+      justify-self: center;
+      justify-content: center;
+      z-index: 2;
+      max-width: calc(100% - 24px);
+      padding: 6px 12px;
+      border: 1px solid color-mix(in srgb, var(--qcar-card) 55%, transparent);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--qcar-card) 82%, transparent);
+      backdrop-filter: blur(8px);
+    }
+
+    .qcar--thumbs-float .qcar-thumb:first-child {
+      margin-inline-start: 0;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

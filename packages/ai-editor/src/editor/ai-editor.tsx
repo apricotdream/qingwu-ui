@@ -245,7 +245,9 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     () =>
       typeof initialContent === "object" && initialContent !== null
         ? initialContent
-        : (looksLikeMarkdown(initialContent) ? initialContent : sanitizeHtml(initialContent)),
+        : looksLikeMarkdown(initialContent)
+          ? initialContent
+          : sanitizeHtml(initialContent),
     [initialContent],
   );
   const [showAI, setShowAI] = useState(false);
@@ -539,7 +541,9 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     const safe =
       typeof initialContent === "object" && initialContent !== null
         ? initialContent
-        : (looksLikeMarkdown(initialContent) ? initialContent : sanitizeHtml(initialContent));
+        : looksLikeMarkdown(initialContent)
+          ? initialContent
+          : sanitizeHtml(initialContent);
     // emit: false 避免触发 onChange，防止覆盖父组件状态
     editor.commands.setContent(safe, { emitUpdate: false });
   }, [editor, initialContent]);

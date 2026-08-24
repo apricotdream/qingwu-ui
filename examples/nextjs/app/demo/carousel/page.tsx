@@ -121,6 +121,7 @@ export default function CarouselPage() {
   const [loop, setLoop] = useState(true);
   const [showArrows, setShowArrows] = useState(true);
   const [showThumbs, setShowThumbs] = useState(true);
+  const [floatThumbs, setFloatThumbs] = useState(false);
 
   useEffect(() => {
     if (!rootRef.current) return;
@@ -153,13 +154,18 @@ export default function CarouselPage() {
     });
   }, [autoplay, speed, intervalMs, loop, showArrows, showThumbs]);
 
+  /* 悬浮缩略图变体（仅 ≤560px 生效）：className 只在创建时写入，运行时直接切换根类 */
+  useEffect(() => {
+    rootRef.current?.classList.toggle("qcar--thumbs-float", floatThumbs);
+  }, [floatThumbs]);
+
   const effectiveMs = Math.max(intervalMs / speed, 250);
 
   return (
     <div className="demo-grid">
       <DemoCard
         title="Carousel 轮播图"
-        desc="左侧大图 + 右侧卡片文案 + 底部缩略图（右对齐至左图右缘）；背景从左往右滑入、角色随后淡入上移，文案逐行从右往左滑入。"
+        desc="左侧大图 + 右侧卡片文案 + 底部缩略图（右对齐至左图右缘）；背景从左往右滑入、角色随后淡入上移，文案逐行从右往左滑入；移动端支持触屏横滑切换，缩略图可切换为悬浮胶囊。"
         full
         snippets={{
           react: `import { Carousel, type CarouselItem } from "@qingwu-ui/carousel";
@@ -318,6 +324,18 @@ onBeforeUnmount(() => carousel?.destroy());
               onChange={(e) => setShowThumbs(e.target.checked)}
             />
             缩略图
+          </label>
+          <label
+            className="tl-range-label"
+            style={{ fontSize: 14, color: "#1d2b2c", opacity: showThumbs ? 1 : 0.4 }}
+          >
+            <input
+              type="checkbox"
+              checked={floatThumbs}
+              disabled={!showThumbs}
+              onChange={(e) => setFloatThumbs(e.target.checked)}
+            />
+            悬浮缩略图（≤560px）
           </label>
 
           <span className="tl-hint" style={{ width: "100%", marginTop: 4 }}>
