@@ -166,6 +166,8 @@ export interface EditorTarget {
   kind: "http" | "native-message" | "file" | "oss" | "cos";
   /** HTTP 模式：青梧编辑器本地服务地址，如 http://127.0.0.1:7321/clip */
   endpoint?: string;
+  /** HTTP 模式：远端接收服务的鉴权 token，推送时以 Authorization: Bearer 携带（本地 receiver 可留空） */
+  token?: string;
   /** 浏览器降级通道：青梧编辑器页面 URL（HTTP 不可用时用，如 vite dev http://localhost:5173） */
   editorUrl?: string;
   /** Native Messaging：宿主名称 */
@@ -176,6 +178,8 @@ export interface EditorTarget {
   storageId?: string;
   /** 自动推送（剪藏即推） */
   autoPush?: boolean;
+  /** HTTP 推送成功后自动打开编辑器并直达该草稿编辑页（默认 false：静默入草稿箱） */
+  openAfterPush?: boolean;
 }
 
 /** 全局配置 */
