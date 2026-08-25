@@ -810,7 +810,10 @@ async function pushToEditor(
       try {
         const resp = await fetch(endpoint, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(target.token ? { Authorization: `Bearer ${target.token}` } : {}),
+          },
           body: JSON.stringify({
             title: record.noteTitle,
             path: record.notePath,
@@ -824,6 +827,32 @@ async function pushToEditor(
         if (!resp.ok) {
           // HTTP 不可达时降级到浏览器通道（纯 Web dev 模式无 node:http）
           return fallbackBrowserPush();
+        }
+        // 推送成功：按需打开编辑器并直达该草稿编辑页（默认静默入箱）
+        if (target.openAfterPush) {
+          try {
+            const data = (await resp.json().catch(() => ({}))) as {
+              data?: { draftId?: string };
+            };
+            const draftId = data?.data?.draftId;
+            if (draftId) {
+              // 优先用编辑器页面地址的源，否则从接收端点推导源
+              let origin = "";
+              try {
+                origin = new URL(target.editorUrl ?? endpoint).origin;
+              } catch {
+                origin = "";
+              }
+              if (origin) {
+                await chrome.tabs.create({
+                  url: `${origin}/blog/edit/${encodeURIComponent(draftId)}`,
+                  active: true,
+                });
+              }
+            }
+          } catch {
+            /* 打开失败不影响「推送已成功」的结论 */
+          }
         }
         return { ok: true };
       } finally {

@@ -742,6 +742,21 @@ function EditorSection({
               }
             />
           </Field>
+          <Field label="接收 Token（远端鉴权，本地 receiver 可留空）">
+            <Input
+              type="password"
+              value={target.token ?? ""}
+              placeholder="Authorization: Bearer …"
+              autoComplete="off"
+              spellCheck={false}
+              onChange={(e) =>
+                onSave({
+                  ...settings,
+                  editorTarget: { ...target, token: e.target.value },
+                })
+              }
+            />
+          </Field>
           <Field label="编辑器页面 URL（浏览器降级通道）">
             <Input
               value={target.editorUrl ?? ""}
@@ -798,6 +813,26 @@ function EditorSection({
           }
         />
       </div>
+
+      {target.kind === "http" && (
+        <div className="flex items-center justify-between pt-2 border-t border-ink-100 dark:border-ink-900">
+          <div>
+            <div className="text-sm">剪藏后打开编辑器</div>
+            <div className="text-[11px] text-ink-500">
+              推送成功后自动新开标签页直达该草稿编辑页（关闭则静默存入草稿箱）
+            </div>
+          </div>
+          <Switch
+            checked={target.openAfterPush ?? false}
+            onChange={(v) =>
+              onSave({
+                ...settings,
+                editorTarget: { ...target, openAfterPush: v },
+              })
+            }
+          />
+        </div>
+      )}
     </Card>
   );
 }
