@@ -396,7 +396,8 @@ export function CodeBlockView({
   return (
     <div ref={shellRef} className="cb-react-shell group/cb" style={{ display: "contents" }}>
       {/* 顶部栏 - 语言始终可见，操作按钮 hover 显示 */}
-      <div className="cb-header" contentEditable={false}>
+      {/* mousedown 不冒泡：工具栏属于不可编辑外壳，交互不应触发编辑器外层（ProseMirror/...）的全局 mousedown 处理 */}
+      <div className="cb-header" contentEditable={false} onMouseDown={(e) => e.stopPropagation()}>
         <div className="cb-lang-wrap" ref={langDropdownRef} contentEditable={false}>
           {isReadonly ? (
             <span className="cb-lang-trigger cb-lang-trigger--static">{langDisplay}</span>
