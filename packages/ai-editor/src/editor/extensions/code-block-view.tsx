@@ -1,5 +1,5 @@
-import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { isDeleteConfirmActive, setDeleteConfirmActive } from "../utils/delete-confirm";
 import { DeleteConfirmDialog } from "../utils/delete-confirm-dialog";
 import { sanitizeSvg } from "../utils/sanitize";
@@ -125,10 +125,6 @@ const LANG_ALIAS: Record<string, string> = {
   tsx: "typescript",
 };
 
-function isCodeContentEventTarget(target: EventTarget | null) {
-  return target instanceof Element && Boolean(target.closest(".cb-code-area"));
-}
-
 export function CodeBlockView({
   node,
   updateAttributes,
@@ -142,29 +138,32 @@ export function CodeBlockView({
   const [copied, setCopied] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
+  const [listMaxHeight, setListMaxHeight] = useState<number>(220);
+  // 下拉面板用 fixed 定位 portal 到 body，脱离编辑器祖先的 overflow:hidden 裁切。
+  const [panelPos, setPanelPos] = useState<{ top: number; left: number; width: number }>({
+    top: 0,
+    left: 0,
+    width: 210,
+  });
   const [search, setSearch] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   // mermaid 渲染
   const [mermaidSvg, setMermaidSvg] = useState<string | null>(null);
   const [mermaidError, setMermaidError] = useState<string | null>(null);
   const [mermaidRendering, setMermaidRendering] = useState(false);
-  // 每条逻辑行折行后的真实像素高度（由隐藏镜像测量得出），用于让行号与代码逐行对齐
-  const [lineHeights, setLineHeights] = useState<number[]>([]);
   const langDropdownRef = useRef<HTMLDivElement>(null);
+  // 下拉面板 portal 到 body，需独立 ref 供外部点击判定（不再是触发器的 DOM 后代）。
+  const langPanelRef = useRef<HTMLDivElement>(null);
+  const langTriggerRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const preRef = useRef<HTMLPreElement>(null);
-  const mirrorRef = useRef<HTMLDivElement>(null);
+  const shellRef = useRef<HTMLDivElement>(null);
   // 保存触发删除时的选区范围，避免确认框交互破坏 ProseMirror 选区
   const deleteSelectionRef = useRef<{ from: number; to: number } | null>(null);
 
   const lang: string = node.attrs.language || "";
   const currentLang = LANGUAGES.find((l) => l.value === (LANG_ALIAS[lang] ?? lang));
   const isDiagram = lang === "mermaid";
-
-  const stopChromeEvent = useCallback((event: React.MouseEvent | React.TouchEvent) => {
-    if (isCodeContentEventTarget(event.target)) return;
-    event.stopPropagation();
-  }, []);
 
   const getCodeBlockRange = useCallback(() => {
     if (!editor || typeof getPos !== "function") return null;
@@ -182,17 +181,6 @@ export function CodeBlockView({
     setShowDeleteConfirm(true);
   }, [getCodeBlockRange, isEditable]);
 
-  // 行号
-  const lineTexts = useMemo<string[]>(
-    () => (node.textContent ? node.textContent.split("\n") : [""]),
-    [node.textContent],
-  );
-  const lineCount = lineTexts.length;
-  const lineNumbers = useMemo(
-    () => Array.from({ length: lineCount }, (_, i) => i + 1),
-    [lineCount],
-  );
-
   // 搜索过滤
   const filteredLangs = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -202,21 +190,61 @@ export function CodeBlockView({
     );
   }, [search]);
 
-  // 打开下拉时聚焦搜索框
+  // 折叠/展开：代码区由原生 NodeView 拥有，这里仅切换其 class
   useEffect(() => {
-    if (langOpen) {
-      setSearch("");
-      setTimeout(() => searchInputRef.current?.focus(), 50);
-    }
-  }, [langOpen]);
+    const area = shellRef.current?.parentElement?.querySelector(".cb-code-area");
+    area?.classList.toggle("cb-code-area--collapsed", collapsed);
+  }, [collapsed]);
 
-  // 点击外部关闭
+  // 打开下拉时聚焦搜索框；面板 portal 到 body（fixed），根据触发器在视口中的位置
+  // 决定向上/向下展开、宽度与列表最大高度，彻底脱离祖先 overflow:hidden 裁切。
+  const reposition = useCallback(() => {
+    const trig = langTriggerRef.current;
+    if (!trig) return;
+    const rect = trig.getBoundingClientRect();
+    const width = 210;
+    const left = Math.min(rect.left, window.innerWidth - width - 8);
+    const margin = 12;
+    const spaceBelow = window.innerHeight - rect.bottom - margin;
+    const spaceAbove = rect.top - margin;
+    const chromeHeight = 52; // 搜索框 + 上下内边距
+    const desired = LANGUAGES.length * 31 + 8;
+    const listBelow = spaceBelow - chromeHeight;
+    const listAbove = spaceAbove - chromeHeight;
+    if (listBelow < 220 && listAbove > listBelow) {
+      setDropUp(true);
+      setListMaxHeight(Math.max(120, Math.min(desired, listAbove)));
+      setPanelPos({ top: rect.top, left, width });
+    } else {
+      setDropUp(false);
+      setListMaxHeight(Math.max(120, Math.min(desired, listBelow)));
+      setPanelPos({ top: rect.bottom + 4, left, width });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!langOpen) return;
+    setSearch("");
+    reposition();
+    const id = setTimeout(() => searchInputRef.current?.focus(), 50);
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", reposition, true);
+    return () => {
+      clearTimeout(id);
+      window.removeEventListener("resize", reposition);
+      window.removeEventListener("scroll", reposition, true);
+    };
+  }, [langOpen, reposition]);
+
+  // 点击外部关闭（面板已 portal 到 body，需同时排除触发器与面板自身）
   useEffect(() => {
     if (!langOpen) return;
     const handler = (e: MouseEvent) => {
-      if (langDropdownRef.current && !langDropdownRef.current.contains(e.target as Node)) {
-        setLangOpen(false);
-      }
+      const t = e.target as Node | null;
+      if (!t) return;
+      if (langTriggerRef.current?.contains(t)) return;
+      if (langPanelRef.current?.contains(t)) return;
+      setLangOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -254,49 +282,6 @@ export function CodeBlockView({
     return () => window.removeEventListener("keydown", onKey, true);
   }, [selected, editor, isEditable]);
 
-  // 行号与代码逐行对齐：代码软换行后"逻辑行≠可视行"，
-  // 用隐藏镜像复刻折行，测量每条逻辑行真实高度赋给对应行号。
-  const setHeightsIfChanged = useCallback((next: number[]) => {
-    setLineHeights((prev) => {
-      if (prev.length === next.length && prev.every((v, i) => v === next[i])) return prev;
-      return next;
-    });
-  }, []);
-
-  const measureLineHeights = useCallback(() => {
-    const pre = preRef.current;
-    const mirror = mirrorRef.current;
-    if (!pre || !mirror) return;
-    // 让镜像内容宽度等于真实 <pre> 的内容宽度，折行点才会完全一致
-    mirror.style.width = `${pre.clientWidth}px`;
-    const kids = mirror.children;
-    const heights = new Array<number>(kids.length);
-    for (let i = 0; i < kids.length; i++) {
-      heights[i] = (kids[i] as HTMLElement).offsetHeight;
-    }
-    setHeightsIfChanged(heights);
-  }, [setHeightsIfChanged]);
-
-  useLayoutEffect(() => {
-    measureLineHeights();
-  }, [measureLineHeights, lineTexts]);
-
-  useEffect(() => {
-    const pre = preRef.current;
-    if (!pre) return;
-    // 容器宽度变化（折行点随之变化）时重测
-    const ro = new ResizeObserver(() => measureLineHeights());
-    ro.observe(pre);
-    window.addEventListener("resize", measureLineHeights);
-    // Web 字体延迟加载会改变度量，字体就绪后再测一次
-    const fonts = (document as Document & { fonts?: { ready?: Promise<unknown> } }).fonts;
-    fonts?.ready?.then(() => measureLineHeights());
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measureLineHeights);
-    };
-  }, [measureLineHeights]);
-
   const selectLang = useCallback(
     (value: string) => {
       updateAttributes({ language: value || null });
@@ -318,7 +303,28 @@ export function CodeBlockView({
   }, [editor, getPos, isEditable]);
 
   const copyCode = useCallback(() => {
-    navigator.clipboard.writeText(node.textContent);
+    const text = node.textContent;
+    const legacyCopy = (t: string) => {
+      const ta = document.createElement("textarea");
+      ta.value = t;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+      } catch {
+        /* ignore */
+      }
+      document.body.removeChild(ta);
+    };
+    // 非安全上下文（如局域网 IP http://192.168.x.x）下 navigator.clipboard 为 undefined，
+    // 用 textarea + execCommand 兜底，保证移动端局域网访问也能复制。
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).catch(() => legacyCopy(text));
+    } else {
+      legacyCopy(text);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }, [node.textContent]);
@@ -383,13 +389,12 @@ export function CodeBlockView({
     </>
   );
 
+  // 说明：本组件只渲染「非可编辑」的外壳——顶部工具栏、mermaid 图表、删除确认弹窗。
+  // 可编辑的 <pre><code> 由原生 NodeView 直接交给 ProseMirror 管理（见 code-block.ts），
+  // React 完全不触碰可编辑内容，避免安卓 Chrome 上 DOMObserver↔React 的死循环。
+  // 根节点设为 display:contents，由外层 .code-block-node-view 承载卡片布局。
   return (
-    <NodeViewWrapper
-      as="div"
-      className="code-block-node-view group/cb"
-      onMouseDown={stopChromeEvent}
-      onTouchStart={stopChromeEvent}
-    >
+    <div ref={shellRef} className="cb-react-shell group/cb" style={{ display: "contents" }}>
       {/* 顶部栏 - 语言始终可见，操作按钮 hover 显示 */}
       <div className="cb-header" contentEditable={false}>
         <div className="cb-lang-wrap" ref={langDropdownRef} contentEditable={false}>
@@ -397,6 +402,7 @@ export function CodeBlockView({
             <span className="cb-lang-trigger cb-lang-trigger--static">{langDisplay}</span>
           ) : (
             <button
+              ref={langTriggerRef}
               type="button"
               className="cb-lang-trigger"
               onClick={() => setLangOpen(!langOpen)}
@@ -416,8 +422,23 @@ export function CodeBlockView({
             </button>
           )}
 
-          {isEditable && langOpen && (
-            <div className="cb-lang-dropdown">
+        </div>
+
+        {/* 语言下拉：portal 到 body 并用 fixed 定位，脱离编辑器祖先 overflow:hidden 裁切 */}
+        {isEditable &&
+          langOpen &&
+          createPortal(
+            <div
+              ref={langPanelRef}
+              className={`cb-lang-dropdown${dropUp ? " cb-lang-dropdown--up" : ""}`}
+              style={{
+                position: "fixed",
+                top: panelPos.top,
+                left: panelPos.left,
+                width: panelPos.width,
+                zIndex: 10002,
+              }}
+            >
               {/* 搜索框 */}
               <div className="cb-lang-search-wrap">
                 <svg
@@ -445,7 +466,7 @@ export function CodeBlockView({
                   onKeyDown={(e) => e.stopPropagation()}
                 />
               </div>
-              <div className="cb-lang-list">
+              <div className="cb-lang-list" style={{ maxHeight: listMaxHeight }}>
                 <button
                   type="button"
                   className={`cb-lang-option${!lang ? " cb-lang-option--active" : ""}`}
@@ -474,9 +495,9 @@ export function CodeBlockView({
                 ))}
                 {filteredLangs.length === 0 && <div className="cb-lang-empty">无匹配语言</div>}
               </div>
-            </div>
+            </div>,
+            document.body,
           )}
-        </div>
 
         {/* 操作按钮 - hover 时显示 */}
         <div className="cb-actions">
@@ -628,32 +649,6 @@ export function CodeBlockView({
         </div>
       </div>
 
-      <div className={`cb-code-area${collapsed ? " cb-code-area--collapsed" : ""}`}>
-        {/* 行号 */}
-        <div className="cb-line-numbers" contentEditable={false} aria-hidden="true">
-          {lineNumbers.map((n, i) => (
-            <span
-              key={n}
-              className="cb-line-num"
-              style={lineHeights[i] ? { height: lineHeights[i] } : undefined}
-            >
-              {n}
-            </span>
-          ))}
-        </div>
-        <pre className="cb-code-pre" ref={preRef}>
-          <NodeViewContent<"code"> as="code" />
-        </pre>
-        {/* 隐藏镜像：复刻代码区折行，逐行测量逻辑行的真实高度（不触碰可编辑 DOM） */}
-        <div ref={mirrorRef} className="cb-code-mirror" contentEditable={false} aria-hidden="true">
-          {lineTexts.map((t, i) => (
-            <span key={i} className="cb-mirror-line">
-              {t.length ? t : " "}
-            </span>
-          ))}
-        </div>
-      </div>
-
       {/* Mermaid 图表渲染结果 */}
       {(mermaidSvg || mermaidError || mermaidRendering) && (
         <div className="cb-diagram-output" contentEditable={false}>
@@ -670,7 +665,7 @@ export function CodeBlockView({
         </div>
       )}
 
-      {/* 删除确认对话框 - select-none 防止 Ctrl+A 全选时把弹框文字也选中 */}
+      {/* 删除确认对话框 - portal 到 body，select-none 防止 Ctrl+A 全选时把弹框文字也选中 */}
       <DeleteConfirmDialog
         open={showDeleteConfirm}
         title="确认删除代码块"
@@ -683,18 +678,11 @@ export function CodeBlockView({
           // 本地删除：给「删除中」动画一个最小展示时长
           await new Promise((r) => setTimeout(r, 300));
           setDeleteConfirmActive(false);
-          if (editor) {
-            const range = deleteSelectionRef.current ?? getCodeBlockRange();
-            if (range) {
-              editor.chain().focus().setTextSelection(range).deleteSelection().run();
-            } else {
-              deleteNode();
-            }
-          } else {
-            deleteNode();
-          }
+          // deleteNode 用实时 currentNode.nodeSize 做 tr.delete(pos, pos+nodeSize)，
+          // 能完整移除整个代码块节点（setTextSelection+deleteSelection 只会清空内容、残留空块）。
+          deleteNode();
         }}
       />
-    </NodeViewWrapper>
+    </div>
   );
 }

@@ -343,6 +343,49 @@
   scroll-margin-top: 5rem;
 }
 
+/* 编辑态标题前挂「#」前缀：纯视觉伪元素，不进 DOM/HTML/剪贴板，只读态不显示 */
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h1,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h2,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h3,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h4,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h5,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h6 {
+  position: relative;
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h1::before,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h2::before,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h3::before,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h4::before,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h5::before,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h6::before {
+  position: absolute;
+  right: 100%;
+  margin-right: 0.4em;
+  color: var(--default-400, #a1a1aa);
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h1::before {
+  content: "#";
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h2::before {
+  content: "##";
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h3::before {
+  content: "###";
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h4::before {
+  content: "####";
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h5::before {
+  content: "#####";
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h6::before {
+  content: "######";
+}
+
 /* 绉诲姩绔紪杈戝櫒缂╁皬鍐呰竟璺?*/
 @media (max-width: 640px) {
   .qingwu-editor .ProseMirror {
@@ -810,10 +853,28 @@
   animation: cb-dropdown-in 0.12s ease-out;
 }
 
+/* 下方空间不足时向上展开（移动端代码块靠近底部固定底栏时下拉会被遮） */
+.cb-lang-dropdown--up {
+  top: auto;
+  bottom: calc(100% + 4px);
+  animation: cb-dropdown-in-up 0.12s ease-out;
+}
+
 @keyframes cb-dropdown-in {
   from {
     opacity: 0;
     transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cb-dropdown-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
   }
   to {
     opacity: 1;
