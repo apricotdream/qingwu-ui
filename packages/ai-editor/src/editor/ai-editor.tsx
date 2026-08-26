@@ -454,7 +454,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
         // 用 inline style 而非全局 CSS / Tailwind 类，是因为编辑器样式被包在 cascade layer 里，
         // 层内的移动 shorthand 会重置 padding-left；inline style 层叠优先级最高。
         // 只读态无标记，不设此项，保持原 px 不影响正文展示布局。
-        ...(isReadonly ? {} : { style: "padding-left: 4rem" }),
+        ...(isReadonly ? {} : { style: "padding-left: 2.75rem" }),
       },
       handlePaste(view, event) {
         const cb = event.clipboardData;

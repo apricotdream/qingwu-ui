@@ -84,17 +84,15 @@ function measureLineHeights(
   mirror: HTMLElement,
   nums: HTMLElement,
 ) {
-  // 镜像必须与真实 <pre> 有完全一致的排版盒：移动端媒体查询会给
-  // .cb-code-pre / .cb-code-mirror / .cb-line-numbers 不同的 padding，
-  // 既会让镜像按更宽内容区折行（行数偏少），也会让垂直起点错位。
-  // 这里把镜像的 padding 整体同步成 pre 的实测值，并用 content-box + 精确内容宽，
-  // 保证折行点与逐行高度和真实 <pre> 逐像素一致。
+  // 镜像仅保留作兜底；真实行高直接在 <code> 上用 Range 逐行测量。
+  // 旧实现读隐藏 mirror 每行的 offsetHeight（整数），在 Android Chromium 上
+  // 真实 <pre> 行盒因字体度量/子像素取整约 24.8px/行，5 行累积可差 4px，
+  // 行号列比代码卡片短一截、且数字逐行上漂。直接量真实矩形可消除该累积误差。
   const preCS = getComputedStyle(pre);
   const pl = parseFloat(preCS.paddingLeft);
   const pr = parseFloat(preCS.paddingRight);
-  const contentWidth = pre.clientWidth - pl - pr;
   mirror.style.boxSizing = "content-box";
-  mirror.style.width = `${contentWidth}px`;
+  mirror.style.width = `${Math.max(0, pre.clientWidth - pl - pr)}px`;
   mirror.style.padding = preCS.padding;
   // 行号列垂直 padding 同步 pre，保证第 1 行起点与代码首行对齐
   const numsCS = getComputedStyle(nums);
@@ -102,11 +100,102 @@ function measureLineHeights(
     nums.style.paddingTop = preCS.paddingTop;
     nums.style.paddingBottom = preCS.paddingBottom;
   }
-  const kids = mirror.children;
-  for (let i = 0; i < kids.length; i++) {
-    const h = (kids[i] as HTMLElement).offsetHeight;
+
+  const code = pre.querySelector("code");
+  const fallbackLh = parseFloat(preCS.lineHeight) || 24;
+  if (!code) {
+    for (let i = 0; i < nums.children.length; i++) {
+      (nums.children[i] as HTMLElement).style.height = `${fallbackLh}px`;
+    }
+    return;
+  }
+
+  // 收集每个逻辑行（按 \n 切分）在 code.textContent 中的全局字符偏移区间
+  const text = code.textContent ?? "";
+  const bounds: Array<[number, number]> = [];
+  let lineStart = 0;
+  for (let i = 0; i <= text.length; i++) {
+    if (i === text.length || text[i] === "\n") {
+      bounds.push([lineStart, i]);
+      lineStart = i + 1;
+    }
+  }
+
+  // 把全局字符偏移映射到具体文本节点 + 局部偏移（lowlight 会把代码拆成多个 <span>）
+  const textNodes: Text[] = [];
+  const nodeStarts: number[] = [];
+  let global = 0;
+  const walker = document.createTreeWalker(code, NodeFilter.SHOW_TEXT);
+  let tn: Text | null;
+  while ((tn = walker.nextNode() as Text | null)) {
+    textNodes.push(tn);
+    nodeStarts.push(global);
+    global += tn.textContent?.length ?? 0;
+  }
+  const resolve = (pos: number): { node: Text; offset: number } | null => {
+    for (let k = 0; k < textNodes.length; k++) {
+      const ns = nodeStarts[k]!;
+      const len = textNodes[k]!.textContent?.length ?? 0;
+      if (pos <= ns + len) return { node: textNodes[k]!, offset: pos - ns };
+    }
+    const last = textNodes[textNodes.length - 1];
+    return last ? { node: last, offset: last.textContent?.length ?? 0 } : null;
+  };
+
+  const preRect = pre.getBoundingClientRect();
+  const padTop = parseFloat(preCS.paddingTop);
+  const contentTop = preRect.top + padTop;
+  const contentBottom = preRect.bottom - parseFloat(preCS.paddingBottom);
+
+  // 取每个逻辑行「首个可见字符矩形」的 top（相对 pre 内容区顶部）。
+  // getClientRects 给的是字形墨高而非行盒高，故每行高度由相邻行 top 之差
+  // （真实行距，自动含软换行折成的多行高度）求得；末行底部就是 <pre> 内容区
+  // 底边（其后再无行盒）。这样行号列总高与 <pre> 逐像素一致，消除 Android
+  // 子像素取整造成的累积错位与底部短一截。
+  const range = document.createRange();
+  const tops: number[] = [];
+  for (let i = 0; i < bounds.length; i++) {
+    const [s, e] = bounds[i]!;
+    let top = NaN;
+    const a = resolve(s);
+    const b = resolve(e);
+    if (a && b) {
+      range.setStart(a.node, a.offset);
+      range.setEnd(b.node, b.offset);
+      const rects = range.getClientRects();
+      let min = Infinity;
+      for (let r = 0; r < rects.length; r++) {
+        if (rects[r]!.height > 0 && rects[r]!.top < min) min = rects[r]!.top;
+      }
+      if (Number.isFinite(min)) top = min - contentTop;
+    }
+    tops.push(top);
+  }
+  // 空行无矩形：沿用上一行 top + 行距
+  for (let i = 0; i < tops.length; i++) {
+    if (!Number.isFinite(tops[i]!)) {
+      tops[i] = i > 0 ? tops[i - 1]! + fallbackLh : 0;
+    }
+  }
+
+  // 中间行高 = 相邻行「首字 top」之差：字形墨盒相对行盒有半行距 leading，
+  // 相邻行相减时 leading 自动抵消，得到精确行距（含软换行折成的多行）。
+  // 末行高 = 内容区总高 − 前面各行之和，避免末字形 top 距行盒底有 leading/descent
+  // 造成整列短一截。行号列垂直 padding 已同步 pre，故列顶 = pre 内容区顶。
+  const contentH = contentBottom - contentTop;
+  let used = 0;
+  for (let i = 0; i < bounds.length; i++) {
     const num = nums.children[i] as HTMLElement | undefined;
-    if (num && num.offsetHeight !== h) num.style.height = `${h}px`;
+    if (!num) continue;
+    let h: number;
+    if (i + 1 < tops.length) {
+      h = tops[i + 1]! - tops[i]!;
+    } else {
+      h = contentH - used;
+    }
+    if (!Number.isFinite(h) || h < 1) h = fallbackLh;
+    num.style.height = `${h}px`;
+    used += h;
   }
 }
 
