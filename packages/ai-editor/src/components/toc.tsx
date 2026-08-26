@@ -94,13 +94,18 @@ function filterTree(nodes: TocNode[], query: string): TocNode[] {
   return filter(nodes);
 }
 
-/** 查找最近的滚动容器（消费方可能将编辑器放在可滚动 div 内而非 window 滚动） */
+/** 查找真实的滚动容器（消费方可能将编辑器放在可滚动 div 内而非 window 滚动）。
+ *  只采纳「确实可滚动」的容器（内容溢出 scrollHeight > clientHeight）：常见宿主会把
+ *  包装层设 overflow-y:auto 但内容随高度撑开、实际滚动在 window（如 .ginkgo-scope），
+ *  误采会导致 scan 追踪与点击跳转都落在错误的容器上、页面纹丝不动。 */
 function findScrollParent(el: HTMLElement): HTMLElement | null {
   let parent = el.parentElement;
   while (parent && parent !== document.documentElement) {
     const style = getComputedStyle(parent);
     const oy = style.overflowY;
-    if (oy === "auto" || oy === "scroll" || oy === "overlay") return parent;
+    if (oy === "auto" || oy === "scroll" || oy === "overlay") {
+      if (parent.scrollHeight > parent.clientHeight) return parent;
+    }
     parent = parent.parentElement;
   }
   return null;
@@ -312,9 +317,21 @@ export const TocPanel: FC<TocPanelProps> = ({ editor, className = "", onClose })
       unlock();
       lockRef.current = { id: item.id, timer: setTimeout(unlock, LOCK_TIMEOUT_MS) };
       setActiveId(item.id);
-      // scrollIntoView 自动适配任何滚动容器（window 或内层 div），
-      // 配合 globals.css 的 scroll-margin-top 留出顶部偏移
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      // 按滚动容器精确算目标偏移再滚，替代 scrollIntoView：宿主用 Lenis 平滑滚（或把编辑器
+      // 嵌进内层滚动 div）时，scrollIntoView 的平滑滚会与 Lenis 争夺、偶发被吞（表现为
+      // 点一次不跳，需再点一次）。这里直接对 window/容器 set scrollTop，语义与
+      // 桌面高亮基准线 BASELINE_PX 对齐，一次点击即到位。
+      const container = scrollParentRef.current;
+      const anchorTop = el.getBoundingClientRect().top;
+      if (container) {
+        const cTop = container.getBoundingClientRect().top;
+        container.scrollTo({
+          top: container.scrollTop + anchorTop - cTop - BASELINE_PX,
+          behavior: "smooth",
+        });
+      } else {
+        window.scrollTo({ top: window.scrollY + anchorTop - BASELINE_PX, behavior: "smooth" });
+      }
     },
     [editor, unlock],
   );

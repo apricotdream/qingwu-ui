@@ -2998,7 +2998,9 @@
   justify-content: center;
   position: fixed;
   right: 1.25rem;
-  bottom: 1.5rem;
+  /* 上移避开宿主「返回顶部」固定钮（其 bottom:1.5rem / 高 2.75rem）：
+     bottom=1.5rem + 2.75rem + 0.75rem 间隔 = 5rem，二者纵向不连叠 */
+  bottom: 5rem;
   z-index: 40;
   width: 2.75rem;
   height: 2.75rem;
@@ -3213,21 +3215,23 @@
   color: var(--color-default-50);
 }
 
-/* ═══ 移动端 / 全屏目录抽屉头部 ═══ */
-.qingwu-editor .qed-drawer-head {
+/* ═══ 移动端 / 全屏目录抽屉头部 ═══
+   抽屉入口 JSX 经 createPortal 挂到 document.body，已脱离 .qingwu-editor 作用域，
+   选择器改由 .qingwu-toc-drawer 容器作用域（同为 0-2-0 特异性）。 */
+.qingwu-toc-drawer .qed-drawer-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--color-default-100);
 }
-.qingwu-editor .qed-drawer-head__title {
+.qingwu-toc-drawer .qed-drawer-head__title {
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--color-default-700);
 }
-.qingwu-editor .qed-drawer-head__close {
+.qingwu-toc-drawer .qed-drawer-head__close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3244,24 +3248,24 @@
     background 0.14s,
     color 0.14s;
 }
-.qingwu-editor .qed-drawer-head__close svg {
+.qingwu-toc-drawer .qed-drawer-head__close svg {
   width: 1rem;
   height: 1rem;
 }
-.qingwu-editor .qed-drawer-head__close:hover {
+.qingwu-toc-drawer .qed-drawer-head__close:hover {
   background: var(--color-default-100);
   color: var(--color-default-700);
 }
-.dark .qingwu-editor .qed-drawer-head {
+.dark .qingwu-toc-drawer .qed-drawer-head {
   border-bottom-color: var(--color-default-800);
 }
-.dark .qingwu-editor .qed-drawer-head__title {
+.dark .qingwu-toc-drawer .qed-drawer-head__title {
   color: var(--color-default-200);
 }
-.dark .qingwu-editor .qed-drawer-head__close {
+.dark .qingwu-toc-drawer .qed-drawer-head__close {
   color: var(--color-default-400);
 }
-.dark .qingwu-editor .qed-drawer-head__close:hover {
+.dark .qingwu-toc-drawer .qed-drawer-head__close:hover {
   background: var(--color-default-800);
   color: var(--color-default-100);
 }
