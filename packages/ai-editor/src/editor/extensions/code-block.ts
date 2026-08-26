@@ -1,12 +1,12 @@
+import type { NodeViewRendererProps } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
-// common 预设未包含 dockerfile，单独注册
-import dockerfile from "highlight.js/lib/languages/dockerfile";
-import { common, createLowlight } from "lowlight";
-import { ReactRenderer } from "@tiptap/react";
 import type { Node as ProseNode } from "@tiptap/pm/model";
 import { Fragment, type Schema } from "@tiptap/pm/model";
 import type { NodeViewProps } from "@tiptap/react";
-import type { NodeViewRendererProps } from "@tiptap/core";
+import { ReactRenderer } from "@tiptap/react";
+// common 预设未包含 dockerfile，单独注册
+import dockerfile from "highlight.js/lib/languages/dockerfile";
+import { common, createLowlight } from "lowlight";
 import { CodeBlockView } from "./code-block-view";
 
 // 可选语言列表（UI 语言下拉 / 外部引用）
@@ -79,11 +79,7 @@ function renderMirror(mirror: HTMLElement, texts: string[]) {
   }
 }
 
-function measureLineHeights(
-  pre: HTMLPreElement,
-  mirror: HTMLElement,
-  nums: HTMLElement,
-) {
+function measureLineHeights(pre: HTMLPreElement, mirror: HTMLElement, nums: HTMLElement) {
   // 镜像仅保留作兜底；真实行高直接在 <code> 上用 Range 逐行测量。
   // 旧实现读隐藏 mirror 每行的 offsetHeight（整数），在 Android Chromium 上
   // 真实 <pre> 行盒因字体度量/子像素取整约 24.8px/行，5 行累积可差 4px，
@@ -294,8 +290,7 @@ export const CodeBlock = CodeBlockLowlight.extend({
       // 宽度变化 / 字体加载后重测行高
       const ro = new ResizeObserver(() => measureLineHeights(pre, mirror, lineNums));
       ro.observe(pre);
-      const fonts = (document as Document & { fonts?: { ready?: Promise<unknown> } })
-        .fonts;
+      const fonts = (document as Document & { fonts?: { ready?: Promise<unknown> } }).fonts;
       fonts?.ready?.then(() => measureLineHeights(pre, mirror, lineNums));
 
       // 注意：selected 仅在「节点被整体选中」（NodeSelection）时为 true，
@@ -368,9 +363,7 @@ export const CodeBlock = CodeBlockLowlight.extend({
       getContent: (node: Node, schema: Schema) => {
         const el = node as Element;
         const codeEl = el.querySelector(":scope > code");
-        const lineDivs = Array.from(
-          (codeEl ?? el).querySelectorAll(":scope > div"),
-        );
+        const lineDivs = Array.from((codeEl ?? el).querySelectorAll(":scope > div"));
         if (lineDivs.length > 0) {
           const text = lineDivs.map((d) => d.textContent ?? "").join("\n");
           return text ? Fragment.from(schema.text(text)) : Fragment.empty;

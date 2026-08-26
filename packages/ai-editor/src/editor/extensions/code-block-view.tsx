@@ -421,7 +421,6 @@ export function CodeBlockView({
               </svg>
             </button>
           )}
-
         </div>
 
         {/* 语言下拉：portal 到 body 并用 fixed 定位，脱离编辑器祖先 overflow:hidden 裁切 */}

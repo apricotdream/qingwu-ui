@@ -2,8 +2,8 @@ import type { Editor } from "@tiptap/core";
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import Suggestion, {
-  exitSuggestion,
   findSuggestionMatch as defaultFindSuggestionMatch,
+  exitSuggestion,
   type SuggestionOptions,
 } from "@tiptap/suggestion";
 import { toast } from "../../components/toast";
@@ -81,8 +81,7 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
           let applyCommand: ((item: SlashCommandItem) => void) | null = null;
           // 外部点击退出：在 capture 阶段监听，优先于 node view（如代码块 chrome）
           // 在冒泡阶段调用的 stopPropagation，确保任何组件拦截事件都无法拖死菜单。
-          let viewRef: { view: { dispatch: (tr: unknown) => void; state: unknown } } | null =
-            null;
+          let viewRef: { view: { dispatch: (tr: unknown) => void; state: unknown } } | null = null;
           let outsideHandler: ((event: Event) => void) | null = null;
 
           function buildPopup(
