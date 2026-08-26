@@ -18,7 +18,7 @@ import { createPortal } from "react-dom";
 import { SearchBar } from "../components/search-bar";
 import type { ToastOptions, ToastType } from "../components/toast";
 import { subscribeToast, toast } from "../components/toast";
-import { TocPanel } from "../components/toc";
+import { findScrollParent, TocPanel } from "../components/toc";
 import { AISelector } from "./ai/components/ai-selector";
 import { flushPendingRemovals } from "./ai/pending-removal";
 import { formatBytes, getDocAttachmentTotal, validateAttachmentFile } from "./attachment-limits";
@@ -296,6 +296,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   const savedScrollYRef = useRef<number>(0);
   const aiAnchorRef = useRef<FloatingPoint | null>(null);
   const editorRef = useRef<Editor | null>(null);
+  const tocDesktopRef = useRef<HTMLElement | null>(null);
   // 气泡菜单：主行容器 ref（子面板定位锚点）+ 「⋯」二级菜单开关
   const bubbleBoxRef = useRef<HTMLDivElement | null>(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -848,6 +849,47 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [showTocMobile]);
+
+  /* 桌面目录悬浮框「滚轮到边接棒」。
+     早年目录框挂 data-lenis-prevent：Lenis 对框内滚轮直接 early-return，滚轮只在目录
+     内自滚、永远到不了正文（详情页出现「悬停目录滚不动页面」）。这里改为自建 wheel
+     handler 精确分流：
+       · 目录能继续滚该方向 → 滚目录并 preventDefault/stopPropagation（正文不动）；
+       · 目录已到边，且存在真实正文滚动容器（创作/编辑页 .cp-panel，事件冒泡到不了它）
+         → 直滚该容器并 preventDefault/stopPropagation；
+       · 目录已到边，正文滚 window（详情页）→ 不拦截，放行给宿主 Lenis 平滑滚。
+     仅桌面侧栏；移动抽屉（touch）维持既有 data-lenis-prevent 行为。 */
+  useEffect(() => {
+    if (!editor || !desktopTocVisible) return;
+    const box = tocDesktopRef.current;
+    if (!(box instanceof HTMLElement)) return;
+    const onWheel = (e: WheelEvent) => {
+      const deltaY = e.deltaY;
+      if (deltaY === 0) return;
+      const atTop = box.scrollTop <= 0;
+      const atBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 1;
+      const canScrollDown = !atBottom;
+      const canScrollUp = !atTop;
+      if ((deltaY > 0 && canScrollDown) || (deltaY < 0 && canScrollUp)) {
+        box.scrollTop += deltaY;
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      const sp = findScrollParent(editor.view.dom);
+      if (sp) {
+        // 创作/编辑页正文滚在 .cp-panel（data-lenis-prevent 嵌套容器），与目录框不同子树，
+        // 不能靠事件冒泡到它，需直滚。
+        sp.scrollTop += deltaY;
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      // 详情页正文滚 window：不拦截，放行给宿主 Lenis 平滑滚。
+    };
+    box.addEventListener("wheel", onWheel, { passive: false });
+    return () => box.removeEventListener("wheel", onWheel);
+  }, [editor, desktopTocVisible]);
 
   // 桌面目录用 flex 兄弟 + sticky 侧栏，不用 fixed 浮层（fixed 在祖先 transform/filter 包含块下会错位）
 
@@ -1421,9 +1463,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
             document.body,
           )}
       </div>
-      {/* 桌面端目录 — 悬浮框（fixed 视口右侧，宽屏且非全屏时显示）；data-lenis-prevent 同上 */}
+      {/* 桌面端目录 — 悬浮框（fixed 视口右侧，宽屏且非全屏时显示）。
+          注意：不再挂 data-lenis-prevent（否则 Lenis 对框内滚轮一律早退，滚不到正文）。
+          滚轮到边接棒由上方自建 wheel handler 负责。 */}
       {desktopTocVisible && (
-        <aside className="qingwu-toc-desktop toc-scroll" data-lenis-prevent>
+        <aside ref={tocDesktopRef} className="qingwu-toc-desktop toc-scroll">
           <TocPanel editor={editor} onClose={() => setShowTocState(false)} />
         </aside>
       )}

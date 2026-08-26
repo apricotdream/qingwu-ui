@@ -98,7 +98,7 @@ function filterTree(nodes: TocNode[], query: string): TocNode[] {
  *  只采纳「确实可滚动」的容器（内容溢出 scrollHeight > clientHeight）：常见宿主会把
  *  包装层设 overflow-y:auto 但内容随高度撑开、实际滚动在 window（如 .ginkgo-scope），
  *  误采会导致 scan 追踪与点击跳转都落在错误的容器上、页面纹丝不动。 */
-function findScrollParent(el: HTMLElement): HTMLElement | null {
+export function findScrollParent(el: HTMLElement): HTMLElement | null {
   let parent = el.parentElement;
   while (parent && parent !== document.documentElement) {
     const style = getComputedStyle(parent);
