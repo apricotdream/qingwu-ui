@@ -2,6 +2,7 @@ import type { Editor } from "@tiptap/core";
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import Suggestion, {
+  exitSuggestion,
   findSuggestionMatch as defaultFindSuggestionMatch,
   type SuggestionOptions,
 } from "@tiptap/suggestion";
@@ -72,6 +73,17 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
           let popup: HTMLDivElement | null = null;
           let selectedIndex = 0;
           let currentItems: SlashCommandItem[] = [];
+          // suggestion 传入的命令回调（onStart/onUpdate -> buildPopup 时捕获）。
+          // 注意：tiptap 的 onKeyDown 只回传 { view, event, range }，不含 command，
+          // 因此键盘选择执行命令时必须用这里缓存的闭包，否则 props.command 为 undefined
+          // 会在 ProseMirror DOMObserver.flush 中抛 "command is not a function"，
+          // 在安卓 Chrome IME 组合路径下表现为整页卡死。
+          let applyCommand: ((item: SlashCommandItem) => void) | null = null;
+          // 外部点击退出：在 capture 阶段监听，优先于 node view（如代码块 chrome）
+          // 在冒泡阶段调用的 stopPropagation，确保任何组件拦截事件都无法拖死菜单。
+          let viewRef: { view: { dispatch: (tr: unknown) => void; state: unknown } } | null =
+            null;
+          let outsideHandler: ((event: Event) => void) | null = null;
 
           function buildPopup(
             items: SlashCommandItem[],
@@ -79,6 +91,7 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
           ) {
             if (!popup) return;
             currentItems = items;
+            applyCommand = command;
 
             popup.textContent = "";
 
@@ -153,7 +166,28 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
               }
             }
 
-            // 搜索过滤
+            // 当前可见命令按钮（过滤后），供键盘导航使用
+            const getVisibleBtns = () =>
+              Array.from(listEl.querySelectorAll<HTMLButtonElement>(".slash-item")).filter(
+                (b) => b.style.display !== "none" && !b.disabled,
+              );
+
+            // 将选中态同步到指定按钮（清掉其余），并滚入可视区
+            const selectBtn = (btn: HTMLButtonElement) => {
+              listEl.querySelectorAll<HTMLButtonElement>(".slash-item").forEach((b) => {
+                b.classList.toggle("slash-item--selected", b === btn);
+                b.style.background = b === btn ? "#f4f4f5" : "transparent";
+              });
+              const listRect = listEl.getBoundingClientRect();
+              const selRect = btn.getBoundingClientRect();
+              if (selRect.top < listRect.top) {
+                listEl.scrollTop -= listRect.top - selRect.top;
+              } else if (selRect.bottom > listRect.bottom) {
+                listEl.scrollTop += selRect.bottom - listRect.bottom;
+              }
+            };
+
+            // 搜索过滤：过滤后把选中项复位到第一条可见项，避免键盘选中已隐藏项
             searchInput.addEventListener("input", () => {
               const q = searchInput.value.toLowerCase();
               const btns = listEl.querySelectorAll<HTMLButtonElement>(".slash-item");
@@ -161,6 +195,43 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
                 const text = (btn.textContent || "").toLowerCase();
                 btn.style.display = text.includes(q) ? "" : "none";
               });
+              const firstVisible = getVisibleBtns()[0];
+              if (firstVisible) {
+                selectedIndex = Number(firstVisible.dataset.index ?? 0);
+                selectBtn(firstVisible);
+              }
+            });
+
+            // 搜索框聚焦时的键盘选择：Enter 执行、上下键移动、Esc 关闭
+            searchInput.addEventListener("keydown", (event) => {
+              const visible = getVisibleBtns();
+              if (event.key === "Enter") {
+                event.preventDefault();
+                const active =
+                  visible.find((b) => b.classList.contains("slash-item--selected")) ?? visible[0];
+                active?.click();
+                return;
+              }
+              if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                event.preventDefault();
+                if (visible.length === 0) return;
+                const curIdx = visible.findIndex((b) =>
+                  b.classList.contains("slash-item--selected"),
+                );
+                const nextIdx =
+                  event.key === "ArrowDown"
+                    ? (curIdx + 1) % visible.length
+                    : (curIdx - 1 + visible.length) % visible.length;
+                const next = visible[nextIdx];
+                selectedIndex = Number(next.dataset.index ?? 0);
+                selectBtn(next);
+                return;
+              }
+              if (event.key === "Escape") {
+                event.preventDefault();
+                const v = viewRef?.view;
+                if (v) exitSuggestion(v as never, slashCommandPluginKey);
+              }
             });
           }
 
@@ -182,6 +253,7 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
             onStart: (props: any) => {
               selectedIndex = 0;
               clientRectRef = props.clientRect || null;
+              viewRef = { view: props.editor.view };
 
               if (!container) {
                 container = document.createElement("div");
@@ -207,12 +279,41 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
               // 监听滚动，实时更新弹窗位置
               scrollHandler = () => updatePosition();
               window.addEventListener("scroll", scrollHandler, true);
+
+              // 外部点击退出：capture 阶段先于 React 冒泡期的 stopPropagation 执行，
+              // 因此即使点击落在代码块等拦截 mousedown/touchstart 的 node view 上，
+              // 菜单仍能正常关闭。
+              // 退出必须异步（setTimeout 0）：在安卓 Chrome 上，touchstart 同步派发
+              // ProseMirror 事务会与 contenteditable 的 IME 组合/选区建立竞争，导致
+              // 编辑器主线程卡死（弹框停在屏幕上、整页无响应）。延迟到当前事件循环
+              // 之后再 dispatch 即可规避；mousedown/touchstart 同一点击可能双触发，
+              // 用 scheduled 标志去重。
+              if (!outsideHandler) {
+                let scheduled = false;
+                outsideHandler = (event: Event) => {
+                  if (!container || container.style.display === "none") return;
+                  if (event.target instanceof Node && container.contains(event.target)) return;
+                  if (scheduled) return;
+                  const v = viewRef?.view;
+                  if (!v) return;
+                  scheduled = true;
+                  window.setTimeout(() => {
+                    scheduled = false;
+                    if (container?.style.display !== "none") {
+                      exitSuggestion(v as never, slashCommandPluginKey);
+                    }
+                  }, 0);
+                };
+                document.addEventListener("mousedown", outsideHandler, true);
+                document.addEventListener("touchstart", outsideHandler, true);
+              }
             },
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onUpdate: (props: any) => {
               selectedIndex = 0;
               clientRectRef = props.clientRect || null;
+              viewRef = { view: props.editor.view };
               currentItems = props.items;
               buildPopup(props.items, props.command);
               updatePosition();
@@ -223,19 +324,21 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
               if (props.event.key === "ArrowDown") {
                 props.event.preventDefault();
                 selectedIndex = Math.min(selectedIndex + 1, currentItems.length - 1);
-                buildPopup(currentItems, props.command);
+                // 不要用 props.command（onKeyDown 不提供）；保留已缓存的 applyCommand
+                if (applyCommand) buildPopup(currentItems, applyCommand);
                 return true;
               }
               if (props.event.key === "ArrowUp") {
                 props.event.preventDefault();
                 selectedIndex = Math.max(selectedIndex - 1, 0);
-                buildPopup(currentItems, props.command);
+                if (applyCommand) buildPopup(currentItems, applyCommand);
                 return true;
               }
               if (props.event.key === "Enter") {
                 props.event.preventDefault();
-                if (currentItems[selectedIndex]) {
-                  props.command(currentItems[selectedIndex]);
+                const item = currentItems[selectedIndex];
+                if (item && typeof item.command === "function" && applyCommand) {
+                  applyCommand(item);
                 }
                 return true;
               }
@@ -251,10 +354,17 @@ export function createSlashCommandExtension(getItems: () => SlashCommandItem[]) 
               }
               selectedIndex = 0;
               currentItems = [];
+              applyCommand = null;
               clientRectRef = null;
+              viewRef = null;
               if (scrollHandler) {
                 window.removeEventListener("scroll", scrollHandler, true);
                 scrollHandler = null;
+              }
+              if (outsideHandler) {
+                document.removeEventListener("mousedown", outsideHandler, true);
+                document.removeEventListener("touchstart", outsideHandler, true);
+                outsideHandler = null;
               }
             },
           };
