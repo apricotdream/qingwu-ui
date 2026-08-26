@@ -301,6 +301,8 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [editorWebFS, setEditorWebFS] = useState(false);
   const [editorNativeFS, setEditorNativeFS] = useState(false);
+  // 移动端目录抽屉 DOM 引用（portal 到 body）：用于「点抽屉外自动收起」判定
+  const tocDrawerRef = useRef<HTMLDivElement | null>(null);
 
   // 网页全屏 - 不搬 DOM，用 position: fixed + flex 列布局，内容区独立滚动
   const handleEditorWebFS = useCallback(() => {
@@ -824,6 +826,29 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     }
   }, [showTocState, desktopTocVisible]);
 
+  // 移动端抽屉「点面板外自动收起」：抽屉开时挂文档级 mousedown/touchstart，命中面板外即收起。
+  // 用 mousedown 而非 click，避免在抽屉内选中文本拖拽到外部误关；touchstart(被动)覆盖移动端。
+  // Esc 收起为 a11y 兜底。桌面侧栏是常驻悬浮框，不受此影响。
+  useEffect(() => {
+    if (!showTocMobile) return;
+    const onDocPointerDown = (e: MouseEvent | TouchEvent) => {
+      const t = e.target as Node;
+      if (tocDrawerRef.current?.contains(t)) return;
+      setShowTocMobile(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowTocMobile(false);
+    };
+    document.addEventListener("mousedown", onDocPointerDown);
+    document.addEventListener("touchstart", onDocPointerDown, { passive: true });
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onDocPointerDown);
+      document.removeEventListener("touchstart", onDocPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [showTocMobile]);
+
   // 桌面目录用 flex 兄弟 + sticky 侧栏，不用 fixed 浮层（fixed 在祖先 transform/filter 包含块下会错位）
 
   if (!editor) {
@@ -1334,7 +1359,9 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           <SearchBar editor={editor} onClose={() => setSearchOpen(false)} />
         )}
 
-        {/* 目录悬浮球：桌面侧栏不可见（窄屏/放大/全屏）且目录未展开时出现，点击打开抽屉 */}
+        {/* 目录悬浮球：桌面侧栏不可见（窄屏/放大/全屏）且目录未展开时出现，点击打开抽屉。
+           保持留在 .qingwu-editor 内不 portal：它贴视口底部、不与站点头部抢层，portal 反而会
+           失去 .qingwu-editor 前缀的样式作用域。与宿主「返回顶部」重叠问题由 CSS 上移 bottom 解决。 */}
         {fabVisible && (
           <button
             type="button"
@@ -1355,42 +1382,48 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           </button>
         )}
 
-        {/* 移动端目录抽屉 - 不设遮罩层，避免遮挡编辑器内容；关闭走抽屉头 × / 面板收起按钮 */}
-        {showTocMobile && (
-          <div className="qingwu-toc-drawer toc-scroll">
-            <div className="qed-drawer-head">
-              <span className="qed-drawer-head__title">目录</span>
-              <button
-                type="button"
-                className="qed-drawer-head__close"
-                onClick={() => setShowTocMobile(false)}
-                aria-label="关闭目录"
-              >
-                <svg
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  aria-hidden="true"
+        {/* 移动端目录抽屉 - 不设遮罩层，避免遮挡编辑器内容；关闭走抽屉头 × / 点面板外收起 / 面板收起按钮。
+           portal 到 body：抽屉是 position:fixed top:0，留在宿主深度 DOM（.gingko-scope relative+overflow-x:hidden、
+           GSAP 入场 transform 等）会被祖先层叠上下文困住、被站点头部 z-50 压住；拖到 body 顶层才真正落视口并盖过导航栏。
+           data-lenis-prevent 让 Lenis 不劫持框内滚轮，滚轮滚动目录内容。 */}
+
+        {showTocMobile &&
+          createPortal(
+            <div ref={tocDrawerRef} className="qingwu-toc-drawer toc-scroll" data-lenis-prevent>
+              <div className="qed-drawer-head">
+                <span className="qed-drawer-head__title">目录</span>
+                <button
+                  type="button"
+                  className="qed-drawer-head__close"
+                  onClick={() => setShowTocMobile(false)}
+                  aria-label="关闭目录"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <TocPanel
-              editor={editor}
-              className="!p-3"
-              onClose={() => {
-                setShowTocMobile(false);
-                setShowTocState(false);
-              }}
-            />
-          </div>
-        )}
+                  <svg
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <TocPanel
+                editor={editor}
+                className="!p-3"
+                onClose={() => {
+                  setShowTocMobile(false);
+                  setShowTocState(false);
+                }}
+              />
+            </div>,
+            document.body,
+          )}
       </div>
-      {/* 桌面端目录 — 悬浮框（fixed 视口右侧，宽屏且非全屏时显示） */}
+      {/* 桌面端目录 — 悬浮框（fixed 视口右侧，宽屏且非全屏时显示）；data-lenis-prevent 同上 */}
       {desktopTocVisible && (
-        <aside className="qingwu-toc-desktop toc-scroll">
+        <aside className="qingwu-toc-desktop toc-scroll" data-lenis-prevent>
           <TocPanel editor={editor} onClose={() => setShowTocState(false)} />
         </aside>
       )}
