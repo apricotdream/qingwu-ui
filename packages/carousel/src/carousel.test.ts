@@ -108,12 +108,20 @@ describe("Carousel", () => {
     const car = new Carousel(root, { items: ITEMS });
     const visual = root.querySelector(".qcar-visual")!;
     // dx=100, dy=100：|dx| ≤ 1.2×|dy| → 不切
-    visual.dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", clientX: 300, clientY: 100 }));
-    visual.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch", clientX: 200, clientY: 200 }));
+    visual.dispatchEvent(
+      new PointerEvent("pointerdown", { pointerType: "touch", clientX: 300, clientY: 100 }),
+    );
+    visual.dispatchEvent(
+      new PointerEvent("pointerup", { pointerType: "touch", clientX: 200, clientY: 200 }),
+    );
     expect(car.value).toBe("a");
     // dx=120, dy=80：120 > 1.2×80 → 切下一张
-    visual.dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", clientX: 300, clientY: 100 }));
-    visual.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch", clientX: 180, clientY: 180 }));
+    visual.dispatchEvent(
+      new PointerEvent("pointerdown", { pointerType: "touch", clientX: 300, clientY: 100 }),
+    );
+    visual.dispatchEvent(
+      new PointerEvent("pointerup", { pointerType: "touch", clientX: 180, clientY: 180 }),
+    );
     expect(car.value).toBe("b");
   });
 

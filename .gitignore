@@ -89,3 +89,9 @@ out/
 
 # 内部迁移/设计文档（不入库，远程同步移除）
 docs/
+
+# 本地缓存/临时产物（误生成，不入库）
+.pnpm-store/
+pre-trailer-removal.bundle
+examples/nextjs/.tmp-resolve.mjs
+packages/button/src/__gate_test.ts

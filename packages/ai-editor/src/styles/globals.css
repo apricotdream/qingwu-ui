@@ -343,6 +343,51 @@
   scroll-margin-top: 5rem;
 }
 
+/* 编辑态标题前挂「#」前缀：纯视觉伪元素，不进 DOM/HTML/剪贴板，只读态不显示 */
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h1,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h2,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h3,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h4,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h5,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h6 {
+  position: relative;
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h1::before,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h2::before,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h3::before,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h4::before,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h5::before,
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h6::before {
+  position: absolute;
+  right: 100%;
+  margin-right: 0.4em;
+  color: var(--default-400, #a1a1aa);
+  font-weight: 500;
+  /* 标记字号小于标题，既减轻视觉干扰，也压缩所需左槽宽度，让正文尽量靠右 */
+  font-size: 0.7em;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h1::before {
+  content: "#";
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h2::before {
+  content: "##";
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h3::before {
+  content: "###";
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h4::before {
+  content: "####";
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h5::before {
+  content: "#####";
+}
+.qingwu-editor:not(.qingwu-editor--readonly) .ProseMirror h6::before {
+  content: "######";
+}
+
 /* 绉诲姩绔紪杈戝櫒缂╁皬鍐呰竟璺?*/
 @media (max-width: 640px) {
   .qingwu-editor .ProseMirror {
@@ -810,10 +855,28 @@
   animation: cb-dropdown-in 0.12s ease-out;
 }
 
+/* 下方空间不足时向上展开（移动端代码块靠近底部固定底栏时下拉会被遮） */
+.cb-lang-dropdown--up {
+  top: auto;
+  bottom: calc(100% + 4px);
+  animation: cb-dropdown-in-up 0.12s ease-out;
+}
+
 @keyframes cb-dropdown-in {
   from {
     opacity: 0;
     transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cb-dropdown-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
   }
   to {
     opacity: 1;
@@ -1054,7 +1117,9 @@
   flex: 1;
   margin: 0;
   padding: 0.75rem 1rem;
-  overflow-x: auto;
+  /* 已用 pre-wrap 软换行，长行不会超出；hidden 避免移动端出现多余横滚条
+     （观感上像代码框溢出），纵向由外层 .cb-code-area 统一滚动 */
+  overflow-x: hidden;
   background: var(--hljs-bg);
   border: 1px solid #e4e4e7;
   border-top: none;
@@ -1108,11 +1173,14 @@
 
 .dark .cb-line-numbers {
   background: rgba(255, 255, 255, 0.03);
-  border-color: #3f3f46;
+  /* 行号列：右侧分隔线 + 卡片左/底外边框，深色下提亮到 #52525b 否则不可见 */
+  border-right: 1px solid #52525b;
+  border-left: 1px solid #52525b;
+  border-bottom: 1px solid #52525b;
 }
 
 .dark .cb-code-pre {
-  border-color: #3f3f46;
+  border-color: #52525b;
 }
 
 .dark .cb-line-num {
@@ -2930,7 +2998,9 @@
   justify-content: center;
   position: fixed;
   right: 1.25rem;
-  bottom: 1.5rem;
+  /* 上移避开宿主「返回顶部」固定钮（其 bottom:1.5rem / 高 2.75rem）：
+     bottom=1.5rem + 2.75rem + 0.75rem 间隔 = 5rem，二者纵向不连叠 */
+  bottom: 5rem;
   z-index: 40;
   width: 2.75rem;
   height: 2.75rem;
@@ -3145,21 +3215,23 @@
   color: var(--color-default-50);
 }
 
-/* ═══ 移动端 / 全屏目录抽屉头部 ═══ */
-.qingwu-editor .qed-drawer-head {
+/* ═══ 移动端 / 全屏目录抽屉头部 ═══
+   抽屉入口 JSX 经 createPortal 挂到 document.body，已脱离 .qingwu-editor 作用域，
+   选择器改由 .qingwu-toc-drawer 容器作用域（同为 0-2-0 特异性）。 */
+.qingwu-toc-drawer .qed-drawer-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--color-default-100);
 }
-.qingwu-editor .qed-drawer-head__title {
+.qingwu-toc-drawer .qed-drawer-head__title {
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--color-default-700);
 }
-.qingwu-editor .qed-drawer-head__close {
+.qingwu-toc-drawer .qed-drawer-head__close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3176,24 +3248,24 @@
     background 0.14s,
     color 0.14s;
 }
-.qingwu-editor .qed-drawer-head__close svg {
+.qingwu-toc-drawer .qed-drawer-head__close svg {
   width: 1rem;
   height: 1rem;
 }
-.qingwu-editor .qed-drawer-head__close:hover {
+.qingwu-toc-drawer .qed-drawer-head__close:hover {
   background: var(--color-default-100);
   color: var(--color-default-700);
 }
-.dark .qingwu-editor .qed-drawer-head {
+.dark .qingwu-toc-drawer .qed-drawer-head {
   border-bottom-color: var(--color-default-800);
 }
-.dark .qingwu-editor .qed-drawer-head__title {
+.dark .qingwu-toc-drawer .qed-drawer-head__title {
   color: var(--color-default-200);
 }
-.dark .qingwu-editor .qed-drawer-head__close {
+.dark .qingwu-toc-drawer .qed-drawer-head__close {
   color: var(--color-default-400);
 }
-.dark .qingwu-editor .qed-drawer-head__close:hover {
+.dark .qingwu-toc-drawer .qed-drawer-head__close:hover {
   background: var(--color-default-800);
   color: var(--color-default-100);
 }
