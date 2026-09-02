@@ -253,11 +253,15 @@ export class Select {
       this.panel.style.minWidth = `${tr.width}px`;
     }
 
-    /* 隐藏态测量：决定展开方向与可用高度（不闪烁） */
+    /* 隐藏态测量：决定展开方向与可用高度（不闪烁）。
+       列表自然高度取 scrollHeight——它返回内容全高，不受 CSS max-height(320px) 钳制影响
+       （切勿临时把 maxHeight 置 none：position() 挂在 window scroll 捕获监听上，列表内滚动
+       会反复触发，瞬时展开会把 scrollTop 钳回 0，列表将永远滚不动） */
     this.panel.style.visibility = "hidden";
-    this.list.style.maxHeight = ""; // 复位 CSS 默认高度，测量自然尺寸
+    const listNaturalH = this.list.scrollHeight;
+    const listClientH = this.list.clientHeight;
     const panelH = this.panel.offsetHeight;
-    const listH = this.list.offsetHeight;
+    const chrome = panelH - listClientH; // 面板边框等非列表高度（钳制前后不变）
     const panelW = this.panel.offsetWidth;
     const availBelow = window.innerHeight - tr.bottom - gap;
     const availAbove = tr.top - gap;
@@ -269,10 +273,11 @@ export class Select {
     /* 展开方向也放不下时，把列表钳制到可用空间，由列表内部滚动承接，
        保证长列表（如 24 小时选项）末项在矮视口下依然可达 */
     const avail = flipUp ? availAbove : availBelow;
-    if (avail < panelH) {
-      const chrome = panelH - listH; // 面板边框等非列表高度
-      const listMax = Math.max(minPanelH - chrome, Math.min(listH, avail - chrome));
+    if (avail < chrome + listNaturalH) {
+      const listMax = Math.max(minPanelH - chrome, Math.min(listNaturalH, avail - chrome));
       this.list.style.maxHeight = `${Math.max(0, listMax)}px`;
+    } else {
+      this.list.style.maxHeight = "";
     }
 
     let left = tr.left;

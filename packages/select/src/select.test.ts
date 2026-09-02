@@ -279,6 +279,8 @@ describe("Select", () => {
     Object.defineProperty(panel, "offsetWidth", { value: 100, configurable: true });
     const list = panel.querySelector<HTMLElement>(".qsel-list")!;
     Object.defineProperty(list, "offsetHeight", { value: opts.listH, configurable: true });
+    Object.defineProperty(list, "clientHeight", { value: opts.listH, configurable: true });
+    Object.defineProperty(list, "scrollHeight", { value: opts.listH, configurable: true });
     return list;
   }
 
@@ -292,7 +294,7 @@ describe("Select", () => {
     const list = stubLayout({ innerHeight: 500, top: 300, bottom: 340, panelH: 900, listH: 890 });
     sel.open();
     expect(qsPanel()!.classList.contains("is-up")).toBe(true);
-    // 钳制后列表高 = 上方可用 292 - gap 8 - 面板 chrome(900-890=10) = 282
+    // 钳制后列表高 = 上方可用 292 - 面板 chrome(900-890=10) = 282
     expect(list.style.maxHeight).toBe("282px");
   });
 
