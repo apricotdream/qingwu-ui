@@ -251,4 +251,57 @@ describe("Select", () => {
     sel.update({ frosted: true });
     expect(qsPanel()!.classList.contains("is-frosted")).toBe(true);
   });
+
+  /** stub 触发器位置与面板/列表自然高度，模拟矮视口下的长列表（如 24 小时选项） */
+  function stubLayout(opts: {
+    innerHeight: number;
+    top: number;
+    bottom: number;
+    panelH: number;
+    listH: number;
+  }) {
+    window.innerHeight = opts.innerHeight;
+    const trigger = document.querySelector<HTMLElement>(".qsel-trigger")!;
+    trigger.getBoundingClientRect = () =>
+      ({
+        top: opts.top,
+        bottom: opts.bottom,
+        left: 20,
+        right: 120,
+        width: 100,
+        height: opts.bottom - opts.top,
+        x: 20,
+        y: opts.top,
+        toJSON() {},
+      }) as DOMRect;
+    const panel = qsPanel()!;
+    Object.defineProperty(panel, "offsetHeight", { value: opts.panelH, configurable: true });
+    Object.defineProperty(panel, "offsetWidth", { value: 100, configurable: true });
+    const list = panel.querySelector<HTMLElement>(".qsel-list")!;
+    Object.defineProperty(list, "offsetHeight", { value: opts.listH, configurable: true });
+    return list;
+  }
+
+  test("矮视口长列表：向上翻转并把列表高度钳制到上方可用空间", () => {
+    const HOURS = Array.from({ length: 24 }, (_, h) => ({
+      value: String(h),
+      label: `${String(h).padStart(2, "0")}:00`,
+    }));
+    const sel = new Select(root, { options: HOURS });
+    // 视口 500 高，触发器在 300~340：下方仅 152，上方 292；面板自然高 900、列表 890
+    const list = stubLayout({ innerHeight: 500, top: 300, bottom: 340, panelH: 900, listH: 890 });
+    sel.open();
+    expect(qsPanel()!.classList.contains("is-up")).toBe(true);
+    // 钳制后列表高 = 上方可用 292 - gap 8 - 面板 chrome(900-890=10) = 282
+    expect(list.style.maxHeight).toBe("282px");
+  });
+
+  test("空间充足时不钳制列表高度", () => {
+    const sel = new Select(root, { options: BASE });
+    // 视口 900 高，触发器在 100~140：下方 752；面板自然高 200、列表 190
+    const list = stubLayout({ innerHeight: 900, top: 100, bottom: 140, panelH: 200, listH: 190 });
+    sel.open();
+    expect(qsPanel()!.classList.contains("is-up")).toBe(false);
+    expect(list.style.maxHeight).toBe("");
+  });
 });

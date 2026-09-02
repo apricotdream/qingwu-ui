@@ -241,26 +241,39 @@ export class Select {
     this.isOpen ? this.close() : this.open();
   }
 
-  /** 计算面板位置：宽度跟随触发器、向上/向下翻转 */
+  /** 计算面板位置：宽度跟随触发器、向上/向下翻转、高度钳制到视口可用空间 */
   private position(): void {
     const tr = this.trigger.getBoundingClientRect();
     const gap = 8;
+    /** 两侧空间都极度不足时，面板保留的最小高度（略溢出也比无法使用强） */
+    const minPanelH = 120;
 
     this.panel.style.width = this.width === "auto" ? "max-content" : `${tr.width}px`;
     if (this.width === "auto") {
       this.panel.style.minWidth = `${tr.width}px`;
     }
 
-    /* 隐藏态测量：决定展开方向（不闪烁） */
+    /* 隐藏态测量：决定展开方向与可用高度（不闪烁） */
     this.panel.style.visibility = "hidden";
+    this.list.style.maxHeight = ""; // 复位 CSS 默认高度，测量自然尺寸
     const panelH = this.panel.offsetHeight;
+    const listH = this.list.offsetHeight;
     const panelW = this.panel.offsetWidth;
-    const spaceBelow = window.innerHeight - tr.bottom;
-    const spaceAbove = tr.top;
+    const availBelow = window.innerHeight - tr.bottom - gap;
+    const availAbove = tr.top - gap;
 
-    const flipUp = spaceBelow - gap < panelH && spaceAbove > spaceBelow;
+    const flipUp = availBelow < panelH && availAbove > availBelow;
     this.dir = flipUp ? "up" : "down";
     this.panel.classList.toggle("is-up", flipUp);
+
+    /* 展开方向也放不下时，把列表钳制到可用空间，由列表内部滚动承接，
+       保证长列表（如 24 小时选项）末项在矮视口下依然可达 */
+    const avail = flipUp ? availAbove : availBelow;
+    if (avail < panelH) {
+      const chrome = panelH - listH; // 面板边框等非列表高度
+      const listMax = Math.max(minPanelH - chrome, Math.min(listH, avail - chrome));
+      this.list.style.maxHeight = `${Math.max(0, listMax)}px`;
+    }
 
     let left = tr.left;
     if (this.width === "auto" && panelW > window.innerWidth - 16) {
