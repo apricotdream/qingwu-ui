@@ -250,6 +250,7 @@
         "packages/ai-editor/src/editor/embeds/video.ts",
         "packages/ai-editor/src/editor/extensions/bubble-menu.tsx",
         "packages/ai-editor/src/editor/extensions/code-block-view.tsx",
+        "packages/ai-editor/src/editor/extensions/code-block.ts",
         "packages/ai-editor/src/editor/extensions/image-upload.ts",
         "packages/ai-editor/src/editor/extensions/image-view.tsx",
         "packages/ai-editor/src/editor/extensions/obsidian-markdown.ts",

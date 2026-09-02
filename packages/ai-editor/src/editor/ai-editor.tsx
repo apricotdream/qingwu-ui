@@ -18,7 +18,7 @@ import { createPortal } from "react-dom";
 import { SearchBar } from "../components/search-bar";
 import type { ToastOptions, ToastType } from "../components/toast";
 import { subscribeToast, toast } from "../components/toast";
-import { TocPanel } from "../components/toc";
+import { findScrollParent, TocPanel } from "../components/toc";
 import { AISelector } from "./ai/components/ai-selector";
 import { flushPendingRemovals } from "./ai/pending-removal";
 import { formatBytes, getDocAttachmentTotal, validateAttachmentFile } from "./attachment-limits";
@@ -296,11 +296,14 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   const savedScrollYRef = useRef<number>(0);
   const aiAnchorRef = useRef<FloatingPoint | null>(null);
   const editorRef = useRef<Editor | null>(null);
+  const tocDesktopRef = useRef<HTMLElement | null>(null);
   // 气泡菜单：主行容器 ref（子面板定位锚点）+ 「⋯」二级菜单开关
   const bubbleBoxRef = useRef<HTMLDivElement | null>(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [editorWebFS, setEditorWebFS] = useState(false);
   const [editorNativeFS, setEditorNativeFS] = useState(false);
+  // 移动端目录抽屉 DOM 引用（portal 到 body）：用于「点抽屉外自动收起」判定
+  const tocDrawerRef = useRef<HTMLDivElement | null>(null);
 
   // 网页全屏 - 不搬 DOM，用 position: fixed + flex 列布局，内容区独立滚动
   const handleEditorWebFS = useCallback(() => {
@@ -449,6 +452,12 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
       attributes: {
         class:
           "prose prose-neutral dark:prose-invert max-w-none focus:outline-none min-h-[200px] px-4 sm:px-8 py-4",
+        // 编辑态额外预留左槽：标题前的 #/##/### 标记以 position:absolute 悬在标题左外侧，
+        // 需足够左内边距才不被祖先 overflow:hidden 裁切（h6 的 ###### 最宽，约 4rem）。
+        // 用 inline style 而非全局 CSS / Tailwind 类，是因为编辑器样式被包在 cascade layer 里，
+        // 层内的移动 shorthand 会重置 padding-left；inline style 层叠优先级最高。
+        // 只读态无标记，不设此项，保持原 px 不影响正文展示布局。
+        ...(isReadonly ? {} : { style: "padding-left: 2.75rem" }),
       },
       handlePaste(view, event) {
         const cb = event.clipboardData;
@@ -817,6 +826,70 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
       setShowTocMobile(true);
     }
   }, [showTocState, desktopTocVisible]);
+
+  // 移动端抽屉「点面板外自动收起」：抽屉开时挂文档级 mousedown/touchstart，命中面板外即收起。
+  // 用 mousedown 而非 click，避免在抽屉内选中文本拖拽到外部误关；touchstart(被动)覆盖移动端。
+  // Esc 收起为 a11y 兜底。桌面侧栏是常驻悬浮框，不受此影响。
+  useEffect(() => {
+    if (!showTocMobile) return;
+    const onDocPointerDown = (e: MouseEvent | TouchEvent) => {
+      const t = e.target as Node;
+      if (tocDrawerRef.current?.contains(t)) return;
+      setShowTocMobile(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowTocMobile(false);
+    };
+    document.addEventListener("mousedown", onDocPointerDown);
+    document.addEventListener("touchstart", onDocPointerDown, { passive: true });
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onDocPointerDown);
+      document.removeEventListener("touchstart", onDocPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [showTocMobile]);
+
+  /* 桌面目录悬浮框「滚轮到边接棒」。
+     早年目录框挂 data-lenis-prevent：Lenis 对框内滚轮直接 early-return，滚轮只在目录
+     内自滚、永远到不了正文（详情页出现「悬停目录滚不动页面」）。这里改为自建 wheel
+     handler 精确分流：
+       · 目录能继续滚该方向 → 滚目录并 preventDefault/stopPropagation（正文不动）；
+       · 目录已到边，且存在真实正文滚动容器（创作/编辑页 .cp-panel，事件冒泡到不了它）
+         → 直滚该容器并 preventDefault/stopPropagation；
+       · 目录已到边，正文滚 window（详情页）→ 不拦截，放行给宿主 Lenis 平滑滚。
+     仅桌面侧栏；移动抽屉（touch）维持既有 data-lenis-prevent 行为。 */
+  useEffect(() => {
+    if (!editor || !desktopTocVisible) return;
+    const box = tocDesktopRef.current;
+    if (!(box instanceof HTMLElement)) return;
+    const onWheel = (e: WheelEvent) => {
+      const deltaY = e.deltaY;
+      if (deltaY === 0) return;
+      const atTop = box.scrollTop <= 0;
+      const atBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 1;
+      const canScrollDown = !atBottom;
+      const canScrollUp = !atTop;
+      if ((deltaY > 0 && canScrollDown) || (deltaY < 0 && canScrollUp)) {
+        box.scrollTop += deltaY;
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      const sp = findScrollParent(editor.view.dom);
+      if (sp) {
+        // 创作/编辑页正文滚在 .cp-panel（data-lenis-prevent 嵌套容器），与目录框不同子树，
+        // 不能靠事件冒泡到它，需直滚。
+        sp.scrollTop += deltaY;
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      // 详情页正文滚 window：不拦截，放行给宿主 Lenis 平滑滚。
+    };
+    box.addEventListener("wheel", onWheel, { passive: false });
+    return () => box.removeEventListener("wheel", onWheel);
+  }, [editor, desktopTocVisible]);
 
   // 桌面目录用 flex 兄弟 + sticky 侧栏，不用 fixed 浮层（fixed 在祖先 transform/filter 包含块下会错位）
 
@@ -1328,7 +1401,9 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           <SearchBar editor={editor} onClose={() => setSearchOpen(false)} />
         )}
 
-        {/* 目录悬浮球：桌面侧栏不可见（窄屏/放大/全屏）且目录未展开时出现，点击打开抽屉 */}
+        {/* 目录悬浮球：桌面侧栏不可见（窄屏/放大/全屏）且目录未展开时出现，点击打开抽屉。
+           保持留在 .qingwu-editor 内不 portal：它贴视口底部、不与站点头部抢层，portal 反而会
+           失去 .qingwu-editor 前缀的样式作用域。与宿主「返回顶部」重叠问题由 CSS 上移 bottom 解决。 */}
         {fabVisible && (
           <button
             type="button"
@@ -1349,42 +1424,50 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
           </button>
         )}
 
-        {/* 移动端目录抽屉 - 不设遮罩层，避免遮挡编辑器内容；关闭走抽屉头 × / 面板收起按钮 */}
-        {showTocMobile && (
-          <div className="qingwu-toc-drawer toc-scroll">
-            <div className="qed-drawer-head">
-              <span className="qed-drawer-head__title">目录</span>
-              <button
-                type="button"
-                className="qed-drawer-head__close"
-                onClick={() => setShowTocMobile(false)}
-                aria-label="关闭目录"
-              >
-                <svg
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  aria-hidden="true"
+        {/* 移动端目录抽屉 - 不设遮罩层，避免遮挡编辑器内容；关闭走抽屉头 × / 点面板外收起 / 面板收起按钮。
+           portal 到 body：抽屉是 position:fixed top:0，留在宿主深度 DOM（.gingko-scope relative+overflow-x:hidden、
+           GSAP 入场 transform 等）会被祖先层叠上下文困住、被站点头部 z-50 压住；拖到 body 顶层才真正落视口并盖过导航栏。
+           data-lenis-prevent 让 Lenis 不劫持框内滚轮，滚轮滚动目录内容。 */}
+
+        {showTocMobile &&
+          createPortal(
+            <div ref={tocDrawerRef} className="qingwu-toc-drawer toc-scroll" data-lenis-prevent>
+              <div className="qed-drawer-head">
+                <span className="qed-drawer-head__title">目录</span>
+                <button
+                  type="button"
+                  className="qed-drawer-head__close"
+                  onClick={() => setShowTocMobile(false)}
+                  aria-label="关闭目录"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <TocPanel
-              editor={editor}
-              className="!p-3"
-              onClose={() => {
-                setShowTocMobile(false);
-                setShowTocState(false);
-              }}
-            />
-          </div>
-        )}
+                  <svg
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <TocPanel
+                editor={editor}
+                className="!p-3"
+                onClose={() => {
+                  setShowTocMobile(false);
+                  setShowTocState(false);
+                }}
+              />
+            </div>,
+            document.body,
+          )}
       </div>
-      {/* 桌面端目录 — 悬浮框（fixed 视口右侧，宽屏且非全屏时显示） */}
+      {/* 桌面端目录 — 悬浮框（fixed 视口右侧，宽屏且非全屏时显示）。
+          注意：不再挂 data-lenis-prevent（否则 Lenis 对框内滚轮一律早退，滚不到正文）。
+          滚轮到边接棒由上方自建 wheel handler 负责。 */}
       {desktopTocVisible && (
-        <aside className="qingwu-toc-desktop toc-scroll">
+        <aside ref={tocDesktopRef} className="qingwu-toc-desktop toc-scroll">
           <TocPanel editor={editor} onClose={() => setShowTocState(false)} />
         </aside>
       )}

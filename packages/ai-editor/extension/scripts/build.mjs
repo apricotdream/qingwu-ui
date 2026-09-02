@@ -16,6 +16,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  rmSync,
   statSync,
   writeFileSync,
 } from "node:fs";
@@ -238,6 +239,12 @@ async function packageAll(target) {
     if (!existsSync(distDir)) {
       log(`  跳过 ${t}（未构建）`);
       continue;
+    }
+    // 打包前清掉同 target 的旧 zip，避免 dist 里堆积历史版本（bat 的 dir 列表也只显示本次）。
+    for (const old of readdirSync(join(root, "dist"))) {
+      if (old.startsWith(`qingwu-clipper-${t}-v`) && old.endsWith(".zip")) {
+        rmSync(join(root, "dist", old), { force: true });
+      }
     }
     const zipFile = join(root, "dist", `qingwu-clipper-${t}-v${version}.zip`);
     const count = zipDir(distDir, zipFile);
