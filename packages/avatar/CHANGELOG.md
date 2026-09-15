@@ -1,5 +1,10 @@
 # @qingwu-ui/avatar
 
+## 0.9.0-beta.1
+### Patch Changes
+
+- 补录导出行为防护测试：jpeg 底色、png 透明圆角、铺底裁剪、lenis 平滑滚动防护（测试补充，运行时无行为变更）
+
 ## 0.9.0-beta
 ### Minor Changes
 

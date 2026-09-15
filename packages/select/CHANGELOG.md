@@ -1,5 +1,20 @@
 # @qingwu-ui/select
 
+## 0.9.0-beta.4
+### Patch Changes
+
+- 修复 0.9.0-beta.3 高度钳制的两处回归：① 自然高度误用 `offsetHeight`（被 CSS `max-height:320` 钳住，24 项测成 320 致翻转判断失真），改 `scrollHeight` 取内容全高；② `position()` 临时把 `maxHeight` 置 `none` 会瞬时展开列表、浏览器把 `scrollTop` 钳回 0，而 position 挂在 window scroll 捕获监听上，列表内滚动反复触发致永远滚不动；chrome 改由 `panelH - list.clientHeight` 计算。无头实测 700/400 视口下滚到底 23:00 均可达
+
+## 0.9.0-beta.3
+### Patch Changes
+
+- 浮层高度钳制视口可用空间：24 项长列表（如整点小时选择）在矮视口 / 触发器近底时此前只做上下翻转不钳高，面板伸出屏幕致末项物理不可达；现按展开方向将列表 `max-height` 钳到可用空间、内部滚动承接，极端矮视口保底 120px；补矮视口钳制 / 充足空间不钳制两个定位测试
+
+## 0.9.0-beta.2
+### Patch Changes
+
+- 选项列表滚动条默认隐藏、hover 显示细滚动条：面板开 / 关的 scale+opacity 动画期滚动条在 GPU 合成下会闪现；滚轮 / 触摸滚动不受影响
+
 ## 0.9.0-beta.1
 ### Minor Changes
 

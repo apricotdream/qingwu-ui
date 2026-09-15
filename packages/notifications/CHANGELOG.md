@@ -1,5 +1,10 @@
 # @qingwu-ui/notifications
 
+## 0.9.0-beta.1
+### Patch Changes
+
+- 面板定位改右对齐：悬浮框从铃铛左侧展开（面板右缘对齐铃铛右缘、向左展开），铃铛位于头部右侧时面板不再探出视口右缘；面板过宽时仍右贴视口钳制
+
 ## 0.9.0-beta
 ### Minor Changes
 
