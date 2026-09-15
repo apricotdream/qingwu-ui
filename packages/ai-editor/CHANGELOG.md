@@ -1,5 +1,10 @@
 # @qingwu-ui/ai-editor
 
+## 0.9.0-beta.18
+### Patch Changes
+
+- 修复代码块内搜狗/QQ 拼音「空格选词上屏」在行尾残留空位：Chromium×搜狗在 compositionend 提交候选词的同一按键里会额外派发一次 `beforeinput insertText " "`（isComposing=false），被当作普通输入插入；段落因 `white-space:normal` 折叠尾随空格不可见，代码块 `pre-wrap` 全量保留而暴露。新增 `ImeCommitSpaceGuard` 扩展：组合结束（compositionend / isComposing 的 input 上屏）后 100ms 内的 insertText 空格一律吞掉，组合进行中的空格与用户隔 100ms 后主动键入的空格不受影响
+
 ## 0.9.0-beta.14
 ### Patch Changes
 

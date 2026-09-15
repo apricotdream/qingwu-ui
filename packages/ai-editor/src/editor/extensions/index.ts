@@ -52,6 +52,7 @@ import { VideoEmbed } from "../embeds/video";
 import { t } from "../i18n";
 import { CodeBlock } from "./code-block";
 import { ImageUpload } from "./image-upload";
+import { ImeCommitSpaceGuard } from "./ime-commit-space-guard";
 import { ObsidianMarkdown } from "./obsidian-markdown";
 import { QingwuUI } from "./qingwu-ui";
 import { RelativeMedia } from "./relative-media";
@@ -133,6 +134,7 @@ export function getEditorExtensions(config: EditorExtensionsConfig = {}): AnyExt
     RelativeMedia,
     ObsidianMarkdown,
     SearchHighlight,
+    ImeCommitSpaceGuard,
     QingwuUI,
     VideoEmbed,
     AudioEmbed,
