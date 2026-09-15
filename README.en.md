@@ -43,21 +43,23 @@ Full docs (install / props / AI providers / clipper extension) in [`packages/ai-
 
 | Package | What it is | Version |
 |---|---|---|
-| [`@qingwu-ui/ai-editor`](./packages/ai-editor/README.md) | AI rich-text editor (Tiptap + React 19) + Web Clipper extension | 0.9.0-beta |
-| [`@qingwu-ui/calendar`](./packages/calendar/ui/README.md) | Self-rendering calendar: lunar dates / solar terms / holidays / almanac | 0.9.0-beta |
+| [`@qingwu-ui/ai-editor`](./packages/ai-editor/README.md) | AI rich-text editor (Tiptap + React 19) + Web Clipper extension | 0.9.0-beta.18 |
+| [`@qingwu-ui/calendar`](./packages/calendar/ui/README.md) | Self-rendering calendar: lunar dates / solar terms / holidays / almanac | 0.9.1-beta.0 |
 | [`@qingwu-ui/search`](./packages/search/README.md) | Search box / command palette: typewriter placeholders, keyboard nav, categories | 0.9.0-beta |
-| [`@qingwu-ui/select`](./packages/select/README.md) | Dropdown select: accordion stagger animation, adaptive flip | 0.9.0-beta |
+| [`@qingwu-ui/select`](./packages/select/README.md) | Dropdown select: accordion stagger animation, adaptive flip, viewport height clamping | 0.9.0-beta.4 |
 | [`@qingwu-ui/toast`](./packages/toast/README.md) | Toast notifications: ARIA live region, promise chaining, queue management | 0.9.0-beta |
 | [`@qingwu-ui/upload`](./packages/upload/README.md) | Image upload: drag & drop / button trigger, client-side compression (original / WebP / AVIF) | 0.9.0-beta |
 | [`@qingwu-ui/button`](./packages/button/README.md) | Pill-shaped button: default / primary / amber / icon | 0.9.0-beta |
 | [`@qingwu-ui/tag-input`](./packages/tag-input/README.md) | Quick tag insertion: shortcut bar + controlled / uncontrolled modes | 0.9.0-beta |
-| [`@qingwu-ui/notifications`](./packages/notifications/README.md) | Notification bell: unread red-dot badge, accordion stagger panel, unread bell-ring swing | 0.9.0-beta |
+| [`@qingwu-ui/notifications`](./packages/notifications/README.md) | Notification bell: unread red-dot badge, accordion stagger panel, unread bell-ring swing | 0.9.0-beta.1 |
 | [`@qingwu-ui/action-menu`](./packages/action-menu/README.md) | Radial action menu: fan-out reveal, FAB / custom trigger | 0.9.0-beta |
 | [`@qingwu-ui/skeleton`](./packages/skeleton/README.md) | Runtime-measured auto skeleton, snapshot-to-static-HTML (SSR) | 0.9.0-beta |
 | [`@qingwu-ui/text-layout`](./packages/text-layout/README.md) | Text layout engine: Canvas measurement, virtual scroll heights, multi-line truncation | 0.9.0-beta |
-| [`@qingwu-ui/carousel`](./packages/carousel/README.md) | Carousel / hero: layered two-image entrance (background slides in first, character fades up after), staggered text lines, thumbnail nav | 0.9.0-beta |
+| [`@qingwu-ui/carousel`](./packages/carousel/README.md) | Carousel / hero: layered two-image entrance (background slides in first, character fades up after), staggered text lines, thumbnail nav | 0.9.2-beta |
+| [`@qingwu-ui/avatar`](./packages/avatar/README.md) | Framework-agnostic avatar editor: click to crop, drag / zoom / rotate / radius controls, local Blob & dataURL export | 0.9.0-beta.1 |
+| [`@qingwu-ui/confirm`](./packages/confirm/README.md) | Confirmation dialog: morphs from the trigger control, elastic same-origin transition, async confirm with loading state, mutual-exclusion singleton | 0.9.0-beta |
 
-> **Versioning**: all `@qingwu-ui/*` packages share one version (currently **0.9.0-beta**); packages with no changes just align their version number, keeping family-wide dependency consistency.
+> **Versioning**: all `@qingwu-ui/*` packages share the same major.minor line (currently **0.9**); each package carries its own `-beta.N` patch increment, with API compatibility kept within the major line.
 
 ## Install
 
@@ -185,6 +187,8 @@ qingwu-ui/
 │   ├── action-menu/     # @qingwu-ui/action-menu —— radial action menu
 │   ├── skeleton/        # @qingwu-ui/skeleton —— auto skeleton
 │   ├── carousel/        # @qingwu-ui/carousel —— carousel / hero (layered entrance, thumbnail nav)
+│   ├── avatar/          # @qingwu-ui/avatar —— avatar editor (drag crop / zoom / rotate / radius)
+│   ├── confirm/         # @qingwu-ui/confirm —— confirmation dialog (morph transition, async loading)
 │   └── text-layout/     # @qingwu-ui/text-layout —— text layout engine
 ├── examples/nextjs/     # Next.js demo site
 ├── tooling/
@@ -235,7 +239,7 @@ git remote add github git@github.com:apricotdream/qingwu-ui.git
 ## Roadmap
 
 - [x] 0.1.0 – 0.8.0 —— light component matrix matured; `@qingwu-ui/ai-editor` + Web Clipper joined the family
-- [x] 0.9.0-beta —— `@qingwu-ui/calendar` adds `dateOnly` mode; all 13 packages aligned to 0.9.0-beta (including the new `@qingwu-ui/carousel`) and published publicly
+- [x] 0.9.0-beta —— `@qingwu-ui/calendar` adds `dateOnly` mode; family expanded to 15 packages (new: `@qingwu-ui/carousel` / `@qingwu-ui/avatar` / `@qingwu-ui/confirm`), aligned to the 0.9 major line and published publicly
 - [ ] 1.0.0 —— API freeze, official React / Vue wrappers, docs site
 
 ## License

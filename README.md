@@ -45,21 +45,23 @@ import "@qingwu-ui/ai-editor/styles";
 
 | 包名 | 定位 | 版本 |
 |---|---|---|
-| [`@qingwu-ui/ai-editor`](./packages/ai-editor/README.md) | AI 富文本编辑器（Tiptap + React 19）+ Web Clipper 扩展 | 0.9.0-beta |
-| [`@qingwu-ui/calendar`](./packages/calendar/ui/README.md) | 自渲染日历：农历 / 节气 / 节日 / 黄历宜忌 | 0.9.0-beta |
+| [`@qingwu-ui/ai-editor`](./packages/ai-editor/README.md) | AI 富文本编辑器（Tiptap + React 19）+ Web Clipper 扩展 | 0.9.0-beta.18 |
+| [`@qingwu-ui/calendar`](./packages/calendar/ui/README.md) | 自渲染日历：农历 / 节气 / 节日 / 黄历宜忌 | 0.9.1-beta.0 |
 | [`@qingwu-ui/search`](./packages/search/README.md) | 搜索框 / 命令面板：打字机占位、全键盘导航、分类筛选 | 0.9.0-beta |
-| [`@qingwu-ui/select`](./packages/select/README.md) | 下拉选择器：手风琴错峰动画、自适应翻转 | 0.9.0-beta |
+| [`@qingwu-ui/select`](./packages/select/README.md) | 下拉选择器：手风琴错峰动画、自适应翻转、视口高度钳制 | 0.9.0-beta.4 |
 | [`@qingwu-ui/toast`](./packages/toast/README.md) | Toast 通知：ARIA live region、Promise 链、队列管理 | 0.9.0-beta |
 | [`@qingwu-ui/upload`](./packages/upload/README.md) | 图片上传：拖拽 / 按钮触发、客户端压缩（原图 / WebP / AVIF） | 0.9.0-beta |
 | [`@qingwu-ui/button`](./packages/button/README.md) | 胶囊形按钮：default / primary / amber / icon | 0.9.0-beta |
 | [`@qingwu-ui/tag-input`](./packages/tag-input/README.md) | 标签快捷插入：快捷栏 + 受控 / 非受控双模式 | 0.9.0-beta |
-| [`@qingwu-ui/notifications`](./packages/notifications/README.md) | 通知铃铛：未读红点、手风琴错峰面板、未读响铃摆动 | 0.9.0-beta |
+| [`@qingwu-ui/notifications`](./packages/notifications/README.md) | 通知铃铛：未读红点、手风琴错峰面板、未读响铃摆动 | 0.9.0-beta.1 |
 | [`@qingwu-ui/action-menu`](./packages/action-menu/README.md) | 径向快捷操作菜单：扇形展开、FAB / 自定义触发 | 0.9.0-beta |
 | [`@qingwu-ui/skeleton`](./packages/skeleton/README.md) | 运行时测量自动骨架屏，可快照静态 HTML（SSR） | 0.9.0-beta |
 | [`@qingwu-ui/text-layout`](./packages/text-layout/README.md) | 文本排版引擎：Canvas 测量、虚拟滚动高度、多行截断 | 0.9.0-beta |
-| [`@qingwu-ui/carousel`](./packages/carousel/README.md) | 轮播图 / Hero：双层图分层入场（背景先滑入、角色再淡入上移）、文案逐行滑入、缩略图导航 | 0.9.0-beta |
+| [`@qingwu-ui/carousel`](./packages/carousel/README.md) | 轮播图 / Hero：双层图分层入场（背景先滑入、角色再淡入上移）、文案逐行滑入、缩略图导航 | 0.9.2-beta |
+| [`@qingwu-ui/avatar`](./packages/avatar/README.md) | 头像编辑器：点击头像进入裁剪，拖拽 / 缩放 / 旋转 / 圆角，本地导出 Blob / dataURL | 0.9.0-beta.1 |
+| [`@qingwu-ui/confirm`](./packages/confirm/README.md) | 确认框：从触发控件 morph 转场、异步确认 loading、互斥单例 | 0.9.0-beta |
 
-> **版本策略**：所有 `@qingwu-ui/*` 包统一版本号（当前 **0.9.0-beta**），无变更的包仅对齐版本号，保证全家桶依赖关系一致。
+> **版本策略**：所有 `@qingwu-ui/*` 包统一主版本（当前 **0.9**），各包修复以 `-beta.N` 补丁递进，大版本内保持 API 兼容。
 
 ## 安装
 
@@ -187,6 +189,8 @@ qingwu-ui/
 │   ├── action-menu/     # @qingwu-ui/action-menu —— 径向快捷操作菜单
 │   ├── skeleton/        # @qingwu-ui/skeleton —— 自动骨架屏
 │   ├── carousel/        # @qingwu-ui/carousel —— 轮播图（双层图分层入场 / 缩略图导航）
+│   ├── avatar/          # @qingwu-ui/avatar —— 头像编辑器（拖拽裁剪 / 缩放 / 旋转 / 圆角）
+│   ├── confirm/         # @qingwu-ui/confirm —— 确认框（morph 转场 / 异步 loading）
 │   └── text-layout/     # @qingwu-ui/text-layout —— 文本排版引擎
 ├── examples/nextjs/     # Next.js 演示站（组件 demo 与配置面板）
 ├── tooling/
@@ -248,7 +252,7 @@ git remote add github git@github.com:apricotdream/qingwu-ui.git
 ## 路线图
 
 - [x] 0.1.0 – 0.8.0 —— 轻组件矩阵成型，`@qingwu-ui/ai-editor` AI 编辑器与 Web Clipper 扩展纳入全家桶
-- [x] 0.9.0 —— `@qingwu-ui/calendar` 新增 `dateOnly` 纯日期模式；13 包版本统一对齐 0.9.0-beta（含新成员 `@qingwu-ui/carousel`），全部发布公开 npm
+- [x] 0.9.0 —— `@qingwu-ui/calendar` 新增 `dateOnly` 纯日期模式；全家桶扩充至 15 包（新成员 `@qingwu-ui/carousel` / `@qingwu-ui/avatar` / `@qingwu-ui/confirm`），统一对齐 0.9 主版本，全部发布公开 npm
 - [ ] 1.0.0 —— API 冻结、React / Vue 官方薄包装、文档站
 
 ## 许可证
