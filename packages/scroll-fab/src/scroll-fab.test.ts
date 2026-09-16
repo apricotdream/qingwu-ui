@@ -18,12 +18,30 @@ function fire(el: EventTarget, type: string, init: Record<string, unknown> = {})
   el.dispatchEvent(e);
 }
 
-/** 推进到描边绕满（holdMs=800） */
-function holdToComplete(el: EventTarget, from = 0): void {
-  fire(el, "pointerdown");
+/** 桌面悬停推进到描边绕满（ringMs=800） */
+function hoverToComplete(el: EventTarget, from = 0): void {
+  fire(el, "pointerenter");
   pump(from);
   pump(from + 400);
   pump(from + 800);
+}
+
+/** 触屏按住推进到描边绕满 */
+function pressToComplete(el: EventTarget, from = 0): void {
+  fire(el, "pointerdown", { pointerType: "touch" });
+  pump(from);
+  pump(from + 400);
+  pump(from + 800);
+}
+
+/** 描边衰减倒转回零 */
+function decayToZero(from: number): void {
+  for (let t = from; t <= from + 400; t += 100) pump(t);
+}
+
+/** 程序滚动动画走完（dur≤1200） */
+function settleScroll(from: number): void {
+  for (let t = from; t <= from + 1500; t += 100) pump(t);
 }
 
 beforeEach(() => {
@@ -74,65 +92,108 @@ describe("ScrollFab", () => {
     fab.destroy();
   });
 
-  test("按住绕满 → 翻转为返回顶部，顺带滚到底", () => {
+  test("悬停绕满 → 翻转为返回顶部（纯翻转，不附带滚动）", () => {
     const fab = new ScrollFab();
-    holdToComplete(fab.el);
+    hoverToComplete(fab.el);
     expect(fab.currentMode).toBe("to-top");
     expect(fab.el.getAttribute("aria-label")).toContain("返回顶部");
-    // 翻转触发的滚底动画走完（dur=1200）
-    for (let t = 800; t <= 2100; t += 100) pump(t);
-    expect(scroll.y).toBe(5000);
+    settleScroll(900);
+    expect(scrollToCalls).toBe(0);
+    expect(scroll.y).toBe(0);
     fab.destroy();
   });
 
-  test("未绕满松手 = 执行当前模式动作（滚到底），描边衰减隐藏", () => {
+  test("双向对称：移开衰减后再悬停绕满翻回去底部", () => {
     const fab = new ScrollFab();
-    fire(fab.el, "pointerdown");
-    pump(0);
-    pump(300);
-    fire(fab.el, "pointerup");
+    hoverToComplete(fab.el); // to-top
+    fire(fab.el, "pointerleave");
+    decayToZero(900);
+    hoverToComplete(fab.el, 1400); // 再绕满 → to-bottom
     expect(fab.currentMode).toBe("to-bottom");
-    for (let t = 300; t <= 1600; t += 100) pump(t);
+    expect(fab.el.getAttribute("aria-label")).toContain("滚动到底部");
+    fab.destroy();
+  });
+
+  test("桌面点击恒为当前模式动作：先滚到底，翻转后点击回顶部", () => {
+    const fab = new ScrollFab();
+    fire(fab.el, "click");
+    settleScroll(0);
     expect(scroll.y).toBe(5000);
+
+    hoverToComplete(fab.el, 1600); // 悬停翻转到 to-top
+    expect(fab.currentMode).toBe("to-top");
+    fire(fab.el, "click");
+    settleScroll(1700);
+    expect(scroll.y).toBe(0);
+    fab.destroy();
+  });
+
+  test("悬停中途移开：描边衰减隐藏，不翻转不动作", () => {
+    const fab = new ScrollFab();
+    fire(fab.el, "pointerenter");
+    pump(0);
+    pump(300); // 绕至 ~3/8
+    fire(fab.el, "pointerleave");
+    decayToZero(400);
+    expect(fab.currentMode).toBe("to-bottom");
+    expect(scrollToCalls).toBe(0);
     expect(fab.el.querySelector(".qsf-bar")?.hasAttribute("hidden")).toBe(true);
     fab.destroy();
   });
 
-  test("按住位移超阈值：放弃描边且不执行动作", () => {
+  test("桌面按压不驱动描边（悬停才是推进源）", () => {
     const fab = new ScrollFab();
     fire(fab.el, "pointerdown");
     pump(0);
-    pump(300);
-    fire(fab.el, "pointermove", { clientX: 60 });
-    fire(fab.el, "pointerup");
-    for (let t = 300; t <= 800; t += 100) pump(t);
-    expect(scrollToCalls).toBe(0);
+    pump(400);
+    pump(800);
     expect(fab.currentMode).toBe("to-bottom");
+    expect(fab.el.querySelector(".qsf-bar")?.hasAttribute("hidden")).toBe(true);
+    fire(fab.el, "pointerup"); // 按压释放不执行动作（动作走 click）
+    expect(scrollToCalls).toBe(0);
     fab.destroy();
   });
 
-  test("返回顶部模式：短按滚到顶；再绕满翻回去底部且不再滚动", () => {
-    const fab = new ScrollFab();
+  test("触屏按住绕满：松手被消费不滚动；再次轻点执行新动作", () => {
     scroll.y = 5000;
-    holdToComplete(fab.el); // 翻到 to-top（附带动画已在跑）
-    for (let t = 800; t <= 2100; t += 100) pump(t);
+    const fab = new ScrollFab();
+    pressToComplete(fab.el);
+    expect(fab.currentMode).toBe("to-top");
     fire(fab.el, "pointerup");
-    for (let t = 2150; t <= 2450; t += 100) pump(t); // 描边衰减回零
-    const before = scrollToCalls;
-    fire(fab.el, "pointerdown");
-    pump(2500);
-    pump(2600); // 绕至 ~1/8 松手 = 短按
-    fire(fab.el, "pointerup");
-    for (let t = 2600; t <= 3900; t += 100) pump(t);
-    expect(scroll.y).toBe(0); // 短按 → 回顶部
-    expect(scrollToCalls).toBeGreaterThan(before);
+    decayToZero(900);
+    expect(scrollToCalls).toBe(0); // 绕满翻转的手势不附带滚动
 
-    holdToComplete(fab.el, 4000); // 再绕满 → 翻回 to-bottom，无滚动
-    expect(fab.currentMode).toBe("to-bottom");
-    const at = scrollToCalls;
-    for (let t = 4800; t <= 5500; t += 100) pump(t);
-    expect(scrollToCalls).toBe(at);
+    fire(fab.el, "pointerdown", { pointerType: "touch" }); // 轻点 = 动作
+    pump(1400);
     fire(fab.el, "pointerup");
+    settleScroll(1500);
+    expect(scroll.y).toBe(0);
+    fab.destroy();
+  });
+
+  test("触屏轻点立即执行动作，合成点击被吞不双触发", () => {
+    const fab = new ScrollFab();
+    fire(fab.el, "pointerdown", { pointerType: "touch" });
+    pump(0);
+    fire(fab.el, "pointerup");
+    settleScroll(100);
+    expect(scroll.y).toBe(5000);
+    const calls = scrollToCalls;
+    fire(fab.el, "click"); // 触屏合成 click（ghost）应被抑制
+    expect(scrollToCalls).toBe(calls);
+    fab.destroy();
+  });
+
+  test("触屏按住位移超阈值：放弃描边且不执行动作", () => {
+    const fab = new ScrollFab();
+    fire(fab.el, "pointerdown", { pointerType: "touch" });
+    pump(0);
+    pump(300);
+    fire(fab.el, "pointermove", { pointerType: "touch", clientX: 60 });
+    fire(fab.el, "pointerup", { pointerType: "touch" });
+    settleScroll(400);
+    expect(scrollToCalls).toBe(0);
+    expect(fab.currentMode).toBe("to-bottom");
     fab.destroy();
   });
 
@@ -147,13 +208,12 @@ describe("ScrollFab", () => {
 
   test("多点触控：首指针独占，第二指针按下被忽略", () => {
     const fab = new ScrollFab();
-    fire(fab.el, "pointerdown", { pointerId: 1 });
-    fire(fab.el, "pointerdown", { pointerId: 2 });
-    fire(fab.el, "pointerup", { pointerId: 2 });
+    fire(fab.el, "pointerdown", { pointerType: "touch", pointerId: 1 });
+    fire(fab.el, "pointerdown", { pointerType: "touch", pointerId: 2 });
+    fire(fab.el, "pointerup", { pointerType: "touch", pointerId: 2 });
     expect(scrollToCalls).toBe(0);
-    fire(fab.el, "pointerup", { pointerId: 1 });
-    pump(0);
-    pump(600);
+    fire(fab.el, "pointerup", { pointerType: "touch", pointerId: 1 });
+    settleScroll(0);
     expect(scrollToCalls).toBeGreaterThan(0);
     expect(scroll.y).toBeGreaterThan(0);
     fab.destroy();
@@ -161,24 +221,24 @@ describe("ScrollFab", () => {
 
   test("pointercancel 视为放弃，松手不触发动作", () => {
     const fab = new ScrollFab();
-    fire(fab.el, "pointerdown");
+    fire(fab.el, "pointerdown", { pointerType: "touch" });
     pump(0);
-    fire(fab.el, "pointercancel");
-    fire(fab.el, "pointerup");
+    fire(fab.el, "pointercancel", { pointerType: "touch" });
+    fire(fab.el, "pointerup", { pointerType: "touch" });
+    settleScroll(100);
     expect(scrollToCalls).toBe(0);
     fab.destroy();
   });
 
   test("程序滚动中途 wheel 输入立即打断", () => {
     const fab = new ScrollFab();
-    fire(fab.el, "pointerdown");
-    fire(fab.el, "pointerup");
+    fire(fab.el, "click");
     pump(0);
     pump(300);
     const y = scroll.y;
     expect(y).toBeGreaterThan(0);
     window.dispatchEvent(new Event("wheel"));
-    for (let t = 400; t <= 2000; t += 100) pump(t);
+    settleScroll(400);
     expect(scroll.y).toBe(y);
     fab.destroy();
   });
@@ -224,7 +284,7 @@ describe("ScrollFab", () => {
 
   test("destroy 移除节点与描边循环", () => {
     const fab = new ScrollFab();
-    holdToComplete(fab.el);
+    hoverToComplete(fab.el);
     fab.destroy();
     expect(document.querySelector(".qsf-root")).toBeNull();
   });

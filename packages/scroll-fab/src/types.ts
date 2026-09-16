@@ -13,11 +13,11 @@ export interface ScrollFabOptions {
   target?: HTMLElement | null;
   /** 本体直径 px，默认 48，内部钳制最小 44（触控命中区） */
   size?: number;
-  /** 按住绕满一圈的时长 ms，默认 800 */
-  holdDuration?: number;
-  /** 未绕满松手后描边衰减倒转的时长 ms，默认 300 */
+  /** 绕满一圈的时长 ms（桌面悬停推进 / 触屏按住推进），默认 800 */
+  ringDuration?: number;
+  /** 离开/松手后描边衰减倒转的时长 ms，默认 300 */
   decayDuration?: number;
-  /** 按住期间指针位移超过该值（px）视为放弃描边、放行页面手势，默认 10 */
+  /** 触屏按住期间指针位移超过该值（px）视为放弃描边、放行页面手势，默认 10 */
   cancelThreshold?: number;
   /** 中心内容自定义：HTML 字符串或节点，缺省为方向箭头 */
   content?: string | HTMLElement;

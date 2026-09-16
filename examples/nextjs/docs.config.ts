@@ -363,7 +363,7 @@ export const COMPONENT_SECTIONS: DocSection[] = [
         href: "/demo/scroll-fab",
         title: "ScrollFab 悬浮滚动栏",
         en: "Scroll Fab",
-        desc: "默认滚动到底部的悬浮栏：按住绕满描边一圈翻转为返回顶部（顺带平滑滚到底），短按执行当前模式动作；rAF 缓动支持打断与懒加载追击，移动端一等支持。",
+        desc: "默认滚动到底部的悬浮栏：桌面悬停推进描边、绕满一圈翻转为返回顶部（纯切换不附带滚动），触屏按住同样驱动；点击（轻点）恒直接执行当前模式动作；rAF 缓动支持打断与懒加载追击，移动端一等支持。",
         keywords: [
           "悬浮栏",
           "悬浮球",
@@ -395,20 +395,20 @@ export const COMPONENT_SECTIONS: DocSection[] = [
                 default: "48",
               },
               {
-                name: "holdDuration",
-                desc: "按住绕满一圈的时长 ms",
+                name: "ringDuration",
+                desc: "描边绕满一圈的时长 ms（桌面悬停推进 / 触屏按住推进）",
                 type: "number",
                 default: "800",
               },
               {
                 name: "decayDuration",
-                desc: "未绕满松手后描边衰减倒转时长 ms",
+                desc: "未绕满离开 / 松手后描边衰减倒转时长 ms",
                 type: "number",
                 default: "300",
               },
               {
                 name: "cancelThreshold",
-                desc: "按住期间指针位移超过该值（px）放弃描边并放行页面手势",
+                desc: "触屏按住期间指针位移超过该值（px）放弃描边并放行页面手势",
                 type: "number",
                 default: "10",
               },

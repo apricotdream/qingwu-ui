@@ -1,11 +1,11 @@
-/** 青梧UI ScrollFab 悬浮滚动栏：默认“滚动到底部”，按住绕满描边一圈翻转为“返回顶部”（顺带平滑滚到底），短按执行当前模式动作 */
+/** 青梧UI ScrollFab 悬浮滚动栏：默认“滚动到底部”，桌面悬停/触屏按住绕满描边一圈翻转为“返回顶部”，点击（轻点）直接执行当前模式动作 */
 
 import { ICON_CHEVRON_DOWN } from "../../../icon/icons";
 import type { ScrollFabMode, ScrollFabOptions } from "./types";
 
 const RADIUS = 21;
-const DEFAULT_LABEL_BOTTOM = "滚动到底部（按住绕圈可切换为返回顶部）";
-const DEFAULT_LABEL_TOP = "返回顶部（按住绕圈可切换为滚动到底部）";
+const DEFAULT_LABEL_BOTTOM = "滚动到底部（悬停或按住绕圈可切换为返回顶部）";
+const DEFAULT_LABEL_TOP = "返回顶部（悬停或按住绕圈可切换为滚动到底部）";
 
 function easeInOutCubic(p: number): number {
   return p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2;
@@ -20,7 +20,7 @@ export class ScrollFab {
   private readonly len: number;
 
   private readonly targetEl: HTMLElement | null;
-  private readonly holdMs: number;
+  private readonly ringMs: number;
   private readonly decayMs: number;
   private readonly cancelPx: number;
   private readonly animate: boolean;
@@ -30,7 +30,8 @@ export class ScrollFab {
 
   private mode: ScrollFabMode = "to-bottom";
   private progress = 0;
-  private hold = false;
+  private hovering = false;
+  private pressing = false;
   private flipped = false;
   private pointerId: number | null = null;
   private startX = 0;
@@ -39,12 +40,13 @@ export class ScrollFab {
   private lastTs: number | null = null;
   private scrollRaf: number | null = null;
   private flashTimer: ReturnType<typeof setTimeout> | null = null;
+  private tapResetTimer: ReturnType<typeof setTimeout> | null = null;
   private touchTap = false;
   private ro: ResizeObserver | null = null;
 
   constructor(options: ScrollFabOptions = {}) {
     this.targetEl = options.target ?? null;
-    this.holdMs = Math.max(100, Math.min(5000, options.holdDuration ?? 800));
+    this.ringMs = Math.max(100, Math.min(5000, options.ringDuration ?? 800));
     this.decayMs = Math.max(100, options.decayDuration ?? 300);
     this.cancelPx = Math.max(4, options.cancelThreshold ?? 10);
     this.animate = options.animate ?? true;
@@ -100,13 +102,14 @@ export class ScrollFab {
     this.el.append(svg, this.icon);
     document.body.append(this.el);
 
+    this.el.addEventListener("pointerenter", this.onEnter);
+    this.el.addEventListener("pointerleave", this.onLeave);
     this.el.addEventListener("pointerdown", this.onDown);
     this.el.addEventListener("pointermove", this.onMove);
     this.el.addEventListener("pointerup", this.onUp);
     this.el.addEventListener("pointercancel", this.onCancel);
     this.el.addEventListener("keydown", this.onKey);
-    // 触屏 pointerdown 已 preventDefault，正常不再合成 click；此捕获层为兜底防双触发
-    this.el.addEventListener("click", this.onClick, true);
+    this.el.addEventListener("click", this.onClick);
     window.addEventListener("resize", this.onRecheck);
     (this.targetEl ?? window).addEventListener("scroll", this.onRecheck, { passive: true });
     if (typeof ResizeObserver === "function") {
@@ -135,12 +138,14 @@ export class ScrollFab {
   }
 
   destroy(): void {
+    this.el.removeEventListener("pointerenter", this.onEnter);
+    this.el.removeEventListener("pointerleave", this.onLeave);
     this.el.removeEventListener("pointerdown", this.onDown);
     this.el.removeEventListener("pointermove", this.onMove);
     this.el.removeEventListener("pointerup", this.onUp);
     this.el.removeEventListener("pointercancel", this.onCancel);
     this.el.removeEventListener("keydown", this.onKey);
-    this.el.removeEventListener("click", this.onClick, true);
+    this.el.removeEventListener("click", this.onClick);
     window.removeEventListener("resize", this.onRecheck);
     (this.targetEl ?? window).removeEventListener("scroll", this.onRecheck);
     this.ro?.disconnect();
@@ -148,6 +153,7 @@ export class ScrollFab {
     if (this.ringRaf != null) cancelAnimationFrame(this.ringRaf);
     this.ringRaf = null;
     if (this.flashTimer != null) clearTimeout(this.flashTimer);
+    if (this.tapResetTimer != null) clearTimeout(this.tapResetTimer);
     this.el.remove();
   }
 
@@ -160,55 +166,79 @@ export class ScrollFab {
     return c;
   }
 
-  /* ---------------- 指针状态机（首指针独占） ---------------- */
+  /* ---------------- 输入状态机 ----------------
+   * 桌面（mouse）：pointerenter 推进描边 / pointerleave 衰减倒转；click 恒为动作
+   * 触屏（非 mouse）：pointerdown 按住推进（首指针独占，位移超阈值放弃并放行手势）；
+   *   轻点 = 动作；绕满翻转过 → 本次释放被消费（不在同一手势里翻转+滚动）
+   */
+
+  private onEnter = (e: PointerEvent): void => {
+    if (e.pointerType !== "mouse") return;
+    this.hovering = true;
+    this.kickRing();
+  };
+
+  private onLeave = (e: PointerEvent): void => {
+    if (e.pointerType !== "mouse") return;
+    this.hovering = false;
+    this.flipped = false;
+  };
 
   private onDown = (e: PointerEvent): void => {
     if (e.button !== 0 || this.pointerId !== null) return;
-    if (e.pointerType !== "mouse") {
-      e.preventDefault();
-      this.touchTap = true;
-    }
+    // 桌面描边由 hover 驱动，鼠标按压不接管
+    if (e.pointerType === "mouse") return;
+    e.preventDefault();
+    this.touchTap = true;
+    if (this.tapResetTimer != null) clearTimeout(this.tapResetTimer);
     this.pointerId = e.pointerId;
     this.startX = e.clientX;
     this.startY = e.clientY;
-    this.hold = true;
+    this.pressing = true;
     this.flipped = false;
     this.kickRing();
   };
 
   private onMove = (e: PointerEvent): void => {
-    if (e.pointerId !== this.pointerId || !this.hold) return;
+    if (e.pointerId !== this.pointerId || !this.pressing) return;
     // 超阈值 = 放弃描边且放行页面手势（不拦截 move，浏览器原生滚动照常）
     if (Math.hypot(e.clientX - this.startX, e.clientY - this.startY) > this.cancelPx) {
-      this.hold = false;
+      this.pressing = false;
       this.pointerId = null;
+      this.flipped = false;
     }
   };
 
   private onUp = (e: PointerEvent): void => {
     if (e.pointerId !== this.pointerId) return;
     this.pointerId = null;
-    const wasHolding = this.hold;
-    this.hold = false;
+    this.pressing = false;
+    const consumed = this.flipped;
+    this.flipped = false;
     // ghost click 兜底标记延迟复位，避免吞掉下一次真实鼠标点击
-    setTimeout(() => {
+    this.tapResetTimer = setTimeout(() => {
       this.touchTap = false;
+      this.tapResetTimer = null;
     }, 400);
-    if (!wasHolding || this.flipped) return;
+    if (consumed) return;
     this.doAction();
   };
 
   private onCancel = (e: PointerEvent): void => {
     if (e.pointerId !== this.pointerId) return;
     this.pointerId = null;
-    this.hold = false;
+    this.pressing = false;
+    this.flipped = false;
   };
 
   private onClick = (e: MouseEvent): void => {
+    // 触屏 pointerdown 已 preventDefault，正常不合成 click；此处兜底吞掉，防双触发
     if (this.touchTap) {
       e.preventDefault();
       e.stopPropagation();
+      return;
     }
+    this.doAction();
   };
 
   private onKey = (e: KeyboardEvent): void => {
@@ -217,7 +247,11 @@ export class ScrollFab {
     this.setMode(this.mode === "to-bottom" ? "to-top" : "to-bottom");
   };
 
-  /* ---------------- 描边 rAF：按住推进 / 松手衰减倒转 ---------------- */
+  /* ---------------- 描边 rAF：悬停/按住推进 · 离开/松手衰减倒转 ---------------- */
+
+  private holding(): boolean {
+    return this.hovering || this.pressing;
+  }
 
   private kickRing(): void {
     if (this.ringRaf != null) return;
@@ -228,28 +262,27 @@ export class ScrollFab {
   private stepRing = (ts: number): void => {
     const dt = this.lastTs == null ? 0 : ts - this.lastTs;
     this.lastTs = ts;
-    if (this.hold) {
+    if (this.holding()) {
       if (!this.flipped) {
-        this.progress = Math.min(1, this.progress + dt / this.holdMs);
-        if (this.progress >= 1) this.completeHold();
+        this.progress = Math.min(1, this.progress + dt / this.ringMs);
+        if (this.progress >= 1) this.completeRing();
       }
     } else {
       this.progress = Math.max(0, this.progress - dt / this.decayMs);
     }
     this.renderRing();
-    if (this.hold || this.progress > 0) {
+    if (this.holding() || this.progress > 0) {
       this.ringRaf = requestAnimationFrame(this.stepRing);
     } else {
       this.ringRaf = null;
     }
   };
 
-  private completeHold(): void {
+  /** 绕满一圈 = 纯模式翻转（不附带任何滚动） */
+  private completeRing(): void {
     this.flipped = true;
     const next: ScrollFabMode = this.mode === "to-bottom" ? "to-top" : "to-bottom";
     this.setMode(next);
-    // 翻转成“返回顶部”的前提直觉是“我已在底部”：顺带平滑滚到底
-    if (next === "to-top") this.animateScroll("bottom");
     this.el.classList.add("is-complete");
     if (this.flashTimer != null) clearTimeout(this.flashTimer);
     this.flashTimer = setTimeout(() => {

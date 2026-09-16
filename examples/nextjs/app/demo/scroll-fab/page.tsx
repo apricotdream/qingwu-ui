@@ -10,9 +10,9 @@ function Article({ n }: { n: number }) {
     <>
       {Array.from({ length: n }, (_, i) => (
         <p key={i} style={{ margin: "0 0 14px", lineHeight: 1.8 }}>
-          第 {i + 1} 段 · 青梧 UI 悬浮滚动栏演示正文：短按执行当前模式动作（滚动到底部 /
-          返回顶部）；
-          按住不放，描边绕满一圈翻转为“返回顶部”并顺带滚到底；未绕满松手，描边衰减倒转；
+          第 {i + 1} 段 · 青梧 UI 悬浮滚动栏演示正文：点击（轻点）恒直接执行当前模式动作（滚动到底部
+          / 返回顶部，按箭头方向）；
+          鼠标悬停（触屏按住）时描边推进，绕满一圈翻转为另一模式（纯切换不附带滚动）；未绕满移开/松手，描边衰减倒转；
           按住期间滑动超过阈值即放弃描边并放行页面手势。
         </p>
       ))}
@@ -39,7 +39,7 @@ export default function ScrollFabPage() {
     <div className="demo-stack">
       <DemoCard
         title="整页滚动（window 默认）"
-        desc="本页面即为滚动目标：短按滚到底；按住绕满一圈 → 翻转为“返回顶部”（并自动滚到底），再点击即回顶部。"
+        desc="本页面即为滚动目标：点击滚到底；鼠标悬停绕满一圈 → 翻转为“返回顶部”（纯切换、不滚动），再点击即回顶部。触屏长按绕圈同样翻转，轻点执行动作。"
         code={`new ScrollFab();`}
       >
         <Article n={10} />
@@ -54,7 +54,7 @@ export default function ScrollFabPage() {
         code={`new ScrollFab({
   target: box,
   position: { right: 96, bottom: 24 },
-  holdDuration: 800, // 绕圈时长 ms
+  ringDuration: 800, // 绕圈时长 ms
 });`}
       >
         <div

@@ -6,45 +6,77 @@ async function atBottom(page: import("@playwright/test").Page) {
   );
 }
 
-test("短按滚动到底部", async ({ page }) => {
+test("点击滚到底 → 悬停绕满翻转 → 再点击回顶", async ({ page }) => {
   await page.goto("/demo/scroll-fab");
   const fab = page.locator(".qsf-root").first();
   await expect(fab).toBeVisible();
   await expect(fab).toHaveAttribute("data-mode", "to-bottom");
 
-  await fab.click();
-  await expect.poll(() => atBottom(page), { timeout: 8000 }).toBe(true);
-});
-
-test("按住绕满翻转为返回顶部，松手点击回顶部", async ({ page }) => {
-  await page.goto("/demo/scroll-fab");
-  const fab = page.locator(".qsf-root").first();
-  const box = (await fab.boundingBox())!;
-  const cx = box.x + box.width / 2;
-  const cy = box.y + box.height / 2;
-
-  await page.mouse.move(cx, cy);
-  await page.mouse.down();
-  await page.waitForTimeout(1200); // 超过 800ms 绕满
-  await page.mouse.up();
-  await expect(fab).toHaveAttribute("data-mode", "to-top");
-
-  // 翻转顺带滚到底
+  await fab.click(); // 点击恒为当前模式动作：滚到底
   await expect.poll(() => atBottom(page), { timeout: 8000 }).toBe(true);
 
-  await fab.click();
+  // 点击后指针停留在悬浮栏上：悬停绕满 800ms 自动翻转为“返回顶部”
+  await expect(fab).toHaveAttribute("data-mode", "to-top", { timeout: 5000 });
+
+  await fab.click(); // 按当前箭头（上）直接回顶部
   await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 8000 }).toBeLessThan(2);
 });
 
-test("触屏设备可交互（hasTouch）", async ({ browser }) => {
+test("悬停绕满是纯翻转：不附带任何滚动", async ({ page }) => {
+  await page.goto("/demo/scroll-fab");
+  const fab = page.locator(".qsf-root").first();
+  const box = (await fab.boundingBox())!;
+
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(fab).toHaveAttribute("data-mode", "to-top", { timeout: 5000 });
+  await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 1000 }).toBeLessThan(2);
+
+  // 移开：描边衰减，但模式保持翻转结果（不随悬停状态派生回退）
+  await page.mouse.move(4, 4);
+  await expect(fab).toHaveAttribute("data-mode", "to-top", { timeout: 2000 });
+});
+
+test("触屏全流程：轻点到底 → 长按绕满翻转（不滚动）→ 再轻点回顶", async ({ browser }) => {
   const ctx = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 700 } });
   const page = await ctx.newPage();
   await page.goto("/demo/scroll-fab");
   const fab = page.locator(".qsf-root").first();
   await expect(fab).toBeVisible();
   const box = (await fab.boundingBox())!;
-  // 轻点 = 短按执行当前模式动作（滚到底）；ghost click 已抑制，动作只执行一次
-  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+
+  await page.touchscreen.tap(cx, cy); // 轻点 = 滚动到底部
   await expect.poll(() => atBottom(page), { timeout: 8000 }).toBe(true);
+
+  // 模拟触屏长按：PointerEvent 状态机与真机同路径（隐式 pointerenter 不得驱动描边）。
+  // 必须在 evaluate 内等待松手完成，否则后续真轻点会落在按住窗口期被首指针独占吞掉。
+  await fab.evaluate(
+    async (el, [x, y]) => {
+      const fire = (type: string) =>
+        el.dispatchEvent(
+          new PointerEvent(type, {
+            pointerId: 9,
+            pointerType: "touch",
+            button: 0,
+            clientX: x,
+            clientY: y,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+      fire("pointerenter");
+      fire("pointerdown");
+      await new Promise((r) => setTimeout(r, 1200));
+      fire("pointerup");
+      await new Promise((r) => setTimeout(r, 100));
+    },
+    [cx, cy],
+  );
+  await expect(fab).toHaveAttribute("data-mode", "to-top", { timeout: 2000 });
+  await expect.poll(() => atBottom(page), { timeout: 2000 }).toBe(true); // 绕满松手被消费：不滚动
+
+  await page.touchscreen.tap(cx, cy); // 轻点 = 返回顶部
+  await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 8000 }).toBeLessThan(2);
   await ctx.close();
 });
