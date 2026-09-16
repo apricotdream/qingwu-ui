@@ -21,6 +21,7 @@
     "@qingwu-ui/confirm": "workspace:*",
     "@qingwu-ui/notifications": "workspace:*",
     "@qingwu-ui/search": "workspace:*",
+    "@qingwu-ui/scroll-fab": "workspace:*",
     "@qingwu-ui/select": "workspace:*",
     "@qingwu-ui/skeleton": "workspace:*",
     "@qingwu-ui/tag-input": "workspace:*",

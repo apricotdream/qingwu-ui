@@ -22,6 +22,7 @@
         "@qingwu-ui/carousel": "workspace:*",
         "@qingwu-ui/confirm": "workspace:*",
         "@qingwu-ui/notifications": "workspace:*",
+        "@qingwu-ui/scroll-fab": "workspace:*",
         "@qingwu-ui/search": "workspace:*",
         "@qingwu-ui/select": "workspace:*",
         "@qingwu-ui/skeleton": "workspace:*",
@@ -61,7 +62,7 @@
     },
     "packages/ai-editor": {
       "name": "@qingwu-ui/ai-editor",
-      "version": "0.9.0-beta.11",
+      "version": "0.9.0-beta.18",
       "dependencies": {
         "@qingwu-ui/text-layout": "^0.9.0-beta",
         "@qingwu-ui/toast": "^0.9.0-beta",
@@ -176,7 +177,7 @@
     },
     "packages/avatar": {
       "name": "@qingwu-ui/avatar",
-      "version": "0.9.0-beta",
+      "version": "0.9.0-beta.1",
       "devDependencies": {
         "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
@@ -214,7 +215,7 @@
     },
     "packages/carousel": {
       "name": "@qingwu-ui/carousel",
-      "version": "0.9.0-beta",
+      "version": "0.9.2-beta",
       "devDependencies": {
         "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
@@ -249,6 +250,19 @@
         "vitest": "^4.1.10",
       },
     },
+    "packages/scroll-fab": {
+      "name": "@qingwu-ui/scroll-fab",
+      "version": "0.9.0-beta.1",
+      "devDependencies": {
+        "@qingwu-ui/tsconfig": "workspace:*",
+        "@size-limit/preset-small-lib": "^13.0.1",
+        "happy-dom": "^20.11.1",
+        "size-limit": "^13.0.1",
+        "tsdown": "^0.22.14",
+        "typescript": "^7.0.2",
+        "vitest": "^4.1.10",
+      },
+    },
     "packages/search": {
       "name": "@qingwu-ui/search",
       "version": "0.9.0-beta",
@@ -264,7 +278,7 @@
     },
     "packages/select": {
       "name": "@qingwu-ui/select",
-      "version": "0.9.0-beta.2",
+      "version": "0.9.0-beta.4",
       "devDependencies": {
         "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
@@ -653,6 +667,8 @@
     "@qingwu-ui/confirm": ["@qingwu-ui/confirm@workspace:packages/confirm"],
 
     "@qingwu-ui/notifications": ["@qingwu-ui/notifications@workspace:packages/notifications"],
+
+    "@qingwu-ui/scroll-fab": ["@qingwu-ui/scroll-fab@workspace:packages/scroll-fab"],
 
     "@qingwu-ui/search": ["@qingwu-ui/search@workspace:packages/search"],
 
