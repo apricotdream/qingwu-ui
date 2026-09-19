@@ -1,6 +1,6 @@
 # @qingwu-ui/ai-editor
 
-## Unreleased
+## 0.9.0-beta.19
 ### Patch Changes
 
 - 桌面目录悬浮框改为 `createPortal` 挂到 `document.body`（同 beta.16 移动抽屉）：修复宿主存在 GSAP 入场/步骤切换动画时，`fixed` 目录在动画进行中被祖先内联 `transform` 抢走包含块，先按祖先 padding box 定位（闪现在编辑器内部）、动画 `clearProps` 后再跳到视口右侧的问题。目录样式均为全局选择器（`.qingwu-toc-desktop` / `.toc-*` / `.toc-scroll` / `.dark`），脱离 `.qingwu-editor` 作用域后表现不变；宿主以 DOM 后代关系锚定目录的选择器/观察器需改为 body 直子节点；另注意：编辑器实例常驻、仅靠祖先 `display:none` 切走编辑视图的宿主，`hidden` 不再连带隐藏 portal 出 body 的目录（桌面 aside 与移动抽屉均是），需按自身步骤/视图状态额外收掉（如 `body:has(.scene:not([data-step="1"])) > .qingwu-toc-desktop { display:none }`）

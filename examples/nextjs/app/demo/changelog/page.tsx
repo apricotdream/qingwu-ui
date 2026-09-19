@@ -3,6 +3,17 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "0.9.0-beta.19",
+    date: "2026-09-19",
+    tag: "ai-editor",
+    changes: [
+      {
+        type: "fix",
+        text: "ai-editor 桌面目录悬浮框改为 portal 挂 document.body（同移动抽屉手法）：宿主存在 GSAP 入场 / 步骤切换动画时，动画进行中的祖先内联 transform 会抢走 fixed 目录的包含块，表现为目录先闪现在编辑器内部、动画 clearProps 后再跳到视口右侧；portal 到 body 后包含块恒为视口，定位不再被动画劫持。宿主注意：桌面 aside（.qingwu-toc-desktop）与移动抽屉（.qingwu-toc-drawer）均为 body 直子节点，不要以编辑器容器后代关系锚定它们；编辑器实例常驻、靠祖先 display:none 切视图的宿主需按自身步骤状态额外收掉面板",
+      },
+    ],
+  },
+  {
     version: "0.9.0-beta.18",
     date: "2026-09-16",
     tag: "scroll-fab 首发 · ai-editor beta 系列",
