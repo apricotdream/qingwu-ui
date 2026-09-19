@@ -9,12 +9,14 @@
 ## 特性
 
 - **智能辅助写作** - 续写、润色、精简、扩写、修正、翻译、自定义指令，基于 Vercel AI SDK 统一接口
+- **AI 替换保护** - 选中 / 全文 AI 替换前弹确认弹窗列出将被移除的媒体；替换后孤儿媒体延迟 30s 删除，期间 `Ctrl+Z` 还原 URL 即取消，避免 undo 后资源 404
 - **丰富的媒体嵌入** - 图片、视频（B站 / 直链 / 小红书）、音频、附件（支持 206+ 格式在线预览）
-- **Markdown 粘贴** - Obsidian 风格的 `[[链接]]` 和 `![[图片]]` 语法支持
+- **Markdown 粘贴** - Obsidian 风格的 `[[链接]]` 和 `![[图片]]` 语法支持；粘贴外部 Markdown（Obsidian / Typora）时自动检测本地相对路径图片/附件，匹配剪贴板文件上传换链，找不到时引导文件夹选择 / 拖拽补救
+- **文档目录（TOC）** - 宽屏桌面侧栏 + 移动端抽屉 + 只读态悬浮球入口；滚动自动跟踪当前章节并高亮，点击目录平滑跳转，悬浮框滚到顶/底后滚轮接力滚动正文
 - **多存储后端** - 本地存储 / 阿里云 OSS / 腾讯云 COS / S3 兼容存储，配置持久化
 - **中英双语** - 运行时可切换，无需刷新页面
 - **斜杠命令** - `/` 快速插入标题、列表、图片、视频等
-- **代码高亮** - 支持 30+ 编程语言语法高亮（lowlight），Mermaid 图表渲染
+- **代码块** - 30+ 语言语法高亮（lowlight）、行号列、折叠/展开、语言图标，兼容 Obsidian 逐行 div 导出格式；Mermaid 图表渲染
 - **视频播放** - [xgplayer](https://h5player.bytedance.com/)
 - **文件预览** - 基于 @file-viewer/react-full，支持 Office / PDF / CAD / 压缩包等 206+ 格式
 - **导出** - HTML / Markdown / JSON / 纯文本 / PDF
@@ -287,7 +289,7 @@ startBrowserClipperReceiver({
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `initialContent` | `string` | `""` | 初始 HTML 内容（自动安全清洗） |
+| `initialContent` | `string \| object` | `""` | 初始内容：HTML 字符串（自动安全清洗 / Markdown 识别）或 ProseMirror JSON 文档对象（原样使用，宿主回显可直传 `getJSON()` 产物，避免二次解析失真）；运行期变化会原地更新文档，不丢撤销栈 |
 | `onChange` | `(html: string, json: object) => void` | - | 内容变化回调 |
 | `placeholder` | `string` | `"输入 '/' 打开菜单…"` | 占位文本 |
 | `mode` | `"edit" \| "view"` | `"edit"` | 编辑模式；`"view"` 为只读查看 |
@@ -300,8 +302,8 @@ startBrowserClipperReceiver({
 | `style` | `React.CSSProperties` | - | 容器自定义样式 |
 | `borderless` | `boolean` | `false` | 隐藏编辑器外边框 |
 | `showToolbar` | `boolean` | `true` | 显示顶部工具栏（导出） |
-| `showToc` | `boolean` | `true` | 显示目录侧栏 |
-| `showSearch` | `boolean` | `true` | 启用全文搜索（Ctrl+F） |
+| `showToc` | `boolean` | `true` | 目录**默认展开状态**：`true` 默认展开；`false` 控件仍可用但默认收起（工具栏按钮 / 悬浮球 / 抽屉均可展开，不关闭目录功能）。运行期变化会同步进内部状态 |
+| `showSearch` | `boolean` | `true` | 启用全文搜索：`true` 唤起 Ctrl+F 搜索浮层，`false` 禁用且不拦截快捷键 |
 | `onEditorReady` | `(editor: Editor) => void` | - | 编辑器实例就绪回调 |
 | `immediatelyRender` | `boolean` | - | 是否立即渲染编辑器；SSR/Next.js 配合 `dynamic` ssr:false 传 `true` |
 
@@ -361,6 +363,16 @@ setConfirmProvider(({ title, message, confirmText, cancelText, onConfirm, onCanc
 ```
 
 - **导入选择**：拖入 MD 文件时优先走宿主 `chooseMd`（内置 `MdImportDialog`）；未接入时回退到内置项目风格选择弹窗（渲染 / 附加 / 取消），不再使用原生 `window.confirm`。
+
+#### 目录（TOC）宿主注意事项
+
+- 入口：宽屏（≥64rem 且非全屏）显示工具栏「目录」按钮 + 右侧悬浮侧栏；窄屏 / 全屏改由抽屉承载（首次挂载自动展开一次）；侧栏 / 抽屉未展示时（用户收起后，或只读 `mode="view"` 态且文档含标题）由悬浮球作为入口。
+- 桌面侧栏与移动抽屉均经 `createPortal` 直挂 `document.body`（避免宿主 GSAP 入场 / 步骤切换动画的祖先 `transform` 抢走 `fixed` 包含块、被站点头部层叠上下文压制）。宿主**不要**以「编辑器容器后代」关系选择这两个面板，请用全局类 `.qingwu-toc-desktop` / `.qingwu-toc-drawer`。
+- 编辑器实例常驻、仅靠祖先 `display:none` 切换视图的宿主：portal 出 body 的面板不会随隐藏容器一起消失，需按自身步骤 / 视图状态额外收掉，例如：
+  ```css
+  body:has(.scene:not([data-step="1"])) > .qingwu-toc-desktop { display: none; }
+  ```
+- 滚动跟踪：滚动正文时目录实时高亮当前章节、激活项自动保持在目录视野内；悬浮框自身滚到顶 / 底后滚轮接力滚动正文；宿主使用 Lenis 时抽屉内已挂 `data-lenis-prevent` 放行原生滚动。
 
 ### 写作助手相关
 

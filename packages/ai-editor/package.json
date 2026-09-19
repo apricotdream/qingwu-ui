@@ -1,7 +1,7 @@
 {
   "name": "@qingwu-ui/ai-editor",
   "version": "0.9.0-beta.18",
-  "description": "青梧 - 一款面向中文用户的 AI 智能编辑器",
+  "description": "青梧 AI 编辑器 —— 面向中文用户的智能富文本编辑器，基于 Tiptap + React 19",
   "type": "module",
   "license": "Apache-2.0",
   "packageManager": "bun@1.3.13",

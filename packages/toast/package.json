@@ -1,7 +1,7 @@
 {
   "name": "@qingwu-ui/toast",
   "version": "0.9.0-beta",
-  "description": "Framework-agnostic, zero-dependency toast notification for Qingwu UI — ARIA live region, promise chain, queue management, prefers-reduced-motion",
+  "description": "青梧 UI 轻提示 —— ARIA live region、Promise 链、队列管理、prefers-reduced-motion，框架无关零依赖",
   "type": "module",
   "license": "Apache-2.0",
   "sideEffects": [

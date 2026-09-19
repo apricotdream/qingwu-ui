@@ -1,7 +1,7 @@
 {
   "name": "@qingwu-ui/scroll-fab",
   "version": "0.9.0-beta.1",
-  "description": "Framework-agnostic floating scroll fab for Qingwu UI - hold-to-progress ring flips between scroll-to-bottom and back-to-top, rAF eased scrolling with user interrupt, touch first-class",
+  "description": "青梧 UI 悬浮滚动栏 —— 描边绕圈翻转「滚到底/回顶部」、rAF 缓动滚动可被用户打断、触屏一等公民、零依赖",
   "type": "module",
   "license": "Apache-2.0",
   "sideEffects": [

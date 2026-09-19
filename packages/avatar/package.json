@@ -1,7 +1,7 @@
 {
   "name": "@qingwu-ui/avatar",
   "version": "0.9.0-beta.1",
-  "description": "Framework-agnostic avatar editor for Qingwu UI - click avatar, crop with drag, zoom, rotate and radius controls, export Blob and dataURL locally",
+  "description": "青梧 UI 头像编辑器 —— 点击头像即可裁剪、缩放、旋转与圆角调节，本地导出 Blob 与 dataURL，零依赖",
   "type": "module",
   "license": "Apache-2.0",
   "sideEffects": [

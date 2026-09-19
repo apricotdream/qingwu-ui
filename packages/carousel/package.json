@@ -1,7 +1,7 @@
 {
   "name": "@qingwu-ui/carousel",
   "version": "0.9.2-beta",
-  "description": "Framework-agnostic hero carousel for Qingwu UI — large visual, content panel, thumbnail navigation, zero dependencies",
+  "description": "青梧 UI 主视觉轮播 —— 大图视觉、内容面板、缩略图导航、零依赖",
   "type": "module",
   "license": "Apache-2.0",
   "sideEffects": [

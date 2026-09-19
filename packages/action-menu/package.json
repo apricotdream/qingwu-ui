@@ -1,7 +1,7 @@
 {
   "name": "@qingwu-ui/action-menu",
   "version": "0.9.0-beta",
-  "description": "Framework-agnostic radial action menu for Qingwu UI — hover-expand fan, tangential labels, FAB or custom trigger, keyboard navigation, zero dependencies",
+  "description": "青梧 UI 辐射式动作菜单 —— 悬停展开扇形、切向标签、FAB 或自定义触发器、键盘导航、零依赖",
   "type": "module",
   "license": "Apache-2.0",
   "sideEffects": [

@@ -1,7 +1,7 @@
 {
   "name": "@qingwu-ui/text-layout",
   "version": "0.9.0-beta",
-  "description": "Pretext-inspired text layout engine — two-phase prepare/layout, Canvas measurement, Unicode-aware line breaking, virtual scroll heights, multi-line truncation, chip flow, and table column sizing",
+  "description": "受 Pretext 启发的文本排版引擎 —— 两阶段 prepare/layout、Canvas 测量、Unicode 感知断行、虚拟滚动高度、多行截断、chip 流式换行与表格列宽计算",
   "type": "module",
   "license": "Apache-2.0",
   "sideEffects": false,

@@ -1,7 +1,7 @@
 {
   "name": "@qingwu-ui/select",
   "version": "0.9.0-beta.4",
-  "description": "Framework-agnostic dropdown select for Qingwu UI — single-select, accordion stagger open animation, disabled options, zero dependencies",
+  "description": "青梧 UI 下拉选择 —— 单选、手风琴错展开合动画、禁用项、零依赖",
   "type": "module",
   "license": "Apache-2.0",
   "sideEffects": [
