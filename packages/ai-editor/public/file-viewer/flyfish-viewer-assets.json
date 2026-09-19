@@ -13,12 +13,12 @@
     "code",
     "markdown"
   ],
-  "copiedAt": "2026-07-31T09:10:06.321Z",
+  "copiedAt": "2026-09-15T09:56:14.759Z",
   "assets": [
     {
       "rendererId": "pdf",
       "id": "pdf-worker",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\pdf\\pdf.worker.mjs",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\pdf\\pdf.worker.mjs",
       "copied": true,
       "sourcePackage": "pdfjs-dist",
       "sourceVersion": "5.4.624"
@@ -26,7 +26,7 @@
     {
       "rendererId": "pdf",
       "id": "pdf-cmaps",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\pdf\\cmaps",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\pdf\\cmaps",
       "copied": true,
       "sourcePackage": "pdfjs-dist",
       "sourceVersion": "5.4.624"
@@ -34,7 +34,7 @@
     {
       "rendererId": "pdf",
       "id": "pdf-wasm",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\pdf\\wasm",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\pdf\\wasm",
       "copied": true,
       "sourcePackage": "pdfjs-dist",
       "sourceVersion": "5.4.624"
@@ -42,7 +42,7 @@
     {
       "rendererId": "pdf",
       "id": "pdf-standard-fonts",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\pdf\\standard_fonts",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\pdf\\standard_fonts",
       "copied": true,
       "sourcePackage": "pdfjs-dist",
       "sourceVersion": "5.4.624"
@@ -50,19 +50,19 @@
     {
       "rendererId": "pdf",
       "id": "pdf-cjk-font-fallback",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\pdf\\fonts",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\pdf\\fonts",
       "copied": true
     },
     {
       "rendererId": "office-presentation",
       "id": "pptx-worker",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\pptx\\pptx.worker.js",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\pptx\\pptx.worker.js",
       "copied": true
     },
     {
       "rendererId": "office-presentation-binary",
       "id": "ppt-module",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\ppt\\index.mjs",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\ppt\\index.mjs",
       "copied": true,
       "sourcePackage": "@file-viewer/ppt",
       "sourceVersion": "0.3.1"
@@ -70,7 +70,7 @@
     {
       "rendererId": "office-presentation-binary",
       "id": "ppt-worker",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\ppt\\worker.mjs",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\ppt\\worker.mjs",
       "copied": true,
       "sourcePackage": "@file-viewer/ppt",
       "sourceVersion": "0.3.1"
@@ -78,7 +78,7 @@
     {
       "rendererId": "office-presentation-binary",
       "id": "ppt-frame-cache",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\ppt\\frame-cache.mjs",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\ppt\\frame-cache.mjs",
       "copied": true,
       "sourcePackage": "@file-viewer/ppt",
       "sourceVersion": "0.3.1"
@@ -86,7 +86,7 @@
     {
       "rendererId": "office-presentation-binary",
       "id": "ppt-wasm",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\ppt\\ppt-native.wasm",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\ppt\\ppt-native.wasm",
       "copied": true,
       "sourcePackage": "@file-viewer/ppt",
       "sourceVersion": "0.3.1"
@@ -94,7 +94,7 @@
     {
       "rendererId": "office-presentation-binary",
       "id": "ppt-cjk-font",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\ppt\\ppt-font-cjk.otf",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\ppt\\ppt-font-cjk.otf",
       "copied": true,
       "sourcePackage": "@file-viewer/ppt",
       "sourceVersion": "0.3.1"
@@ -102,7 +102,7 @@
     {
       "rendererId": "office-presentation-binary",
       "id": "ppt-manifest",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\ppt\\manifest.json",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\ppt\\manifest.json",
       "copied": true,
       "sourcePackage": "@file-viewer/ppt",
       "sourceVersion": "0.3.1"
@@ -110,7 +110,7 @@
     {
       "rendererId": "office-presentation-binary",
       "id": "ppt-package",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\ppt\\package.json",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\ppt\\package.json",
       "copied": true,
       "sourcePackage": "@file-viewer/ppt",
       "sourceVersion": "0.3.1"
@@ -118,7 +118,7 @@
     {
       "rendererId": "office-presentation-binary",
       "id": "ppt-license",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\ppt\\LICENSE",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\ppt\\LICENSE",
       "copied": true,
       "sourcePackage": "@file-viewer/ppt",
       "sourceVersion": "0.3.1"
@@ -126,7 +126,7 @@
     {
       "rendererId": "office-presentation-binary",
       "id": "ppt-notice",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\ppt\\NOTICE",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\ppt\\NOTICE",
       "copied": true,
       "sourcePackage": "@file-viewer/ppt",
       "sourceVersion": "0.3.1"
@@ -134,19 +134,19 @@
     {
       "rendererId": "office-word-openxml",
       "id": "docx-worker",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\docx\\docx.worker.js",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\docx\\docx.worker.js",
       "copied": true
     },
     {
       "rendererId": "office-word-openxml",
       "id": "docx-worker-jszip",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\docx\\jszip.min.js",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\docx\\jszip.min.js",
       "copied": true
     },
     {
       "rendererId": "spreadsheet-openxml",
       "id": "spreadsheet-worker",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\xlsx\\sheet.worker.js",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\xlsx\\sheet.worker.js",
       "copied": true,
       "sourcePackage": "@file-viewer/renderer-spreadsheet",
       "sourceVersion": "2.2.2"
@@ -154,13 +154,13 @@
     {
       "rendererId": "archive",
       "id": "libarchive-worker",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\libarchive\\worker-bundle.js",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\libarchive\\worker-bundle.js",
       "copied": true
     },
     {
       "rendererId": "archive",
       "id": "libarchive-wasm",
-      "to": "D:\\open-sources\\qingwu-ui\\packages\\editor\\public\\file-viewer\\vendor\\libarchive\\libarchive.wasm",
+      "to": "D:\\open-sources\\qingwu-ui\\packages\\ai-editor\\public\\file-viewer\\vendor\\libarchive\\libarchive.wasm",
       "copied": true
     }
   ]

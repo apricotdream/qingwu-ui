@@ -3,6 +3,29 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "0.9.0-beta.18",
+    date: "2026-09-16",
+    tag: "scroll-fab 首发 · ai-editor beta 系列",
+    changes: [
+      {
+        type: "feat",
+        text: "新增 @qingwu-ui/scroll-fab 悬浮滚动栏：桌面悬停 / 触屏按住推进描边进度环，绕满一圈在「滚动到底部 / 返回顶部」间纯切换（不附带滚动），点击（轻点）恒直接执行当前箭头动作、与描边正交；rAF 缓动滚动支持滚轮/触摸/键盘打断与懒加载变长追击，尊重 prefers-reduced-motion；window 与自定义容器双支持、可滚动才渲染；移动端一等支持（Pointer Events 单路径、ghost click 抑制、safe-area、44px 命中下限）；零框架依赖（首发 0.9.0-beta.1）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 代码块内搜狗/QQ 拼音「空格选词上屏」行尾残留空位：新增 ImeCommitSpaceGuard，compositionend 后 100ms 内的 insertText 空格吞掉（段落因 white-space 折叠不可见、代码块 pre-wrap 暴露）（beta.18）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 桌面目录悬浮框到边接棒滚正文：悬浮框自身滚到顶/底后滚轮接力滚动正文，移除 beta.16 的 data-lenis-prevent（其导致悬浮框内滚不动目录）（beta.17）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 移动端目录抽屉：portal 挂 body 不再被导航栏遮挡、点面板外自动收起、浮动按钮上移避让返回顶部、修复目录需点两次才跳转（beta.16）；代码块行号真机底部对齐、深色边框提亮（beta.15）",
+      },
+    ],
+  },
+  {
     version: "0.9.0-beta.14",
     date: "2026-08-22",
     tag: "ai-editor beta 系列",

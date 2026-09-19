@@ -891,7 +891,8 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     return () => box.removeEventListener("wheel", onWheel);
   }, [editor, desktopTocVisible]);
 
-  // 桌面目录用 flex 兄弟 + sticky 侧栏，不用 fixed 浮层（fixed 在祖先 transform/filter 包含块下会错位）
+  // 桌面目录是 fixed 浮层并 portal 到 body（见文件尾 aside）：躲开宿主祖先链上
+  // GSAP 动画的 transform / filter 等会抢 fixed 包含块的属性，定位锚点恒为视口。
 
   if (!editor) {
     return (
@@ -1465,12 +1466,19 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
       </div>
       {/* 桌面端目录 — 悬浮框（fixed 视口右侧，宽屏且非全屏时显示）。
           注意：不再挂 data-lenis-prevent（否则 Lenis 对框内滚轮一律早退，滚不到正文）。
-          滚轮到边接棒由上方自建 wheel handler 负责。 */}
-      {desktopTocVisible && (
-        <aside ref={tocDesktopRef} className="qingwu-toc-desktop toc-scroll">
-          <TocPanel editor={editor} onClose={() => setShowTocState(false)} />
-        </aside>
-      )}
+          滚轮到边接棒由上方自建 wheel effect（按 ref 挂监听，不依赖 DOM 父子关系）负责。
+          portal 到 body：fixed 元素若留在编辑器宿主 DOM 内，祖先链上任何残留的
+          transform（GSAP 入场/步骤切换动画进行中或 clearProps 之前）都会抢走包含块，
+          使目录短暂按祖先 padding box 定位（先出现在编辑器内、动画结束再跳到视口右侧）。
+          同 beta.16 移动抽屉的处理；aside 离开 .qingwu-editor 作用域后，
+          .qingwu-toc-desktop / .toc-* / .toc-scroll / .dark 样式均为全局选择器仍生效。 */}
+      {desktopTocVisible &&
+        createPortal(
+          <aside ref={tocDesktopRef} className="qingwu-toc-desktop toc-scroll">
+            <TocPanel editor={editor} onClose={() => setShowTocState(false)} />
+          </aside>,
+          document.body,
+        )}
     </div>
   );
 };

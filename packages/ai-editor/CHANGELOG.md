@@ -1,9 +1,29 @@
 # @qingwu-ui/ai-editor
 
+## Unreleased
+### Patch Changes
+
+- 桌面目录悬浮框改为 `createPortal` 挂到 `document.body`（同 beta.16 移动抽屉）：修复宿主存在 GSAP 入场/步骤切换动画时，`fixed` 目录在动画进行中被祖先内联 `transform` 抢走包含块，先按祖先 padding box 定位（闪现在编辑器内部）、动画 `clearProps` 后再跳到视口右侧的问题。目录样式均为全局选择器（`.qingwu-toc-desktop` / `.toc-*` / `.toc-scroll` / `.dark`），脱离 `.qingwu-editor` 作用域后表现不变；宿主以 DOM 后代关系锚定目录的选择器/观察器需改为 body 直子节点；另注意：编辑器实例常驻、仅靠祖先 `display:none` 切走编辑视图的宿主，`hidden` 不再连带隐藏 portal 出 body 的目录（桌面 aside 与移动抽屉均是），需按自身步骤/视图状态额外收掉（如 `body:has(.scene:not([data-step="1"])) > .qingwu-toc-desktop { display:none }`）
+
 ## 0.9.0-beta.18
 ### Patch Changes
 
 - 修复代码块内搜狗/QQ 拼音「空格选词上屏」在行尾残留空位：Chromium×搜狗在 compositionend 提交候选词的同一按键里会额外派发一次 `beforeinput insertText " "`（isComposing=false），被当作普通输入插入；段落因 `white-space:normal` 折叠尾随空格不可见，代码块 `pre-wrap` 全量保留而暴露。新增 `ImeCommitSpaceGuard` 扩展：组合结束（compositionend / isComposing 的 input 上屏）后 100ms 内的 insertText 空格一律吞掉，组合进行中的空格与用户隔 100ms 后主动键入的空格不受影响
+
+## 0.9.0-beta.17
+### Patch Changes
+
+- 桌面目录悬浮框「到边接棒滚正文」：悬浮框自身滚到顶/底后滚轮接力滚动编辑器正文；同时移除 beta.16 挂在悬浮框上的 `data-lenis-prevent`（该项让宿主 Lenis 直接接管滚轮，悬浮框内滚不动目录）
+
+## 0.9.0-beta.16
+### Patch Changes
+
+- 移动端目录抽屉修复：portal 挂到 body 不再被导航栏遮挡；点击面板外自动收起；抽屉内浮动按钮上移避让「返回顶部」；修复目录项需点两次才跳转的问题
+
+## 0.9.0-beta.15
+### Patch Changes
+
+- 代码块行号列真机底部对齐修复；深色主题代码块边框提亮
 
 ## 0.9.0-beta.14
 ### Patch Changes
