@@ -1,5 +1,10 @@
 # @qingwu-ui/search
 
+## 0.9.1-beta
+### Patch Changes
+
+- 修复面板打开（输入框自动聚焦）时出现**双光标**：占位层 `.qs-ph::after` 的伪造光标未随聚焦隐藏，与浏览器原生 caret 并存；现聚焦态只隐藏假光标、保留占位文案
+
 ## 0.9.0-beta
 ### Minor Changes
 

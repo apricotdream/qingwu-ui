@@ -365,6 +365,11 @@
 .qs-bar.has-value .qs-ph {
   display: none;
 }
+/* 聚焦态隐藏占位层假光标：面板打开即自动聚焦，浏览器原生 caret 已显示，
+   二者并存会出现"双光标"；只去假光标，保留占位文字 */
+.qs-bar:focus-within .qs-ph::after {
+  display: none;
+}
 
 /* ---- 工具栏按钮 ---- */
 .qs-iconbtn {

@@ -1,6 +1,6 @@
 {
   "name": "@qingwu-ui/search",
-  "version": "0.9.0-beta",
+  "version": "0.9.1-beta",
   "description": "青梧 UI 无头搜索 / 命令面板 —— 打字机占位符、键盘优先、零依赖",
   "type": "module",
   "license": "Apache-2.0",
