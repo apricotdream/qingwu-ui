@@ -1,7 +1,7 @@
 {
   "name": "@qingwu-ui/scroll-fab",
-  "version": "0.9.0-beta.2",
-  "description": "青梧 UI 悬浮滚动栏 —— 描边绕圈翻转「滚到底/回顶部」、Lenis 可插拔（未装回退 rAF）、异形形状（银杏叶等进度完全包裹）、零强依赖",
+  "version": "0.9.0-beta.3",
+  "description": "青梧 UI 悬浮滚动栏 —— 描边绕圈翻转「滚到底/回顶部」、Lenis 可插拔（未装回退 rAF）、异形形状（银杏叶等进度完全包裹）、单模式/阈值显隐/onScroll 进度回调、零强依赖",
   "type": "module",
   "license": "Apache-2.0",
   "sideEffects": [

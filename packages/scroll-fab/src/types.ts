@@ -93,4 +93,16 @@ export interface ScrollFabOptions {
   ariaLabelToTop?: string;
   /** 模式翻转回调 */
   onModeChange?: (mode: ScrollFabMode) => void;
+  /**
+   * 启用的模式集合（按数组顺序）；缺省 ["to-bottom", "to-top"]。
+   * 初始模式取首项；只传一个即为单模式（无绕环翻转、无描边、静态 aria 文案）；空数组/全非法抛 TypeError。
+   */
+  modes?: ScrollFabMode[];
+  /** 显示所需的最小已滚动距离 px：scrollPos < 该值时按钮隐藏（默认 0，行为不变）；负数按 0 */
+  showThreshold?: number;
+  /**
+   * 滚动进度回调：0..1 小数（maxScroll 为 0 时吐 0），scroll/resize/程序滚动时 rAF 节流触发，
+   * 按钮隐藏期间照常吐，构造完成与 refresh() 后各补发一次。
+   */
+  onScroll?: (pct: number) => void;
 }

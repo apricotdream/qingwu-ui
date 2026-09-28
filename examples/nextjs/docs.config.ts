@@ -363,7 +363,7 @@ export const COMPONENT_SECTIONS: DocSection[] = [
         href: "/demo/scroll-fab",
         title: "ScrollFab 悬浮滚动栏",
         en: "Scroll Fab",
-        desc: "默认滚动到底部的悬浮栏：桌面悬停推进描边、绕满一圈翻转为返回顶部（纯切换不附带滚动），触屏按住同样驱动；点击（轻点）恒直接执行当前模式动作；Lenis 可插拔（外部实例 / 自建 / 内置 rAF 三态）、银杏叶等异形形状进度完全包裹；缓动支持打断与懒加载追击，移动端一等支持。",
+        desc: "默认滚动到底部的悬浮栏：桌面悬停推进描边、绕满一圈翻转为返回顶部（纯切换不附带滚动），触屏按住同样驱动；点击（轻点）恒直接执行当前模式动作，Enter/Space 同语义、方向键翻转；Lenis 可插拔（外部实例 / 自建 / 内置 rAF 三态）、银杏叶等异形形状进度完全包裹；单模式 / 阈值显隐 / onScroll 进度回调；缓动支持打断与懒加载追击，移动端一等支持。",
         keywords: [
           "悬浮栏",
           "悬浮球",
@@ -461,6 +461,24 @@ export const COMPONENT_SECTIONS: DocSection[] = [
                 name: "onLenisReady",
                 desc: "自建 Lenis 实例就绪回调（向宿主抛出内部实例）；外部实例模式不触发",
                 type: "(lenis: LenisLike) => void",
+                default: "-",
+              },
+              {
+                name: "modes",
+                desc: "启用的模式集合（按顺序），初始模式取首项；缺省 ['to-bottom','to-top']，单模式无绕环翻转/描边、静态 aria；去重过滤，空数组/全非法抛 TypeError",
+                type: "('to-bottom' | 'to-top')[]",
+                default: "双模式",
+              },
+              {
+                name: "showThreshold",
+                desc: "显示所需最小已滚动距离 px：scrollPos 未越过即隐藏（默认 0，行为不变，负数按 0）；隐藏只改渲染，不影响进行中动画与模式",
+                type: "number",
+                default: "0",
+              },
+              {
+                name: "onScroll",
+                desc: "滚动进度回调：0..1 小数（maxScroll 为 0 吐 0），rAF 节流，隐藏期间照吐，构造完成与 refresh() 后各补发一次",
+                type: "(pct: number) => void",
                 default: "-",
               },
               {

@@ -2,7 +2,7 @@
 
 import { ScrollFab } from "@qingwu-ui/scroll-fab";
 import "@qingwu-ui/scroll-fab/style.css";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import DemoCard from "@/components/DemoCard";
 
 function Article({ n }: { n: number }) {
@@ -26,6 +26,7 @@ const LEAF =
 
 export default function ScrollFabPage() {
   const boxRef = useRef<HTMLDivElement>(null);
+  const [pct, setPct] = useState(0);
 
   useEffect(() => {
     const page = new ScrollFab();
@@ -43,10 +44,18 @@ export default function ScrollFabPage() {
         outlineTransform: "translate(24 24) scale(1.13) translate(-24 -24)",
       },
     });
+    // 单模式 to-top + 阈值显隐 + onScroll 实时读数（银杏叶左侧）
+    const solo = new ScrollFab({
+      modes: ["to-top"],
+      showThreshold: 200,
+      position: { left: 96, bottom: 24 },
+      onScroll: setPct,
+    });
     return () => {
       page.destroy();
       container?.destroy();
       leaf.destroy();
+      solo.destroy();
     };
   }, []);
 
@@ -84,6 +93,21 @@ export default function ScrollFabPage() {
         >
           <Article n={16} />
         </div>
+      </DemoCard>
+
+      <DemoCard
+        title="单模式 + 阈值显隐（to-top）"
+        desc={`左侧第二颗（银杏叶旁）是纯「返回顶部」单模式：无绕环翻转、无描边，showThreshold 200——页面滚动不足 200px 时隐藏、不打扰首屏，越过即出现（隐藏期间 onScroll 照常吐值）。当前滚动进度：${Math.round(pct * 100)}%（onScroll 回调，0..1 小数）。键盘 Enter/Space 直接执行回顶，方向键在单模式下不响应。`}
+        code={`new ScrollFab({
+  modes: ["to-top"],
+  showThreshold: 200,
+  position: { left: 96, bottom: 24 },
+  onScroll: (pct) => setPct(pct),
+});`}
+      >
+        <p style={{ color: "#68706c", fontSize: 14, margin: 0 }}>
+          滚动本页观察：200px 内该按钮不可见；出现后点击即平滑回顶，回顶途中越过 200px 又会隐藏（动画继续、不受影响）。
+        </p>
       </DemoCard>
 
       <DemoCard

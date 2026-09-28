@@ -4,6 +4,9 @@
 
 - **绕圈翻转**：桌面悬停 / 触屏按住推进描边进度，绕满一圈在「滚动到底部 / 返回顶部」间纯切换（不附带滚动），未绕满移开/松手则描边衰减倒转
 - **点击与描边正交**：轻点恒直接执行当前模式动作；触屏绕满后的释放被消费，避免同一手势既翻转又滚动
+- **键盘语义正确**：Enter/Space 执行当前模式动作（原生按钮激活）；双模式下方向键 `ArrowUp/ArrowDown` 翻转模式
+- **单模式 / 阈值显隐**：`modes` 允许只跑「返回顶部」，`showThreshold` 滚过阈值才出现、不打扰首屏
+- **进度回调**：`onScroll(pct)` 实时吐出 0..1 滚动进度
 - **Lenis 可插拔**：内置 rAF 缓动，可选接入 [Lenis](https://github.com/darkroomengineering/lenis)（未安装静默回退）
 - **异形形状**：银杏叶等自定义外形，进度描边沿外扩轮廓完全包裹
 - 程序滚动支持 wheel / touch / keydown 打断、懒加载变长追击
@@ -68,6 +71,19 @@ new ScrollFab({
 
 异形模式下圆形外壳自动退场（背景/边框/圆角），阴影改用 `drop-shadow` 跟随叶片真实形状；命中区仍为矩形以保证 44px 触控目标。
 
+### 单模式 / 阈值显隐 / 进度回调
+
+```ts
+// 只跑「返回顶部」：首屏不打扰，滚过 400px 才出现；实时读滚动进度
+new ScrollFab({
+  modes: ["to-top"],
+  showThreshold: 400,
+  onScroll: (pct) => console.log(`${Math.round(pct * 100)}%`),
+});
+```
+
+单模式没有绕环翻转与描边，视觉上即普通按钮；键盘 Enter/Space 执行动作。
+
 ## API
 
 ```ts
@@ -90,6 +106,9 @@ interface ScrollFabOptions {
   ariaLabelToBottom?: string;
   ariaLabelToTop?: string;
   onModeChange?: (mode: "to-bottom" | "to-top") => void;
+  modes?: ("to-bottom" | "to-top")[];    // 缺省双模式；初始取首项；单模式无绕环/描边；空配置抛 TypeError
+  showThreshold?: number;                 // 显示所需最小 scrollPos px，默认 0（行为不变），负数按 0
+  onScroll?: (pct: number) => void;       // 0..1 小数，rAF 节流，隐藏期间照吐，构造/refresh 后补发
 }
 ```
 

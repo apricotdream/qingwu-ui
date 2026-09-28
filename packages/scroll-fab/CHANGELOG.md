@@ -1,5 +1,12 @@
 # @qingwu-ui/scroll-fab
 
+## 0.9.0-beta.3
+### Minor Changes
+
+- 修复键盘语义错误：Enter/Space 不再翻转模式——改为执行当前模式动作（走浏览器原生按钮激活 → click，与鼠标点击同一路径）；双模式下新增方向键翻转（ArrowUp=返回顶部 / ArrowDown=滚动到底，preventDefault 只翻转不滚页，同方向不重复触发），单模式方向键不响应；键盘激活与点击行为完全对齐
+- 新增显隐配置：showThreshold（默认 0，行为不变，负数按 0）——scrollPos 未越过阈值时按钮隐藏，跨越即时显隐、无过渡动画，隐藏只改渲染不影响进行中的程序滚动与模式状态；modes（缺省 ["to-bottom","to-top"]）——初始模式取数组首项，规范化去重过滤，空数组/全非法构造时抛 TypeError，单模式无绕环翻转/描边（静态 aria「返回顶部」「滚动到底部」），图标按唯一模式方向显示
+- 新增 onScroll(pct) 滚动进度回调：0..1 小数（maxScroll 为 0 时吐 0），scroll/resize/程序滚动时 rAF 节流一帧一吐，按钮隐藏期间照常吐，构造完成与 refresh() 后各补发一次
+
 ## 0.9.0-beta.2
 ### Minor Changes
 

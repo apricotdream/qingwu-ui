@@ -3,6 +3,25 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "0.9.0-beta.21",
+    date: "2026-09-28",
+    tag: "scroll-fab",
+    changes: [
+      {
+        type: "fix",
+        text: "scroll-fab 修复键盘语义错误：Enter/Space 不再翻转模式，改为执行当前模式动作（走浏览器原生按钮激活，与鼠标点击同一路径）；双模式下新增方向键翻转（ArrowUp=返回顶部 / ArrowDown=滚动到底），preventDefault 只翻转不滚页、同方向不重复触发，单模式方向键不响应（包版本 0.9.0-beta.3）",
+      },
+      {
+        type: "feat",
+        text: "scroll-fab 新增显隐配置：showThreshold（默认 0 行为不变）——scrollPos 未越过阈值按钮隐藏、不打扰首屏，跨越即时显隐且不影响进行中动画与模式；modes——初始模式取数组首项、规范化去重过滤、空配置抛 TypeError，单模式无绕环/描边、静态 aria、图标按唯一模式方向（包版本 0.9.0-beta.3）",
+      },
+      {
+        type: "feat",
+        text: "scroll-fab 新增 onScroll(pct)：0..1 小数滚动进度，rAF 节流一帧一吐，按钮隐藏期间照吐，构造完成与 refresh() 后各补发一次；演示页新增「单模式 + 阈值显隐」卡片并实时显示百分比（包版本 0.9.0-beta.3）",
+      },
+    ],
+  },
+  {
     version: "0.9.0-beta.20",
     date: "2026-09-28",
     tag: "scroll-fab",

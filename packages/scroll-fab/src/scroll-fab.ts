@@ -14,6 +14,8 @@ const RADIUS = 21;
 const FALLBACK_PATH_LEN = 100;
 const DEFAULT_LABEL_BOTTOM = "滚动到底部（悬停或按住绕圈可切换为返回顶部）";
 const DEFAULT_LABEL_TOP = "返回顶部（悬停或按住绕圈可切换为滚动到底部）";
+const STATIC_LABEL_BOTTOM = "滚动到底部";
+const STATIC_LABEL_TOP = "返回顶部";
 
 function easeInOutCubic(p: number): number {
   return p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2;
@@ -46,6 +48,10 @@ export class ScrollFab {
   private readonly labelTop: string;
   private readonly onModeChange?: (mode: ScrollFabMode) => void;
   private readonly onLenisReady?: (lenis: LenisLike) => void;
+  private readonly onScroll?: (pct: number) => void;
+  private readonly modes: ScrollFabMode[];
+  private readonly single: boolean;
+  private readonly threshold: number;
 
   /** 外部注入：宿主实例，组件永不销毁 */
   private externalLenis: LenisLike | null = null;
@@ -54,7 +60,7 @@ export class ScrollFab {
   private ownLenis: LenisLike | null = null;
   private ownLenisPromise: Promise<LenisLike | null> | null = null;
 
-  private mode: ScrollFabMode = "to-bottom";
+  private mode: ScrollFabMode;
   private progress = 0;
   private hovering = false;
   private pressing = false;
@@ -74,6 +80,8 @@ export class ScrollFab {
   private ro: ResizeObserver | null = null;
   private actionSeq = 0;
   private destroyed = false;
+  private emitRaf: number | null = null;
+  private lastPct = -1;
 
   constructor(options: ScrollFabOptions = {}) {
     this.targetEl = options.target ?? null;
@@ -82,10 +90,18 @@ export class ScrollFab {
     this.decayMs = Math.max(100, options.decayDuration ?? 300);
     this.cancelPx = Math.max(4, options.cancelThreshold ?? 10);
     this.animate = options.animate ?? true;
-    this.labelBottom = options.ariaLabelToBottom ?? DEFAULT_LABEL_BOTTOM;
-    this.labelTop = options.ariaLabelToTop ?? DEFAULT_LABEL_TOP;
+    this.threshold = Math.max(0, options.showThreshold ?? 0);
     this.onModeChange = options.onModeChange;
     this.onLenisReady = options.onLenisReady;
+    this.onScroll = options.onScroll;
+
+    this.modes = this.normalizeModes(options.modes);
+    this.single = this.modes.length === 1;
+    this.mode = this.modes[0]!;
+
+    this.labelBottom =
+      options.ariaLabelToBottom ?? (this.single ? STATIC_LABEL_BOTTOM : DEFAULT_LABEL_BOTTOM);
+    this.labelTop = options.ariaLabelToTop ?? (this.single ? STATIC_LABEL_TOP : DEFAULT_LABEL_TOP);
 
     if (isLenisInstance(options.lenis)) {
       this.externalLenis = options.lenis;
@@ -100,7 +116,10 @@ export class ScrollFab {
     this.el.className = `qsf-root${options.className ? ` ${options.className}` : ""}`;
     this.el.dataset.mode = this.mode;
     if (this.shape) this.el.dataset.shape = "on";
-    this.el.setAttribute("aria-label", this.labelBottom);
+    this.el.setAttribute(
+      "aria-label",
+      this.mode === "to-bottom" ? this.labelBottom : this.labelTop,
+    );
     this.el.style.setProperty("--qsf-size", `${Math.max(44, options.size ?? 48)}px`);
     if (options.zIndex != null) this.el.style.setProperty("--qsf-z", String(options.zIndex));
     if (options.position?.right != null)
@@ -164,12 +183,15 @@ export class ScrollFab {
     this.el.append(svg, this.icon);
     document.body.append(this.el);
 
-    this.el.addEventListener("pointerenter", this.onEnter);
-    this.el.addEventListener("pointerleave", this.onLeave);
-    this.el.addEventListener("pointerdown", this.onDown);
-    this.el.addEventListener("pointermove", this.onMove);
-    this.el.addEventListener("pointerup", this.onUp);
-    this.el.addEventListener("pointercancel", this.onCancel);
+    // 单模式没有绕环翻转：不绑绕环手势，只保留按钮激活与（双模式的）方向键翻转
+    if (!this.single) {
+      this.el.addEventListener("pointerenter", this.onEnter);
+      this.el.addEventListener("pointerleave", this.onLeave);
+      this.el.addEventListener("pointerdown", this.onDown);
+      this.el.addEventListener("pointermove", this.onMove);
+      this.el.addEventListener("pointerup", this.onUp);
+      this.el.addEventListener("pointercancel", this.onCancel);
+    }
     this.el.addEventListener("keydown", this.onKey);
     this.el.addEventListener("click", this.onClick);
     window.addEventListener("resize", this.onRecheck);
@@ -179,6 +201,8 @@ export class ScrollFab {
       this.ro.observe(this.targetEl ?? document.documentElement);
     }
     this.syncVisible();
+    // 初始补发一次进度（同步吐出，宿主无需先滚再读）
+    this.emitScroll();
   }
 
   /** 当前模式 */
@@ -186,9 +210,11 @@ export class ScrollFab {
     return this.mode;
   }
 
-  /** 内容懒加载等外部高度变化后可显式触发重估（滚动/resize 时也会自动重估） */
+  /** 内容懒加载等外部高度变化后可显式触发重估（滚动/resize 时也会自动重估），并强制补发一次进度 */
   refresh(): void {
-    this.onRecheck();
+    this.syncVisible();
+    this.lastPct = -1;
+    this.emitScroll();
   }
 
   scrollToBottom(): void {
@@ -201,12 +227,14 @@ export class ScrollFab {
 
   destroy(): void {
     this.destroyed = true;
-    this.el.removeEventListener("pointerenter", this.onEnter);
-    this.el.removeEventListener("pointerleave", this.onLeave);
-    this.el.removeEventListener("pointerdown", this.onDown);
-    this.el.removeEventListener("pointermove", this.onMove);
-    this.el.removeEventListener("pointerup", this.onUp);
-    this.el.removeEventListener("pointercancel", this.onCancel);
+    if (!this.single) {
+      this.el.removeEventListener("pointerenter", this.onEnter);
+      this.el.removeEventListener("pointerleave", this.onLeave);
+      this.el.removeEventListener("pointerdown", this.onDown);
+      this.el.removeEventListener("pointermove", this.onMove);
+      this.el.removeEventListener("pointerup", this.onUp);
+      this.el.removeEventListener("pointercancel", this.onCancel);
+    }
     this.el.removeEventListener("keydown", this.onKey);
     this.el.removeEventListener("click", this.onClick);
     window.removeEventListener("resize", this.onRecheck);
@@ -219,9 +247,26 @@ export class ScrollFab {
     this.ownLenis = null;
     if (this.ringRaf != null) cancelAnimationFrame(this.ringRaf);
     this.ringRaf = null;
+    if (this.emitRaf != null) cancelAnimationFrame(this.emitRaf);
+    this.emitRaf = null;
     if (this.flashTimer != null) clearTimeout(this.flashTimer);
     if (this.tapResetTimer != null) clearTimeout(this.tapResetTimer);
     this.el.remove();
+  }
+
+  /** 规范化 modes：缺省双模式；去重、过滤非法值；结果为空直接抛错 */
+  private normalizeModes(input?: ScrollFabMode[]): ScrollFabMode[] {
+    if (!input) return ["to-bottom", "to-top"];
+    const out: ScrollFabMode[] = [];
+    for (const m of input) {
+      if ((m === "to-bottom" || m === "to-top") && !out.includes(m)) out.push(m);
+    }
+    if (out.length === 0) {
+      throw new TypeError(
+        "ScrollFab: modes 至少需要一个有效模式（'to-bottom' | 'to-top'）",
+      );
+    }
+    return out;
   }
 
   private makeCircle(cls: string): SVGCircleElement {
@@ -244,6 +289,7 @@ export class ScrollFab {
    * 桌面（mouse）：pointerenter 推进描边 / pointerleave 衰减倒转；click 恒为动作
    * 触屏（非 mouse）：pointerdown 按住推进（首指针独占，位移超阈值放弃并放行手势）；
    *   轻点 = 动作；绕满翻转过 → 本次释放被消费（不在同一手势里翻转+滚动）
+   * 键盘：Enter/Space 走原生按钮激活（click → doAction）；双模式下方向键翻转模式
    */
 
   private onEnter = (e: PointerEvent): void => {
@@ -316,9 +362,13 @@ export class ScrollFab {
   };
 
   private onKey = (e: KeyboardEvent): void => {
-    if (e.repeat || (e.key !== "Enter" && e.key !== " ")) return;
+    if (e.repeat || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+    if (this.single) return;
+    const want: ScrollFabMode = e.key === "ArrowUp" ? "to-top" : "to-bottom";
+    if (want === this.mode) return;
+    // 翻转与滚动正交：拦截方向键的原生页面滚动，只做模式翻转
     e.preventDefault();
-    this.setMode(this.mode === "to-bottom" ? "to-top" : "to-bottom");
+    this.setMode(want);
   };
 
   /* ---------------- 描边 rAF：悬停/按住推进 · 离开/松手衰减倒转 ---------------- */
@@ -418,13 +468,13 @@ export class ScrollFab {
       .then((mod) => {
         const LenisCtor =
           (mod as { default?: new (opts: Record<string, unknown>) => LenisLike }).default ??
-          (mod as unknown as new (opts: Record<string, unknown>) => LenisLike);
+          (mod as unknown as new (opts: Record<string,unknown>) => LenisLike);
         const cfg: Record<string, unknown> = { ...this.ownLenisConfig };
         // target 容器映射为 Lenis wrapper；window 形态留空（Lenis 默认即 window）
         if (this.targetEl) cfg.wrapper = this.targetEl;
         this.ownLenis = new LenisCtor(cfg);
         this.onLenisReady?.(this.ownLenis);
-        return this.ownLenis;
+        return this.ownLenis
       })
       .catch(() => {
         // lenis 未安装/不可用：放弃 lenis 路线，避免每次点击重复尝试
@@ -500,7 +550,7 @@ export class ScrollFab {
   /** 打断自建 Lenis 程序滚动：stop 冻结动画（下次发起前 start 复位） */
   private onLenisInterrupt = (): void => {
     if (!this.lenisScrolling) return;
-    (this.ownLenis as LenisLike & { stop?: () => void } | null)?.stop?.();
+    (this.ownLenis as (LenisLike & { stop?: () => void }) | null)?.stop?.();
     this.endLenisScroll();
   };
 
@@ -601,7 +651,7 @@ export class ScrollFab {
     }
   }
 
-  /* ---------------- 度量与可见性（可滚动才渲染） ---------------- */
+  /* ---------------- 度量、显隐与进度（可滚动且越过阈值才渲染） ---------------- */
 
   private maxScroll(): number {
     if (this.targetEl) return Math.max(0, this.targetEl.scrollHeight - this.targetEl.clientHeight);
@@ -624,9 +674,28 @@ export class ScrollFab {
 
   private onRecheck = (): void => {
     this.syncVisible();
+    this.scheduleScroll();
   };
 
   private syncVisible(): void {
-    this.el.hidden = this.maxScroll() <= 1;
+    this.el.hidden = this.maxScroll() <= 1 || this.scrollPos() < this.threshold;
+  }
+
+  /** rAF 节流：一帧内多次重估只吐一次；按钮隐藏期间照常调度 */
+  private scheduleScroll(): void {
+    if (this.emitRaf != null || this.destroyed) return;
+    this.emitRaf = requestAnimationFrame(() => {
+      this.emitRaf = null;
+      this.emitScroll();
+    });
+  }
+
+  private emitScroll(): void {
+    if (this.destroyed) return;
+    const max = this.maxScroll();
+    const pct = max <= 0 ? 0 : Math.min(1, Math.max(0, this.scrollPos() / max));
+    if (pct === this.lastPct) return;
+    this.lastPct = pct;
+    this.onScroll?.(pct);
   }
 }

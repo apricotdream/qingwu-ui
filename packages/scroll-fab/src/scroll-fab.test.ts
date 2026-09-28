@@ -219,13 +219,88 @@ describe("ScrollFab", () => {
     fab.destroy();
   });
 
-  test("键盘 Enter/Space 一键翻转模式", () => {
+  test("键盘 Enter/Space 不再翻转（动作走原生 click 激活）", () => {
     const fab = new ScrollFab();
     fab.el.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    expect(fab.currentMode).toBe("to-top");
+    expect(fab.currentMode).toBe("to-bottom");
     fab.el.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
     expect(fab.currentMode).toBe("to-bottom");
     fab.destroy();
+  });
+
+  test("双模式方向键翻转：ArrowUp→to-top，ArrowDown→to-bottom，同方向不重复触发", () => {
+    const onModeChange = vi.fn();
+    const fab = new ScrollFab({ onModeChange });
+    const up = new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true, cancelable: true });
+    fab.el.dispatchEvent(up);
+    expect(up.defaultPrevented).toBe(true);
+    expect(fab.currentMode).toBe("to-top");
+    fab.el.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }));
+    expect(onModeChange).toHaveBeenCalledTimes(1);
+    fab.el.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    expect(fab.currentMode).toBe("to-bottom");
+    fab.destroy();
+  });
+
+  test("单模式：初始模式跟随配置、无绕环手势/描边、静态 aria、方向键不响应", () => {
+    const fab = new ScrollFab({ modes: ["to-top"] });
+    expect(fab.currentMode).toBe("to-top");
+    expect(fab.el.getAttribute("aria-label")).toBe("返回顶部");
+    fire(fab.el, "pointerenter"); // 无监听：不推进
+    pump(0);
+    pump(800);
+    expect(fab.el.querySelector(".qsf-bar")?.hasAttribute("hidden")).toBe(true);
+    fab.el.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    expect(fab.currentMode).toBe("to-top");
+    fire(fab.el, "click"); // 唯一模式动作：回顶（当前 0，无位移）
+    expect(scrollToCalls).toBe(0);
+    fab.destroy();
+  });
+
+  test("modes 规范化：去重过滤；空数组/全非法抛 TypeError；初始取首项", () => {
+    const fab = new ScrollFab({
+      modes: ["to-top", "to-top", "to-bottom", "x" as unknown as ScrollFabMode],
+    });
+    expect(fab.currentMode).toBe("to-top");
+    fab.destroy();
+    expect(() => new ScrollFab({ modes: [] })).toThrow(TypeError);
+    expect(() => new ScrollFab({ modes: ["x"] as unknown as ScrollFabMode[] })).toThrow(TypeError);
+  });
+
+  test("showThreshold：未越过阈值隐藏，越过后显示，负数按 0", () => {
+    const fab = new ScrollFab({ showThreshold: 400, animate: false });
+    expect(fab.el.hidden).toBe(true);
+    scroll.y = 399;
+    window.dispatchEvent(new Event("scroll"));
+    expect(fab.el.hidden).toBe(true);
+    scroll.y = 400;
+    window.dispatchEvent(new Event("scroll"));
+    expect(fab.el.hidden).toBe(false);
+    fab.destroy();
+    const fab2 = new ScrollFab({ showThreshold: -10 });
+    expect(fab2.el.hidden).toBe(false);
+    fab2.destroy();
+  });
+
+  test("onScroll：初始补发 0；滚动吐 0..1；隐藏期间照常；maxScroll=0 吐 0", () => {
+    const onScroll = vi.fn();
+    const fab = new ScrollFab({ showThreshold: 400, onScroll });
+    expect(onScroll).toHaveBeenCalledWith(0);
+    scroll.y = 2500;
+    window.dispatchEvent(new Event("scroll"));
+    pump(0);
+    expect(onScroll).toHaveBeenCalledWith(0.5); // 仍隐藏但照吐
+    scroll.y = 5000;
+    window.dispatchEvent(new Event("scroll"));
+    pump(100);
+    expect(onScroll).toHaveBeenCalledWith(1);
+    fab.destroy();
+
+    scroll.max = 0;
+    const onScroll2 = vi.fn();
+    const fab2 = new ScrollFab({ onScroll: onScroll2 });
+    expect(onScroll2).toHaveBeenCalledWith(0);
+    fab2.destroy();
   });
 
   test("多点触控：首指针独占，第二指针按下被忽略", () => {
