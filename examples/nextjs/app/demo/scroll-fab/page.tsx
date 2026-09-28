@@ -20,6 +20,10 @@ function Article({ n }: { n: number }) {
   );
 }
 
+// 银杏叶双 path：fill 为叶片实体，outline 同形外扩 1.13 倍让进度描边完全包裹叶片外缘
+const LEAF =
+  "M24 46 L23.2 34 C16 33 9 28 7 20 C6.5 15 9 11 13 10 C12 13.5 14 16 17 15.5 C15.5 12.5 17.5 8.5 21 7.5 C22.4 7 23.4 8.5 24 10 C24.6 8.5 25.6 7 27 7.5 C30.5 8.5 32.5 12.5 31 15.5 C34 16 36 13.5 35 10 C39 11 41.5 15 41 20 C39 28 32 33 24.8 34 Z";
+
 export default function ScrollFabPage() {
   const boxRef = useRef<HTMLDivElement>(null);
 
@@ -29,9 +33,20 @@ export default function ScrollFabPage() {
     const container = box
       ? new ScrollFab({ target: box, position: { right: 96, bottom: 24 } })
       : null;
+    // 银杏叶异形 + 自建 Lenis（未安装 lenis 时静默回退内置 rAF）
+    const leaf = new ScrollFab({
+      lenis: true,
+      position: { left: 24, bottom: 24 },
+      shape: {
+        fill: LEAF,
+        outline: LEAF,
+        outlineTransform: "translate(24 24) scale(1.13) translate(-24 -24)",
+      },
+    });
     return () => {
       page.destroy();
       container?.destroy();
+      leaf.destroy();
     };
   }, []);
 
@@ -69,6 +84,25 @@ export default function ScrollFabPage() {
         >
           <Article n={16} />
         </div>
+      </DemoCard>
+
+      <DemoCard
+        title="异形 + Lenis（银杏叶）"
+        desc="左下角悬浮栏为银杏叶异形：进度描边沿外扩轮廓完全包裹叶片（双 path，单 path 描边居中会有一半压进形状内部）；圆形外壳退场，阴影改用 drop-shadow 跟随叶片真实形状。lenis: true 时点击滚动由 Lenis 驱动（未安装 lenis 静默回退内置 rAF），自建实例 smoothWheel:false，只驱动按钮程序滚动、不劫持页面滚轮。绕圈翻转、轻点执行等交互与圆形模式完全一致。"
+        code={`new ScrollFab({
+  lenis: true, // 也可传 Lenis 配置或宿主已有实例
+  position: { left: 24, bottom: 24 },
+  shape: {
+    fill: LEAF,
+    outline: LEAF,
+    outlineTransform:
+      "translate(24 24) scale(1.13) translate(-24 -24)",
+  },
+});`}
+      >
+        <p style={{ color: "#68706c", fontSize: 14, margin: 0 }}>
+          观察左下角银杏叶悬浮栏：悬停绕圈、轻点滚动、翻转后描边变琥珀色；翻回本页底部再返回顶部即可验证全程。
+        </p>
       </DemoCard>
 
       <DemoCard

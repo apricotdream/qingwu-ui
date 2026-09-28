@@ -60,6 +60,7 @@ import "@qingwu-ui/ai-editor/styles";
 | [`@qingwu-ui/carousel`](./packages/carousel/README.md) | 轮播图 / Hero：双层图分层入场（背景先滑入、角色再淡入上移）、文案逐行滑入、缩略图导航 | 0.9.2-beta |
 | [`@qingwu-ui/avatar`](./packages/avatar/README.md) | 头像编辑器：点击头像进入裁剪，拖拽 / 缩放 / 旋转 / 圆角，本地导出 Blob / dataURL | 0.9.0-beta.1 |
 | [`@qingwu-ui/confirm`](./packages/confirm/README.md) | 确认框：从触发控件 morph 转场、异步确认 loading、互斥单例 | 0.9.0-beta |
+| [`@qingwu-ui/scroll-fab`](./packages/scroll-fab/README.md) | 悬浮滚动栏：绕圈翻转「滚到底/回顶部」、Lenis 可插拔、银杏叶异形进度包裹 | 0.9.0-beta.2 |
 
 > **版本策略**：所有 `@qingwu-ui/*` 包统一主版本（当前 **0.9**），各包修复以 `-beta.N` 补丁递进，大版本内保持 API 兼容。
 

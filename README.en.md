@@ -58,6 +58,7 @@ Full docs (install / props / AI providers / clipper extension) in [`packages/ai-
 | [`@qingwu-ui/carousel`](./packages/carousel/README.md) | Carousel / hero: layered two-image entrance (background slides in first, character fades up after), staggered text lines, thumbnail nav | 0.9.2-beta |
 | [`@qingwu-ui/avatar`](./packages/avatar/README.md) | Framework-agnostic avatar editor: click to crop, drag / zoom / rotate / radius controls, local Blob & dataURL export | 0.9.0-beta.1 |
 | [`@qingwu-ui/confirm`](./packages/confirm/README.md) | Confirmation dialog: morphs from the trigger control, elastic same-origin transition, async confirm with loading state, mutual-exclusion singleton | 0.9.0-beta |
+| [`@qingwu-ui/scroll-fab`](./packages/scroll-fab/README.md) | Floating scroll fab: hold-to-ring mode flip (to-bottom/to-top), pluggable Lenis, ginkgo custom shape with wrapped progress | 0.9.0-beta.2 |
 
 > **Versioning**: all `@qingwu-ui/*` packages share the same major.minor line (currently **0.9**); each package carries its own `-beta.N` patch increment, with API compatibility kept within the major line.
 

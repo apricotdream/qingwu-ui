@@ -70,6 +70,36 @@
   /* 12 点钟为描边起点 */
   transform: rotate(-90deg);
   pointer-events: none;
+  overflow: visible;
+}
+
+/* ------------------------------------------------------------
+   异形模式（银杏叶等）：圆形外壳退场，一切由 SVG path 承担
+   ------------------------------------------------------------ */
+.qsf-root[data-shape="on"] {
+  --qsf-icon: 38%;
+  background: none;
+  border: none;
+  border-radius: 0;
+  /* box-shadow 只能投矩形；异形阴影跟随叶片真实形状 */
+  box-shadow: none;
+  filter: drop-shadow(0 10px 14px rgba(20, 31, 30, 0.28));
+}
+.qsf-root[data-shape="on"]:active {
+  /* 压住时连异形阴影一起收 */
+  filter: drop-shadow(0 4px 8px rgba(20, 31, 30, 0.28));
+}
+.qsf-root[data-shape="on"] .qsf-svg {
+  /* 异形轮廓的起点约定已在 path 数据里对准 12 点，不再整体旋转 */
+  transform: none;
+}
+.qsf-shape-fill {
+  fill: var(--qsf-card);
+  stroke: var(--qsf-line);
+  stroke-width: 1;
+}
+.qsf-root[data-shape="on"][data-mode="to-top"] .qsf-shape-fill {
+  stroke: var(--qsf-amber);
 }
 .qsf-track {
   fill: none;
@@ -91,8 +121,8 @@
 .qsf-icon {
   display: grid;
   place-items: center;
-  width: 46%;
-  height: 46%;
+  width: var(--qsf-icon, 46%);
+  height: var(--qsf-icon, 46%);
 }
 .qsf-icon svg {
   display: block;

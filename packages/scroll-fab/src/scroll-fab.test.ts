@@ -1,5 +1,26 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { ScrollFab } from "./scroll-fab";
+import type { LenisLike } from "./types";
+
+const lenisState = vi.hoisted(() => ({
+  instances: [] as Array<Record<string, unknown>>,
+}));
+
+vi.mock("lenis", () => {
+  class FakeLenis {
+    public opts: Record<string, unknown>;
+    public scrollTo = vi.fn();
+    public raf = vi.fn();
+    public start = vi.fn();
+    public stop = vi.fn();
+    public destroy = vi.fn();
+    constructor(opts: Record<string, unknown> = {}) {
+      this.opts = opts;
+      lenisState.instances.push(this as unknown as Record<string, unknown>);
+    }
+  }
+  return { default: FakeLenis };
+});
 
 let rafId = 0;
 let rafCbs = new Map<number, (t: number) => void>();
@@ -46,6 +67,7 @@ function settleScroll(from: number): void {
 
 beforeEach(() => {
   document.body.innerHTML = "";
+  lenisState.instances.length = 0;
   rafCbs = new Map();
   rafId = 0;
   scroll.y = 0;
@@ -287,5 +309,110 @@ describe("ScrollFab", () => {
     hoverToComplete(fab.el);
     fab.destroy();
     expect(document.querySelector(".qsf-root")).toBeNull();
+  });
+
+  /* ---------------- 异形 shape ---------------- */
+
+  const GINKGO = {
+    fill: "M24 8 C14 8 8 16 8 24 C8 34 16 40 24 42 C32 40 40 34 40 24 C40 16 34 8 24 8 Z",
+    outline:
+      "M24 5 C12 5 5 14 5 24 C5 35 14 42 24 45 C34 42 43 35 43 24 C43 14 36 5 24 5 Z",
+  };
+
+  test("异形：data-shape 标记、双 path（实体 + 外扩轮廓）、viewBox 透传", () => {
+    const fab = new ScrollFab({
+      shape: { viewBox: "0 0 50 50", ...GINKGO },
+    });
+    expect(fab.el.dataset.shape).toBe("on");
+    const svg = fab.el.querySelector(".qsf-svg")!;
+    expect(svg.getAttribute("viewBox")).toBe("0 0 50 50");
+    const fill = fab.el.querySelector(".qsf-shape-fill")!;
+    expect(fill.getAttribute("d")).toBe(GINKGO.fill);
+    const track = fab.el.querySelector<SVGPathElement>(".qsf-track")!;
+    const bar = fab.el.querySelector<SVGPathElement>(".qsf-bar")!;
+    expect(track.getAttribute("d")).toBe(GINKGO.outline);
+    expect(bar.getAttribute("d")).toBe(GINKGO.outline);
+    // 无 circle 残留
+    expect(fab.el.querySelector("circle")).toBeNull();
+    fab.destroy();
+  });
+
+  test("异形进度推进：描边沿外扩 path，dashoffset 随进度减小", () => {
+    const fab = new ScrollFab({ shape: GINKGO });
+    fire(fab.el, "pointerenter");
+    pump(0);
+    const bar = fab.el.querySelector<SVGPathElement>(".qsf-bar")!;
+    const before = Number(bar.style.strokeDasharray);
+    expect(before).toBeGreaterThan(0);
+    pump(400);
+    const offset = Number(bar.style.strokeDashoffset);
+    expect(offset).toBeGreaterThan(0);
+    expect(offset).toBeLessThan(before);
+    fab.destroy();
+  });
+
+  /* ---------------- Lenis 三态 ---------------- */
+
+  test("外部 Lenis 实例：点击调用实例 scrollTo，不触发内置滚动，不被销毁", () => {
+    const ext: LenisLike = { scrollTo: vi.fn() };
+    const fab = new ScrollFab({ lenis: ext });
+    fire(fab.el, "click");
+    expect(ext.scrollTo).toHaveBeenCalledWith(5000, { immediate: false });
+    expect(scrollToCalls).toBe(0);
+    fab.destroy();
+    // 外部实例没有 destroy，即便有也不该被调
+    expect((ext as { destroy?: unknown }).destroy).toBeUndefined();
+  });
+
+  test("lenis:true：首次点击动态 import 自建实例（不劫持滚轮），onLenisReady 抛出", async () => {
+    const ready = vi.fn();
+    const fab = new ScrollFab({ lenis: true, onLenisReady: ready });
+    fire(fab.el, "click");
+    await vi.waitFor(() => expect(lenisState.instances).toHaveLength(1));
+    const inst = lenisState.instances[0] as {
+      opts: Record<string, unknown>;
+      scrollTo: ReturnType<typeof vi.fn>;
+    };
+    expect(inst.opts.smoothWheel).toBe(false);
+    expect(ready).toHaveBeenCalledTimes(1);
+    expect(inst.scrollTo).toHaveBeenCalledWith(
+      5000,
+      expect.objectContaining({ immediate: false }),
+    );
+    fab.destroy();
+    // destroy 只销毁自建实例
+    const inst2 = lenisState.instances[0] as { destroy: ReturnType<typeof vi.fn> };
+    expect(inst2.destroy).toHaveBeenCalledTimes(1);
+  });
+
+  test("自建 Lenis：target 容器映射为 wrapper，配置透传", async () => {
+    const box = document.createElement("div");
+    const fab = new ScrollFab({
+      target: box,
+      lenis: { duration: 1.2, smoothWheel: true },
+    });
+    fab.scrollToBottom();
+    await vi.waitFor(() => expect(lenisState.instances).toHaveLength(1));
+    const inst = lenisState.instances[0] as { opts: Record<string, unknown> };
+    expect(inst.opts.wrapper).toBe(box);
+    expect(inst.opts.duration).toBe(1.2);
+    expect(inst.opts.smoothWheel).toBe(true);
+    fab.destroy();
+  });
+
+  test("自建 Lenis 滚动中 wheel 打断：stop 冻结、循环停止", async () => {
+    const fab = new ScrollFab({ lenis: true });
+    fire(fab.el, "click");
+    await vi.waitFor(() => expect(lenisState.instances).toHaveLength(1));
+    const inst = lenisState.instances[0] as { stop: ReturnType<typeof vi.fn> };
+    window.dispatchEvent(new Event("wheel"));
+    expect(inst.stop).toHaveBeenCalledTimes(1);
+    // 打断后再触发动作：先 start 复位
+    fire(fab.el, "click");
+    await vi.waitFor(() => {
+      const i = lenisState.instances[0] as { start: ReturnType<typeof vi.fn> };
+      expect(i.start).toHaveBeenCalled();
+    });
+    fab.destroy();
   });
 });

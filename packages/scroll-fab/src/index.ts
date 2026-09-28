@@ -1,2 +1,9 @@
 export { ScrollFab } from "./scroll-fab";
-export type { ScrollFabMode, ScrollFabOptions, ScrollFabPosition } from "./types";
+export type {
+  LenisLike,
+  ScrollFabLenisConfig,
+  ScrollFabMode,
+  ScrollFabOptions,
+  ScrollFabPosition,
+  ScrollFabShape,
+} from "./types";

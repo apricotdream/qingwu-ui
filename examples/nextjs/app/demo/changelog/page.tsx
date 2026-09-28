@@ -3,6 +3,21 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "0.9.0-beta.20",
+    date: "2026-09-28",
+    tag: "scroll-fab",
+    changes: [
+      {
+        type: "feat",
+        text: "scroll-fab 新增 Lenis 平滑滚动可插拔后端：lenis option 三态——传宿主已有 Lenis 实例则复用（组件不销毁）、true / 配置对象在首次点击时动态 import('lenis') 自建、缺省 / false 沿用内置 rAF；lenis 为 optional peerDependency，未安装静默回退、主包零增长。自建实例强制 smoothWheel:false（只驱动按钮程序滚动、不劫持宿主滚轮），target 容器自动映射为 Lenis wrapper，保留 wheel / touch / keydown 打断与懒加载到底追击语义，新增 onLenisReady 回调抛出内部实例（包版本 0.9.0-beta.2）",
+      },
+      {
+        type: "feat",
+        text: "scroll-fab 新增异形形状 shape: { viewBox?, fill, outline, outlineTransform? }：双 path 保证进度描边沿外扩轮廓完全包裹形状外缘（单 path 描边居中必有一半压进形状内部），outline 可与 fill 同形再配 outlineTransform 外扩；异形模式自动退场圆形外壳，阴影改用 drop-shadow 跟随叶片真实形状，保持矩形命中区（44px 触控下限）；演示页左下角新增银杏叶实例（包版本 0.9.0-beta.2）",
+      },
+    ],
+  },
+  {
     version: "0.9.0-beta.19",
     date: "2026-09-19",
     tag: "ai-editor",

@@ -1,7 +1,7 @@
 {
   "name": "@qingwu-ui/scroll-fab",
-  "version": "0.9.0-beta.1",
-  "description": "青梧 UI 悬浮滚动栏 —— 描边绕圈翻转「滚到底/回顶部」、rAF 缓动滚动可被用户打断、触屏一等公民、零依赖",
+  "version": "0.9.0-beta.2",
+  "description": "青梧 UI 悬浮滚动栏 —— 描边绕圈翻转「滚到底/回顶部」、Lenis 可插拔（未装回退 rAF）、异形形状（银杏叶等进度完全包裹）、零强依赖",
   "type": "module",
   "license": "Apache-2.0",
   "sideEffects": [
@@ -29,7 +29,16 @@
     "test:watch": "vitest",
     "size": "size-limit"
   },
+  "peerDependencies": {
+    "lenis": "^1.1.0"
+  },
+  "peerDependenciesMeta": {
+    "lenis": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "lenis": "^1.3.26",
     "@qingwu-ui/tsconfig": "workspace:*",
     "@size-limit/preset-small-lib": "^13.0.1",
     "happy-dom": "^20.11.1",
@@ -57,6 +66,9 @@
   "keywords": [
     "scroll",
     "fab",
+    "lenis",
+    "ginkgo",
+    "custom-shape",
     "back-to-top",
     "scroll-to-bottom",
     "progress-ring",

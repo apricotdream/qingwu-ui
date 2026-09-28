@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ScrollFab 真机测试 · Lenis + 异形</title>
+    <link rel="stylesheet" href="../dist/style.css" />
+    <style>
+      :root {
+        --teal: #1e605a;
+        --amber: #b3721f;
+        --card: #ffffff;
+        --line: #dcdfd6;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: system-ui, "Segoe UI", sans-serif;
+        color: #1f2d2b;
+        background: #f4f6f0;
+      }
+      header {
+        padding: 40px 24px 24px;
+        max-width: 760px;
+        margin: 0 auto;
+      }
+      h1 { font-size: 22px; margin: 0 0 8px; }
+      .legend {
+        display: grid;
+        gap: 6px;
+        margin: 16px 0;
+        padding: 14px 18px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .legend b { display: inline-block; min-width: 150px; }
+      #grow, #pursuit {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      #pursuit {
+        bottom: 64px;
+        padding: 8px 18px;
+        border: 1px solid var(--amber);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--amber);
+        font-size: 13px;
+        cursor: pointer;
+      }
+      #grow {
+        bottom: 20px;
+        padding: 8px 18px;
+        border: 1px solid var(--teal);
+        border-radius: 999px;
+        background: var(--teal);
+        color: #fff;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      main { max-width: 760px; margin: 0 auto; padding: 0 24px 80px; }
+      section {
+        margin: 18px 0;
+        padding: 28px;
+        min-height: 320px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        font-size: 15px;
+        line-height: 1.9;
+      }
+      section:nth-child(odd) { background: #eef3ea; }
+      #log {
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 6px 14px;
+        background: rgba(20, 31, 30, 0.82);
+        color: #fff;
+        font-size: 12px;
+        border-radius: 999px;
+        opacity: 0;
+        transition: opacity 0.25s;
+        pointer-events: none;
+        z-index: 10000;
+      }
+      #log.show { opacity: 1; }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "lenis": "../node_modules/lenis/dist/lenis.mjs"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="log"></div>
+
+    <header>
+      <h1>ScrollFab 真机测试台</h1>
+      <div class="legend">
+        <div><b>① 右下 · 圆形</b>内置 rAF（基线，无 Lenis）</div>
+        <div><b>② 左下 · 银杏叶</b>自建 Lenis（lenis:true，不劫持滚轮；点击后 Lenis 驱动）</div>
+        <div><b>③ 右上 · 银杏叶</b>外部宿主 Lenis（页面全局平滑滚动由它接管，实例注入）</div>
+        <div><b>④ 左上 · 圆形</b>内置 rAF + 自定义内容</div>
+        <div>验收点：绕圈翻转、轻点滚动、wheel/触屏打断、懒加载追击、异形进度完全包裹、叶形 drop-shadow。</div>
+      </div>
+      <button id="grow">追加 10 段内容（模拟懒加载变长）</button>
+      <button id="pursuit">追击测试：滚到底途中自动变长</button>
+    </header>
+
+    <main id="list"></main>
+
+    <script type="module">
+      import Lenis from "lenis";
+      import { ScrollFab } from "../dist/index.mjs";
+
+      const list = document.querySelector("#list");
+      const logEl = document.querySelector("#log");
+      let logTimer;
+      function log(msg) {
+        logEl.textContent = msg;
+        logEl.classList.add("show");
+        clearTimeout(logTimer);
+        logTimer = setTimeout(() => logEl.classList.remove("show"), 1800);
+      }
+
+      // ---- 长内容 ----
+      let n = 0;
+      function addBlocks(count) {
+        for (let i = 0; i < count; i++) {
+          n += 1;
+          const s = document.createElement("section");
+          s.innerHTML = `<h3>段落 ${n}</h3><p>滚动到此处以测试 FAB 的可见性、描边绕圈翻转与程序滚动。滚到底时点击「追加内容」可验证懒加载变长的追击行为：程序滚动需以实测底端持续重设行程，而不是停在旧的底端。</p><p>银杏叶异形使用双 path：叶片实体填充，进度描边沿外扩 12% 的同形轮廓走，描边完整包裹叶片外缘，不压入形状内部。</p>`;
+          list.append(s);
+        }
+      }
+      addBlocks(12);
+      document.querySelector("#grow").addEventListener("click", () => {
+        addBlocks(10);
+        log(`已追加，当前 ${n} 段`);
+      });
+
+      // 追击测试：回到顶 → 发起滚到底 → 300ms 后内容变长，应追到新底端
+      document.querySelector("#pursuit").addEventListener("click", () => {
+        window.scrollTo(0, 0);
+        setTimeout(() => {
+          fab1.scrollToBottom();
+          log("已发起滚到底…");
+        }, 100);
+        setTimeout(() => {
+          addBlocks(10);
+          log("途中内容变长，应追击新底端");
+        }, 450);
+      });
+
+      // ---- 银杏叶双 path（48×48）----
+      const LEAF =
+        "M24 46 L23.2 34 C16 33 9 28 7 20 C6.5 15 9 11 13 10 C12 13.5 14 16 17 15.5 C15.5 12.5 17.5 8.5 21 7.5 C22.4 7 23.4 8.5 24 10 C24.6 8.5 25.6 7 27 7.5 C30.5 8.5 32.5 12.5 31 15.5 C34 16 36 13.5 35 10 C39 11 41.5 15 41 20 C39 28 32 33 24.8 34 Z";
+      // ① 右下：圆形 + 内置 rAF
+      const fab1 = new ScrollFab({
+        position: { right: 24, bottom: 24 },
+        onModeChange: (m) => log(`① 模式 → ${m}`),
+      });
+
+      // ② 左下：银杏叶 + 自建 Lenis（秋叶配色）
+      const fab2 = new ScrollFab({
+        position: { left: 24, bottom: 24 },
+        lenis: true,
+        shape: {
+          fill: LEAF,
+          outline: LEAF,
+          outlineTransform: "translate(24 24) scale(1.13) translate(-24 -24)",
+        },
+        onLenisReady: () => log("② 自建 Lenis 就绪"),
+        onModeChange: (m) => log(`② 模式 → ${m}`),
+      });
+      // 银杏秋叶配色
+      fab2.el.style.setProperty("--qsf-card", "#f6df7a");
+      fab2.el.style.setProperty("--qsf-line", "#caa53f");
+
+      // ③ 右上：银杏叶 + 外部宿主 Lenis（宿主自带全局平滑滚动 + 自己的 raf loop）
+      const hostLenis = new Lenis({ duration: 1.1 });
+      const hostRaf = (time) => {
+        hostLenis.raf(time);
+        requestAnimationFrame(hostRaf);
+      };
+      requestAnimationFrame(hostRaf);
+      const fab3 = new ScrollFab({
+        position: { right: 24, top: 24 },
+        lenis: hostLenis,
+        shape: {
+          fill: LEAF,
+          outline: LEAF,
+          outlineTransform: "translate(24 24) scale(1.13) translate(-24 -24)",
+        },
+        onModeChange: (m) => log(`③ 模式 → ${m}`),
+      });
+      fab3.el.style.setProperty("--qsf-card", "#cfe6d8");
+      fab3.el.style.setProperty("--qsf-line", "#5f9276");
+
+      // ④ 左上：圆形 + 自定义内容 + rAF
+      const fab4 = new ScrollFab({
+        position: { left: 24, top: 24 },
+        content:
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v18M5 10l7-7 7 7"/></svg>',
+        onModeChange: (m) => log(`④ 模式 → ${m}`),
+      });
+    </script>
+  </body>
+</html>

@@ -363,7 +363,7 @@ export const COMPONENT_SECTIONS: DocSection[] = [
         href: "/demo/scroll-fab",
         title: "ScrollFab 悬浮滚动栏",
         en: "Scroll Fab",
-        desc: "默认滚动到底部的悬浮栏：桌面悬停推进描边、绕满一圈翻转为返回顶部（纯切换不附带滚动），触屏按住同样驱动；点击（轻点）恒直接执行当前模式动作；rAF 缓动支持打断与懒加载追击，移动端一等支持。",
+        desc: "默认滚动到底部的悬浮栏：桌面悬停推进描边、绕满一圈翻转为返回顶部（纯切换不附带滚动），触屏按住同样驱动；点击（轻点）恒直接执行当前模式动作；Lenis 可插拔（外部实例 / 自建 / 内置 rAF 三态）、银杏叶等异形形状进度完全包裹；缓动支持打断与懒加载追击，移动端一等支持。",
         keywords: [
           "悬浮栏",
           "悬浮球",
@@ -376,6 +376,13 @@ export const COMPONENT_SECTIONS: DocSection[] = [
           "进度环",
           "progress ring",
           "滚动到底部",
+          "lenis",
+          "平滑滚动",
+          "smooth scroll",
+          "银杏叶",
+          "异形",
+          "custom shape",
+          "ginkgo",
         ],
         icon: ICON_CHEVRON_UP,
         api: [
@@ -437,6 +444,24 @@ export const COMPONENT_SECTIONS: DocSection[] = [
                 desc: "两模式无障碍标签",
                 type: "string",
                 default: "内置中文",
+              },
+              {
+                name: "lenis",
+                desc: "Lenis 后端三态：传宿主已有实例则复用（组件不销毁它）；true / 配置对象则首次点击动态 import('lenis') 自建（smoothWheel 强制 false，只驱动按钮程序滚动、不劫持滚轮；target 自动映射 wrapper）；缺省 / false 用内置 rAF。未安装 lenis 静默回退，主包零增长",
+                type: "boolean | ScrollFabLenisConfig | LenisLike",
+                default: "false",
+              },
+              {
+                name: "shape",
+                desc: "异形形状：fill 为实体 path，outline 为外扩闭合轮廓（双 path 保证描边完全包裹外缘），outlineTransform 可对同形 outline 缩放外扩；异形模式退场圆形外壳、阴影改用 drop-shadow，保持矩形命中区",
+                type: "ScrollFabShape",
+                default: "-",
+              },
+              {
+                name: "onLenisReady",
+                desc: "自建 Lenis 实例就绪回调（向宿主抛出内部实例）；外部实例模式不触发",
+                type: "(lenis: LenisLike) => void",
+                default: "-",
               },
               {
                 name: "onModeChange",
