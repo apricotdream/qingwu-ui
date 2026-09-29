@@ -3,6 +3,17 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "0.9.0-beta.22",
+    date: "2026-09-29",
+    tag: "notifications",
+    changes: [
+      {
+        type: "fix",
+        text: "notifications 修复左侧徽标（glyph）传入长文本（如 \"system\"）时溢出 30px 方块、与右侧标题重叠错位：纯拉丁不超过 2 字符大写保留（\"ai\"→\"AI\"），超长取首字母（\"system\"→\"S\"），中日韩及混合文本取首字符（\"系统消息\"→\"系\"）；补充溢出兜底样式，拉丁字符改用 UI 字体（楷体拉丁字形怪异），完整值经 title 属性悬停可见（包版本 0.9.0-beta.2）",
+      },
+    ],
+  },
+  {
     version: "0.9.0-beta.21",
     date: "2026-09-28",
     tag: "scroll-fab",

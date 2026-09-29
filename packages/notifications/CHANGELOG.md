@@ -1,5 +1,11 @@
 # @qingwu-ui/notifications
 
+## 0.9.0-beta.2
+### Patch Changes
+
+- 修复左侧徽标（glyph）传入长文本（如 "system"）时溢出 30px 方块、与右侧标题重叠错位的问题：纯拉丁 ≤2 字符大写保留（"ai"→"AI"），超长取首字母（"system"→"S"），中日韩及混合文本取首字符；完整值经 `title` 属性悬停可见
+- 徽标补充 `overflow: hidden; white-space: nowrap` 溢出兜底；拉丁字符改用 UI 字体（楷体拉丁字形怪异）
+
 ## 0.9.0-beta.1
 ### Patch Changes
 

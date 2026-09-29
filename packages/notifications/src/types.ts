@@ -1,6 +1,6 @@
-/** 青梧UI 通知铃铛类型定义（framework-agnostic type contracts） */
+/** 青梧UI 通知铃铛类型定义（与框架无关的类型约定） */
 
-/** 单个通知条目（默认渲染 title + sub + glyph + 未读圆点） */
+/** 单个通知条目（默认渲染标题 + 摘要 + 徽标 + 未读圆点） */
 export interface NotificationItem {
   /** 唯一标识（onItemClick 原样返回） */
   id: string | number;
@@ -8,7 +8,8 @@ export interface NotificationItem {
   title: string;
   /** 摘要/描述（可选，渲染在标题下方小字） */
   sub?: string;
-  /** 左侧图标字符，默认取 title 首字 */
+  /** 左侧徽标字符，建议 1 个汉字或 1～2 个拉丁字母；默认取 title 首字。
+   *  超长时组件自动规整：纯拉丁 ≤2 字符大写显示（"ai"→"AI"），其余取首字符（"system"→"S"），完整值经 title 属性悬停可见 */
   glyph?: string;
   /** 是否未读（行尾显示未读圆点标识） */
   unread?: boolean;
@@ -30,19 +31,19 @@ export interface NotificationsOptions {
   ariaLabel?: string;
   /** 附加到根容器的自定义类名 */
   className?: string;
-  /** 面板宽度：trigger 跟随触发器宽度 / auto 内容自适应（min-width 至少等于触发器），默认 auto */
+  /** 面板宽度：trigger 跟随触发器宽度 / auto 内容自适应（最小宽度至少等于触发器），默认 auto */
   width?: "trigger" | "auto";
-  /** 单个条目错峰动画时长 ms，默认 380 */
+  /** 单个条目错峰动画时长（毫秒），默认 380 */
   duration?: number;
-  /** 条目错峰间隔 ms，默认 28 */
+  /** 条目错峰间隔（毫秒），默认 28 */
   stagger?: number;
-  /** 是否启用手风琴错峰动画，默认 true（自动尊重 prefers-reduced-motion） */
+  /** 是否启用手风琴错峰动画，默认 true（自动尊重系统「减弱动态效果」设置） */
   animate?: boolean;
-  /** 铃铛摆动动画开关：未读数 > 0 且面板未展开时触发，默认 true（自动尊重 prefers-reduced-motion） */
+  /** 铃铛摆动动画开关：未读数 > 0 且面板未展开时触发，默认 true（自动尊重系统「减弱动态效果」设置） */
   ring?: boolean;
-  /** 摆动模式：persistent 常驻摆动（未读期间无限 loop）/ intermittent 按 ringInterval 间歇重响，默认 persistent */
+  /** 摆动模式：persistent 常驻摆动（未读期间无限循环）/ intermittent 按 ringInterval 间歇重响，默认 persistent */
   ringMode?: "persistent" | "intermittent";
-  /** intermittent 模式：两轮响铃的间隔 ms，默认 3000 */
+  /** intermittent 间歇模式下两轮响铃的间隔（毫秒），默认 3000 */
   ringInterval?: number;
   /** 错峰动画最大条目数：超过即降级为面板整体淡入，0 表示不降级，默认 12 */
   maxStagger?: number;

@@ -5,7 +5,7 @@
 - **未读红点徽标**：`unreadCount > 0` 时铃铛右上角弹入红点（纯点，不带数字）
 - **未读响铃摆动**：`unreadCount > 0` 时铃铛图标左右摆动仿佛摇铃；`ring` 可整体关闭，`ringMode` 支持常驻无限摆 / 按 `ringInterval` 间歇重响
 - **手风琴错峰动画**：打开面板时条目像琴键一样逐项按下（stagger 级联 + 弹性回弹），向上展开时反向级联
-- **条目渲染**：内置 title/sub/glyph/未读圆点布局，`renderItem` 可完全自定义
+- **条目渲染**：内置标题/摘要/徽标/未读圆点布局，徽标自动规整长文本（`"system"` 显示为 `S`，完整值悬停可见），`renderItem` 可完全自定义
 - **向上/向下自适应翻转**：贴近视口底边自动向上弹，动画方向同步反转
 - **无障碍内建**：`role="button" + menu / menuitem` + `aria-activedescendant` 键盘导航（`↑ ↓` / `Home` / `End` / `Enter` / `Esc` / `Tab`）
 - 自动尊重 `prefers-reduced-motion`；明暗双主题（`--qntf-*` 令牌）
@@ -66,6 +66,8 @@ React / Vue 集成时在 `useEffect` / `onMounted` 中实例化，卸载时调�
 | `onOpenChange` | `(open) => void` | `-` | 展开状态变化回调 |
 
 `NotificationItem`：`{ id: string \| number; title: string; sub?: string; glyph?: string; unread?: boolean; [key: string]: unknown }`
+
+`glyph` 为左侧徽标字符，建议传 1 个汉字或 1～2 个拉丁字母。传入长文本时组件自动规整：纯拉丁不超过 2 个字符时大写保留（`"ai"` → `AI`），超过则取首字母（`"system"` → `S`）；中日韩及中英混合文本取首字符（`"系统消息"` → `系`）。完整原始值挂在徽标的 `title` 属性上，鼠标悬停可见，任何传入值都不会溢出方块或挤压标题。
 
 ## 实例方法
 

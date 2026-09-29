@@ -95,6 +95,21 @@ describe("Notifications", () => {
     expect(bell.expanded).toBe(false);
   });
 
+  test("glyph 超长自动规整，完整值挂 title", () => {
+    const items: NotificationItem[] = [
+      { id: 1, title: "系统维护", glyph: "system" },
+      { id: 2, title: "AI 助手", glyph: "ai" },
+      { id: 3, title: "系统消息", glyph: "系统消息" },
+    ];
+    new Notifications(root, { items });
+    const glyphs = Array.from(document.querySelectorAll<HTMLElement>(".qntf-item-glyph"));
+    expect(glyphs[0]!.textContent).toBe("S");
+    expect(glyphs[0]!.title).toBe("system");
+    expect(glyphs[1]!.textContent).toBe("AI");
+    expect(glyphs[2]!.textContent).toBe("系");
+    expect(glyphs[2]!.title).toBe("系统消息");
+  });
+
   test("空列表显示 emptyText 空态", () => {
     const bell = new Notifications(root, { items: [], emptyText: "还没有消息" });
     bell.open();

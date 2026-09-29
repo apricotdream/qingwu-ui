@@ -254,8 +254,15 @@
   border-radius: 9px;
   font-family: var(--qntf-font-kai);
   font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
   background: color-mix(in srgb, var(--qntf-ink) 5%, transparent);
   color: var(--qntf-ink-2);
+}
+/* 拉丁字符不用楷体（楷体拉丁字形怪异），回退 UI 字体 */
+.qntf-item-glyph.is-latin {
+  font-family: var(--qntf-font-ui);
 }
 .qntf-item-main {
   flex: 1 1 auto;

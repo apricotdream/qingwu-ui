@@ -41,6 +41,13 @@ const BASE_ITEMS: NotificationItem[] = [
     glyph: "存",
     unread: false,
   },
+  {
+    id: 5,
+    title: "系统维护通知：本周六凌晨升级",
+    sub: "长 glyph 回归用例：徽标自动取首字母 S，不溢出方块",
+    glyph: "system",
+    unread: false,
+  },
 ];
 
 /* ---- 静态挂载宿主：一次构造 + 卸载销毁 ---- */

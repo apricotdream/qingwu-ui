@@ -19,6 +19,22 @@ function escapeHTML(s: string): string {
   return s.replace(/[&<>"]/g, (c) => HTML_ESCAPES[c] ?? c);
 }
 
+/**
+ * 徽标字符规整：30px 方块只放得下 1 个 CJK 或 2 个拉丁字符。
+ * - 纯拉丁字母/数字：≤2 字符原样保留（"ai" → "AI"），超长取首字母（"system" → "S"），统一大写
+ * - 其余（CJK、混合）：取首个码位字符（"系统消息" → "系"）
+ * 返回 latin 标记，供样式切换非楷体字体。
+ */
+function formatGlyph(raw: string): { text: string; latin: boolean } {
+  const chars = Array.from(raw);
+  if (chars.length <= 2 && chars.every((c) => /[A-Za-z0-9]/.test(c))) {
+    return { text: raw.toUpperCase(), latin: true };
+  }
+  // 单字符且本身就是拉丁（长拉丁单词截首字母的情况）
+  const first = chars[0] ?? "";
+  return { text: /[A-Za-z0-9]/.test(first) ? first.toUpperCase() : first, latin: first !== "" && /[A-Za-z0-9]/.test(first) };
+}
+
 function el(tag: string, cls?: string, html?: string): HTMLElement {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
@@ -88,7 +104,7 @@ export class Notifications {
     }
   }
 
-  /** Build：一次性创建全部 DOM */
+  /** 构建：一次性创建全部 DOM */
   private build(opts: NotificationsOptions): void {
     const ariaLabel = opts.ariaLabel ?? "消息";
 
@@ -164,9 +180,10 @@ export class Notifications {
       if (this.renderItemCb) {
         li.append(this.renderItemCb(item));
       } else {
-        const glyph = item.glyph ?? item.title.slice(0, 1);
+        const rawGlyph = item.glyph ?? item.title.slice(0, 1);
+        const glyph = formatGlyph(rawGlyph);
         li.innerHTML =
-          `<span class="qntf-item-glyph">${escapeHTML(glyph)}</span>` +
+          `<span class="qntf-item-glyph${glyph.latin ? " is-latin" : ""}" title="${escapeHTML(rawGlyph)}">${escapeHTML(glyph.text)}</span>` +
           `<span class="qntf-item-main"><span class="qntf-item-title">${escapeHTML(item.title)}</span>` +
           (item.sub ? `<span class="qntf-item-sub">${escapeHTML(item.sub)}</span>` : "") +
           `</span>` +
@@ -177,7 +194,7 @@ export class Notifications {
     this.list.append(frag);
   }
 
-  /** 是否启用逐项错峰动画（尊重 reduced-motion 与超大列表降级） */
+  /** 是否启用逐项错峰动画（尊重系统「减弱动态效果」设置，超大列表自动降级） */
   private shouldStagger(): boolean {
     return this.animate && !PREFERS_REDUCED && this.items.length <= this.maxStagger;
   }
@@ -193,7 +210,7 @@ export class Notifications {
     }
   }
 
-  /** 铃铛摆动状态机：persistent 常驻 / intermittent 间歇重响；面板展开、未读清空、ring=false、reduced-motion 时停摆 */
+  /** 铃铛摆动状态机：persistent 常驻 / intermittent 间歇重响；面板展开、未读清空、ring=false、系统开启「减弱动态效果」时停摆 */
   private applyRing(): void {
     this.clearRingTimer();
     const shouldRing = this.ring && !PREFERS_REDUCED && this.unreadCount > 0 && !this.isOpen;
@@ -411,7 +428,7 @@ export class Notifications {
     }
   }
 
-  /** Public API */
+  /** 公开 API */
 
   /** 是否展开 */
   get expanded(): boolean {
