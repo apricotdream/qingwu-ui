@@ -1,0 +1,300 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.5/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noImplicitAnyLet": "error"
+      },
+      "style": {
+        "noNonNullAssertion": "error"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "trailingCommas": "all"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/file-viewer/vendor/**"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      },
+      "assist": {
+        "enabled": false
+      }
+    },
+    {
+      "includes": ["**/*.d.ts"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      },
+      "assist": {
+        "enabled": false
+      }
+    },
+    {
+      "includes": ["examples/nextjs/app/demo/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noLabelWithoutControl": "off",
+            "noSvgWithoutTitle": "off",
+            "noStaticElementInteractions": "off",
+            "useButtonType": "off",
+            "useKeyWithClickEvents": "off",
+            "useValidAnchor": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off",
+            "noCommentText": "off",
+            "useIterableCallbackReturn": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/ai-editor/extension/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noLabelWithoutControl": "off",
+            "noStaticElementInteractions": "off",
+            "noSvgWithoutTitle": "off",
+            "useButtonType": "off",
+            "useIframeTitle": "off",
+            "useKeyWithClickEvents": "off",
+            "useMediaCaption": "off",
+            "useSemanticElements": "off",
+            "useValidAnchor": "off"
+          },
+          "complexity": {
+            "useOptionalChain": "off"
+          },
+          "correctness": {
+            "noUnknownFunction": "off",
+            "noUnsafeOptionalChaining": "off",
+            "useExhaustiveDependencies": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off",
+            "noAssignInExpressions": "off",
+            "noUnknownAtRules": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/ai-editor/src/styles/globals.css"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDescendingSpecificity": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["examples/nextjs/app/demo/editor/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noLabelWithoutControl": "off",
+            "noStaticElementInteractions": "off",
+            "useKeyWithClickEvents": "off"
+          },
+          "performance": {
+            "noImgElement": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["examples/nextjs/app/demo/toast/**"],
+      "linter": {
+        "rules": {
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "a11y": {
+            "noStaticElementInteractions": "off",
+            "useKeyWithClickEvents": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/ai-editor/src/**", "packages/ai-editor/tests/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noLabelWithoutControl": "off",
+            "noStaticElementInteractions": "off",
+            "noSvgWithoutTitle": "off",
+            "useIframeTitle": "off",
+            "useKeyWithClickEvents": "off",
+            "useMediaCaption": "off",
+            "useSemanticElements": "off"
+          },
+          "complexity": {
+            "useOptionalChain": "off"
+          },
+          "correctness": {
+            "noUnsafeOptionalChaining": "off",
+            "useExhaustiveDependencies": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off",
+            "noAssignInExpressions": "off",
+            "useIterableCallbackReturn": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/search/src/style.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/select/src/style.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/action-menu/src/style.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "packages/ai-editor/src/editor/ai-editor.tsx",
+        "packages/ai-editor/src/editor/attachment-limits.ts",
+        "packages/ai-editor/src/editor/ai/components/ai-selector.tsx",
+        "packages/ai-editor/src/editor/embeds/attachment-view.tsx",
+        "packages/ai-editor/src/editor/embeds/attachment.ts",
+        "packages/ai-editor/src/editor/embeds/audio-view.tsx",
+        "packages/ai-editor/src/editor/embeds/audio.ts",
+        "packages/ai-editor/src/editor/embeds/video-view.tsx",
+        "packages/ai-editor/src/editor/embeds/video.ts",
+        "packages/ai-editor/src/editor/extensions/bubble-menu.tsx",
+        "packages/ai-editor/src/editor/extensions/code-block-view.tsx",
+        "packages/ai-editor/src/editor/extensions/code-block.ts",
+        "packages/ai-editor/src/editor/extensions/image-upload.ts",
+        "packages/ai-editor/src/editor/extensions/image-view.tsx",
+        "packages/ai-editor/src/editor/extensions/obsidian-markdown.ts",
+        "packages/ai-editor/src/editor/extensions/relative-media.ts",
+        "packages/ai-editor/src/editor/extensions/slash-command.tsx",
+        "packages/ai-editor/src/editor/extensions/table-toolbar.tsx",
+        "packages/ai-editor/src/editor/utils/local-media.ts",
+        "packages/ai-editor/src/editor/utils/resolve-local-media.ts",
+        "packages/ai-editor/src/main.tsx",
+        "packages/ai-editor/tests/full-stack-image-swap.test.ts",
+        "packages/ai-editor/tests/local-media.test.ts",
+        "packages/ai-editor/tests/relative-media-extension.test.ts",
+        "packages/ai-editor/extension/src/background/service-worker.ts",
+        "packages/ai-editor/extension/src/sidepanel/App.tsx",
+        "packages/ai-editor/extension/src/sidepanel/main.tsx",
+        "packages/ai-editor/extension/src/popup/main.tsx",
+        "packages/ai-editor/extension/src/options/main.tsx",
+        "packages/ai-editor/extension/src/shared/storage/db.ts",
+        "packages/ai-editor/src/editor/storage/index.ts",
+        "packages/calendar/ui/src/demo-entry.ts",
+        "packages/calendar/ui/src/lunar.ts",
+        "packages/search/src/demo-entry.ts",
+        "packages/search/src/search.ts",
+        "packages/upload/src/upload.ts",
+        "packages/text-layout/src/engine.ts",
+        "packages/text-layout/src/chip-flow.ts",
+        "packages/skeleton/src/auto-skeleton.ts",
+        "packages/skeleton/src/ssr.ts",
+        "packages/toast/src/toast.ts",
+        "examples/nextjs/app/demo/skeleton/page.tsx",
+        "examples/nextjs/app/demo/calendar-popup/page.tsx",
+        "examples/nextjs/app/demo/text-layout/page.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off",
+            "noImplicitAnyLet": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    }
+  ]
+}

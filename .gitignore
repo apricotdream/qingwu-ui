@@ -1,0 +1,97 @@
+# 渚濊禆涓庢瀯寤轰骇鐗?
+node_modules/
+dist/
+
+# 鏈湴 registry 鍑嵁锛堝惈 _auth锛岀姝㈠叆搴擄級
+.npmrc
+**/.npmrc
+.next/
+.next-session-bak/
+.turbo/
+coverage/
+*.tsbuildinfo
+*.d.ts.map
+
+# 鍖呮墦鍖呬骇鐗?
+*.tgz
+*.zip
+
+# 鏃ュ織
+*.log
+
+# 鐜鍙橀噺锛?env.example 淇濈暀鎻愪氦锛?
+.env
+.env.*
+!.env.example
+
+# 娴嬭瘯浜х墿
+test-results/
+playwright-report/
+
+# 缂栬緫鍣?
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 鎿嶄綔绯荤粺
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 缂撳瓨
+.cache/
+
+# 婕旂ず绔欐瀯寤烘椂浠?packages/ai-editor 鍚屾鐨?file-viewer 闈欐?佽祫婧愶紙鏂规 A锛屼笉鍏ュ簱锛?
+examples/nextjs/public/file-viewer/
+
+# ---- AI 宸ュ叿閾炬湰鍦版枃浠讹紙涓嶆彁浜わ紱浠栦汉鎷夊彇鍚庝笉鍙敤 / 鏃犳晥锛屼竴寰嬪拷鐣ワ級----
+
+# Claude Code 閰嶇疆 / 璁板繂鐩綍
+.claude/
+.claude.json
+
+# 椤圭洰绾?AI 鎸囦护鏂囦欢
+CLAUDE.md
+AGENTS.md
+.project-memory.md
+.agents/
+.github/copilot-instructions.md
+COPILOT.md
+
+# AI 鐢熸垚鐨勪复鏃舵枃浠?
+tmp_*
+*.tmp
+*.bak
+
+# 涓存椂娴嬭瘯鏂囦欢锛堜粎鏈満鑱旇皟 / 娴忚鍣ㄦ祴璇?Profile锛?
+tmp_qingwu_server.cjs
+.edge-test-profile/
+verify-qcar/
+
+# 鍐呴儴浜у搧鏂囨。锛堜笉鍏紑锛?
+PRODUCT.md
+PRODUCT_*.md
+# 本地推送辅助脚本（含本机 ssh 路径，禁止入库）
+verify-qcar/push-all-native.cmd
+
+# GitHub Pages 静态导出产物
+out/
+
+# 本地 git 钩子脚本（不纳入版本控制）
+.githooks/
+
+# Claude Code 项目 MCP 配置（可能含本机路径/密钥）
+.mcp.json
+
+# AI 视觉工具本地产物（截图/路由缓存，不入库）
+.dsh-vision-router/
+
+# 内部迁移/设计文档（不入库，远程同步移除）
+docs/
+
+# 本地缓存/临时产物（误生成，不入库）
+.pnpm-store/
+pre-trailer-removal.bundle
+examples/nextjs/.tmp-resolve.mjs
+packages/button/src/__gate_test.ts

@@ -1,0 +1,48 @@
+{
+  "name": "qingwu-nextjs-example",
+  "version": "0.1.5",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/sync-file-viewer.mjs && rm -rf .next && next dev --webpack",
+    "build": "node scripts/sync-file-viewer.mjs && next build --webpack",
+    "start": "node scripts/sync-file-viewer.mjs && next start",
+    "export": "node scripts/pages-export.mjs",
+    "e2e": "node scripts/sync-file-viewer.mjs && playwright test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@qingwu-ui/avatar": "workspace:*",
+    "@qingwu-ui/action-menu": "workspace:*",
+    "@qingwu-ui/ai-editor": "workspace:*",
+    "@qingwu-ui/button": "workspace:*",
+    "@qingwu-ui/carousel": "workspace:*",
+    "@qingwu-ui/calendar": "workspace:*",
+    "@qingwu-ui/confirm": "workspace:*",
+    "@qingwu-ui/notifications": "workspace:*",
+    "@qingwu-ui/search": "workspace:*",
+    "@qingwu-ui/scroll-fab": "workspace:*",
+    "@qingwu-ui/select": "workspace:*",
+    "@qingwu-ui/skeleton": "workspace:*",
+    "@qingwu-ui/tag-input": "workspace:*",
+    "@qingwu-ui/text-layout": "workspace:*",
+    "@qingwu-ui/toast": "workspace:*",
+    "@qingwu-ui/upload": "workspace:*",
+    "devicon": "^2.17.0",
+    "driver.js": "^1.8.0",
+    "lenis": "^1.3.26",
+    "next": "^16.3.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "xgplayer": "^3.0.26"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^22.15.3",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.8.3"
+  }
+}

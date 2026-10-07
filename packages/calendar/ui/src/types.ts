@@ -1,0 +1,50 @@
+/** 日历组件类型定义 */
+
+import type { DayMetaProvider, PanelProvider } from "./providers";
+
+/** 节假日配置 */
+export interface HolidayConfig {
+  /** 放假日期列表（"YYYY-MM-DD"） */
+  holidays?: string[];
+  /** 调休上班日期列表（"YYYY-MM-DD"，周末需要上班的日子） */
+  workdays?: string[];
+}
+
+/** 展示形态：modal（默认，全屏居中弹窗）/ popover（紧凑浮层，锚定输入框下方） */
+export type CalendarMode = "modal" | "popover";
+
+/** 详情面板悬浮方式：right 右侧展开（默认）/ left 左展开 / inside 面板内覆盖浮层 */
+export type DetailPosition = "inside" | "left" | "right";
+
+/** 日历组件选项 */
+export interface CalendarUiOptions {
+  /** 展示形态：modal（默认，全屏居中弹窗）/ popover（紧凑浮层，锚定输入框下方） */
+  mode?: CalendarMode;
+  /** 仅选日期：隐藏时分秒输入，`onChange` 回发 `YYYY-MM-DD`（默认 false，回发完整 `YYYY-MM-DD HH:mm:ss`） */
+  dateOnly?: boolean;
+  /** 初始选中日期 */
+  selected?: Date | string;
+  /** 最小可选日期 */
+  min?: Date | string;
+  /** 最大可选日期 */
+  max?: Date | string;
+  /** 占位文本 */
+  placeholder?: string;
+  /** 输入框名称 */
+  inputName?: string;
+  /** 确认提交回调：点「确认」（或 Enter）时回发完整 `YYYY-MM-DD HH:mm:ss`；点日期/改时间只更新面板不回发，取消 / Esc / 点外部 / 滚动收起均回滚且不回发 */
+  onChange?: (date: string) => void;
+  /** 日历面板打开/关闭回调 */
+  onOpenChange?: (open: boolean) => void;
+  /** 是否开启日历详情面板（右侧农历/节气/节日/黄历信息；默认 true） */
+  showDetailPanel?: boolean;
+  /** 详情面板悬浮方式（默认 `right`：右侧展开、面板加宽；`left`：左侧展开、面板向左加宽；
+   *  `inside`：面板内右缘覆盖浮层、不改变面板宽度） */
+  detailPosition?: DetailPosition;
+  /** 节假日配置（放假日期 + 调休上班日期；默认无） */
+  holidays?: HolidayConfig;
+  /** 自定义日期格 meta Provider（追加在内置 provider 之后） */
+  dayMetaProviders?: DayMetaProvider[];
+  /** 自定义详情面板内容块 Provider（追加在内置 provider 之后） */
+  panelProviders?: PanelProvider[];
+}

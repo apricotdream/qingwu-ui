@@ -1,0 +1,66 @@
+{
+  "name": "@qingwu-ui/text-layout",
+  "version": "0.9.0-beta",
+  "description": "受 Pretext 启发的文本排版引擎 —— 两阶段 prepare/layout、Canvas 测量、Unicode 感知断行、虚拟滚动高度、多行截断、chip 流式换行与表格列宽计算",
+  "type": "module",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "size": "size-limit"
+  },
+  "devDependencies": {
+    "@qingwu-ui/tsconfig": "workspace:*",
+    "@size-limit/preset-small-lib": "^13.0.1",
+    "size-limit": "^13.0.1",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.mjs",
+      "limit": "8 kB"
+    }
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apricotdream/qingwu-ui.git",
+    "directory": "packages/text-layout"
+  },
+  "homepage": "https://github.com/apricotdream/qingwu-ui#readme",
+  "bugs": "https://github.com/apricotdream/qingwu-ui/issues",
+  "keywords": [
+    "text-layout",
+    "line-breaking",
+    "text-measurement",
+    "canvas",
+    "typesetting",
+    "virtual-scroll",
+    "truncation",
+    "qingwu"
+  ],
+  "author": "Qingwu Team",
+  "engines": {
+    "node": ">=20"
+  }
+}

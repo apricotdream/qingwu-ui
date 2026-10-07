@@ -1,0 +1,489 @@
+# 青梧 · QingWu Editor
+  
+> 一款面向中文用户的智能富文本编辑器，基于 Tiptap + React 构建，支持 DeepSeek、通义千问、OpenAI 等大模型接入。
+
+
+
+---
+
+## 特性
+
+- **智能辅助写作** - 续写、润色、精简、扩写、修正、翻译、自定义指令，基于 Vercel AI SDK 统一接口
+- **AI 替换保护** - 选中 / 全文 AI 替换前弹确认弹窗列出将被移除的媒体；替换后孤儿媒体延迟 30s 删除，期间 `Ctrl+Z` 还原 URL 即取消，避免 undo 后资源 404
+- **丰富的媒体嵌入** - 图片、视频（B站 / 直链 / 小红书）、音频、附件（支持 206+ 格式在线预览）
+- **Markdown 粘贴** - Obsidian 风格的 `[[链接]]` 和 `![[图片]]` 语法支持；手写 `` `代码` `` 行内代码在行首 / 行中 / 行尾均能即时识别；粘贴外部 Markdown（Obsidian / Typora）时自动检测本地相对路径图片/附件，匹配剪贴板文件上传换链，找不到时引导文件夹选择 / 拖拽补救
+- **气泡菜单** - 选中文字弹出快捷格式条；「高亮 / 链接」二级面板自动避让视口边缘，下方空间不足时翻转到选区上方，滚动页面自动收起
+- **文档目录（TOC）** - 宽屏桌面侧栏 + 移动端抽屉 + 只读态悬浮球入口；滚动自动跟踪当前章节并高亮，点击目录平滑跳转，悬浮框滚到顶/底后滚轮接力滚动正文
+- **多存储后端** - 本地存储 / 阿里云 OSS / 腾讯云 COS / S3 兼容存储，配置持久化
+- **中英双语** - 运行时可切换，无需刷新页面
+- **斜杠命令** - `/` 快速插入标题、列表、图片、视频等
+- **代码块** - 30+ 语言语法高亮（lowlight）、行号列、折叠/展开、语言图标，兼容 Obsidian 逐行 div 导出格式；Mermaid 图表渲染
+- **视频播放** - [xgplayer](https://h5player.bytedance.com/)
+- **文件预览** - 基于 @file-viewer，支持 PDF / Word / Excel / PPT / 压缩包 / 文本等格式，渲染器随包自动安装、按需懒加载（静态资源通过 `copy-assets` 命令一键准备）
+- **导出** - HTML / Markdown / JSON / 纯文本 / PDF
+- **可编辑** - readonly 模式用于纯展示场景
+
+## 安装
+
+```bash
+npm install @qingwu-ui/ai-editor
+```
+
+> **包名说明：** 对外发布的 npm 包名是 scoped 名 **`@qingwu-ui/ai-editor`**，`npm install` 与所有 `import` 都用它（含样式子路径 `@qingwu-ui/ai-editor/styles`、Node 子入口 `@qingwu-ui/ai-editor/clipper`）。包名历史：`qingwu-ai-editor`（unscoped）→ `@qingwu/editor` → `@qingwu/ai-editor` → **`@qingwu-ui/ai-editor`**（现名，公开 npm 发布用）；若你在旧文档/示例里看到前两者，请替换为 `@qingwu-ui/ai-editor`。
+
+或直接克隆仓库（qingwu-ui monorepo，位于 `packages/ai-editor`）：
+
+```bash
+git clone https://github.com/apricotdream/qingwu-ui.git
+cd qingwu-ui/packages/ai-editor
+bun install
+bun run dev
+```
+
+## 快速开始
+
+### 作为 npm 依赖使用
+
+```tsx
+import { QingWuAIEditor, t, setLocale } from "@qingwu-ui/ai-editor";
+
+function App() {
+  return (
+    <QingWuAIEditor
+      placeholder="开始写作吧…"
+      onChange={(html, json) => console.log(html)}
+      // 附件上传限制（必填）：单文件 50MB，文档附件总大小 100MB
+      maxAttachmentSize={50 * 1024 * 1024}
+      maxTotalAttachmentSize={100 * 1024 * 1024}
+    />
+  );
+}
+```
+
+### 引入样式
+
+> **必需且不会自动加载。** 本库打包时把 CSS 抽成独立文件 `dist/styles.css`，`import { QingWuAIEditor }` 只含 JS，**不会**注入任何样式。漏引样式的典型症状：编辑器排版/边框/配色异常，并且**在桌面端错误出现「移动端」的悬浮目录按钮或目录抽屉**（桌面/移动的显隐依赖样式表里的响应式断点 class，样式没加载就会全部裸露）。一旦看到这些现象，先检查下面这行 `import` 是否存在、是否生效。
+
+```tsx
+// 编辑器核心样式（必需，放在入口文件顶层，且必须在组件 import 之后能被打包器收集到）
+import "@qingwu-ui/ai-editor/styles";
+
+// 代码块语言图标（可选：先 npm i devicon，未安装时图标位留空、不影响功能）
+import "devicon/devicon.min.css";
+// 视频播放器样式（用到视频嵌入时按需引入）
+import "xgplayer/dist/index.min.css";
+```
+
+> **不要依赖引用方自己的 Tailwind 来「顺带」生成样式。** 编辑器的 class 在编译后已固化进 `dist/styles.css`，而 Tailwind 默认不扫描 `node_modules`，所以宿主项目即使也用了 Tailwind，也不会为库里的断点/工具类生成规则——必须引入上面的 `styles`。
+
+> **TypeScript 类型：** 本包已为样式子路径提供类型声明（`styles.d.ts`，经 `exports` 的 `./styles` 暴露），`import "@qingwu-ui/ai-editor/styles"` 通常**无需**额外配置即可通过类型检查。若你的 TS 仍报 `2307 找不到模块`，可在项目任意 `.d.ts` 补一行兜底，**不要**因此删掉样式 `import`：
+> ```ts
+> declare module "@qingwu-ui/ai-editor/styles";
+> ```
+
+### Next.js / SSR 集成
+
+编辑器依赖浏览器环境，Next.js 等 SSR 场景需用 `dynamic` 关闭 SSR，并传 `immediatelyRender` 以避免 hydration 警告：
+
+```tsx
+import dynamic from "next/dynamic";
+
+const Editor = dynamic(
+  () => import("@qingwu-ui/ai-editor").then((m) => m.QingWuAIEditor),
+  { ssr: false }
+);
+
+export default function Page() {
+  return <Editor immediatelyRender={true} placeholder="开始写作…" />;
+}
+```
+
+### 依赖说明
+
+安装本包时，`dependencies` 会自动带入，**你不需要再手动安装 Tiptap 或文件预览相关的包**：
+
+- **Tiptap 全套**（`@tiptap/core`、`@tiptap/react` 及各扩展，锁定 `^3.28.0`）——编辑器内核，已由本包统一管理版本，避免你逐个安装、版本错配。
+- **文件预览全套**（`@file-viewer/react` 及 pdf / word / spreadsheet / presentation / archive / text 各渲染器，锁定 `2.2.2`）——附件在线预览能力，且全部按需懒加载，不点开附件不会下载。
+- 其余内部实现库（dompurify、lowlight、xgplayer、cmdk、beautiful-mermaid 等）同样自动带入。
+
+你只需保证宿主已有的 **peer 依赖**：
+
+**必需**（不装无法运行）：
+
+- `react` / `react-dom` `^19`
+- `ai` `^7`
+
+**可选**（已标记 optional，不装不影响其他功能）：
+
+| 依赖 | 影响的功能 | 不装时的行为 |
+|---|---|---|
+| `@ai-sdk/openai` | `createAILanguageModelProvider()` 默认 provider | 调用该函数时报错并提示安装；用 `setAIProvider()` 自定义 provider 则完全不需要 |
+| `devicon` | 代码块语言图标 | 图标位留空，语言选择与高亮正常 |
+
+> **想自己写 Tiptap 自定义扩展？** 本包不再把 Tiptap 暴露为 peer。高阶用户可在项目中自行安装对应版本的 `@tiptap/*`（与本包同范围 `^3.28.0`），包管理器会将其提升为同一份实例，自定义扩展即可正常注册。
+
+### 附件预览资源（一条命令）
+
+附件预览（PDF / Word / Excel / PPT / 压缩包等）运行时还需要一批 worker / wasm / 字体**静态文件**。这些不是普通 JS 模块，不会随 `npm install` 自动进入静态目录，所以请在**项目根目录**执行一次本包提供的命令：
+
+```bash
+npx @qingwu-ui/ai-editor copy-assets
+```
+
+它会把所需资源从已安装的 `@file-viewer` 包中抽到 `public/file-viewer/`，与编辑器内默认配置（`FILE_VIEWER_OPTIONS`，期望 `/file-viewer/vendor/...`）对齐。部署后只要该路径可访问即可。如需改输出位置：
+
+```bash
+npx @qingwu-ui/ai-editor copy-assets --out static/file-viewer
+```
+
+> 升级本包后建议重跑一次该命令，以同步可能更新的 worker / wasm。
+
+### 配置写作助手服务
+
+```ts
+import {
+  setAIProvider,
+  createAILanguageModelProvider,
+} from "@qingwu-ui/ai-editor";
+
+// 通用接口 - 支持任意 OpenAI 兼容 API
+const provider = await createAILanguageModelProvider({
+  apiKey: "sk-xxx",
+  baseURL: "https://api.deepseek.com/v1",  // DeepSeek
+  model: "deepseek-v4-flash",
+});
+setAIProvider(provider);
+
+// 切换为通义千问只需改 baseURL 和 model：
+// baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+// model: "qwen3.7-plus"
+```
+
+### 配置云存储
+
+```ts
+import { setStorageProvider, createOSSStorage } from "@qingwu-ui/ai-editor";
+
+setStorageProvider(
+  createOSSStorage({
+    region: "oss-cn-hangzhou",
+    bucket: "my-bucket",
+    accessKeyId: "xxx",
+    accessKeySecret: "xxx",
+  })
+);
+```
+
+### 中英切换
+
+```ts
+import { setLocale } from "@qingwu-ui/ai-editor";
+
+setLocale("en-US"); // 切换到英文
+setLocale("zh-CN"); // 切换到中文
+```
+
+## 浏览器扩展（青梧 Web Clipper）
+
+[青梧 Web Clipper](./extension) 是配套的浏览器剪藏扩展，一键把网页内容剪藏到青梧编辑器，支持 Chrome / Edge / Firefox。
+
+### 功能
+
+- **多模式剪藏** - 整页 / 选区 / 链接书签 / 图片地址
+- **AI 摘要与标签** - 自动生成摘要和标签（需配置 AI）
+- **模板渲染** - 自定义 Markdown 模板，支持变量
+- **历史管理** - 本地 IndexedDB 存储剪藏记录，支持搜索 / 收藏 / 删除
+- **推送编辑器** - 通过本地接收器或浏览器通道把剪藏推送到青梧编辑器
+- **多种触发** - 悬浮球、右键菜单、快捷键
+
+### 安装
+
+```bash
+# 一键构建全部浏览器扩展包（Windows / Linux / Mac）
+cd extension
+./build-extension.bat   # Windows
+./build-extension.sh    # Linux / Mac
+```
+
+构建产物在 `extension/dist/`：
+
+- `qingwu-clipper-chrome-v*.zip` / `edge` / `firefox` - 可上传商店的打包
+- `dist/chrome` / `edge` / `firefox` - 可直接「加载已解压扩展」调试
+
+#### 加载已解压扩展（开发调试）
+
+| 浏览器 | 步骤 |
+|--------|------|
+| **Chrome** | 访问 `chrome://extensions` -> 打开「开发者模式」->「加载已解压」-> 选 `extension/dist/chrome` |
+| **Edge** | 访问 `edge://extensions` -> 打开「开发人员模式」->「加载解压缩的扩展」-> 选 `extension/dist/edge` |
+| **Firefox** | 访问 `about:debugging#/runtime/this-firefox` ->「临时载入附加组件」-> 选 `extension/dist/firefox/manifest.json` |
+
+加载成功后浏览器工具栏出现青梧扩展图标。
+
+### 使用
+
+#### 快捷入口
+
+| 操作 | 入口 |
+|------|------|
+| 剪藏当前页面 | 快捷键 `Alt+Shift+C` / 右键菜单 / 悬浮球 |
+| 剪藏选区 | 选中文本后右键菜单 |
+| 打开侧边栏 | 快捷键 `Alt+Shift+P` / 点击扩展图标 |
+
+#### 首次使用教程
+
+1. **加载扩展** - 按上方「加载已解压扩展」步骤把构建产物加载到浏览器
+2. **触发剪藏** - 打开任意网页，鼠标移到右侧边缘出现悬浮球（或按 `Alt+Shift+C`），点击后自动提取正文
+3. **编辑草稿** - 剪藏后内容进入侧边栏草稿，可编辑标题 / 路径 / 标签
+4. **保存与推送** - 点「保存」后可「推送到编辑器」（需编辑器开启接收器）或「下载 Markdown」
+
+> 推送到编辑器需在编辑器侧开启「接收剪藏」开关（首页横幅 -> 了解扩展），扩展通过本地接收器 `http://127.0.0.1:7321` 或浏览器通道推送。
+
+### 与编辑器对接
+
+编辑器侧启动接收器，接收扩展推送的剪藏：
+
+> **Node / 桌面壳专用子入口：** `startClipperReceiver` / `stopClipperReceiver` 依赖 `node:http`，已从浏览器主入口移除，请从 `@qingwu-ui/ai-editor/clipper` 导入，避免把 Node 模块打进浏览器 / SSR 客户端产物。纯浏览器场景仍从主入口用 `startBrowserClipperReceiver`（见下文）。
+
+```ts
+import { startClipperReceiver } from "@qingwu-ui/ai-editor/clipper";
+
+await startClipperReceiver({
+  port: 7321,
+  onClip: (clip) => {
+    editor.commands.setContent(clip.markdown);
+  },
+});
+```
+
+HTTP 接口 `POST http://127.0.0.1:7321/clip`，请求体（`IncomingClip`）：
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `markdown` | string | 是 | 剪藏的 Markdown 正文 |
+| `title` | string | 是 | 标题 |
+| `path` | string | 否 | 笔记路径 |
+| `tags` | string[] | 否 | 标签 |
+| `sourceUrl` | string | 否 | 来源 URL |
+| `capturedAt` | string | 否 | 捕获时间（ISO） |
+
+**统一响应格式**（消除旧版字段冗余 / 错误码不一致）：
+
+- 成功：`{ ok: true, data?: { at: string } }`
+- 失败：`{ ok: false, error: { code: ClipperErrorCode; message: string } }`
+
+错误码（稳定不变，扩展侧可据此精确处理）：
+
+| code | HTTP | 说明 |
+|------|------|------|
+| `UNAUTHORIZED` | 401 | token 校验失败 |
+| `INVALID_JSON` | 400 | 请求体不是合法 JSON |
+| `MARKDOWN_REQUIRED` | 422 | 缺少 `markdown` 字段 |
+| `NOT_FOUND` | 404 | 路由不存在 |
+| `INTERNAL` | 500 | 内部错误 |
+
+纯浏览器场景（无 Node 运行时）使用 `startBrowserClipperReceiver`，通过 `window.postMessage` 接收，无需 HTTP：
+
+```ts
+import { startBrowserClipperReceiver } from "@qingwu-ui/ai-editor";
+
+startBrowserClipperReceiver({
+  onClip: (clip) => editor.commands.setContent(clip.markdown),
+});
+```
+
+### 配置
+
+在扩展侧边栏「设置」中：
+
+- **推送方式** — HTTP（默认，推送到本地接收器）/ 文件（下载 Markdown 到指定目录）
+- **HTTP endpoint** — 默认 `http://127.0.0.1:7321/clip`
+- **编辑器页面 URL** — HTTP 不可达时降级打开的编辑器地址（默认 `http://localhost:5173`）
+
+## API
+
+### `<QingWuAIEditor>` Props
+
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `initialContent` | `string \| object` | `""` | 初始内容：HTML 字符串（自动安全清洗 / Markdown 识别）或 ProseMirror JSON 文档对象（原样使用，宿主回显可直传 `getJSON()` 产物，避免二次解析失真）；运行期变化会原地更新文档，不丢撤销栈 |
+| `onChange` | `(html: string, json: object) => void` | - | 内容变化回调 |
+| `placeholder` | `string` | `"输入 '/' 打开菜单…"` | 占位文本 |
+| `mode` | `"edit" \| "view"` | `"edit"` | 编辑模式；`"view"` 为只读查看 |
+| `readonly` | `boolean` | `false` | **已废弃**，请用 `mode="view"` |
+| `maxLength` | `number` | - | 最大字符限制 |
+| `maxAttachmentSize` | `number` | **必填** | 单文件上传大小上限（字节）；超限文件被拦截并经 `onToast` 提示 |
+| `maxTotalAttachmentSize` | `number` | **必填** | 文档内所有附件总大小上限（字节）；超限拒绝新附件上传 |
+| `onToast` | `(message: string, type: `"success"` \| `"error"` \| `"info"`, options?) => void` | - | 全局提示回调（附件超限拦截 / 文档附件超限警告等）。由宿主接入自己的 Toast 组件；第三参 `options` 透传展示选项（`persist`/`maxLines`/`duration`），旧二参签名自动兼容 |
+| `className` | `string` | `""` | 自定义样式类名 |
+| `style` | `React.CSSProperties` | - | 容器自定义样式 |
+| `borderless` | `boolean` | `false` | 隐藏编辑器外边框 |
+| `showToolbar` | `boolean` | `true` | 显示顶部工具栏（导出） |
+| `showToc` | `boolean` | `true` | 目录**默认展开状态**：`true` 默认展开；`false` 控件仍可用但默认收起（工具栏按钮 / 悬浮球 / 抽屉均可展开，不关闭目录功能）。运行期变化会同步进内部状态 |
+| `showSearch` | `boolean` | `true` | 启用全文搜索：`true` 唤起 Ctrl+F 搜索浮层，`false` 禁用且不拦截快捷键 |
+| `onEditorReady` | `(editor: Editor) => void` | - | 编辑器实例就绪回调 |
+| `immediatelyRender` | `boolean` | - | 是否立即渲染编辑器；SSR/Next.js 配合 `dynamic` ssr:false 传 `true` |
+
+#### Toast 提示通道
+
+超限拦截等提示**默认内置渲染**：未接入任何自定义 Toast 时，自动使用随包内置的 `@qingwu-ui/toast`（样式随包发布，零额外配置）。渲染优先级：`onToast` 实例回调 > `setToastProvider()` 全局渲染器 > 内置 `@qingwu-ui/toast`。
+
+**onToast 实例级接入示例（推荐 @qingwu-ui/toast）**：
+
+```tsx
+import { toast } from "@qingwu-ui/toast";
+import "@qingwu-ui/toast/style.css";
+
+<QingWuAIEditor
+  maxAttachmentSize={50 * 1024 * 1024}
+  maxTotalAttachmentSize={100 * 1024 * 1024}
+  onToast={(message, type) => {
+    if (type === "success") toast.success(message);
+    else if (type === "info") toast.info(message);
+    else toast.error(message);
+  }}
+/>
+```
+
+**setToastProvider 全局替换**（与 `setStorageProvider` / `setAIProvider` 同款模式，对所有编辑器实例生效；传 `null` 恢复内置默认）：
+
+```ts
+import { setToastProvider } from "@qingwu-ui/ai-editor";
+
+setToastProvider((message, type) => {
+  // 接入宿主自己的 Toast 组件
+  if (type === "success") myToast.success(message);
+  else if (type === "info") myToast.info(message);
+  else myToast.error(message);
+});
+```
+
+#### 删除确认 / 导入选择
+
+- **删除确认**：默认使用内置项目 `DeleteConfirmDialog`（图片/视频/音频/附件/代码块/表格删除均走它）。宿主可经 `setConfirmProvider()` 全局替换为自定义确认 UI（如接入自己的 Dialog 组件）；传 `null` 恢复内置默认：
+
+```ts
+import { setConfirmProvider } from "@qingwu-ui/ai-editor";
+import type { DeleteConfirmDialogProps } from "@qingwu-ui/ai-editor";
+
+setConfirmProvider(({ title, message, confirmText, cancelText, onConfirm, onCancel }) => {
+  // 渲染宿主自己的确认框，确认时调用 onConfirm()，取消时调用 onCancel()
+  myConfirm({
+    title,
+    message,
+    confirmText,
+    cancelText,
+    onOk: () => void onConfirm(),
+    onCancel,
+  });
+});
+```
+
+- **导入选择**：拖入 MD 文件时优先走宿主 `chooseMd`（内置 `MdImportDialog`）；未接入时回退到内置项目风格选择弹窗（渲染 / 附加 / 取消），不再使用原生 `window.confirm`。
+
+#### 目录（TOC）宿主注意事项
+
+- 入口：宽屏（≥64rem 且非全屏）显示工具栏「目录」按钮 + 右侧悬浮侧栏；窄屏 / 全屏改由抽屉承载（首次挂载自动展开一次）；侧栏 / 抽屉未展示时（用户收起后，或只读 `mode="view"` 态且文档含标题）由悬浮球作为入口。
+- 桌面侧栏与移动抽屉均经 `createPortal` 直挂 `document.body`（避免宿主 GSAP 入场 / 步骤切换动画的祖先 `transform` 抢走 `fixed` 包含块、被站点头部层叠上下文压制）。宿主**不要**以「编辑器容器后代」关系选择这两个面板，请用全局类 `.qingwu-toc-desktop` / `.qingwu-toc-drawer`。
+- 编辑器实例常驻、仅靠祖先 `display:none` 切换视图的宿主：portal 出 body 的面板不会随隐藏容器一起消失，需按自身步骤 / 视图状态额外收掉，例如：
+  ```css
+  body:has(.scene:not([data-step="1"])) > .qingwu-toc-desktop { display: none; }
+  ```
+- 滚动跟踪：滚动正文时目录实时高亮当前章节、激活项自动保持在目录视野内；悬浮框自身滚到顶 / 底后滚轮接力滚动正文；宿主使用 Lenis 时抽屉内已挂 `data-lenis-prevent` 放行原生滚动。
+
+### 写作助手相关
+
+```ts
+setAIProvider(provider: AIProvider): void
+getAIProvider(): AIProvider
+createAILanguageModelProvider(config: AILanguageModelConfig): Promise<AIProvider>
+```
+
+### 存储相关
+
+```ts
+setStorageProvider(provider: StorageProvider, config?: StorageConfig): void
+getStorageProvider(): StorageProvider
+getStorageInfo(): { name, type, config } | null
+loadStorageConfig(): StorageConfig | null
+
+// 内置 Provider
+createLocalStorage(): StorageProvider
+createOSSStorage(config: OSSStorageConfig): StorageProvider
+createCOSStorage(config: COSStorageConfig): StorageProvider
+createS3Storage(config: S3StorageOptions): StorageProvider
+```
+
+### i18n
+
+```ts
+setLocale(locale: "zh-CN" | "en-US"): void
+getLocale(): Locale
+t(path: string): string
+tf(path: string, ...args): string  // 命名 / 位置占位符插值
+```
+
+### 扩展相关
+
+```ts
+getEditorExtensions(config?: EditorExtensionsConfig): Extension[]
+createSlashCommandExtension(getItems: () => SlashCommandItem[]): Extension
+getDefaultSlashCommands(t: (key: string) => string): SlashCommandItem[]
+getBubbleMenuActions(t: (key: string) => string): BubbleMenuAction[]
+setSearchEngine(template: string): void
+getSearchEngine(): string
+```
+
+## AI 合规提示
+
+本编辑器接入大模型（DeepSeek / 通义千问 / OpenAI 等）时使用**集成方自行配置的 API Key**，库本身不提供生成服务。依据中国《生成式人工智能服务管理暂行办法》等法规，集成方在使用时应注意：
+
+- **AI 生成内容标识**：对 AI 生成的内容（续写 / 润色 / 翻译等输出）按适用要求进行标识，明示其由 AI 生成；
+- **内容安全**：对 AI 输出建立必要的审核与过滤机制，避免生成或传播违法违规内容；
+- **用户告知**：在应用隐私政策 / 用户协议中说明 AI 能力的接入方式与数据流向。
+
+## 开发
+
+```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 类型检查
+npm run typecheck
+
+# 构建
+npm run build
+
+# 测试
+npm test
+```
+
+## 技术栈
+
+| 层面 | 技术 |
+|------|------|
+| 编辑器核心 | [Tiptap](https://tiptap.dev/) (ProseMirror) |
+| UI 框架 | React 19 |
+| 命令面板 | [cmdk](https://cmdk.paco.me/) |
+| AI 接口 | [Vercel AI SDK](https://sdk.vercel.ai/) |
+| 代码高亮 | [lowlight](https://github.com/wooorm/lowlight) |
+| 数学公式 | [KaTeX](https://katex.org/) |
+| 视频播放 | [xgplayer](https://h5player.bytedance.com/) |
+| 文件预览 | [FileViewer](https://doc.file-viewer.app/) |
+| 动画 | [Framer Motion](https://www.framer.com/motion/) |
+| 构建 | [Vite](https://vitejs.dev/) |
+| 样式 | [Tailwind CSS](https://tailwindcss.com/) |
+
+## License
+
+[Apache-2.0](./LICENSE) © 2026 QingWu Contributors
+
+---
+
+<p align="center">
+  <sub>致敬 <a href="https://github.com/steven-tey/novel">Novel</a> (steven-tey/novel)，青梧编辑器受其启发而构建。</sub>
+</p>
+

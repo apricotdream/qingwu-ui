@@ -1,0 +1,487 @@
+import Link from "next/link";
+
+/* 版本数据：新版本在上 */
+const VERSIONS = [
+  {
+    version: "0.9.0-beta.22",
+    date: "2026-09-29",
+    tag: "notifications",
+    changes: [
+      {
+        type: "fix",
+        text: "notifications 修复左侧徽标（glyph）传入长文本（如 \"system\"）时溢出 30px 方块、与右侧标题重叠错位：纯拉丁不超过 2 字符大写保留（\"ai\"→\"AI\"），超长取首字母（\"system\"→\"S\"），中日韩及混合文本取首字符（\"系统消息\"→\"系\"）；补充溢出兜底样式，拉丁字符改用 UI 字体（楷体拉丁字形怪异），完整值经 title 属性悬停可见（包版本 0.9.0-beta.2）",
+      },
+    ],
+  },
+  {
+    version: "0.9.0-beta.21",
+    date: "2026-09-28",
+    tag: "scroll-fab",
+    changes: [
+      {
+        type: "fix",
+        text: "scroll-fab 修复键盘语义错误：Enter/Space 不再翻转模式，改为执行当前模式动作（走浏览器原生按钮激活，与鼠标点击同一路径）；双模式下新增方向键翻转（ArrowUp=返回顶部 / ArrowDown=滚动到底），preventDefault 只翻转不滚页、同方向不重复触发，单模式方向键不响应（包版本 0.9.0-beta.3）",
+      },
+      {
+        type: "feat",
+        text: "scroll-fab 新增显隐配置：showThreshold（默认 0 行为不变）——scrollPos 未越过阈值按钮隐藏、不打扰首屏，跨越即时显隐且不影响进行中动画与模式；modes——初始模式取数组首项、规范化去重过滤、空配置抛 TypeError，单模式无绕环/描边、静态 aria、图标按唯一模式方向（包版本 0.9.0-beta.3）",
+      },
+      {
+        type: "feat",
+        text: "scroll-fab 新增 onScroll(pct)：0..1 小数滚动进度，rAF 节流一帧一吐，按钮隐藏期间照吐，构造完成与 refresh() 后各补发一次；演示页新增「单模式 + 阈值显隐」卡片并实时显示百分比（包版本 0.9.0-beta.3）",
+      },
+    ],
+  },
+  {
+    version: "0.9.0-beta.20",
+    date: "2026-09-28",
+    tag: "scroll-fab",
+    changes: [
+      {
+        type: "feat",
+        text: "scroll-fab 新增 Lenis 平滑滚动可插拔后端：lenis option 三态——传宿主已有 Lenis 实例则复用（组件不销毁）、true / 配置对象在首次点击时动态 import('lenis') 自建、缺省 / false 沿用内置 rAF；lenis 为 optional peerDependency，未安装静默回退、主包零增长。自建实例强制 smoothWheel:false（只驱动按钮程序滚动、不劫持宿主滚轮），target 容器自动映射为 Lenis wrapper，保留 wheel / touch / keydown 打断与懒加载到底追击语义，新增 onLenisReady 回调抛出内部实例（包版本 0.9.0-beta.2）",
+      },
+      {
+        type: "feat",
+        text: "scroll-fab 新增异形形状 shape: { viewBox?, fill, outline, outlineTransform? }：双 path 保证进度描边沿外扩轮廓完全包裹形状外缘（单 path 描边居中必有一半压进形状内部），outline 可与 fill 同形再配 outlineTransform 外扩；异形模式自动退场圆形外壳，阴影改用 drop-shadow 跟随叶片真实形状，保持矩形命中区（44px 触控下限）；演示页左下角新增银杏叶实例（包版本 0.9.0-beta.2）",
+      },
+    ],
+  },
+  {
+    version: "0.9.0-beta.19",
+    date: "2026-09-19",
+    tag: "ai-editor",
+    changes: [
+      {
+        type: "fix",
+        text: "ai-editor 桌面目录悬浮框改为 portal 挂 document.body（同移动抽屉手法）：宿主存在 GSAP 入场 / 步骤切换动画时，动画进行中的祖先内联 transform 会抢走 fixed 目录的包含块，表现为目录先闪现在编辑器内部、动画 clearProps 后再跳到视口右侧；portal 到 body 后包含块恒为视口，定位不再被动画劫持。宿主注意：桌面 aside（.qingwu-toc-desktop）与移动抽屉（.qingwu-toc-drawer）均为 body 直子节点，不要以编辑器容器后代关系锚定它们；编辑器实例常驻、靠祖先 display:none 切视图的宿主需按自身步骤状态额外收掉面板",
+      },
+    ],
+  },
+  {
+    version: "0.9.0-beta.18",
+    date: "2026-09-16",
+    tag: "scroll-fab 首发 · ai-editor beta 系列",
+    changes: [
+      {
+        type: "feat",
+        text: "新增 @qingwu-ui/scroll-fab 悬浮滚动栏：桌面悬停 / 触屏按住推进描边进度环，绕满一圈在「滚动到底部 / 返回顶部」间纯切换（不附带滚动），点击（轻点）恒直接执行当前箭头动作、与描边正交；rAF 缓动滚动支持滚轮/触摸/键盘打断与懒加载变长追击，尊重 prefers-reduced-motion；window 与自定义容器双支持、可滚动才渲染；移动端一等支持（Pointer Events 单路径、ghost click 抑制、safe-area、44px 命中下限）；零框架依赖（首发 0.9.0-beta.1）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 代码块内搜狗/QQ 拼音「空格选词上屏」行尾残留空位：新增 ImeCommitSpaceGuard，compositionend 后 100ms 内的 insertText 空格吞掉（段落因 white-space 折叠不可见、代码块 pre-wrap 暴露）（beta.18）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 桌面目录悬浮框到边接棒滚正文：悬浮框自身滚到顶/底后滚轮接力滚动正文，移除 beta.16 的 data-lenis-prevent（其导致悬浮框内滚不动目录）（beta.17）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 移动端目录抽屉：portal 挂 body 不再被导航栏遮挡、点面板外自动收起、浮动按钮上移避让返回顶部、修复目录需点两次才跳转（beta.16）；代码块行号真机底部对齐、深色边框提亮（beta.15）",
+      },
+    ],
+  },
+  {
+    version: "0.9.0-beta.14",
+    date: "2026-08-22",
+    tag: "ai-editor beta 系列",
+    changes: [
+      {
+        type: "feat",
+        text: "ai-editor TOC 目录滚动自动跟踪：滚动内容时目录实时高亮当前所在章节，激活项自动滚动保持在目录视野内（桌面悬浮面板 / 移动抽屉均生效）；滚动到底激活末节、首个标题之上清空高亮；点击目录跳转的平滑滚动期间高亮锁定目标不闪烁；目录折叠遮住激活项时降级高亮最近可见祖先（beta.14）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 代码块解析兼容 Obsidian 逐行 div 包裹：代码块不再只保留第一行、后续行丢失（beta.13）",
+      },
+      {
+        type: "feat",
+        text: "ai-editor initialContent 支持 ProseMirror JSON 文档对象：宿主回显可直传 getJSON() 产物，避免 string→markdown 二次解析破坏代码块围栏（beta.13）",
+      },
+    ],
+  },
+  {
+    version: "0.9.0-beta.12",
+    date: "2026-08-20",
+    tag: "ai-editor beta 系列",
+    changes: [
+      {
+        type: "fix",
+        text: "ai-editor 代码块移除 2000px 高度硬裁：超高代码块（>约 84 行）不再底部被裁且无滚动条，改为随内容自然撑高、滚动交给外层容器；折叠态仍收至 56px（beta.12）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 粘贴/回显媒体时 sanitize 放行 blob: URI：拖入媒体的占位 src 不再被 DOMPurify 清空（视频嵌入 src 变空、无法触发上传中占位的问题修复）（beta.11）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 视频嵌入健壮性：编码不受浏览器支持（HEVC/H.265 缺失）时显示友好占位（说明原因 + 引导安装 HEVC 扩展或转码 H.264）；只读态 src 仍为 blob: 时显示「视频上传中…」动画占位，替代黑屏（beta.9 / beta.10）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 代码块行号列与内容底部错位修复：通用 pre 样式排除自定义代码块（.cb-code-pre），卡片视觉移入自身，行号与代码逐行对齐（beta.7）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 修复 slash 命令框列表滚轮被宿主 Lenis 劫持无法滚动、键盘导航选中项滚出可视区（列表自动滚动跟随）（beta.4）",
+      },
+      {
+        type: "fix",
+        text: "ai-editor 修复工具栏「目录」按钮在宽屏点击时抽屉与侧栏同时出现（双面板重叠）（beta.3）",
+      },
+      {
+        type: "feat",
+        text: "ai-editor TOC 目录语义统一为「默认展开状态」：showToc={false} 仅默认收起（控件仍可用）；只读态/窄屏工具栏按钮不可见时由目录悬浮球接管入口（beta.2）",
+      },
+    ],
+  },
+  {
+    version: "0.9.0-beta.1",
+    date: "2026-08-15",
+    tag: "Select 磨砂面板选项",
+    changes: [
+      {
+        type: "feat",
+        text: "@qingwu-ui/select 新增 frosted 选项（默认开启）：面板半透明磨砂质感（半透明底 + backdrop-filter 毛玻璃）；false 回退不透明实体面板，update({ frosted }) 动态切换。演示页新增「面板磨砂 vs 不透明」对比卡与 props 面板磨砂开关",
+      },
+    ],
+  },
+  {
+    version: "0.9.0",
+    date: "2026-08-12",
+    tag: "十二包对齐 · @qingwu-ui scope 首发",
+    changes: [
+      {
+        type: "feat",
+        text: "新增 @qingwu-ui/notifications 通知铃铛组件：铃铛触发器 + 未读红点徽标 + 手风琴错峰下拉面板，ARIA menu/menuitem 全键盘导航，空态 / 自定义渲染 / 受控更新 / 向上翻转",
+      },
+      {
+        type: "feat",
+        text: "@qingwu-ui/calendar 新增 dateOnly 模式：仅选日期，隐藏时分秒时间行，onChange 回发 YYYY-MM-DD（默认仍回发完整 datetime）",
+      },
+      {
+        type: "improve",
+        text: "十二包版本统一对齐 0.9.0，首次以 @qingwu-ui scope 发布（品牌自 @qingwu 迁移）；演示页新增 Notifications 组件页与 API 属性表",
+      },
+    ],
+  },
+  {
+    version: "0.8.0",
+    date: "2026-08-09",
+    tag: "十一包对齐 · ai-editor 增强",
+    changes: [
+      {
+        type: "feat",
+        text: "ai-editor AI 面板宽度随编辑器自适应、左缘对齐，高度钳进视口避免滚动跳变",
+      },
+      {
+        type: "feat",
+        text: "ai-editor AI 替换（选中 / 全文）前弹确认弹窗：列出本次将被移除的媒体节点（图片 / 附件 / 视频 / 音频）",
+      },
+      {
+        type: "feat",
+        text: "ai-editor 替换后孤儿媒体资源 30s 延迟删除（undo 可救回）；编辑器销毁时立即 flush 剩余孤儿",
+      },
+      {
+        type: "improve",
+        text: "十一包版本统一对齐 0.8.0（select / action-menu 随本版首次发布）",
+      },
+    ],
+  },
+  {
+    version: "0.7.3",
+    date: "2026-08-07",
+    tag: "ai-editor AI 面板锚定",
+    changes: [
+      {
+        type: "improve",
+        text: "ai-editor AI 面板锚定工具栏按钮：点击 AI 按钮时面板贴近按钮下沿弹出（createPortal 挂载）",
+      },
+    ],
+  },
+  {
+    version: "0.7.2",
+    date: "2026-08-06",
+    tag: "外部 Markdown 图片解析",
+    changes: [
+      {
+        type: "feat",
+        text: "ai-editor 粘贴外部 Markdown（Obsidian / Typora）时，本地相对路径图片 / 附件自动检测与解析（RelativeMedia 扩展）",
+      },
+      {
+        type: "improve",
+        text: "Obsidian [[wiki]] 粘贴不再转 base64 内联，统一 objectURL 占位预览 → 上传 → 换持久 URL 管线",
+      },
+      {
+        type: "fix",
+        text: "AI 模型调用显式走 openai.chat()（/chat/completions），修复 DeepSeek / 通义 / GLM 等兼容端点 404",
+      },
+    ],
+  },
+  {
+    version: "0.6.0",
+    date: "2026-08-02",
+    tag: "TagInput 首发 · 九包对齐",
+    changes: [
+      {
+        type: "feat",
+        text: "新增 @qingwu-ui/tag-input 标签快捷插入组件：输入框 + 标签快捷栏，点击标签自动填入（逗号分隔），已插入自动隐藏、删除后重现",
+      },
+      {
+        type: "feat",
+        text: "Apple tinted 风格 chip（teal 品牌 tint、Lucide xmark、按压反馈、暗色 systemGray6 适配）",
+      },
+      {
+        type: "feat",
+        text: "allowEnterCreate：输入框回车将文本创建为新标签；createTag() 程序化创建",
+      },
+      {
+        type: "feat",
+        text: "inline chip-in-input 模式：已选标签 chip 内嵌输入框，× 删除即移除，回车添加已选；maxTags 数量上限",
+      },
+      {
+        type: "improve",
+        text: 'text-layout 驱动展开/收起（maxRows 折叠 + "+N 更多"）与标签栏高度；受控 / 非受控双模式',
+      },
+      {
+        type: "improve",
+        text: "九包版本统一对齐 0.6.0（tag-input 随本版首次发布，其余无功能变更）；演示页新增 TagInput / 骨架屏 API 属性表",
+      },
+    ],
+  },
+  {
+    version: "0.5.1",
+    date: "2026-08-01",
+    tag: "Skeleton 骨架屏重设计",
+    changes: [
+      {
+        type: "feat",
+        text: "@qingwu-ui/skeleton 块级渐变位移：每块独立 ::before 渐变层 transform 滑动（合成器线程零 repaint），错峰级联（负延迟，staggerDelay 可配）",
+      },
+      {
+        type: "feat",
+        text: "refetch 自适应：结构签名（structureSignature）+ MutationObserver，loading 期间内容结构变化骨架实时跟上",
+      },
+      {
+        type: "feat",
+        text: "视口增量渲染：只渲染 ±1 屏内骨架块，滚动增量补渲，已渲染上限 500 双向淘汰——长页面 DOM/合成层有界",
+      },
+      {
+        type: "feat",
+        text: "加载期位置守卫：文档坐标逐帧比对，路由回退/布局沉降自动重定位+重测，骨架与内容像素级对齐",
+      },
+      {
+        type: "feat",
+        text: "zIndex 选项（默认 9999，页面 chrome 在上时调低）；root 脱离文档自动自毁（防孤儿覆盖层）",
+      },
+      {
+        type: "improve",
+        text: "门槛过滤：宽≥48px 且高≥8px 的块才建动画层（头像/图标静态），reduced-motion 全关",
+      },
+    ],
+  },
+  {
+    version: "0.5.0",
+    date: "2026-08-01",
+    tag: "八包对齐",
+    changes: [
+      {
+        type: "feat",
+        text: "@qingwu-ui/editor 更名 @qingwu-ui/ai-editor，Toast 解耦为 onToast 事件通道",
+      },
+      {
+        type: "feat",
+        text: "@qingwu-ui/upload 新增 URL 批量导入；@qingwu-ui/toast 默认 top-center + 关键词强调 + error 震动；@qingwu-ui/search 关闭键/清空键内嵌、遮罩挂 body",
+      },
+      { type: "improve", text: "文档站 EP 化改造；八包全部对齐 0.5.0（calendar 直升）" },
+    ],
+  },
+  {
+    version: "0.4.0",
+    date: "2026-07-31",
+    tag: "Toast 组件",
+    changes: [
+      {
+        type: "feat",
+        text: "新增 @qingwu-ui/toast 轻提示组件：零依赖、纯 TypeScript + 原生 DOM 渲染",
+      },
+      {
+        type: "feat",
+        text: "ARIA live region 内建（role=status + aria-live=polite），prefers-reduced-motion 自动克制",
+      },
+      {
+        type: "feat",
+        text: "6 种定位（top/bottom × left/center/right），4 种语义类型（info/success/warning/error）",
+      },
+      {
+        type: "feat",
+        text: "Promise 链：loading → success/error 三态自动流转，支持函数式消息生成",
+      },
+      { type: "feat", text: "队列管理：maxVisible 控制同时显示上限，超出自动排队，关闭后按序出队" },
+      {
+        type: "feat",
+        text: "现代 UI 设计：毛玻璃质感卡片、实心彩色图标圆底、双层柔光阴影、弹簧曲线入场动画",
+      },
+      {
+        type: "feat",
+        text: "移动端适配：安全区 inset 偏移、窄屏自适应宽度与两行文本换行、44px 触控热区",
+      },
+      { type: "feat", text: "明暗双主题：自动响应用户主题偏好，CSS 自定义属性驱动，支持宿主覆盖" },
+      { type: "feat", text: "演示页：语义类型卡片、3×2 定位可视化网格、5 种场景演示、操作日志" },
+      {
+        type: "improve",
+        text: "优化 Toast 动画为纯 opacity 淡入淡出，不触发 GPU 合成层，多 toast 并发无显存膨胀",
+      },
+      { type: "improve", text: "全部组件统一版本号至 0.4.0" },
+      { type: "fix", text: "修复 Promise 链不跟随用户选择定位属性变化的问题" },
+    ],
+  },
+  {
+    version: "0.3.1",
+    date: "2026-07-30",
+    tag: "工程加固",
+    changes: [
+      {
+        type: "improve",
+        text: "发版流程接入 publish-check 产物校验门禁：workspace 依赖残留检测 / CHANGELOG 版本一致性 / exports 产物齐全性",
+      },
+      {
+        type: "improve",
+        text: "新增 Playwright e2e 端到端测试：拖拽上传、压缩产出 WebP/AVIF、单张数量限制、按钮触发、真实 HTTP 上传",
+      },
+      { type: "improve", text: "README 同步 0.3.0 状态与 upload 组件完整文档" },
+    ],
+  },
+  {
+    version: "0.3.0",
+    date: "2026-07-29",
+    tag: "Upload 上传",
+    changes: [
+      {
+        type: "feat",
+        text: "新增 @qingwu-ui/upload 图片上传组件：拖拽区 / 按钮两种触发形态，按钮形态复用 @qingwu-ui/button",
+      },
+      {
+        type: "feat",
+        text: "客户端压缩管线：支持原图 / WebP / AVIF 多份并行输出，AVIF 不支持时自动降级 WebP/PNG",
+      },
+      {
+        type: "feat",
+        text: "独立进度条组件，内置 XHR 上传与可插拔自定义上传函数，支持数量/大小/类型校验",
+      },
+      { type: "feat", text: "全部包统一版本号至 0.3.0" },
+    ],
+  },
+  {
+    version: "0.2.0",
+    date: "2026-07-28",
+    tag: "首个公开版",
+    changes: [
+      { type: "feat", text: "首次发布青梧 UI 组件库，Apache-2.0 协议开源" },
+      {
+        type: "feat",
+        text: "@qingwu-ui/button 按钮：胶囊形（pill）风格，default / primary / amber / icon 四种变体，纯 DOM + CSS",
+      },
+      {
+        type: "feat",
+        text: "@qingwu-ui/editor 编辑器：Tiptap/ProseMirror 内核，斜杠命令、AI 写作助手（OpenAI/DeepSeek/Qwen）、代码高亮、i18n、Web Clipper",
+      },
+      {
+        type: "feat",
+        text: "@qingwu-ui/search 搜索：打字机占位轮播、Ctrl/⌘+K 全局唤起、全键盘导航+焦点陷阱、ARIA 完整语义、分类筛选",
+      },
+      {
+        type: "feat",
+        text: "@qingwu-ui/calendar-core 日历引擎：headless 纯日期工具，零依赖零 DOM 副作用，tree-shakeable",
+      },
+    ],
+  },
+  {
+    version: "0.1.0",
+    date: "2026-07-27",
+    tag: "内部先行",
+    changes: [
+      {
+        type: "feat",
+        text: "发布 @qingwu-ui/calendar-core@0.1.0 与 @qingwu-ui/search@0.1.0（私有 Nexus registry）",
+      },
+      {
+        type: "feat",
+        text: "Calendar 弹出日历组件：农历/节气/节日/黄历宜忌详情侧栏，日期/月份/年份三视图，键盘导航",
+      },
+      {
+        type: "feat",
+        text: "自研农历引擎 lunar.ts：零依赖，覆盖 1900-2100 年公农历互转、节气（基础日期+年份修正）、天干地支",
+      },
+      {
+        type: "feat",
+        text: "休假日历 JSON 配置：holidays/workdays 支持，日期格右上角「休/工」角标",
+      },
+      {
+        type: "feat",
+        text: "演示页 props 面板：属性实时修改 + 应用配置重新渲染，展开代码支持 React / HTML / Vue 三格式",
+      },
+      { type: "fix", text: "修复公农历转换中闰月定位算法错误（原实现存在边界 bug）" },
+      {
+        type: "fix",
+        text: "节气数据从固定日期升级为基础日期 + 年份修正表（2020-2030 精度 ±0 天）",
+      },
+      { type: "fix", text: "修复「今天」按钮在当月时 pointer-events 拦截导致点击无效" },
+      { type: "fix", text: "确认按钮现在会同步面板内修改的时间到选中日期并触发 onChange" },
+    ],
+  },
+];
+
+const TYPE_LABELS: Record<string, { label: string; cls: string }> = {
+  feat: { label: "新增", cls: "type-feat" },
+  fix: { label: "修复", cls: "type-fix" },
+  improve: { label: "改进", cls: "type-improve" },
+};
+
+export default function ChangelogPage() {
+  return (
+    <div className="changelog">
+      <section style={{ marginBottom: 28 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 700, marginBottom: 8 }}>更新日志</h1>
+        <p style={{ fontSize: 13.5, lineHeight: 1.7, color: "var(--ink-2)" }}>
+          记录青梧 UI 各组件的版本更新内容。
+        </p>
+      </section>
+
+      {VERSIONS.map((v) => (
+        <section key={v.version} className="changelog-version">
+          <div className="changelog-head">
+            <h2 className="changelog-ver">
+              v{v.version}
+              {v.tag && <span className="changelog-tag">{v.tag}</span>}
+            </h2>
+            <time className="changelog-date">{v.date}</time>
+          </div>
+
+          <ul className="changelog-list">
+            {v.changes.map((c, i) => {
+              const t = TYPE_LABELS[c.type] ?? TYPE_LABELS.improve;
+              return (
+                <li key={i} className="changelog-item">
+                  <span className={`changelog-type ${t.cls}`}>{t.label}</span>
+                  <span className="changelog-text">{c.text}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
+
+      <div style={{ marginTop: 28, fontSize: 13, color: "var(--ink-3)" }}>
+        更多版本信息见各包 CHANGELOG.md 或{" "}
+        <Link
+          href="/"
+          className="home-card-link"
+          style={{ color: "var(--teal)", textDecoration: "underline" }}
+        >
+          回到首页
+        </Link>
+      </div>
+    </div>
+  );
+}

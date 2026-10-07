@@ -1,0 +1,8 @@
+{
+  "extends": "@qingwu-ui/tsconfig/base.json",
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": []
+  },
+  "include": ["src", "tsdown.config.ts"]
+}

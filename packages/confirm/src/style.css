@@ -1,0 +1,320 @@
+/* ============================================================
+   青梧UI · Confirm 确认框样式
+   居中 Modal + 缩放同源转场（从触发控件中心 morph 出现 / 缩回）
+   零依赖 · 明暗双主题 · reduced-motion 友好 · 移动端适配
+   ============================================================ */
+
+@layer qingwu.confirm {
+  /* ============================================================
+   ① 设计令牌（可在宿主层覆盖 --qc-*）
+   ============================================================ */
+  .qc-layer {
+    /* 亮色 · 磨砂玻璃 */
+    --qc-bg: 250 251 252;
+    --qc-glass-a: 0.92;
+    --qc-glass-b: 0.78;
+    --qc-hairline: 255 255 255;
+    --qc-hairline-a: 0.4;
+    --qc-sheen: 0.2;
+    --qc-fg: 17 17 17;
+    --qc-fg2: 105 105 110;
+    --qc-line: 229 231 235;
+    --qc-blue: 0 122 255;
+    --qc-red: 255 59 48;
+    --qc-backdrop-alpha: 0.32;
+    --qc-backdrop-blur: 0px;
+    --qc-shadow-a: 0.08;
+    --qc-shadow-b: 0.18;
+    --qc-radius: 20px;
+    --qc-font:
+      -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", system-ui,
+      sans-serif;
+  }
+
+  /* 暗色 · iOS dark mode 色板 */
+  .dark .qc-layer,
+  [data-theme="dark"] .qc-layer {
+    --qc-bg: 28 28 30;
+    --qc-glass-a: 0.84;
+    --qc-glass-b: 0.72;
+    --qc-hairline-a: 0.12;
+    --qc-sheen: 0.06;
+    --qc-fg: 255 255 255;
+    --qc-fg2: 152 152 158;
+    --qc-line: 44 44 46;
+    --qc-blue: 10 132 255;
+    --qc-red: 255 69 58;
+    --qc-backdrop-alpha: 0.5;
+    --qc-shadow-a: 0.4;
+    --qc-shadow-b: 0.42;
+  }
+
+  /* ============================================================
+   ② 层 · 基础复位（限定在组件范围内）
+   ============================================================ */
+  .qc-layer,
+  .qc-layer * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  .qc-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    font-family: var(--qc-font);
+    color: var(--qc-fg);
+    pointer-events: none;
+  }
+
+  /* ============================================================
+   ③ 遮罩 · 纯 opacity 淡入淡出，不参与 morph
+   ============================================================ */
+  .qc-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / var(--qc-backdrop-alpha));
+    -webkit-backdrop-filter: blur(var(--qc-backdrop-blur));
+    backdrop-filter: blur(var(--qc-backdrop-blur));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: auto;
+  }
+  .qc-backdrop.qc-open {
+    opacity: 1;
+  }
+  .qc-backdrop.qc-exit {
+    opacity: 0;
+    transition-duration: 0.16s;
+  }
+
+  /* ============================================================
+   ④ 舞台 · 视口居中
+   ============================================================ */
+  .qc-stage {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    pointer-events: none;
+  }
+
+  /* ============================================================
+   ⑤ 面板 · 玻璃卡 + 缩放同源转场
+   静止态居中；open 从控件中心 translate+scale 长出；exit 缩回
+   ============================================================ */
+  .qc-panel {
+    position: relative;
+    pointer-events: auto;
+    width: 400px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100dvh - 32px);
+    overflow: auto;
+    padding: 22px;
+    border-radius: var(--qc-radius);
+    background: linear-gradient(
+      160deg,
+      rgb(var(--qc-bg) / var(--qc-glass-a)),
+      rgb(var(--qc-bg) / var(--qc-glass-b))
+    );
+    border: 0.5px solid rgb(var(--qc-hairline) / var(--qc-hairline-a));
+    box-shadow:
+      inset 0 0.5px 0 rgb(var(--qc-hairline) / var(--qc-hairline-a)),
+      0 1px 2px rgb(0 0 0 / var(--qc-shadow-a)),
+      0 16px 48px rgb(0 0 0 / var(--qc-shadow-b));
+    color: rgb(var(--qc-fg));
+
+    /* morph 起点：从触发控件中心缩放（--qc-tx/--qc-ty 由 JS 按控件坐标注入） */
+    transform: translate(var(--qc-tx, 0px), var(--qc-ty, 0px)) scale(0.02);
+    transform-origin: 50% 50%;
+    opacity: 0;
+    transition:
+      transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+      opacity 0.28s ease;
+  }
+  .qc-panel.qc-open {
+    transform: none;
+    opacity: 1;
+  }
+  /* 缩回：无过冲，ease-in 平滑归位 */
+  .qc-panel.qc-exit {
+    transform: translate(var(--qc-tx, 0px), var(--qc-ty, 0px)) scale(0.02);
+    opacity: 0;
+    transition:
+      transform 0.16s ease-in,
+      opacity 0.16s ease-in;
+  }
+
+  /* 玻璃光泽层：顶部渐变高光 */
+  .qc-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgb(var(--qc-hairline) / var(--qc-sheen)), transparent 45%);
+    pointer-events: none;
+  }
+
+  /* ============================================================
+   ⑥ 内容
+   ============================================================ */
+  .qc-icon {
+    display: flex;
+    margin-bottom: 10px;
+    color: rgb(var(--qc-blue));
+  }
+  .qc-danger .qc-icon {
+    color: rgb(var(--qc-red));
+  }
+  .qc-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .qc-title {
+    font-size: 17px;
+    font-weight: 650;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    color: rgb(var(--qc-fg));
+  }
+
+  .qc-msg {
+    margin-top: 8px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: rgb(var(--qc-fg2));
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .qc-mark {
+    font-style: normal;
+    font-weight: 650;
+    color: rgb(var(--qc-blue));
+    background: rgb(var(--qc-blue) / 0.12);
+    padding: 0 3px;
+    border-radius: 4px;
+  }
+  .qc-danger .qc-mark {
+    color: rgb(var(--qc-red));
+    background: rgb(var(--qc-red) / 0.12);
+  }
+
+  /* ============================================================
+   ⑦ 操作按钮 · iOS 风格
+   ============================================================ */
+  .qc-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .qc-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 9px 14px;
+    border: none;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition:
+      filter 0.15s ease,
+      opacity 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .qc-cancel {
+    background: rgb(var(--qc-line));
+    color: rgb(var(--qc-fg));
+  }
+  .qc-confirm {
+    background: rgb(var(--qc-blue));
+    color: #fff;
+  }
+  .qc-danger .qc-confirm {
+    background: rgb(var(--qc-red));
+  }
+  .qc-btn:hover {
+    filter: brightness(0.96);
+  }
+  .qc-btn:active {
+    filter: brightness(0.92);
+  }
+  .qc-btn:focus-visible {
+    outline: 2px solid rgb(var(--qc-blue));
+    outline-offset: 2px;
+  }
+  .qc-danger .qc-confirm:focus-visible {
+    outline-color: rgb(var(--qc-red));
+  }
+  .qc-btn:disabled {
+    cursor: default;
+    filter: none;
+    opacity: 0.6;
+  }
+
+  /* loading spinner（确认按钮内） */
+  .qc-spinner {
+    display: none;
+    width: 13px;
+    height: 13px;
+    margin-right: 6px;
+    vertical-align: -2px;
+    border: 2px solid rgb(255 255 255 / 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: qc-spin 0.7s linear infinite;
+  }
+  .qc-loading .qc-spinner {
+    display: inline-block;
+  }
+  @keyframes qc-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* ============================================================
+   ⑧ reduced-motion：禁用位移与缩放，仅保留瞬时淡入淡出
+   ============================================================ */
+  @media (prefers-reduced-motion: reduce) {
+    .qc-panel,
+    .qc-panel.qc-open,
+    .qc-panel.qc-exit {
+      transform: none;
+      transition: opacity 0.1s ease;
+    }
+    .qc-backdrop,
+    .qc-backdrop.qc-open,
+    .qc-backdrop.qc-exit {
+      transition: opacity 0.1s ease;
+    }
+  }
+
+  /* ============================================================
+   ⑨ 移动端 · iOS alert 式竖向按钮
+   ============================================================ */
+  @media (max-width: 480px) {
+    .qc-stage {
+      padding: 16px env(safe-area-inset-right, 16px) calc(16px + env(safe-area-inset-bottom, 0px))
+        env(safe-area-inset-left, 16px);
+    }
+    .qc-panel {
+      width: 100%;
+      max-width: 100%;
+      padding: 20px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    }
+    .qc-actions {
+      flex-direction: column-reverse; /* 主要操作在上（iOS alert 惯例） */
+    }
+    .qc-btn {
+      padding: 12px 14px;
+      border-radius: 13px;
+    }
+  }
+}

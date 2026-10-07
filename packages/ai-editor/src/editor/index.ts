@@ -1,0 +1,96 @@
+// 主编辑器组件
+
+export type { Editor } from "@tiptap/core";
+// 图片上传弹窗
+export { ImageUploadDialog } from "../components/image-upload-dialog";
+export type { ToastListener, ToastType } from "../components/toast";
+// Toast 提示通道（setToastProvider 全局 / onToast 实例级覆盖）
+export { setToastProvider, subscribeToast, toast } from "../components/toast";
+export type { TocPanelProps } from "../components/toc";
+// 目录面板
+export { TocPanel } from "../components/toc";
+export type {
+  AILanguageModelConfig,
+  AIMode,
+  AIProvider,
+  AIRequest,
+} from "./ai";
+// 写作助手 - LangChain.js 统一接口
+export {
+  buildSystemPrompt,
+  createAILanguageModelProvider,
+  getAIProvider,
+  setAIProvider,
+} from "./ai";
+export { createDeepSeekProvider } from "./ai/providers/deepseek";
+export { createOpenAIProvider } from "./ai/providers/openai";
+// 兼容旧版导出（标记为 deprecated）
+export { createOpenAICompatProvider } from "./ai/providers/openai-compat";
+export { createQwenProvider } from "./ai/providers/qwen";
+export type { QingWuAIEditorProps } from "./ai-editor";
+export { QingWuAIEditor } from "./ai-editor";
+export type { AttachmentLimits } from "./attachment-limits";
+// 附件上传限制工具
+export { formatBytes, getDocAttachmentTotal, validateAttachmentFile } from "./attachment-limits";
+export type {
+  BrowserClipperReceiver,
+  ClipperErrorBody,
+  ClipperErrorCode,
+  ClipperErrResponse,
+  ClipperOkResponse,
+  ClipperReceiver,
+  ClipperReceiverOptions,
+  ClipperResponse,
+  IncomingClip,
+} from "./clipper/receiver";
+// Web Clipper 接收器（纯浏览器实现；Node HTTP 版经独立子入口暴露，避免 node:http 进浏览器产物）
+export { startBrowserClipperReceiver } from "./clipper/receiver";
+// 扩展
+export {
+  CodeBlock,
+  createSlashCommandExtension,
+  getEditorExtensions,
+  ImageUpload,
+  RelativeMedia,
+  SearchHighlight,
+  VideoEmbed,
+} from "./extensions";
+export type { BubbleMenuAction } from "./extensions/bubble-menu";
+export { getBubbleMenuActions, getSearchEngine, setSearchEngine } from "./extensions/bubble-menu";
+export { CODE_LANGUAGES } from "./extensions/code-block";
+export type { SearchOptions } from "./extensions/search-highlight";
+export { getSearchState } from "./extensions/search-highlight";
+export type { SlashCommandItem } from "./extensions/slash-command";
+export { getDefaultSlashCommands } from "./extensions/slash-command";
+export type { I18nDict, Locale } from "./i18n";
+// i18n
+export { getLocale, setLocale, t, tf } from "./i18n";
+export type {
+  COSStorageConfig,
+  LocalStorageConfig,
+  OSSStorageConfig,
+  S3StorageConfig,
+  StorageConfig,
+  StorageProvider,
+  StorageProviderType,
+} from "./storage";
+// 存储
+export {
+  getStorageInfo,
+  getStorageProvider,
+  loadStorageConfig,
+  registerS3PreviewConfig,
+  setStorageProvider,
+  signPreviewUrlHeaders,
+} from "./storage";
+export { createCOSStorage } from "./storage/providers/cos";
+export { createLocalStorage } from "./storage/providers/local";
+export { createOSSStorage } from "./storage/providers/oss";
+export type { S3StorageOptions } from "./storage/providers/s3";
+export { createS3Storage } from "./storage/providers/s3";
+export type { ConfirmProvider } from "./utils/delete-confirm";
+// 删除确认（默认内置 DeleteConfirmDialog，可 setConfirmProvider 全局覆盖）
+export { setConfirmProvider } from "./utils/delete-confirm";
+export type { DeleteConfirmDialogProps } from "./utils/delete-confirm-dialog";
+// 安全工具
+export { escapeHtml, sanitizeHtml, sanitizeSvg } from "./utils/sanitize";
