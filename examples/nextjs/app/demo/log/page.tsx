@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import DemoCard from "@/components/DemoCard";
 
 const SAMPLE_EVENTS = [
   { type: "ext", tag: "扩展", msg: "lunarPlugin 注册成功", time: "17:49:30.000" },
@@ -71,74 +72,66 @@ export default function LogPage() {
       </section>
 
       <div className="demo-grid">
-        <div className="demo-card is-full">
-          <div className="demo-card-header">
-            <h4>事件模拟</h4>
-            <p>点击按钮模拟一次完整的日历交互流程——从插件注册到日期选择到面板关闭。</p>
-          </div>
-          <div className="demo-card-stage">
-            <button
-              className={`event-sim-btn${running ? " is-running" : ""}`}
-              onClick={startSim}
-              disabled={running}
-            >
-              {running ? "事件流进行中..." : log.length > 0 ? "重新播放" : "▶ 播放事件流"}
-            </button>
-            {log.length > 0 && (
-              <span style={{ marginLeft: 12, fontSize: 12, color: "var(--ink-3)" }}>
-                {log.length} / {SAMPLE_EVENTS.length} 条事件
-                {log.length === SAMPLE_EVENTS.length && " ✓ 完成"}
-              </span>
-            )}
+        <DemoCard
+          full
+          title="事件模拟"
+          desc="点击按钮模拟一次完整的日历交互流程——从插件注册到日期选择到面板关闭。"
+        >
+          <button
+            className={`event-sim-btn${running ? " is-running" : ""}`}
+            onClick={startSim}
+            disabled={running}
+          >
+            {running ? "事件流进行中..." : log.length > 0 ? "重新播放" : "▶ 播放事件流"}
+          </button>
+          {log.length > 0 && (
+            <span style={{ marginLeft: 12, fontSize: 12, color: "var(--ink-3)" }}>
+              {log.length} / {SAMPLE_EVENTS.length} 条事件
+              {log.length === SAMPLE_EVENTS.length && " ✓ 完成"}
+            </span>
+          )}
 
-            <ul className="log" style={{ maxHeight: 400, marginTop: 12 }}>
-              {log.length === 0 && (
-                <li
-                  style={{
-                    color: "var(--ink-3)",
-                    fontFamily: "var(--font-ui)",
-                    fontStyle: "italic",
-                    padding: "8px 0",
-                  }}
-                >
-                  点击「播放事件流」开始模拟...
-                </li>
-              )}
-              {log.map((evt, i) => (
-                <li key={i}>
-                  <time>{evt.time}</time>
-                  <span className={`tag ${tagClass[evt.type] ?? "ext"}`}>{evt.tag}</span>
-                  <span className="msg">{evt.msg}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+          <ul className="log" style={{ maxHeight: 400, marginTop: 12 }}>
+            {log.length === 0 && (
+              <li
+                style={{
+                  color: "var(--ink-3)",
+                  fontFamily: "var(--font-ui)",
+                  fontStyle: "italic",
+                  padding: "8px 0",
+                }}
+              >
+                点击「播放事件流」开始模拟...
+              </li>
+            )}
+            {log.map((evt, i) => (
+              <li key={i}>
+                <time>{evt.time}</time>
+                <span className={`tag ${tagClass[evt.type] ?? "ext"}`}>{evt.tag}</span>
+                <span className="msg">{evt.msg}</span>
+              </li>
+            ))}
+          </ul>
+        </DemoCard>
 
         {/* 事件类型说明 */}
-        <div className="demo-card">
-          <div className="demo-card-header">
-            <h4>事件类型</h4>
-            <p>四种事件标签的含义与触发时机。</p>
+        <DemoCard title="事件类型" desc="四种事件标签的含义与触发时机。">
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { tag: "扩展", cls: "ext", desc: "插件注册、注销、配置变更" },
+              { tag: "选择", cls: "sel", desc: "用户选择/取消选择日期、翻页" },
+              { tag: "性能", cls: "perf", desc: "节点创建、Patch 统计、渲染耗时" },
+              { tag: "规则", cls: "rule", desc: "规则编译、规则命中、禁用判断" },
+            ].map((item) => (
+              <div key={item.tag} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span className={`tag ${item.cls}`} style={{ flex: "none" }}>
+                  {item.tag}
+                </span>
+                <span style={{ fontSize: 12.5, color: "var(--ink-2)" }}>{item.desc}</span>
+              </div>
+            ))}
           </div>
-          <div className="demo-card-stage">
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {[
-                { tag: "扩展", cls: "ext", desc: "插件注册、注销、配置变更" },
-                { tag: "选择", cls: "sel", desc: "用户选择/取消选择日期、翻页" },
-                { tag: "性能", cls: "perf", desc: "节点创建、Patch 统计、渲染耗时" },
-                { tag: "规则", cls: "rule", desc: "规则编译、规则命中、禁用判断" },
-              ].map((item) => (
-                <div key={item.tag} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span className={`tag ${item.cls}`} style={{ flex: "none" }}>
-                    {item.tag}
-                  </span>
-                  <span style={{ fontSize: 12.5, color: "var(--ink-2)" }}>{item.desc}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        </DemoCard>
       </div>
     </>
   );

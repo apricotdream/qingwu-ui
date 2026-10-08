@@ -22,11 +22,7 @@ function easeInOutCubic(p: number): number {
 }
 
 function isLenisInstance(v: unknown): v is LenisLike {
-  return (
-    typeof v === "object" &&
-    v !== null &&
-    typeof (v as LenisLike).scrollTo === "function"
-  );
+  return typeof v === "object" && v !== null && typeof (v as LenisLike).scrollTo === "function";
 }
 
 export class ScrollFab {
@@ -262,9 +258,7 @@ export class ScrollFab {
       if ((m === "to-bottom" || m === "to-top") && !out.includes(m)) out.push(m);
     }
     if (out.length === 0) {
-      throw new TypeError(
-        "ScrollFab: modes 至少需要一个有效模式（'to-bottom' | 'to-top'）",
-      );
+      throw new TypeError("ScrollFab: modes 至少需要一个有效模式（'to-bottom' | 'to-top'）");
     }
     return out;
   }
@@ -468,13 +462,15 @@ export class ScrollFab {
       .then((mod) => {
         const LenisCtor =
           (mod as { default?: new (opts: Record<string, unknown>) => LenisLike }).default ??
-          (mod as unknown as new (opts: Record<string,unknown>) => LenisLike);
+          (mod as unknown as new (
+            opts: Record<string, unknown>,
+          ) => LenisLike);
         const cfg: Record<string, unknown> = { ...this.ownLenisConfig };
         // target 容器映射为 Lenis wrapper；window 形态留空（Lenis 默认即 window）
         if (this.targetEl) cfg.wrapper = this.targetEl;
         this.ownLenis = new LenisCtor(cfg);
         this.onLenisReady?.(this.ownLenis);
-        return this.ownLenis
+        return this.ownLenis;
       })
       .catch(() => {
         // lenis 未安装/不可用：放弃 lenis 路线，避免每次点击重复尝试
@@ -490,11 +486,7 @@ export class ScrollFab {
    * 自建实例（own）：组件自跑 raf loop（Lenis 需外部驱动 raf），保留 wheel/touch/keydown 打断与到底追击；
    * 外部实例：宿主自带 raf loop 与手势处理，组件只发 scrollTo，不追击不打断。
    */
-  private scrollWithLenis(
-    lenis: LenisLike,
-    dest: "bottom" | "top",
-    own: boolean,
-  ): void {
+  private scrollWithLenis(lenis: LenisLike, dest: "bottom" | "top", own: boolean): void {
     const immediate = !this.animate || this.reducedMotion();
     const target = this.targetPos(dest);
     this.lenisDest = dest;

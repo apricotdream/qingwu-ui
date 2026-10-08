@@ -1,6 +1,6 @@
 {
   "name": "@qingwu-ui/button",
-  "version": "0.9.0-beta",
+  "version": "0.9.0-beta.1",
   "description": "青梧 UI 按钮组件 —— 胶囊造型、框架无关、零依赖",
   "type": "module",
   "license": "Apache-2.0",
@@ -23,7 +23,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown && node -e \"require('fs').cpSync('src/style.css','dist/style.css')\"",
+    "build": "tsdown && node ../../tooling/build-css.mjs dist/style.css src/style.css",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "size": "size-limit"

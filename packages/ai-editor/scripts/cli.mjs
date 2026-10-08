@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { dirname, join } from "node:path";
 /**
  * @qingwu-ui/ai-editor 命令行入口
  *
@@ -7,7 +8,6 @@
  *       拷贝附件预览（PDF/Word/Excel/PPT/压缩包）所需的 worker/wasm/字体资源。
  */
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { dirname, join } from "node:path";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const [command, ...rest] = process.argv.slice(2);

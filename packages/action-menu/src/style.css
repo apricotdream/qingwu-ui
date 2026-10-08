@@ -65,8 +65,8 @@
 .qam-trigger-fab {
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 56px;
+  width: 3.5rem;
+  height: 3.5rem;
   border-radius: 50%;
   border: 1px solid var(--qam-line);
   background: var(--qam-card);
@@ -130,8 +130,8 @@
 .qam-item-ico {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: 50%;
   background: var(--qam-card);
   border: 1px solid var(--qam-line);
@@ -176,13 +176,13 @@
    移出整个扇区热区才收起，移出图标不闪断（hover label 本身也能保持展开） */
 .qam-item-label {
   position: absolute;
-  padding: 6px 12px;
+  padding: 0.375rem var(--qw-space-3);
   border-radius: 999px;
   background: var(--qam-card);
   border: 1px solid var(--qam-line);
   box-shadow: var(--qam-shadow);
   color: var(--qam-ink);
-  font-size: 13px;
+  font-size: var(--qw-text-sm);
   line-height: 1.2;
   white-space: nowrap;
   pointer-events: auto;

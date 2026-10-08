@@ -62,45 +62,45 @@
     z-index: 99999;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 16px;
+    gap: 0.625rem;
+    padding: var(--qw-space-4);
     pointer-events: none;
-    max-width: 380px;
+    max-width: 23.75rem;
     width: max-content;
     min-width: 0;
   }
 
   /* ---- 定位 ---- */
   .qt-container[data-qt-pos="top-left"] {
-    top: env(safe-area-inset-top, 0);
-    left: 0;
+    top: max(1rem, env(safe-area-inset-top, 0px));
+    left: max(0rem, env(safe-area-inset-left, 0px));
     align-items: flex-start;
   }
   .qt-container[data-qt-pos="top-center"] {
-    top: env(safe-area-inset-top, 0);
+    top: max(1rem, env(safe-area-inset-top, 0px));
     left: 50%;
     transform: translateX(-50%);
     align-items: center;
   }
   .qt-container[data-qt-pos="top-right"] {
-    top: env(safe-area-inset-top, 0);
-    right: 0;
+    top: max(1rem, env(safe-area-inset-top, 0px));
+    right: max(0rem, env(safe-area-inset-right, 0px));
     align-items: flex-end;
   }
   .qt-container[data-qt-pos="bottom-left"] {
-    bottom: env(safe-area-inset-bottom, 0);
-    left: 0;
+    bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+    left: max(0rem, env(safe-area-inset-left, 0px));
     align-items: flex-start;
   }
   .qt-container[data-qt-pos="bottom-center"] {
-    bottom: env(safe-area-inset-bottom, 0);
+    bottom: max(1rem, env(safe-area-inset-bottom, 0px));
     left: 50%;
     transform: translateX(-50%);
     align-items: center;
   }
   .qt-container[data-qt-pos="bottom-right"] {
-    bottom: env(safe-area-inset-bottom, 0);
-    right: 0;
+    bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+    right: max(0rem, env(safe-area-inset-right, 0px));
     align-items: flex-end;
   }
 
@@ -111,8 +111,8 @@
     pointer-events: auto;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 11px 14px;
+    gap: 0.625rem;
+    padding: 0.6875rem var(--qw-space-3);
     min-width: 0;
     max-width: 100%;
 
@@ -126,9 +126,9 @@
     backdrop-filter: blur(24px) saturate(180%);
     color: rgb(var(--qt-fg2));
     font-family: var(--qt-font);
-    font-size: 13.5px;
+    font-size: var(--qw-text-sm);
     line-height: 1.45;
-    border-radius: 16px;
+    border-radius: var(--qw-radius-xl);
     border: 0.5px solid rgb(var(--qt-hairline) / var(--qt-hairline-a));
     box-shadow:
       inset 0 0.5px 0 rgb(var(--qt-hairline) / var(--qt-hairline-a)), /* 顶部高光内边 */
@@ -141,7 +141,7 @@
 
     /* 入场前：整体 opacity + 轻微位移缩放，单一 spring 过渡 */
     opacity: 0;
-    transform: translateY(10px) scale(0.98);
+    transform: translateY(0.625rem) scale(0.98);
     transition:
       opacity 0.3s ease,
       transform 0.38s cubic-bezier(0.34, 1.3, 0.5, 1);
@@ -199,7 +199,7 @@
     }
   }
 
-  /* 文本从 0 宽向右延伸（max-width 上限 360px，实际宽度由内容决定） */
+  /* 文本从 0 宽向右延伸（max-width 上限 22.5rem，实际宽度由内容决定） */
   .qt-toast.qt-enter .qt-msg {
     animation: qt-msg-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) 0.14s backwards;
   }
@@ -208,7 +208,7 @@
       max-width: 0;
     }
     to {
-      max-width: 360px;
+      max-width: 22.5rem;
     }
   }
 
@@ -219,25 +219,25 @@
   @keyframes qt-error-in {
     0% {
       opacity: 0;
-      transform: translateY(10px) scale(0.98);
+      transform: translateY(0.625rem) scale(0.98);
       background: linear-gradient(160deg, rgb(var(--qt-red) / 0.35), rgb(var(--qt-red) / 0.2));
     }
     12% {
       opacity: 1;
-      transform: translateY(0) scale(1.02) translateX(-8px) rotate(-1.2deg);
+      transform: translateY(0) scale(1.02) translateX(-0.5rem) rotate(-1.2deg);
       background: linear-gradient(160deg, rgb(var(--qt-red) / 0.28), rgb(var(--qt-red) / 0.16));
     }
     28% {
-      transform: translateX(8px) rotate(1.2deg);
+      transform: translateX(0.5rem) rotate(1.2deg);
     }
     44% {
-      transform: translateX(-6px) rotate(-1deg);
+      transform: translateX(-0.375rem) rotate(-1deg);
     }
     60% {
-      transform: translateX(4px) rotate(0.8deg);
+      transform: translateX(0.25rem) rotate(0.8deg);
     }
     76% {
-      transform: translateX(-3px) rotate(-0.5deg);
+      transform: translateX(-0.1875rem) rotate(-0.5deg);
     }
     100% {
       transform: translateX(0) rotate(0) scale(1);
@@ -268,8 +268,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     border-radius: 50%;
     color: #fff;
   }
@@ -329,7 +329,7 @@
   /* 说明行：弱化色小字号，纯文本可换行，不参与 maxLines 截断 */
   .qt-desc {
     color: rgb(var(--qt-fg2));
-    font-size: 12px;
+    font-size: var(--qw-text-xs);
     font-weight: 400;
     line-height: 1.45;
     white-space: normal;
@@ -356,7 +356,7 @@
     color: rgb(var(--qt-blue));
     background: rgb(var(--qt-blue) / 0.12);
     padding: 0 3px;
-    border-radius: 4px;
+    border-radius: var(--qw-radius-sm);
   }
   .qt-success .qt-mark {
     color: rgb(var(--qt-green));
@@ -376,14 +376,14 @@
    ============================================================ */
   .qt-action {
     flex-shrink: 0;
-    margin: -2px 0;
-    padding: 4px 12px;
+    margin: -0.125rem 0;
+    padding: var(--qw-space-1) var(--qw-space-3);
     border: none;
     border-radius: 999px;
     background: rgb(var(--qt-blue) / 0.14);
     color: rgb(var(--qt-blue));
     font-family: inherit;
-    font-size: 12.5px;
+    font-size: var(--qw-text-xs);
     font-weight: 600;
     line-height: 1.5;
     letter-spacing: 0.01em;
@@ -410,9 +410,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
-    margin: -4px -6px -4px 0;
+    width: var(--qw-space-5);
+    height: var(--qw-space-5);
+    margin: -0.25rem -0.375rem -0.25rem 0;
     padding: 0;
     border: none;
     border-radius: 50%;
@@ -434,7 +434,7 @@
   .qt-close::after {
     content: "";
     position: absolute;
-    inset: -12px; /* 44px 触控热区 */
+    inset: -0.75rem; /* 44px 触控热区 */
   }
 
   .qt-close:hover {
@@ -470,23 +470,23 @@
   /* ============================================================
    ⑧ 移动端
    ============================================================ */
-  @media (max-width: 480px) {
+  @media (max-width: 40rem) {
     .qt-container {
-      max-width: calc(100vw - 20px);
-      padding: 12px;
-      gap: 8px;
+      max-width: calc(100vw - 1.25rem);
+      padding: var(--qw-space-3);
+      gap: var(--qw-space-2);
     }
 
     .qt-toast {
-      padding: 10px 14px;
-      font-size: 13px;
-      border-radius: 14px;
-      gap: 8px;
+      padding: 0.625rem var(--qw-space-3);
+      font-size: var(--qw-text-sm);
+      border-radius: var(--qw-radius-xl);
+      gap: var(--qw-space-2);
     }
 
     .qt-icon {
-      width: 26px;
-      height: 26px;
+      width: 1.625rem;
+      height: 1.625rem;
     }
 
     .qt-icon svg {
@@ -495,8 +495,8 @@
     }
 
     .qt-action {
-      padding: 3px 10px;
-      font-size: 12px;
+      padding: 0.1875rem 0.625rem;
+      font-size: var(--qw-text-xs);
     }
 
     .qt-close {

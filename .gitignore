@@ -95,3 +95,5 @@ docs/
 pre-trailer-removal.bundle
 examples/nextjs/.tmp-resolve.mjs
 packages/button/src/__gate_test.ts
+examples/nextjs/.tmp-html/
+examples/nextjs/.tmp-select-demo.html

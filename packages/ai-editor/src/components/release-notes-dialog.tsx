@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import type { FC } from "react";
 
 interface Props {
   open: boolean;
@@ -63,7 +63,7 @@ export const ReleaseNotesDialog: FC<Props> = ({ open, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="bg-background w-full max-w-lg max-h-[80vh] overflow-y-auto rounded-2xl border border-default-200 shadow-xl"
+        className="bg-background w-full max-w-lg max-h-[80dvh] overflow-y-auto rounded-2xl border border-default-200 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 flex items-center justify-between border-b border-default-200 bg-background px-5 py-4">

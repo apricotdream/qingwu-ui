@@ -79,7 +79,7 @@
 .qs-overlay :focus-visible:not(.qs-input) {
   outline: 2px solid var(--qs-teal);
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: 0.375rem;
 }
 .qs-input:focus,
 .qs-input:focus-visible {
@@ -89,11 +89,11 @@
 .qs-trigger kbd,
 .qs-overlay kbd {
   font-family: var(--qs-font-mono);
-  font-size: 10.5px;
-  padding: 2px 6px;
+  font-size: 0.6875rem;
+  padding: 2px 0.375rem;
   border: 1px solid var(--qs-line);
   border-bottom-width: 2px;
-  border-radius: 5px;
+  border-radius: var(--qw-radius-sm);
   background: var(--qs-card);
   color: var(--qs-ink-2);
   line-height: 1.4;
@@ -106,12 +106,12 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--qw-space-3);
   background: var(--qs-card);
   border: 1px solid var(--qs-line);
-  border-radius: 14px;
-  padding: 0 14px 0 16px;
-  height: 54px;
+  border-radius: 0.875rem;
+  padding: 0 0.875rem 0 var(--qw-space-4);
+  height: 3.375rem;
   cursor: text;
   text-align: left;
   box-shadow: var(--qs-shadow);
@@ -138,7 +138,7 @@
   flex: 1 1 auto;
   min-width: 0;
   color: var(--qs-ink-3);
-  font-size: 15px;
+  font-size: 0.9375rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: clip;
@@ -156,12 +156,12 @@
 }
 .qs-trigger-keys {
   display: flex;
-  gap: 5px;
+  gap: var(--qw-space-1);
   align-items: center;
   flex: none;
 }
 .qs-trigger-keys .or {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--qs-ink-3);
 }
 
@@ -175,7 +175,9 @@
   display: none;
   align-items: flex-start;
   justify-content: center;
-  padding: min(12vh, 96px) 16px 16px;
+  padding: min(12vh, 6rem) 1rem 1rem;
+  /* biome-ignore lint/suspicious/noDuplicateProperties: 渐进增强，dvh 随移动端动态工具栏伸缩 */
+  padding: min(12dvh, 6rem) 1rem 1rem;
   background: color-mix(in srgb, var(--qs-ink) 32%, transparent);
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
@@ -194,13 +196,13 @@
 
 .qs-panel {
   width: 100%;
-  max-width: 640px;
+  max-width: 40rem;
   background: var(--qs-card);
   border: 1px solid var(--qs-line);
-  border-radius: 18px;
+  border-radius: 1.125rem;
   box-shadow: var(--qs-shadow-pop);
   overflow: hidden;
-  transform: translateY(-18px) scale(0.985);
+  transform: translateY(-1.125rem) scale(0.985);
   opacity: 0;
   transition:
     transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
@@ -233,9 +235,9 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: 56px;
-  padding: 0 12px 0 18px;
+  gap: var(--qw-space-3);
+  height: 3.5rem;
+  padding: 0 var(--qw-space-3) 0 1.125rem;
   border-bottom: 1px solid var(--qs-line);
 }
 .qs-bar > .qs-ico {
@@ -287,11 +289,11 @@
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
-  height: 42px;
+  height: 2.625rem;
   display: flex;
   align-items: center;
-  padding: 0 36px 0 14px;
-  border-radius: 11px;
+  padding: 0 2.25rem 0 0.875rem;
+  border-radius: 0.6875rem;
   border: 1.5px solid transparent;
   background:
     linear-gradient(var(--qs-card), var(--qs-card)) padding-box,
@@ -329,7 +331,7 @@
   border: 0;
   background: transparent;
   outline: none;
-  font: 500 15.5px / 1.2 var(--qs-font-ui);
+  font: 500 1rem / 1.2 var(--qs-font-ui);
   color: var(--qs-ink);
   padding: 0;
   caret-color: var(--qs-teal);
@@ -341,15 +343,15 @@
 /* 动态占位层（打字机轮播，叠在输入文本起点之上） */
 .qs-ph {
   position: absolute;
-  left: 14px;
+  left: 0.875rem;
   top: 0;
   height: 100%;
-  max-width: calc(100% - 28px);
+  max-width: calc(100% - 1.75rem);
   display: flex;
   align-items: center;
   pointer-events: none;
   color: var(--qs-ink-3);
-  font: 400 15.5px / 1.2 var(--qs-font-ui);
+  font: 400 1rem / 1.2 var(--qs-font-ui);
   white-space: nowrap;
   overflow: hidden;
 }
@@ -374,13 +376,13 @@
 /* ---- 工具栏按钮 ---- */
 .qs-iconbtn {
   flex: none;
-  width: 34px;
-  height: 34px;
+  width: 2.125rem;
+  height: 2.125rem;
   display: grid;
   place-items: center;
   border: 0;
   background: transparent;
-  border-radius: 9px;
+  border-radius: 0.5625rem;
   color: var(--qs-ink-3);
   cursor: pointer;
   transition:
@@ -403,18 +405,18 @@
 /* 清空键：嵌入输入框内部，有文字时浮现（小 ⌫，提示"擦除"） */
 .qs-clear {
   position: absolute;
-  right: 6px;
+  right: 0.375rem;
   top: 50%;
   transform: translateY(-50%);
-  width: 22px;
-  height: 22px;
+  width: 1.375rem;
+  height: 1.375rem;
   display: grid;
   place-items: center;
   border: 0;
   border-radius: 50%;
   background: transparent;
   font-family: var(--qs-font-mono);
-  font-size: 13px;
+  font-size: var(--qw-text-sm);
   line-height: 1;
   color: var(--qs-ink-3);
   cursor: pointer;
@@ -445,10 +447,10 @@
 .qs-filterbar {
   display: none;
   align-items: center;
-  gap: 8px;
-  padding: 9px 18px;
+  gap: var(--qw-space-2);
+  padding: 0.5625rem 1.125rem;
   border-bottom: 1px solid var(--qs-line);
-  font-size: 11.5px;
+  font-size: 0.75rem;
   color: var(--qs-ink-3);
 }
 .qs-filterbar.show {
@@ -457,10 +459,10 @@
 .qs-filter-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
   font-family: var(--qs-font-mono);
-  font-size: 11px;
-  padding: 4px 9px;
+  font-size: 0.6875rem;
+  padding: var(--qw-space-1) 0.5625rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--qs-teal) 12%, transparent);
   color: var(--qs-teal);
@@ -481,8 +483,10 @@
    ============================================================ */
 .qs-body {
   position: relative;
-  min-height: 268px;
+  min-height: 16.75rem;
   max-height: 52vh;
+  /* biome-ignore lint/suspicious/noDuplicateProperties: 渐进增强，dvh 随移动端动态工具栏伸缩 */
+  max-height: 52dvh;
   overflow-y: auto;
 }
 
@@ -494,8 +498,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  padding: 24px;
+  gap: 0.875rem;
+  padding: var(--qw-space-5);
   text-align: center;
 }
 .qs-empty[hidden] {
@@ -506,7 +510,7 @@
   height: auto;
 }
 .qs-empty-text {
-  font-size: 14.5px;
+  font-size: 0.9375rem;
   color: var(--qs-ink-2);
   letter-spacing: 0.02em;
 }
@@ -517,7 +521,7 @@
   letter-spacing: 0.06em;
 }
 .qs-empty-sub {
-  font-size: 11.5px;
+  font-size: 0.75rem;
   color: var(--qs-ink-3);
   font-family: var(--qs-font-mono);
 }
@@ -539,8 +543,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  padding: 24px;
+  gap: 0.875rem;
+  padding: var(--qw-space-5);
   text-align: center;
 }
 .qs-loading[hidden] {
@@ -592,7 +596,7 @@
   will-change: transform;
 }
 .qs-loading-status {
-  font-size: 12px;
+  font-size: var(--qw-text-xs);
   color: var(--qs-ink-2);
   letter-spacing: 0.08em;
 }
@@ -653,7 +657,7 @@
 /* ---- 结果列表 ---- */
 .qs-list {
   list-style: none;
-  padding: 8px;
+  padding: var(--qw-space-2);
 }
 .qs-list[hidden] {
   display: none;
@@ -662,12 +666,12 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--qw-space-3);
   width: 100%;
-  padding: 10px 12px;
+  padding: 0.625rem var(--qw-space-3);
   border: 0;
   background: transparent;
-  border-radius: 11px;
+  border-radius: 0.6875rem;
   cursor: pointer;
   text-align: left;
   color: var(--qs-ink);
@@ -701,13 +705,13 @@
 
 .qs-opt-ico {
   flex: none;
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: var(--qw-radius-md);
   font-family: var(--qs-font-kai);
-  font-size: 15px;
+  font-size: 0.9375rem;
   background: color-mix(in srgb, var(--qs-ink) 5%, transparent);
   color: var(--qs-ink-2);
 }
@@ -720,7 +724,7 @@
    否则两段文本会同行的 inline 流里连续排布并溢出 main，压住右侧 kind 标签 */
 .qs-opt-title {
   display: block;
-  font-size: 13.5px;
+  font-size: var(--qw-text-sm);
   font-weight: 600;
   color: var(--qs-ink);
   white-space: nowrap;
@@ -729,7 +733,7 @@
 }
 .qs-opt-sub {
   display: block;
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--qs-ink-3);
   margin-top: 2px;
   white-space: nowrap;
@@ -743,8 +747,8 @@
 .qs-opt-kind {
   flex: none;
   font-family: var(--qs-font-mono);
-  font-size: 9.5px;
-  padding: 2.5px 7px;
+  font-size: 0.625rem;
+  padding: 2.5px 0.4375rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--qs-ink) 7%, transparent);
   color: var(--qs-ink-2);
@@ -792,18 +796,18 @@
 .qs-foot {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 0.875rem;
   flex-wrap: wrap;
-  padding: 11px 18px;
+  padding: 0.6875rem 1.125rem;
   border-top: 1px solid var(--qs-line);
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--qs-ink-3);
   background: color-mix(in srgb, var(--qs-ink) 2%, transparent);
 }
 .qs-foot .grp {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--qw-space-1);
 }
 .qs-foot .grp kbd + kbd {
   margin-left: 2px;
@@ -815,12 +819,12 @@
 .qs-toasts {
   position: fixed;
   left: 50%;
-  bottom: 28px;
+  bottom: 1.75rem;
   transform: translateX(-50%);
   z-index: 120;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--qw-space-2);
   align-items: center;
   pointer-events: none;
 }
@@ -828,15 +832,15 @@
   pointer-events: auto;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 0.5625rem;
   background: var(--qs-ink);
   color: var(--qs-card);
-  font-size: 12.5px;
-  padding: 10px 15px;
-  border-radius: 11px;
+  font-size: 0.8125rem;
+  padding: 0.625rem 0.9375rem;
+  border-radius: 0.6875rem;
   box-shadow: var(--qs-shadow-pop);
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(0.75rem);
   transition:
     opacity 0.22s,
     transform 0.22s;
@@ -870,7 +874,7 @@
 @keyframes qs-rise {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(0.625rem);
   }
   to {
     opacity: 1;
@@ -880,7 +884,7 @@
 @keyframes qs-pop-in {
   from {
     opacity: 0;
-    transform: translateY(16px) scale(0.985);
+    transform: translateY(1rem) scale(0.985);
   }
   to {
     opacity: 1;
@@ -893,7 +897,7 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-5px);
+    transform: translateY(-0.3125rem);
   }
 }
 @keyframes qs-twinkle {

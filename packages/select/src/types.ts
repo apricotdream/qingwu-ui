@@ -46,6 +46,10 @@ export interface SelectOptions {
   frosted?: boolean;
   /** 无障碍标签（trigger aria-label），缺省取 placeholder */
   ariaLabel?: string;
+  /** 鼠标从触发器与面板同时移出后，自动关闭的延迟 ms，默认 3000；0 表示不自动关闭 */
+  hoverCloseDelay?: number;
+  /** 活动项索引：对应选项标签呈现高亮样式（区别于选中态），null/-1 表示无，默认 null */
+  activeIndex?: number | null;
   /** 展开状态变化回调 */
   onOpenChange?: (open: boolean) => void;
   /** 选中值变化回调（取消为 null） */

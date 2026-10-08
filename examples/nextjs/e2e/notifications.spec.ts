@@ -12,7 +12,7 @@ test.describe("Notifications 通知铃铛演示页", () => {
     await expect(page.locator(".qntf-trigger")).toHaveCount(6); // 每张卡各一个铃铛触发器
   });
 
-  test("基础铃铛：未读红点可见，展开面板 4 条消息，点击条目收起", async ({ page }) => {
+  test("基础铃铛：未读红点可见，展开面板 5 条消息，点击条目收起", async ({ page }) => {
     await page.goto("/demo/notifications");
     const base = card(page, "基础：未读红点");
     const trigger = base.locator(".qntf-trigger");
@@ -23,7 +23,7 @@ test.describe("Notifications 通知铃铛演示页", () => {
     await trigger.click();
     const panel = page.locator(".qntf-panel:visible");
     await expect(panel).toBeVisible();
-    await expect(panel.locator(".qntf-item")).toHaveCount(4);
+    await expect(panel.locator(".qntf-item")).toHaveCount(5);
     await expect(panel.locator(".qntf-item.is-unread")).toHaveCount(2);
 
     // 点击条目后自动收起
@@ -58,19 +58,22 @@ test.describe("Notifications 通知铃铛演示页", () => {
     await expect(page.locator(".cal-log-item").last()).toContainText("清空未读红点");
   });
 
-  test("受控卡：未读时铃铛 is-ringing，摇铃开关可实时关闭/恢复", async ({ page }) => {
+  test("受控卡：未读时铃铛 is-ringing，摇铃动画字段可实时关闭/恢复", async ({ page }) => {
     await page.goto("/demo/notifications");
     const ctrl = card(page, "Notifications 通知铃铛");
     const trigger = ctrl.locator(".qntf-trigger");
-    const toggle = ctrl.getByRole("button", { name: /摇铃动画/ });
+    // ring 为实时（live）下拉字段
+    const ringSelect = ctrl
+      .locator(".cal-props-field", { hasText: "摇铃动画" })
+      .locator("select");
 
     // 默认未读 2 + ring=true → 摆动
     await expect(trigger).toHaveClass(/is-ringing/);
 
-    await toggle.click();
+    await ringSelect.selectOption("false");
     await expect(trigger).not.toHaveClass(/is-ringing/);
 
-    await toggle.click();
+    await ringSelect.selectOption("true");
     await expect(trigger).toHaveClass(/is-ringing/);
   });
 

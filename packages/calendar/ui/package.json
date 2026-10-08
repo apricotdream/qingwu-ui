@@ -1,6 +1,6 @@
 {
   "name": "@qingwu-ui/calendar",
-  "version": "0.9.1-beta.0",
+  "version": "0.9.1-beta.1",
   "description": "青梧 UI 日历组件 —— 框架无关，支持农历、节假日与二十四节气",
   "type": "module",
   "license": "Apache-2.0",
@@ -23,7 +23,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown && node -e \"require('fs').cpSync('src/style.css','dist/style.css')\"",
+    "build": "tsdown && node ../../../tooling/build-css.mjs dist/style.css src/style.css",
     "build:browser": "bun build src/demo-entry.ts --outdir=dist/browser --format=iife",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

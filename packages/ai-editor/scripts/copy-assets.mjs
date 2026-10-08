@@ -14,8 +14,8 @@
  * 注意：请在「项目根目录」执行，默认输出到 public/。
  */
 import { cpSync, existsSync, mkdirSync } from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
 import { createRequire } from "node:module";
+import { basename, dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const args = process.argv.slice(2);

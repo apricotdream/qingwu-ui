@@ -4,6 +4,10 @@ import { toast } from "@qingwu-ui/toast";
 import { useCallback, useEffect, useRef, useState } from "react";
 import "@qingwu-ui/toast/style.css";
 import DemoCard from "@/components/DemoCard";
+import Playground from "@/components/Playground";
+import { genAll } from "@/lib/codegen";
+import { PKG } from "@/lib/pkg-meta";
+import { TOAST_DESTROY, TOAST_FIELDS, createToast, toastToCode } from "./playground.config";
 
 /* ============================================================
    Toast 轻提示演示页面
@@ -16,14 +20,6 @@ const POSITIONS = [
   { key: "bottom-left", label: "↙ 左下" },
   { key: "bottom-center", label: "↓ 底部" },
   { key: "bottom-right", label: "↘ 右下" },
-] as const;
-
-/* Apple 系统色 */
-const TYPES = [
-  { type: "info" as const, label: "信息提示", dot: "#007AFF" },
-  { type: "success" as const, label: "操作成功", dot: "#34C759" },
-  { type: "warning" as const, label: "警告提醒", dot: "#FF9500" },
-  { type: "error" as const, label: "错误反馈", dot: "#FF3B30" },
 ] as const;
 
 /* 与 @qingwu-ui/toast 组件一致的 SVG 图标（样式预览用） */
@@ -83,113 +79,159 @@ const PREVIEWS = [
     lines: [{ id: "err-1", text: "**登录失败**：账号或密码错误" }],
     icon: TOAST_ICONS.error,
   },
-] as const;
+];
 
 /* 与「长文本完整显示 / 长文本截断」两个场景共用的长消息 */
 const LONG_TEXT =
   "这是一条用于演示 **text-layout** 内容自适应的长消息：默认不限行，文本完整显示、不截断、不加省略号；每一行都由排版引擎按 290px 精确断行，无论是中文、英文还是长 URL 都能优雅换行。";
 
-const SCENES = [
-  {
-    key: "persistent",
-    label: "常驻通知",
-    desc: "persist 常驻，点击关闭",
-    action: (pos: string) =>
-      toast.info("点击此处或右侧 × 可关闭此通知", { position: pos as never, persist: true }),
-  },
-  {
-    key: "full",
-    label: "长文本完整显示",
-    desc: "内容自适应，不截断不加省略号",
-    action: (pos: string) => toast.info(LONG_TEXT, { position: pos as never }),
-  },
-  {
-    key: "truncate",
-    label: "长文本截断",
-    desc: "显式 maxLines=2，超出追加省略号",
-    action: (pos: string) => toast.info(LONG_TEXT, { position: pos as never, maxLines: 2 }),
-  },
-  {
-    key: "persistEvict",
-    label: "常驻上限挤最老",
-    desc: "persistMaxVisible=3，FIFO 挤掉最老",
-    action: (pos: string) => {
-      for (let i = 1; i <= 4; i++) {
-        setTimeout(() => {
-          toast.info(`常驻消息 #${i}`, { position: pos as never, persist: true });
-        }, i * 250);
-      }
-    },
-  },
-  {
-    key: "promise",
-    label: "Promise 链",
-    desc: "loading → success / error",
-    action: (pos: string) => {
-      toast.promise(
-        new Promise<string>((resolve, reject) => {
-          setTimeout(
-            () =>
-              Math.random() > 0.4 ? resolve("数据加载成功") : reject(new Error("网络请求失败")),
-            2500,
-          );
-        }),
-        {
-          loading: "正在加载数据...",
-          success: (data) => data,
-          error: (err) => (err as Error).message,
-        },
-        { position: pos as never },
-      );
-    },
-  },
-  {
-    key: "queue",
-    label: "队列管理",
-    desc: "maxVisible=2, 5 条入队",
-    action: (pos: string) => {
-      toast.configure({ maxVisible: 2 });
-      for (let i = 1; i <= 5; i++) {
-        setTimeout(() => {
-          toast.info(`队列消息 #${i}`, { position: pos as never });
-          if (i === 5) toast.configure({ maxVisible: 5 });
-        }, i * 150);
-      }
-    },
-  },
-  {
-    key: "dismissAll",
-    label: "关闭全部",
-    desc: "一键清除所有通知",
-    action: () => toast.dismissAll(),
-  },
-] as const;
-
-const DEFAULT_TEXT =
-  "这条通知消息的文本内容非常长，用于演示 **text-layout** 的自适应排版能力：一行放不下时自动换行，超过 maxLines 时按字符截断并追加省略号";
-
-/* 自适应文本的「最大行数」选项：不限（undefined）= 完整显示 */
-const MAX_LINES_OPTIONS: Array<{ label: string; value: number | undefined }> = [
-  { label: "不限", value: undefined },
-  { label: "1 行", value: 1 },
-  { label: "2 行", value: 2 },
-  { label: "3 行", value: 3 },
-  { label: "4 行", value: 4 },
-];
+/* ---- 场景卡代码：手写 toast 调用语句，框架外壳由 codegen 统一产出 ---- */
+const snippet = (stmt: string) =>
+  genAll({ meta: PKG.toast, symbol: "toast", stmt, destroy: TOAST_DESTROY });
 
 export default function ToastPage() {
-  const [position, setPosition] = useState<string>("top-center");
-  const [text, setText] = useState<string>(DEFAULT_TEXT);
-  const [maxLines, setMaxLines] = useState<number | undefined>(undefined);
-  const [log, setLog] = useState<string[]>([]);
+  return (
+    <div className="demo-grid">
+      <Playground
+        title="Toast 轻提示"
+        desc="轻量级全局反馈：单例命令式调用，调整类型 / 位置 / 时长后点「应用」，再点击预览中的按钮。"
+        fields={TOAST_FIELDS}
+        create={createToast}
+        toCode={toastToCode}
+        log
+        hostStyle={{ width: "auto" }}
+      />
+
+      <DemoCard
+        title="样式预览 · Apple 磨砂玻璃"
+        desc="四种语义图标与配色，与组件样式实时同步；点击卡片可重播入场动画。"
+        snippets={snippet(`toast.info("磨砂玻璃 · 信息提示");
+toast.success("操作成功");
+toast.warn("磁盘空间不足，请及时清理");
+toast.error("登录失败：账号或密码错误");`)}
+        full
+      >
+        <StylePreview />
+      </DemoCard>
+
+      <DemoCard
+        title="Promise 链"
+        desc="一个 toast 跟随 Promise 三态切换：loading → success / error，2.5s 后随机成功或失败。"
+        snippets={snippet(`toast.promise(
+  fetch("/api/data").then((r) => r.json()),
+  {
+    loading: "正在加载数据...",
+    success: (data) => data,
+    error: (err) => err.message,
+  },
+  { position: "top-center" },
+);`)}
+      >
+        <button
+          className="qw-btn qw-btn-primary"
+          type="button"
+          onClick={() => {
+            toast.promise(
+              new Promise<string>((resolve, reject) => {
+                setTimeout(
+                  () =>
+                    Math.random() > 0.4
+                      ? resolve("数据加载成功")
+                      : reject(new Error("网络请求失败")),
+                  2500,
+                );
+              }),
+              {
+                loading: "正在加载数据...",
+                success: (data) => data,
+                error: (err) => (err as Error).message,
+              },
+            );
+          }}
+        >
+          运行 Promise 链
+        </button>
+      </DemoCard>
+
+      <DemoCard
+        title="全局配置 configure"
+        desc="toast.configure 设置默认值：下例 maxVisible=2，连发 5 条观察队列，结束后恢复 5。"
+        snippets={snippet(`toast.configure({
+  maxVisible: 2,      // 同时最多显示条数，超出排队（默认 5）
+  duration: 4000,
+  position: "top-center",
+});
+
+for (let i = 1; i <= 5; i++) {
+  toast.info(\`队列消息 #\${i}\`);
+}
+
+toast.configure({ maxVisible: 5 }); // 恢复默认`)}
+      >
+        <button
+          className="qw-btn qw-btn-primary"
+          type="button"
+          onClick={() => {
+            toast.configure({ maxVisible: 2 });
+            for (let i = 1; i <= 5; i++) {
+              setTimeout(() => {
+                toast.info(`队列消息 #${i}`);
+                if (i === 5) toast.configure({ maxVisible: 5 });
+              }, i * 150);
+            }
+          }}
+        >
+          队列管理 · maxVisible=2
+        </button>
+      </DemoCard>
+
+      <DemoCard
+        title="常驻与文本排版"
+        desc="persist 常驻不自动消失（persistMaxVisible=3 时 FIFO 挤掉最老）；长文本默认完整显示，maxLines=2 超出截断加省略号。"
+        snippets={snippet(`// 常驻通知，点击或 × 关闭
+toast.info("点击此处或右侧 × 可关闭此通知", { persist: true });
+
+// 长文本：text-layout 按 290px 精确断行，完整显示不截断
+toast.info(LONG_TEXT);
+
+// maxLines=2：超出按字符截断并追加省略号
+toast.info(LONG_TEXT, { maxLines: 2 });
+
+// 常驻上限：连发 4 条，最老的被挤掉
+toast.configure({ persistMaxVisible: 3 });`)}
+        full
+      >
+        <ScenesGrid />
+      </DemoCard>
+
+      <DemoCard
+        title="关闭全部"
+        desc="toast.dismiss(id) 关闭单条；toast.dismissAll() 一键清除所有位置的通知。"
+        snippets={snippet(`const id = toast.info("可按 id 关闭");
+toast.dismiss(id);      // 关闭单条
+toast.dismissAll();     // 清除所有通知`)}
+      >
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <button
+            className="qw-btn qw-btn-primary"
+            type="button"
+            onClick={() => toast.info("这是一条待清除的通知", { persist: true })}
+          >
+            先弹一条常驻
+          </button>
+          <button className="qw-btn" type="button" onClick={() => toast.dismissAll()}>
+            dismissAll 关闭全部
+          </button>
+        </div>
+      </DemoCard>
+    </div>
+  );
+}
+
+/* ---- 样式预览：逐卡延迟入场，点击重播 ---- */
+function StylePreview() {
   const previewRef = useRef<HTMLDivElement>(null);
 
-  const addLog = useCallback((msg: string) => {
-    setLog((prev) => [...prev.slice(-39), `[${new Date().toLocaleTimeString()}] ${msg}`]);
-  }, []);
-
-  /* 预览卡片：页面加载后逐卡延迟入场（模拟真实触发时序，动画可见）；
-     点击卡片重播动画（错误卡可反复观看震动效果） */
   useEffect(() => {
     const cards = previewRef.current?.querySelectorAll(".qt-toast");
     cards?.forEach((c, i) => {
@@ -205,255 +247,87 @@ export default function ToastPage() {
     card.classList.add("qt-enter");
   };
 
-  const pos = position as
-    | "top-left"
-    | "top-center"
-    | "top-right"
-    | "bottom-left"
-    | "bottom-center"
-    | "bottom-right";
+  return (
+    <div ref={previewRef} className="qt-container toast-preview" onClick={replayPreview}>
+      {PREVIEWS.map((p) => (
+        <div key={p.type} className={`qt-toast qt-${p.type}`}>
+          <span className="qt-icon" dangerouslySetInnerHTML={{ __html: p.icon }} />
+          <span className="qt-msg">
+            {p.lines.map((line) => (
+              <PreviewLine key={line.id} text={line.text} />
+            ))}
+          </span>
+          <button
+            className="qt-close"
+            type="button"
+            aria-label="关闭通知"
+            tabIndex={-1}
+            dangerouslySetInnerHTML={{ __html: CLOSE_ICON }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
 
-  const fireType = (type: "info" | "success" | "warning" | "error") => {
-    const labels = { info: "提示", success: "成功", warning: "警告", error: "错误" };
-    const fns = {
-      info: toast.info,
-      success: toast.success,
-      warning: toast.warn,
-      error: toast.error,
-    };
-    const id = fns[type](`${labels[type]} — 轻提示消息`, { position: pos, duration: 3500 });
-    addLog(`${labels[type]} | id=${id}`);
-  };
+/* ---- 常驻与文本排版场景按钮（位置可选） ---- */
+function ScenesGrid() {
+  const [position, setPosition] = useState<string>("top-center");
+  const pos = position as never;
 
-  const fireScene = (scene: (typeof SCENES)[number]) => {
-    scene.action(pos);
-    addLog(`场景: ${scene.label}`);
-  };
+  const fire = useCallback(
+    (key: string) => {
+      if (key === "persistent") {
+        toast.info("点击此处或右侧 × 可关闭此通知", { position: pos, persist: true });
+      } else if (key === "full") {
+        toast.info(LONG_TEXT, { position: pos });
+      } else if (key === "truncate") {
+        toast.info(LONG_TEXT, { position: pos, maxLines: 2 });
+      } else if (key === "persistEvict") {
+        for (let i = 1; i <= 4; i++) {
+          setTimeout(() => {
+            toast.info(`常驻消息 #${i}`, { position: pos, persist: true });
+          }, i * 250);
+        }
+      }
+    },
+    [pos],
+  );
 
-  /* 自适应文本：text-layout 精确排版 */
-  const fireTextDemo = () => {
-    const trimmed = text.trim();
-    if (!trimmed) {
-      addLog("文本为空，未触发");
-      return;
-    }
-    const id = toast.info(trimmed, { position: pos, maxLines });
-    addLog(`自适应文本 | 长度=${trimmed.length} | maxLines=${maxLines ?? "不限"} | id=${id}`);
-  };
-
-  const snippets = (() => {
-    const react = [
-      'import { toast } from "@qingwu-ui/toast";',
-      'import "@qingwu-ui/toast/style.css";',
-      "",
-      'toast.success("操作成功");',
-      'toast.error("操作失败");',
-      "",
-      'toast("自定义消息", {',
-      '  position: "top-right",',
-      "  duration: 3000,",
-      "});",
-      "",
-      "// 自适应文本（text-layout 精确排版）",
-      'toast.info("内容自适应完整显示");', // 不传 maxLines → 完整显示，不加省略号
-      'toast.info("超长文本自动截断", { maxLines: 2 });',
-      "",
-      "// 常驻不自动消失",
-      'toast.info("常驻通知", { persist: true });',
-      "toast.configure({ persistMaxVisible: 3 });", // 常驻数量上限，超限 FIFO 挤掉最老
-      "",
-      "// Promise 链",
-      "toast.promise(fetchUser(), {",
-      '  loading: "加载中...",',
-      "  success: (data) => `欢迎 ${data.name}`,",
-      '  error: "加载失败",',
-      "});",
-      "",
-      "// 关闭 & 配置",
-      "toast.dismiss(id);",
-      "toast.dismissAll();",
-      "toast.configure({ maxVisible: 3 });",
-    ].join("\n");
-
-    const html = [
-      '<script type="module">',
-      '  import { toast } from "https://unpkg.com/@qingwu-ui/toast";',
-      "</script>",
-      '<link rel="stylesheet" href="https://unpkg.com/@qingwu-ui/toast/style.css" />',
-      "<script>",
-      '  toast.success("就绪");',
-      "</script>",
-    ].join("\n");
-
-    const vue = [
-      '<script setup lang="ts">',
-      'import { toast } from "@qingwu-ui/toast";',
-      'import "@qingwu-ui/toast/style.css";',
-      "",
-      'onMounted(() => toast("Vue 就绪"));',
-      "</script>",
-    ].join("\n");
-
-    return { react, html, vue };
-  })();
+  const buttons: { key: string; label: string; title: string }[] = [
+    { key: "persistent", label: "常驻通知", title: "persist 常驻，点击关闭" },
+    { key: "full", label: "长文本完整显示", title: "内容自适应，不截断不加省略号" },
+    { key: "truncate", label: "长文本截断", title: "显式 maxLines=2，超出追加省略号" },
+    { key: "persistEvict", label: "常驻上限挤最老", title: "persistMaxVisible=3，FIFO 挤掉最老" },
+  ];
 
   return (
-    <div className="demo-grid">
-      <DemoCard
-        title="Toast 轻提示"
-        desc="轻量级全局反馈，零依赖 · 纯 TypeScript · ARIA live region 内建 · 6 种定位 · 4 种语义 · Promise 链 · 队列管理"
-        full
-        snippets={snippets}
-      >
-        <div className="toast-demo">
-          {/* ============================================================
-              ① 样式预览 · 与组件样式实时同步
-              ============================================================ */}
-          <section>
-            <div className="toast-section-title">
-              样式预览 · Apple 磨砂玻璃{" "}
-              <span className="toast-preview-hint">（点击卡片重播入场动画）</span>
-            </div>
-            <div ref={previewRef} className="qt-container toast-preview" onClick={replayPreview}>
-              {PREVIEWS.map((p) => (
-                <div key={p.type} className={`qt-toast qt-${p.type}`}>
-                  <span className="qt-icon" dangerouslySetInnerHTML={{ __html: p.icon }} />
-                  <span className="qt-msg">
-                    {p.lines.map((line) => (
-                      <PreviewLine key={line.id} text={line.text} />
-                    ))}
-                  </span>
-                  <button
-                    className="qt-close"
-                    type="button"
-                    aria-label="关闭通知"
-                    tabIndex={-1}
-                    dangerouslySetInnerHTML={{ __html: CLOSE_ICON }}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* ============================================================
-              ② 语义类型
-              ============================================================ */}
-          <section>
-            <div className="toast-section-title">语义类型</div>
-            <div className="toast-type-row">
-              {TYPES.map((t) => (
-                <button
-                  key={t.type}
-                  className="toast-type-btn"
-                  type="button"
-                  onClick={() => fireType(t.type)}
-                >
-                  <span className="toast-type-dot" style={{ background: t.dot }} />
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* ============================================================
-              ③ 定位选择
-              ============================================================ */}
-          <section>
-            <div className="toast-section-title">
-              定位 · 当前: {POSITIONS.find((p) => p.key === position)?.label}
-            </div>
-            <div className="toast-pos-grid">
-              {POSITIONS.map((p) => (
-                <button
-                  key={p.key}
-                  className={`toast-pos-cell${position === p.key ? " is-active" : ""}`}
-                  type="button"
-                  onClick={() => {
-                    setPosition(p.key);
-                    addLog(`切换定位 → ${p.label}`);
-                  }}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* ============================================================
-              ④ 场景演示
-              ============================================================ */}
-          <section>
-            <div className="toast-section-title">场景演示</div>
-            <div className="toast-scene-row">
-              {SCENES.map((s) => (
-                <button
-                  key={s.key}
-                  className="toast-type-btn"
-                  type="button"
-                  onClick={() => fireScene(s)}
-                  title={s.desc}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* ============================================================
-              ⑤ 自适应文本 · text-layout
-              ============================================================ */}
-          <section>
-            <div className="toast-section-title">自适应文本 · @qingwu-ui/text-layout</div>
-            <div className="toast-text-demo">
-              <textarea
-                className="toast-text-input"
-                rows={3}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="输入消息文本…"
-              />
-              <div className="toast-text-controls">
-                <span className="toast-text-label">最大行数</span>
-                <div className="toast-type-row">
-                  {MAX_LINES_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.label}
-                      className={`toast-type-btn${maxLines === opt.value ? " is-active" : ""}`}
-                      type="button"
-                      onClick={() => setMaxLines(opt.value)}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-                <button className="toast-type-btn" type="button" onClick={fireTextDemo}>
-                  触发自适应排版
-                </button>
-              </div>
-            </div>
-          </section>
-
-          {/* ============================================================
-              ⑥ 操作日志
-              ============================================================ */}
-          <section>
-            <div className="toast-section-title">操作日志</div>
-            <div className="cal-log-panel" style={{ maxWidth: "100%" }}>
-              <div className="cal-log-list">
-                {log.length === 0 ? (
-                  <div className="cal-log-empty">点击上方交互控件，每次操作将记录在此</div>
-                ) : (
-                  log.map((msg, i) => (
-                    <div key={i} className="cal-log-item">
-                      {msg}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </section>
-        </div>
-      </DemoCard>
+    <div style={{ display: "grid", gap: 14 }}>
+      <div className="toast-pos-grid" style={{ maxWidth: 420 }}>
+        {POSITIONS.map((p) => (
+          <button
+            key={p.key}
+            className={`toast-pos-cell${position === p.key ? " is-active" : ""}`}
+            type="button"
+            onClick={() => setPosition(p.key)}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+      <div className="toast-scene-row">
+        {buttons.map((b) => (
+          <button
+            key={b.key}
+            className="toast-type-btn"
+            type="button"
+            title={b.title}
+            onClick={() => fire(b.key)}
+          >
+            {b.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

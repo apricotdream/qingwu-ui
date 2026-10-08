@@ -1,6 +1,6 @@
 {
   "name": "@qingwu-ui/skeleton",
-  "version": "0.9.0-beta",
+  "version": "0.9.0-beta.1",
   "description": "青梧 UI 骨架屏 —— 运行时 DOM 测量自动生成骨架（原地测量、portal 覆盖、合成器驱动光条），快照转静态 HTML 渲染器，零依赖",
   "type": "module",
   "license": "Apache-2.0",
@@ -23,7 +23,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown && node -e \"require('fs').cpSync('src/style.css','dist/style.css')\"",
+    "build": "tsdown && node ../../tooling/build-css.mjs dist/style.css src/style.css",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "size": "size-limit"

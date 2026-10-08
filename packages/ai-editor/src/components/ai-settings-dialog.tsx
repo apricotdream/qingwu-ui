@@ -146,7 +146,7 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {testToast && (
         <div
-          className={`fixed right-4 top-4 z-[10001] w-[calc(100vw-32px)] max-w-sm rounded-xl border px-4 py-3 text-sm shadow-2xl backdrop-blur-sm ${
+          className={`fixed right-4 top-4 z-[10001] w-[calc(100vw-2rem)] max-w-sm rounded-xl border px-4 py-3 text-sm shadow-2xl backdrop-blur-sm ${
             testToast.type === "success"
               ? "border-green-200 bg-green-50/95 text-green-700"
               : "border-danger-200 bg-danger-50/95 text-danger"
@@ -159,7 +159,7 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
         </div>
       )}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-[calc(100vw-32px)] max-w-[460px] max-h-[85vh] bg-background rounded-2xl shadow-2xl border border-default-200 overflow-hidden animate-in">
+      <div className="relative w-[calc(100vw-2rem)] max-w-[460px] max-h-[85dvh] bg-background rounded-2xl shadow-2xl border border-default-200 overflow-hidden animate-in">
         <div className="flex items-center justify-between px-5 py-4 border-b border-default-100">
           <h2 className="text-base font-semibold">写作助手设置</h2>
           <button
@@ -190,7 +190,7 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
           </div>
         )}
 
-        <div className="p-5 max-h-[50vh] overflow-y-auto space-y-3">
+        <div className="p-5 max-h-[50dvh] overflow-y-auto space-y-3">
           <div>
             <label className="block text-xs text-default-500 mb-2">快速选择</label>
             <div className="flex flex-wrap gap-1.5">

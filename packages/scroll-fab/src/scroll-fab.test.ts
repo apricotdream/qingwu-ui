@@ -390,8 +390,7 @@ describe("ScrollFab", () => {
 
   const GINKGO = {
     fill: "M24 8 C14 8 8 16 8 24 C8 34 16 40 24 42 C32 40 40 34 40 24 C40 16 34 8 24 8 Z",
-    outline:
-      "M24 5 C12 5 5 14 5 24 C5 35 14 42 24 45 C34 42 43 35 43 24 C43 14 36 5 24 5 Z",
+    outline: "M24 5 C12 5 5 14 5 24 C5 35 14 42 24 45 C34 42 43 35 43 24 C43 14 36 5 24 5 Z",
   };
 
   test("异形：data-shape 标记、双 path（实体 + 外扩轮廓）、viewBox 透传", () => {
@@ -450,10 +449,7 @@ describe("ScrollFab", () => {
     };
     expect(inst.opts.smoothWheel).toBe(false);
     expect(ready).toHaveBeenCalledTimes(1);
-    expect(inst.scrollTo).toHaveBeenCalledWith(
-      5000,
-      expect.objectContaining({ immediate: false }),
-    );
+    expect(inst.scrollTo).toHaveBeenCalledWith(5000, expect.objectContaining({ immediate: false }));
     fab.destroy();
     // destroy 只销毁自建实例
     const inst2 = lenisState.instances[0] as { destroy: ReturnType<typeof vi.fn> };

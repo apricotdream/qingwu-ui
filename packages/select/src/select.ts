@@ -28,6 +28,20 @@ function el(tag: string, cls?: string, html?: string): HTMLElement {
 
 let UID = 0;
 
+/** 活动项索引归一化：越界 / 负数 → null */
+function normalizeIndex(v: number | null | undefined, len?: number): number | null {
+  if (v == null || v < 0) return null;
+  if (len !== undefined && v >= len) return null;
+  return v;
+}
+
+/** 同步活动项高亮类名（不重建列表） */
+function applyHighlightClass(list: HTMLUListElement, idx: number | null): void {
+  list.querySelectorAll<HTMLElement>(".qsel-opt").forEach((o, i) => {
+    o.classList.toggle("is-highlight", i === idx);
+  });
+}
+
 export class Select {
   private root: HTMLElement;
   private options: SelectOption[];
@@ -39,6 +53,8 @@ export class Select {
   private readonly animate: boolean;
   private readonly maxStagger: number;
   private frosted: boolean;
+  private readonly hoverCloseDelay: number;
+  private activeIndex: number | null;
   private readonly onOpenChangeCb?: (open: boolean) => void;
   private readonly onChangeCb?: (value: string | null, option: SelectOption | null) => void;
 
@@ -50,6 +66,7 @@ export class Select {
   private active = -1;
   private dir: "down" | "up" = "down";
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
+  private hoverTimer: ReturnType<typeof setTimeout> | null = null;
 
   private trigger!: HTMLButtonElement;
   private valueEl!: HTMLElement;
@@ -70,6 +87,8 @@ export class Select {
     this.animate = opts.animate !== false;
     this.maxStagger = opts.maxStagger ?? 12;
     this.frosted = opts.frosted !== false;
+    this.hoverCloseDelay = opts.hoverCloseDelay ?? 3000;
+    this.activeIndex = normalizeIndex(opts.activeIndex ?? null);
     this.onOpenChangeCb = opts.onOpenChange;
     this.onChangeCb = opts.onChange;
 
@@ -115,6 +134,12 @@ export class Select {
     this.panel.setAttribute("aria-label", ariaLabel);
     this.list = el("ul", "qsel-list") as HTMLUListElement;
     this.panel.append(this.list);
+
+    /* 悬停移出后的自动关闭倒计时进度条 */
+    const hoverBar = el("div", "qsel-hover-bar");
+    hoverBar.setAttribute("aria-hidden", "true");
+    this.panel.append(hoverBar);
+
     document.body.append(this.panel);
 
     this.syncValue();
@@ -125,6 +150,16 @@ export class Select {
       this.isOpen ? this.close() : this.open();
     });
     this.trigger.addEventListener("keydown", (e) => this.onTriggerKey(e));
+
+    /* 鼠标移出触发器与面板后延迟自动关闭（relatedTarget 判断，跨元素移动不计时） */
+    this.root.addEventListener("mouseenter", () => this.cancelHoverClose());
+    this.panel.addEventListener("mouseenter", () => this.cancelHoverClose());
+    this.root.addEventListener("mouseleave", (e) => {
+      if (!this.panel.contains(e.relatedTarget as Node)) this.scheduleHoverClose();
+    });
+    this.panel.addEventListener("mouseleave", (e) => {
+      if (!this.root.contains(e.relatedTarget as Node)) this.scheduleHoverClose();
+    });
 
     /* 阻止 pointerdown，避免列表抢占焦点破坏 aria-activedescendant */
     this.list.addEventListener("pointerdown", (e) => e.preventDefault());
@@ -150,6 +185,7 @@ export class Select {
         li.setAttribute("aria-disabled", "true");
       }
       if (shouldStagger) li.classList.add("is-enter");
+      if (i === this.activeIndex) li.classList.add("is-highlight");
 
       const glyph = opt.glyph ?? opt.label.slice(0, 1);
       li.innerHTML =
@@ -184,6 +220,11 @@ export class Select {
     this.isOpen = true;
     this.renderOptions();
 
+    if (this.closeTimer !== null) {
+      clearTimeout(this.closeTimer);
+      this.closeTimer = null;
+    }
+    this.panel.classList.remove("is-closing");
     this.panel.hidden = false;
     this.root.classList.add("is-open");
     this.trigger.setAttribute("aria-expanded", "true");
@@ -209,8 +250,10 @@ export class Select {
   close(): void {
     if (!this.isOpen) return;
     this.isOpen = false;
+    this.cancelHoverClose();
     this.root.classList.remove("is-open");
     this.panel.classList.remove("is-open");
+    this.panel.classList.add("is-closing");
     this.trigger.setAttribute("aria-expanded", "false");
     this.trigger.removeAttribute("aria-activedescendant");
     this.active = -1;
@@ -228,7 +271,10 @@ export class Select {
     if (this.closeTimer !== null) clearTimeout(this.closeTimer);
     this.closeTimer = setTimeout(
       () => {
-        if (!this.isOpen) this.panel.hidden = true;
+        if (!this.isOpen) {
+          this.panel.hidden = true;
+          this.panel.classList.remove("is-closing");
+        }
       },
       PREFERS_REDUCED ? 0 : this.duration,
     );
@@ -239,6 +285,27 @@ export class Select {
   /** 切换展开状态 */
   toggle(): void {
     this.isOpen ? this.close() : this.open();
+  }
+
+  /** 鼠标移出后调度自动关闭（同步启动倒计时进度条动画） */
+  private scheduleHoverClose(): void {
+    if (!this.isOpen || this.hoverCloseDelay <= 0) return;
+    if (this.hoverTimer !== null) clearTimeout(this.hoverTimer);
+    this.panel.classList.add("is-hover-closing");
+    this.panel.style.setProperty("--qsel-hover-ms", `${this.hoverCloseDelay}ms`);
+    this.hoverTimer = setTimeout(() => this.close(), this.hoverCloseDelay);
+  }
+
+  /** 重新移入触发器或面板时取消自动关闭（进度条动画反向收起） */
+  private cancelHoverClose(): void {
+    if (this.hoverTimer !== null) {
+      clearTimeout(this.hoverTimer);
+      this.hoverTimer = null;
+    }
+    if (this.panel) {
+      this.panel.classList.remove("is-hover-closing");
+      this.panel.style.removeProperty("--qsel-hover-ms");
+    }
   }
 
   /** 计算面板位置：宽度跟随触发器、向上/向下翻转、高度钳制到视口可用空间 */
@@ -440,8 +507,13 @@ export class Select {
   update(patch: Partial<SelectOptions>): void {
     if ("options" in patch && patch.options) {
       this.options = patch.options;
+      this.activeIndex = normalizeIndex(this.activeIndex, this.options.length);
       this.renderOptions();
       this.syncValue();
+    }
+    if ("activeIndex" in patch) {
+      this.activeIndex = normalizeIndex(patch.activeIndex, this.options.length);
+      applyHighlightClass(this.list, this.activeIndex);
     }
     if ("value" in patch) {
       this.displayValue = patch.value ?? null;
@@ -483,6 +555,7 @@ export class Select {
   /** 销毁组件，清空宿主容器并移除 body 上的面板 */
   destroy(): void {
     if (this.closeTimer !== null) clearTimeout(this.closeTimer);
+    this.cancelHoverClose();
     this.close();
     this.panel.remove();
     this.root.classList.remove("qsel", "is-open", "is-disabled");

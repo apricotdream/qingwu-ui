@@ -1,14 +1,13 @@
 /* ============================================================
    青梧UI · Upload 图片上传组件样式
-   类名前缀 qw-upload-*
-   注：dist/style.css 由构建脚本合并 @qingwu-ui/button 样式，
-   按钮触发形态无需单独引入 @qingwu-ui/button/style.css
+   类名前缀 qw-upload-*，直接引入本文件即可；
+   按钮触发形态无需额外引入按钮样式。
    ============================================================ */
 
 .qw-upload {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.625rem;
   font-family: inherit;
   color: #2c3e50;
 }
@@ -19,10 +18,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 28px 16px;
+  gap: var(--qw-space-1);
+  padding: 1.75rem var(--qw-space-4);
   border: 2px dashed #c9d2da;
-  border-radius: 12px;
+  border-radius: var(--qw-radius-lg);
   background: #f8fafc;
   cursor: pointer;
   text-align: center;
@@ -53,11 +52,11 @@
 
 .qw-upload-dropzone.is-drag .qw-upload-ico {
   color: #2ba8fb;
-  transform: translateY(-3px);
+  transform: translateY(-0.1875rem);
 }
 
 .qw-upload-main {
-  font-size: 14px;
+  font-size: var(--qw-text-md);
   font-weight: 500;
 }
 
@@ -67,24 +66,24 @@
 }
 
 .qw-upload-sub {
-  font-size: 12px;
+  font-size: var(--qw-text-xs);
   color: #8aa0b0;
 }
 
 /* ---- URL 导入 ---- */
 
 .qw-upload-urlbar {
-  margin-top: 6px;
+  margin-top: 0.375rem;
 }
 
 .qw-upload-urlbtn {
   border: 0;
   background: none;
-  padding: 2px 4px;
-  font-size: 12px;
+  padding: 0.125rem 0.25rem;
+  font-size: var(--qw-text-xs);
   color: #2ba8fb;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   transition: background 0.15s;
 }
 
@@ -99,10 +98,10 @@
 
 .qw-upload-urlpanel {
   display: flex;
-  gap: 8px;
+  gap: var(--qw-space-2);
   align-items: center;
   width: 100%;
-  margin-top: 8px;
+  margin-top: var(--qw-space-2);
 }
 
 .qw-upload-urlpanel[hidden] {
@@ -112,10 +111,10 @@
 .qw-upload-urlinput {
   flex: 1;
   min-width: 0;
-  padding: 7px 10px;
+  padding: 0.4375rem 0.625rem;
   border: 1px solid #c9d2da;
-  border-radius: 8px;
-  font-size: 13px;
+  border-radius: var(--qw-radius-md);
+  font-size: var(--qw-text-sm);
   font-family: inherit;
   line-height: 1.4;
   color: #2c3e50;
@@ -131,11 +130,11 @@
 
 .qw-upload-urlgo {
   border: 0;
-  padding: 7px 14px;
-  border-radius: 8px;
+  padding: 0.4375rem 0.875rem;
+  border-radius: var(--qw-radius-md);
   background: #2ba8fb;
   color: #fff;
-  font-size: 13px;
+  font-size: var(--qw-text-sm);
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -152,11 +151,11 @@
 .qw-upload-urlcancel {
   border: 0;
   background: none;
-  padding: 7px 6px;
-  font-size: 13px;
+  padding: 0.4375rem 0.375rem;
+  font-size: var(--qw-text-sm);
   color: #8aa0b0;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 0.375rem;
 }
 
 .qw-upload-urlcancel:hover {
@@ -167,11 +166,11 @@
 /* ---- 提示 ---- */
 
 .qw-upload-hint {
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: var(--qw-space-2) var(--qw-space-3);
+  border-radius: var(--qw-radius-md);
   background: #fff4e5;
   color: #b25e00;
-  font-size: 12px;
+  font-size: var(--qw-text-xs);
 }
 
 /* ---- 上传项列表 ---- */
@@ -179,25 +178,25 @@
 .qw-upload-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--qw-space-2);
 }
 
 .qw-upload-item {
   display: grid;
-  grid-template-columns: 48px 1fr auto;
-  gap: 10px;
+  grid-template-columns: 3rem 1fr auto;
+  gap: 0.625rem;
   align-items: center;
-  padding: 8px 10px;
+  padding: var(--qw-space-2) 0.625rem;
   border: 1px solid #e3e9ee;
-  border-radius: 10px;
+  border-radius: 0.625rem;
   background: #fff;
   transition: border-color 0.2s;
 }
 
 .qw-upload-thumb {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--qw-radius-md);
   overflow: hidden;
   background: #f1f4f7;
   display: flex;
@@ -213,26 +212,26 @@
 
 .qw-upload-thumb.is-empty::after {
   content: "✕";
-  font-size: 18px;
+  font-size: var(--qw-text-lg);
   color: #b8c4ce;
 }
 
 .qw-upload-info {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 0.1875rem;
   min-width: 0;
 }
 
 .qw-upload-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--qw-space-2);
   min-width: 0;
 }
 
 .qw-upload-name {
-  font-size: 13px;
+  font-size: var(--qw-text-sm);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -241,20 +240,20 @@
 
 .qw-upload-tag {
   flex-shrink: 0;
-  font-size: 11px;
-  padding: 1px 7px;
-  border-radius: 99px;
+  font-size: 0.6875rem;
+  padding: 1px 0.4375rem;
+  border-radius: 999px;
   background: #eef4fa;
   color: #3d6b94;
 }
 
 .qw-upload-meta {
-  font-size: 12px;
+  font-size: var(--qw-text-xs);
   color: #8aa0b0;
 }
 
 .qw-upload-progress {
-  height: 4px;
+  height: 0.25rem;
   border-radius: 2px;
   background: #e9eef3;
   overflow: hidden;
@@ -269,19 +268,19 @@
 }
 
 .qw-upload-status {
-  font-size: 12px;
+  font-size: var(--qw-text-xs);
   color: #8aa0b0;
-  min-height: 14px;
+  min-height: 0.875rem;
 }
 
 .qw-upload-remove {
   border: 0;
   background: none;
   color: #b8c4ce;
-  font-size: 13px;
+  font-size: var(--qw-text-sm);
   cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 6px;
+  padding: var(--qw-space-1) 0.375rem;
+  border-radius: 0.375rem;
   line-height: 1;
   transition:
     color 0.15s,
@@ -315,7 +314,7 @@
   color: #e5484d;
 }
 
-/* ---- 按钮形态：内嵌进度（进度条为半透明白，叠在主色按钮上） ---- */
+/* ---- 按钮形态：半透明进度条叠在按钮上 ---- */
 .qw-upload-btn {
   position: relative;
   overflow: hidden;
@@ -339,8 +338,8 @@
   overflow: hidden;
   cursor: pointer;
   padding: 0;
-  /* 大图为 absolute 定位不撑高容器，必须显式给高度，否则塌陷为 0 */
-  min-height: 200px;
+  /* 大图绝对定位不撑高容器，需显式给高度 */
+  min-height: 12.5rem;
 }
 .qw-upload-dropzone.is-preview .qw-upload-dropzone-preview {
   position: absolute;
@@ -355,7 +354,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: var(--qw-text-sm);
   font-weight: 600;
   color: #fff;
   background: rgba(10, 14, 14, 0);
@@ -373,7 +372,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 4px;
+  height: 0.25rem;
   background: rgba(255, 255, 255, 0.3);
 }
 .qw-upload-dropzone.is-preview .qw-upload-dropzone-progress i {
@@ -383,12 +382,12 @@
   transition: width 0.15s linear;
 }
 
-/* ---- 容器稳定子区（状态切换只切 hidden，不重建容器） ---- */
+/* ---- 拖拽区内层：各状态只显隐、不重建 ---- */
 .qw-upload-dropzone-hint {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--qw-space-1);
 }
 .qw-upload-dropzone-preview-box {
   position: absolute;
@@ -397,24 +396,24 @@
 /* URL 入口在图片框内：置于底部 */
 .qw-upload-dropzone .qw-upload-urlbar {
   margin-top: auto;
-  padding-top: 6px;
+  padding-top: 0.375rem;
   position: relative;
   z-index: 1;
 }
 
-/* ---- 单文件大图模式：右上角移除按钮 + 点击预览（lightbox） ---- */
+/* ---- 大图模式：右上角移除按钮与点击放大（lightbox） ---- */
 .qw-upload-dropzone.is-preview .qw-upload-dropzone-remove {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 0.5rem;
+  right: 0.5rem;
   z-index: 2;
-  width: 26px;
-  height: 26px;
+  width: 1.625rem;
+  height: 1.625rem;
   border: 0;
   border-radius: 50%;
   background: rgba(10, 14, 14, 0.5);
   color: #fff;
-  font-size: 12px;
+  font-size: var(--qw-text-xs);
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -439,8 +438,10 @@
 .qw-upload-lightbox img {
   max-width: 90vw;
   max-height: 90vh;
+  /* biome-ignore lint/suspicious/noDuplicateProperties: dvh 跟随浏览器工具栏伸缩 */
+  max-height: 90dvh;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: var(--qw-radius-md);
 }
 @keyframes qwFadeIn {
   from {
@@ -451,8 +452,7 @@
   }
 }
 
-/* ---- 单文件大图适配：contain 等比例缩小完整显示（自适应留白） ----
-   选择器特异性必须高于上方 cover 规则（.is-preview .preview = 0,3,0），否则 is-contain 永远被覆盖 */
+/* ---- 大图等比完整显示（contain）：选择器需比上方 cover 规则更具体 ---- */
 .qw-upload-dropzone.is-preview .qw-upload-dropzone-preview.is-contain {
   object-fit: contain;
   background: #f1f4f7;

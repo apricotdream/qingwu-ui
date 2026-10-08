@@ -1,0 +1,45 @@
+/*
+ * 青梧 UI · 尺寸变量
+ *
+ * rem：布局尺寸、字号、间距（跟随浏览器字号设置）
+ * px：边框、阴影、图标等固定像素细节
+ * clamp：大标题、大区块留白，随屏幕宽度平滑缩放
+ * svh：保底高度，在浏览器工具栏出现时也不被遮挡
+ * dvh：跟随浏览器工具栏伸缩的容器高度
+ *
+ * 断点（媒体查询里只能写字面量）：
+ * 40rem(640) 48rem(768) 64rem(1024) 80rem(1280)
+ *
+ * 贴边元素用 env(safe-area-inset-*) 避开刘海与底部横条，
+ * 需要页面 meta 设置 viewport-fit=cover。
+ */
+
+:root {
+  /* 间距 */
+  --qw-space-1: 0.25rem; /* 4px */
+  --qw-space-2: 0.5rem; /* 8px */
+  --qw-space-3: 0.75rem; /* 12px */
+  --qw-space-4: 1rem; /* 16px */
+  --qw-space-5: 1.5rem; /* 24px */
+  --qw-space-6: 2rem; /* 32px */
+  --qw-space-7: 3rem; /* 48px */
+  --qw-space-8: 4rem; /* 64px */
+  --qw-space-9: 6rem; /* 96px */
+  --qw-space-10: 8rem; /* 128px */
+
+  /* 圆角，胶囊形状直接写 999px */
+  --qw-radius-sm: 0.25rem; /* 4px */
+  --qw-radius-md: 0.5rem; /* 8px */
+  --qw-radius-lg: 0.75rem; /* 12px */
+  --qw-radius-xl: 1rem; /* 16px */
+  --qw-radius-2xl: 1.25rem; /* 20px */
+
+  /* 常规字号，大标题用 clamp 单独写 */
+  --qw-text-xs: 0.75rem; /* 12px */
+  --qw-text-sm: 0.8125rem; /* 13px */
+  --qw-text-md: 0.875rem; /* 14px */
+  --qw-text-base: 1rem; /* 16px */
+  --qw-text-lg: 1.125rem; /* 18px */
+  --qw-text-xl: 1.25rem; /* 20px */
+  --qw-text-2xl: 1.5rem; /* 24px */
+}

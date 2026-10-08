@@ -344,8 +344,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
         position: "fixed",
         top: "0",
         left: "0",
-        width: "100vw",
-        height: "100vh",
+        width: "100%",
         zIndex: "99999",
         background: "var(--background, #fff)",
         borderRadius: "0",
@@ -353,6 +352,9 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
         display: "flex",
         flexDirection: "column",
       });
+      // 视口高度双写：老浏览器吃 vh，支持 dvh 的设备跟随动态工具栏
+      el.style.height = "100vh";
+      el.style.height = "100dvh";
       if (content) {
         Object.assign(content.style, { flex: "1", overflow: "auto", minHeight: "0" });
       }
@@ -1222,7 +1224,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
               {showMoreMenu && (
                 <div
                   role="menu"
-                  className="bubble-more-menu absolute right-0 top-full z-[9999] mt-1 w-max max-h-[70vh] overflow-y-auto flex-col gap-1 rounded-xl border border-default-200 bg-background p-1.5 shadow-xl"
+                  className="bubble-more-menu absolute right-0 top-full z-[9999] mt-1 w-max max-h-[70dvh] overflow-y-auto flex-col gap-1 rounded-xl border border-default-200 bg-background p-1.5 shadow-xl"
                   onPointerDown={(e) => {
                     if ((e.target as HTMLElement).closest("button")) e.preventDefault();
                   }}
@@ -1268,70 +1270,70 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                 className="bg-background border border-default-200 rounded-xl shadow-xl"
                 onClick={(e) => e.stopPropagation()}
               >
-              {subPanel === "highlight" ? (
-                <div className="flex items-center gap-1 p-1.5 flex-wrap">
-                  {HIGHLIGHT_COLORS.map((c) => (
+                {subPanel === "highlight" ? (
+                  <div className="flex items-center gap-1 p-1.5 flex-wrap">
+                    {HIGHLIGHT_COLORS.map((c) => (
+                      <button
+                        key={c.color}
+                        type="button"
+                        className="w-5 h-5 rounded-full border border-default-200 hover:scale-110 transition-transform"
+                        style={{ background: c.color }}
+                        title={c.name}
+                        onClick={() => {
+                          editor.chain().focus().setHighlight({ color: c.color }).run();
+                          setSubPanel("none");
+                        }}
+                      />
+                    ))}
                     <button
-                      key={c.color}
                       type="button"
-                      className="w-5 h-5 rounded-full border border-default-200 hover:scale-110 transition-transform"
-                      style={{ background: c.color }}
-                      title={c.name}
+                      className="w-5 h-5 rounded-full border border-default-200 text-default-500 hover:bg-default-100 flex items-center justify-center text-[10px]"
+                      title="清除高亮"
                       onClick={() => {
-                        editor.chain().focus().setHighlight({ color: c.color }).run();
+                        editor.chain().focus().unsetHighlight().run();
                         setSubPanel("none");
                       }}
+                    >
+                      ✕{" "}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 p-1.5">
+                    <input
+                      type="url"
+                      className="flex-1 px-2 py-1 text-xs rounded-md border border-default-200 bg-background focus:outline-none focus:border-primary"
+                      placeholder="https://..."
+                      value={linkUrl}
+                      onChange={(e) => setLinkUrl(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          if (linkUrl.trim()) {
+                            editor.chain().focus().setLink({ href: linkUrl.trim() }).run();
+                          }
+                          setSubPanel("none");
+                        } else if (e.key === "Escape") {
+                          setSubPanel("none");
+                        }
+                      }}
                     />
-                  ))}
-                  <button
-                    type="button"
-                    className="w-5 h-5 rounded-full border border-default-200 text-default-500 hover:bg-default-100 flex items-center justify-center text-[10px]"
-                    title="清除高亮"
-                    onClick={() => {
-                      editor.chain().focus().unsetHighlight().run();
-                      setSubPanel("none");
-                    }}
-                  >
-                    ✕{" "}
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 p-1.5">
-                  <input
-                    type="url"
-                    className="flex-1 px-2 py-1 text-xs rounded-md border border-default-200 bg-background focus:outline-none focus:border-primary"
-                    placeholder="https://..."
-                    value={linkUrl}
-                    onChange={(e) => setLinkUrl(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                    <button
+                      type="button"
+                      className="px-2 py-1 text-xs rounded-md bg-primary text-white hover:opacity-90"
+                      onClick={() => {
                         if (linkUrl.trim()) {
                           editor.chain().focus().setLink({ href: linkUrl.trim() }).run();
                         }
                         setSubPanel("none");
-                      } else if (e.key === "Escape") {
-                        setSubPanel("none");
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="px-2 py-1 text-xs rounded-md bg-primary text-white hover:opacity-90"
-                    onClick={() => {
-                      if (linkUrl.trim()) {
-                        editor.chain().focus().setLink({ href: linkUrl.trim() }).run();
-                      }
-                      setSubPanel("none");
-                    }}
-                  >
-                    确定
-                  </button>
-                </div>
-              )}
-            </div>
-          </>,
-          document.body,
-        )}
+                      }}
+                    >
+                      确定
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>,
+            document.body,
+          )}
 
         {/* 写作助手面板：portal body，避免祖先 transform/filter 抢走 fixed 包含块导致坐标漂移 */}
         {!isReadonly &&

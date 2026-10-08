@@ -79,8 +79,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
   border: none;
   border-radius: 50%;
   background: transparent;
@@ -112,8 +112,8 @@
   position: absolute;
   top: 3px;
   right: 3px;
-  width: 8px;
-  height: 8px;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 50%;
   background: var(--qntf-vermilion);
   box-shadow: 0 0 0 2px var(--qntf-card);
@@ -166,14 +166,14 @@
 .qntf-panel {
   position: fixed;
   z-index: 300;
-  max-width: min(340px, calc(100vw - 16px));
+  max-width: min(21.25rem, calc(100vw - 1rem));
   background: var(--qntf-card);
   border: 1px solid var(--qntf-line);
-  border-radius: 14px;
+  border-radius: var(--qw-radius-xl);
   box-shadow: var(--qntf-shadow-pop);
   overflow: hidden;
   opacity: 0;
-  transform: translateY(-8px) scale(0.98);
+  transform: translateY(-0.5rem) scale(0.98);
   transform-origin: top center;
   transition:
     opacity 0.16s ease,
@@ -187,7 +187,7 @@
   transform: translateY(0) scale(1);
 }
 .qntf-panel.is-up {
-  transform: translateY(8px) scale(0.98);
+  transform: translateY(0.5rem) scale(0.98);
   transform-origin: bottom center;
 }
 .qntf-panel.is-up.is-open {
@@ -198,8 +198,8 @@
    ⑤ 条目列表
    ============================================================ */
 .qntf-list {
-  padding: 6px;
-  max-height: 320px;
+  padding: 0.375rem;
+  max-height: 20rem;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -207,9 +207,9 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: 10px;
+  gap: 0.625rem;
+  padding: 0.5625rem 0.625rem;
+  border-radius: var(--qw-radius-lg);
   cursor: pointer;
   color: var(--qntf-ink);
   transition:
@@ -247,13 +247,13 @@
 /* 条目内部结构 */
 .qntf-item-glyph {
   flex: none;
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
   display: grid;
   place-items: center;
-  border-radius: 9px;
+  border-radius: var(--qw-radius-md);
   font-family: var(--qntf-font-kai);
-  font-size: 14px;
+  font-size: var(--qw-text-md);
   line-height: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -270,7 +270,7 @@
 }
 .qntf-item-title {
   display: block;
-  font-size: 13.5px;
+  font-size: var(--qw-text-sm);
   color: var(--qntf-ink);
   white-space: nowrap;
   overflow: hidden;
@@ -278,7 +278,7 @@
 }
 .qntf-item-sub {
   display: block;
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--qntf-ink-3);
   margin-top: 1px;
   white-space: nowrap;
@@ -291,8 +291,8 @@
 /* 未读圆点标识：行尾朱砂点，已读隐藏 */
 .qntf-item-dot {
   flex: none;
-  width: 6px;
-  height: 6px;
+  width: 0.375rem;
+  height: 0.375rem;
   border-radius: 50%;
   background: var(--qntf-vermilion);
   opacity: 0;
@@ -308,9 +308,9 @@
 
 /* 空态 */
 .qntf-empty {
-  padding: 22px 12px;
+  padding: var(--qw-space-5) var(--qw-space-3);
   text-align: center;
-  font-size: 12px;
+  font-size: var(--qw-text-xs);
   color: var(--qntf-ink-3);
   cursor: default;
 }
@@ -325,7 +325,7 @@
 @keyframes qntf-press {
   from {
     opacity: 0;
-    transform: translateY(-14px) scaleY(0.96);
+    transform: translateY(-0.875rem) scaleY(0.96);
   }
   to {
     opacity: 1;
@@ -334,7 +334,7 @@
 @keyframes qntf-press-up {
   from {
     opacity: 0;
-    transform: translateY(14px) scaleY(0.96);
+    transform: translateY(0.875rem) scaleY(0.96);
   }
   to {
     opacity: 1;

@@ -66,7 +66,7 @@ export function sanitizeHtml(html: string): string {
       ADD_ATTR: ["target", "rel"],
       // blob: 允许（编辑器以 blob URL 占位媒体；默认会滤掉导致回显 src 被清空）
       ALLOWED_URI_REGEXP:
-        /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|blob):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+        /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|blob):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
     });
   }
   return regexSanitize(html);

@@ -1,18 +1,11 @@
-/* ============================================================
-   青梧UI · 下拉选择器样式（Select）
-   零依赖 · CSS 自定义属性驱动 · 明暗双主题 · reduced-motion 友好
+/*
+ * 青梧 UI · 下拉选择器样式（Select）
+ * 零依赖 · 明暗双主题 · reduced-motion 友好
+ * 使用：import "@qingwu-ui/select/style.css"
+ * --qsel-* 可在宿主层覆盖；宿主已定义的 --card/--ink 等变量会被自动复用。
+ */
 
-   使用方式：
-     import "@qingwu-ui/select/style.css"
-
-   令牌覆盖：--qsel-* 可被宿主覆盖；复用宿主已定义的
-   --paper / --card / --ink / --teal / --vermilion / --amber / --line
-   若宿主未提供则使用本文件默认值。
-   ============================================================ */
-
-/* ============================================================
-   ① 设计令牌（可在宿主层覆盖）
-   ============================================================ */
+/* 设计令牌 */
 :root {
   --qsel-card: var(--card, #fdfdfb);
   --qsel-ink: var(--ink, #1d2b2c);
@@ -29,7 +22,7 @@
   --qsel-font-kai: var(--font-kai, KaiTi, "STKaiti", "Kaiti SC", serif);
 }
 
-/* 暗色主题：兼容 <html data-theme="dark"> 与 .dark 类两种宿主约定 */
+/* 暗色主题 */
 .dark,
 [data-theme="dark"] {
   --qsel-card: #1a2022;
@@ -45,9 +38,7 @@
   --qsel-shadow-pop: 0 24px 60px -28px rgba(0, 0, 0, 0.7);
 }
 
-/* ============================================================
-   ② 基础复位（限定在组件范围内，不污染宿主）
-   ============================================================ */
+/* 基础复位 */
 .qsel,
 .qsel *,
 .qsel-panel,
@@ -76,21 +67,19 @@
   outline-offset: 2px;
 }
 
-/* ============================================================
-   ③ 触发器
-   ============================================================ */
+/* 触发器 */
 .qsel-trigger {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--qw-space-2);
   width: 100%;
-  height: 46px;
-  padding: 0 14px;
+  height: 3rem;
+  padding: 0 var(--qw-space-4);
   border: 1.5px solid var(--qsel-line);
-  border-radius: 12px;
+  border-radius: var(--qw-radius-lg);
   background: var(--qsel-card);
   color: var(--qsel-ink);
-  font-size: 14.5px;
+  font-size: var(--qw-text-md);
   text-align: left;
   cursor: pointer;
   box-shadow: var(--qsel-shadow);
@@ -136,19 +125,17 @@
   height: 16px;
 }
 
-/* ============================================================
-   ④ 面板（position: fixed 挂 body，向上/向下自适应）
-   ============================================================ */
+/* 面板：fixed 定位，向上或向下自适应展开 */
 .qsel-panel {
   position: fixed;
   z-index: 300;
   background: var(--qsel-card);
   border: 1px solid var(--qsel-line);
-  border-radius: 14px;
+  border-radius: var(--qw-radius-xl);
   box-shadow: var(--qsel-shadow-pop);
   overflow: hidden;
   opacity: 0;
-  transform: translateY(-8px) scale(0.98);
+  transform: translateY(-0.5rem) scale(0.98);
   transform-origin: top center;
   transition:
     opacity 0.16s ease,
@@ -161,31 +148,83 @@
   opacity: 1;
   transform: translateY(0) scale(1);
 }
+/* 关闭：缩小下沉并淡出 */
+.qsel-panel.is-closing {
+  opacity: 0;
+  transform: translateY(0.5rem) scale(0.95);
+  transition:
+    opacity 0.26s ease,
+    transform 0.3s cubic-bezier(0.5, 0, 0.75, 0);
+}
+.qsel-panel.is-up.is-closing {
+  transform: translateY(-0.5rem) scale(0.95);
+}
 .qsel-panel.is-up {
-  transform: translateY(8px) scale(0.98);
+  transform: translateY(0.5rem) scale(0.98);
   transform-origin: bottom center;
 }
 .qsel-panel.is-up.is-open {
   transform: translateY(0) scale(1);
 }
-/* 半透明磨砂：默认开启（构造时挂 is-frosted）。关闭时回退为上方不透明实体面板 */
+/* 磨砂半透明面板；无此类时为不透明实体面板 */
 .qsel-panel.is-frosted {
   background: color-mix(in srgb, var(--qsel-card) 72%, transparent);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
   backdrop-filter: blur(20px) saturate(140%);
 }
 
-/* ============================================================
-   ⑤ 选项列表
-   ============================================================ */
+/* 悬停移出倒计时进度条 */
+.qsel-hover-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 100%;
+  height: 3px;
+  background: color-mix(in srgb, var(--qsel-teal) 22%, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+.qsel-hover-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--qsel-teal);
+  transform-origin: left center;
+  transform: scaleX(1);
+}
+/* 移出后进度条在延时时间内收缩归零 */
+.qsel-panel.is-hover-closing .qsel-hover-bar {
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+.qsel-panel.is-hover-closing .qsel-hover-bar::after {
+  animation: qsel-hover-countdown var(--qsel-hover-ms, 3000ms) linear forwards;
+}
+/* 向上展开时进度条贴顶部，从右向左收缩 */
+.qsel-panel.is-up .qsel-hover-bar {
+  bottom: auto;
+  top: 0;
+}
+.qsel-panel.is-up .qsel-hover-bar::after {
+  transform-origin: right center;
+}
+@keyframes qsel-hover-countdown {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* 选项列表 */
 .qsel-list {
-  padding: 6px;
-  max-height: 320px;
+  padding: var(--qw-space-2);
+  max-height: 20rem;
   overflow-y: auto;
   overscroll-behavior: contain;
-  /* 滚动条默认隐藏：面板开/关的 scale+opacity 动画期，滚动条在真实 GPU 合成
-     会闪一下（headless 软件渲染测不到）。隐藏后动画期无滚动条渲染；hover /
-     键盘聚焦时显示细滚动条，滚轮/触摸滚动不受影响。 */
+  /* 默认隐藏滚动条：面板缩放淡入淡出时滚动条会闪一下；悬停或键盘聚焦时再显示细滚动条 */
   scrollbar-width: none;
 }
 .qsel-list:hover,
@@ -212,9 +251,9 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: 10px;
+  gap: var(--qw-space-2);
+  padding: var(--qw-space-2) var(--qw-space-3);
+  border-radius: var(--qw-radius-md);
   cursor: pointer;
   color: var(--qsel-ink);
   transition:
@@ -224,12 +263,12 @@
 .qsel-opt + .qsel-opt {
   margin-top: 1px;
 }
-/* 悬浮反馈：底色 + 轻微上浮 + 右侧箭头（纯 :hover，跟手不粘滞） */
+/* 悬浮反馈：底色与轻微上浮 */
 .qsel-opt:hover {
   background: var(--qsel-hover);
   transform: translateY(-1px);
 }
-/* 键盘焦点态：左侧黛青色条 */
+/* 左侧色条，焦点或高亮时展开 */
 .qsel-opt::before {
   content: "";
   position: absolute;
@@ -248,14 +287,59 @@
 .qsel-opt.is-active::before {
   transform: translateY(-50%) scaleY(1);
 }
-/* 悬浮箭头：非选中项 hover 时浮现（选中项 hover 改为放大对勾，避免双指示器） */
+/* 活动项高亮（由外部 activeIndex 指定，区别于选中态） */
+.qsel-opt.is-highlight {
+  background: color-mix(in srgb, var(--qsel-teal) 12%, transparent);
+}
+.qsel-opt.is-highlight::before {
+  transform: translateY(-50%) scaleY(1);
+}
+.qsel-opt.is-highlight .qsel-opt-label {
+  font-weight: 600;
+  color: var(--qsel-teal);
+}
+.qsel-opt.is-highlight .qsel-opt-ico {
+  background: var(--qsel-teal);
+  color: #fff;
+}
+.qsel-opt.is-highlight:hover {
+  background: color-mix(in srgb, var(--qsel-teal) 18%, transparent);
+}
+/* 活动项呼吸脉冲：图标光环与标签明暗交替 */
+.qsel-opt.is-highlight .qsel-opt-ico {
+  animation: qsel-breathe-ico 2s ease-in-out infinite;
+}
+.qsel-opt.is-highlight .qsel-opt-label {
+  animation: qsel-breathe-label 2s ease-in-out infinite;
+}
+@keyframes qsel-breathe-ico {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--qsel-teal) 35%, transparent);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--qsel-teal) 12%, transparent);
+    transform: scale(1.08);
+  }
+}
+@keyframes qsel-breathe-label {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.62;
+  }
+}
+/* 非选中项悬停时显示右侧箭头 */
 .qsel-opt::after {
   content: "›";
   position: absolute;
-  right: 12px;
+  right: var(--qw-space-3);
   top: 50%;
-  transform: translateY(-50%) translateX(-4px);
-  font-size: 17px;
+  transform: translateY(-50%) translateX(-0.25rem);
+  font-size: 1.0625rem;
   line-height: 1;
   color: var(--qsel-teal);
   opacity: 0;
@@ -283,13 +367,13 @@
 }
 .qsel-opt-ico {
   flex: none;
-  width: 28px;
-  height: 28px;
+  width: 1.75rem;
+  height: 1.75rem;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: var(--qw-radius-md);
   font-family: var(--qsel-font-kai);
-  font-size: 14px;
+  font-size: var(--qw-text-md);
   background: color-mix(in srgb, var(--qsel-ink) 5%, transparent);
   color: var(--qsel-ink-2);
 }
@@ -299,7 +383,7 @@
 }
 .qsel-opt-label {
   display: block;
-  font-size: 13.5px;
+  font-size: var(--qw-text-sm);
   color: var(--qsel-ink);
   white-space: nowrap;
   overflow: hidden;
@@ -307,7 +391,7 @@
 }
 .qsel-opt-hint {
   display: block;
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--qsel-ink-3);
   margin-top: 1px;
   white-space: nowrap;
@@ -332,7 +416,7 @@
   opacity: 1;
   transform: scale(1);
 }
-/* 选中项悬浮：放大对勾作为反馈（置于本段末尾，保持特异性递增） */
+/* 选中项悬停时放大对勾 */
 .qsel-opt[aria-selected="true"]:hover .qsel-check {
   transform: scale(1.2);
 }
@@ -341,13 +425,11 @@
   height: 15px;
 }
 
-/* ============================================================
-   ⑥ 手风琴错峰关键帧（琴键逐项按下）
-   ============================================================ */
+/* 入场错峰关键帧：选项逐项按下 */
 @keyframes qsel-press {
   from {
     opacity: 0;
-    transform: translateY(-14px) scaleY(0.96);
+    transform: translateY(-1rem) scaleY(0.96);
   }
   to {
     opacity: 1;
@@ -356,7 +438,7 @@
 @keyframes qsel-press-up {
   from {
     opacity: 0;
-    transform: translateY(14px) scaleY(0.96);
+    transform: translateY(1rem) scaleY(0.96);
   }
   to {
     opacity: 1;
@@ -369,9 +451,7 @@
   animation-name: qsel-press-up;
 }
 
-/* ============================================================
-   ⑦ prefers-reduced-motion：全部动画熔断
-   ============================================================ */
+/* reduced-motion：关闭全部动画 */
 @media (prefers-reduced-motion: reduce) {
   .qsel *,
   .qsel *::before,

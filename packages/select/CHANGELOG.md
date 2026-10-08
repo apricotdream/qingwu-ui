@@ -1,5 +1,10 @@
 # @qingwu-ui/select
 
+## 0.9.0-beta.5
+### Patch Changes
+
+- 尺寸单位改为 rem 为主：间距、字号、控件尺寸跟随浏览器字号设置；弹层与全屏高度改用 dvh/svh，适配移动端浏览器工具栏；大标题用 clamp 随屏幕宽度平滑缩放；贴边元素避开刘海与底部安全区。
+
 ## 0.9.0-beta.4
 ### Patch Changes
 

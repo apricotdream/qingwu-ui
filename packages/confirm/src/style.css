@@ -25,7 +25,7 @@
     --qc-backdrop-blur: 0px;
     --qc-shadow-a: 0.08;
     --qc-shadow-b: 0.18;
-    --qc-radius: 20px;
+    --qc-radius: var(--qw-radius-2xl);
     --qc-font:
       -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", system-ui,
       sans-serif;
@@ -96,7 +96,7 @@
     inset: 0;
     display: grid;
     place-items: center;
-    padding: 16px;
+    padding: var(--qw-space-4);
     pointer-events: none;
   }
 
@@ -107,11 +107,13 @@
   .qc-panel {
     position: relative;
     pointer-events: auto;
-    width: 400px;
-    max-width: calc(100vw - 32px);
-    max-height: calc(100dvh - 32px);
+    width: 25rem;
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 2rem);
+  /* biome-ignore lint/suspicious/noDuplicateProperties: 渐进增强，dvh 随移动端动态工具栏伸缩 */
+    max-height: calc(100dvh - 2rem);
     overflow: auto;
-    padding: 22px;
+    padding: var(--qw-space-5);
     border-radius: var(--qc-radius);
     background: linear-gradient(
       160deg,
@@ -161,7 +163,7 @@
    ============================================================ */
   .qc-icon {
     display: flex;
-    margin-bottom: 10px;
+    margin-bottom: 0.625rem;
     color: rgb(var(--qc-blue));
   }
   .qc-danger .qc-icon {
@@ -173,7 +175,7 @@
   }
 
   .qc-title {
-    font-size: 17px;
+    font-size: var(--qw-text-lg);
     font-weight: 650;
     line-height: 1.35;
     letter-spacing: 0.01em;
@@ -181,8 +183,8 @@
   }
 
   .qc-msg {
-    margin-top: 8px;
-    font-size: 13.5px;
+    margin-top: var(--qw-space-2);
+    font-size: var(--qw-text-sm);
     line-height: 1.55;
     color: rgb(var(--qc-fg2));
     overflow-wrap: break-word;
@@ -195,7 +197,7 @@
     color: rgb(var(--qc-blue));
     background: rgb(var(--qc-blue) / 0.12);
     padding: 0 3px;
-    border-radius: 4px;
+    border-radius: var(--qw-radius-sm);
   }
   .qc-danger .qc-mark {
     color: rgb(var(--qc-red));
@@ -207,17 +209,17 @@
    ============================================================ */
   .qc-actions {
     display: flex;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 0.625rem;
+    margin-top: var(--qw-space-5);
   }
   .qc-btn {
     flex: 1 1 0;
     min-width: 0;
-    padding: 9px 14px;
+    padding: 0.5625rem var(--qw-space-3);
     border: none;
-    border-radius: 12px;
+    border-radius: var(--qw-radius-lg);
     font-family: inherit;
-    font-size: 14px;
+    font-size: var(--qw-text-md);
     font-weight: 600;
     line-height: 1.4;
     letter-spacing: 0.01em;
@@ -261,9 +263,9 @@
   /* loading spinner（确认按钮内） */
   .qc-spinner {
     display: none;
-    width: 13px;
-    height: 13px;
-    margin-right: 6px;
+    width: 0.8125rem;
+    height: 0.8125rem;
+    margin-right: 0.375rem;
     vertical-align: -2px;
     border: 2px solid rgb(255 255 255 / 0.4);
     border-top-color: #fff;
@@ -299,22 +301,22 @@
   /* ============================================================
    ⑨ 移动端 · iOS alert 式竖向按钮
    ============================================================ */
-  @media (max-width: 480px) {
+  @media (max-width: 40rem) {
     .qc-stage {
-      padding: 16px env(safe-area-inset-right, 16px) calc(16px + env(safe-area-inset-bottom, 0px))
-        env(safe-area-inset-left, 16px);
+      padding: var(--qw-space-4) env(safe-area-inset-right, 1rem)
+        calc(1rem + env(safe-area-inset-bottom, 0px)) env(safe-area-inset-left, 1rem);
     }
     .qc-panel {
       width: 100%;
       max-width: 100%;
-      padding: 20px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+      padding: var(--qw-space-5) var(--qw-space-4) calc(1rem + env(safe-area-inset-bottom, 0px));
     }
     .qc-actions {
       flex-direction: column-reverse; /* 主要操作在上（iOS alert 惯例） */
     }
     .qc-btn {
-      padding: 12px 14px;
-      border-radius: 13px;
+      padding: var(--qw-space-3) 0.875rem;
+      border-radius: var(--qw-radius-lg);
     }
   }
 }

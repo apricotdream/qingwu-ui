@@ -307,7 +307,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="icon" href={asset("/favicon.ico")} />
         <link rel="apple-touch-icon" href={asset("/logo.png")} />
         <title>青梧 UI — 中国历法组件库</title>
@@ -344,6 +344,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <SvgHtml html={ICON_CLOSE} size={16} />
                 </button>
               </div>
+              <nav className="qw-drawer-nav" aria-label="移动端主导航">
+                {HEADER_NAV.map((n) => (
+                  <Link key={n.href} href={n.href} onClick={() => setDrawerOpen(false)}>
+                    {n.label}
+                  </Link>
+                ))}
+              </nav>
               <Sidebar onNavigate={() => setDrawerOpen(false)} />
             </div>
           </div>

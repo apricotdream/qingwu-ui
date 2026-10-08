@@ -13,7 +13,11 @@ import {
 } from "@qingwu-ui/text-layout";
 import { useEffect, useMemo, useState } from "react";
 import DemoCard from "@/components/DemoCard";
+import Playground from "@/components/Playground";
 import { COMPONENT_SECTIONS } from "@/docs.config";
+import { genAll } from "@/lib/codegen";
+import { PKG } from "@/lib/pkg-meta";
+import { TEXT_LAYOUT_FIELDS, createTextLayout, textLayoutToCode } from "./playground.config";
 
 /**
  * 测量类 demo 依赖 Canvas 宽度测量，SSR（Node，无 Canvas）走 estimateWidth 回退，
@@ -30,6 +34,11 @@ const FONT = "15px system-ui, -apple-system, sans-serif";
 
 /** 渲染用字体（与测量 FONT 一致，保证像素级对齐） */
 const font = FONT;
+
+/* ---- 场景卡代码：手写函数调用语句，框架外壳由 codegen 统一产出 ---- */
+const NO_UNMOUNT = "// 纯函数，无需卸载";
+const snippet = (symbol: string | string[], stmt: string) =>
+  genAll({ meta: PKG.textLayout, symbol, stmt, destroy: NO_UNMOUNT });
 
 /* ============================================================
    API 属性表（数据源：docs.config.ts → text-layout.api）
@@ -100,15 +109,21 @@ function VirtualScrollDemo() {
     <DemoCard
       title="虚拟滚动高度预计算"
       desc={`1000 项不等高列表，总高 ${Math.round(totalHeight).toLocaleString()}px。Pretext 方案 O(1) 查找可见范围，无需 DOM 测量。拖动下方滚动条查看效果。`}
-      code={`import { computeVirtualHeights, findVisibleRange } from "@qingwu-ui/text-layout";
-
-// 1. 批量预计算高度（与数据加载并行）
+      snippets={snippet(
+        ["computeVirtualHeights", "findVisibleRange"],
+        `// 1. 批量预计算高度（可与数据加载并行）
+const items = [
+  { id: "item-0", text: "青梧UI 是一套纯 DOM + CSS 实现的工具库。(#1)" },
+  { id: "item-1", text: "The quick brown fox jumps over the lazy dog. (#2)" }
+];
 const { heights, offsets, totalHeight } = computeVirtualHeights(
   items, containerWidth, 24, "15px system-ui", 16
 );
 
 // 2. 二分查找可见范围（O(log n)）
-const [start, end] = findVisibleRange(offsets, scrollTop, 400, 5);`}
+const [start, end] = findVisibleRange(offsets, scrollTop, 400, 5);
+console.log("总高", totalHeight, "可见区间", start, end);`,
+      )}
     >
       <div className="tl-row">
         <div>
@@ -201,13 +216,16 @@ function ChatBubbleDemo() {
     <DemoCard
       title="聊天气泡高度测量"
       desc="每条消息通过 layout() 精确计算高度，可用于虚拟滚动定位和滚动锚定。对比传统方案需 DOM 渲染后才能获取高度。"
-      code={`import { layout } from "@qingwu-ui/text-layout";
-
-// 测量消息气泡高度
-const result = layout(messageText, { maxWidth: 300, lineHeight: 22 }, "15px system-ui");
+      snippets={snippet(
+        "layout",
+        `// 测量消息气泡高度（气泡内宽 288px）
+const messageText = "Text layout 采用两阶段架构：prepare 分割测宽，layout 纯算术换行。";
+const result = layout(messageText, { maxWidth: 288, lineHeight: 22 }, "15px system-ui");
 // result.totalHeight → 气泡高度
 // result.lineCount  → 行数
-// result.lines       → 每行文本和宽度`}
+// result.lines       → 每行文本和宽度
+console.log(result.lineCount, result.totalHeight);`,
+      )}
     >
       <div className="tl-bubbles">
         {messages.map((msg, i) => {
@@ -252,14 +270,18 @@ function TruncateDemo() {
     <DemoCard
       title="精确多行截断"
       desc={`全文 ${fullResult.lineCount} 行。Pretext 方案通过二分查找精确定位截断位置，返回截断文本和元信息。CSS line-clamp 无法返回截断位置。`}
-      code={`import { truncateToLines } from "@qingwu-ui/text-layout";
+      snippets={snippet(
+        "truncateToLines",
+        `const longText = "青梧UI 是一套面向 AI 时代的前端工具库，涵盖按钮、日历、搜索、上传、编辑器等核心组件。";
 
 const { text, truncated, lineCount, fullLineCount } = truncateToLines(
   longText, 360, 3, "15px system-ui"
 );
 // text: 截断后的文本（含省略号）
 // truncated: 是否被截断
-// lineCount: 截断后实际行数`}
+// lineCount: 截断后实际行数
+console.log(text, truncated, lineCount, fullLineCount);`,
+      )}
     >
       <div className="tl-controls">
         <label>
@@ -344,16 +366,18 @@ function ChipFlowDemo() {
     <DemoCard
       title="芯片流（Chip Flow）布局"
       desc="芯片作为不可断行原子元素与文本混合 inline 排版。添加/删除芯片实时重新排版。"
-      code={`import { layoutChips } from "@qingwu-ui/text-layout";
-
-const items = [
+      snippets={snippet(
+        "layoutChips",
+        `const items = [
   { type: "text", text: "筛选：" },
   { type: "chip", text: "React", extraWidth: 24 },
-  { type: "chip", text: "TypeScript", extraWidth: 24 },
+  { type: "chip", text: "TypeScript", extraWidth: 24 }
 ];
 
 const { lines, totalHeight } = layoutChips(items, 400, "15px system-ui", 24, 28);
-// lines[0].items → [{ type, text, x, width }, ...]`}
+// lines[0].items → [{ type, text, x, width }, ...]
+console.log(lines.length, totalHeight);`,
+      )}
     >
       <div className="tl-controls">
         <input
@@ -463,13 +487,20 @@ function TableColumnsDemo() {
     <DemoCard
       title="表格列宽自动计算"
       desc="基于单元格内容自动计算最佳列宽，按比例分配 + 最小宽度约束。不受限于浏览器 table-layout: auto 的渲染后再确定列宽的性能问题。"
-      code={`import { computeColumnWidths } from "@qingwu-ui/text-layout";
+      snippets={snippet(
+        "computeColumnWidths",
+        `const rows = [
+  ["@qingwu-ui/button", "通用按钮组件，支持四种变体", "0.3.1", "4 kB"],
+  ["@qingwu-ui/calendar", "农历日历，含节气节日黄历", "0.3.1", "30 kB"]
+];
 
 const { widths, truncated } = computeColumnWidths(
-  rows, tableWidth, "15px system-ui", 60, 300
+  rows, 600, "15px system-ui", 60, 300
 );
 // widths: 每列最佳宽度
-// truncated: 每列是否需要截断`}
+// truncated: 每列是否需要截断
+console.log(widths, truncated);`,
+      )}
     >
       <div style={{ marginBottom: 10 }}>
         <label className="tl-range-label">
@@ -544,16 +575,20 @@ function EngineOverview() {
     <DemoCard
       title="引擎核心：prepare → layout 两阶段 API"
       desc={`Pretext 风格的文本排版：prepare() 做 Unicode 字素分割 + Canvas 宽度测量 + 缓存（一次性），layout() 纯算术计算换行（每次宽度变化可重复调用）。`}
-      code={`import { prepare, layout, measure } from "@qingwu-ui/text-layout";
-
-// 阶段1: 预处理（一次性）
+      snippets={snippet(
+        ["prepare", "layout", "measure"],
+        `// 阶段1: 预处理（一次性）
 const segments = prepare(text, "15px system-ui");
 
 // 阶段2: 排版（任意宽度，超快）
-const { lines, totalHeight, lineCount } = layout(text, { maxWidth, lineHeight }, font);
+const { lines, totalHeight, lineCount } = layout(
+  text, { maxWidth: 360, lineHeight: 22 }, "15px system-ui"
+);
 
 // 快捷版
-const { lineCount, totalHeight } = measure(text, maxWidth, lineHeight, font);`}
+const measured = measure(text, 360, 22, "15px system-ui");
+console.log(segments.length, lineCount, totalHeight, measured.lineCount);`,
+      )}
     >
       <div className="tl-col">
         <textarea
@@ -593,7 +628,7 @@ const { lineCount, totalHeight } = measure(text, maxWidth, lineHeight, font);`}
                 padding: "0 4px",
               }}
             >
-              {line.text || "\u00A0"}
+              {line.text || " "}
             </div>
           ))}
         </div>
@@ -651,15 +686,22 @@ export default function TextLayoutPage() {
   const mounted = useIsMounted();
   return (
     <div className="demo-grid">
-      <AlgorithmRules />
+      <Playground
+        title="Text Layout 文本排版引擎"
+        desc="函数工作台：调整宽度 / 行高 / 最大行数 / 溢出换行策略，layout() 实时纯算术重排。无实例、无 CSS，参数变化即重算。"
+        fields={TEXT_LAYOUT_FIELDS}
+        create={createTextLayout}
+        toCode={textLayoutToCode}
+      />
+
       {mounted ? (
         <>
-          <EngineOverview />
-          <TruncateDemo />
+          <VirtualScrollDemo />
           <ChatBubbleDemo />
+          <TruncateDemo />
           <ChipFlowDemo />
           <TableColumnsDemo />
-          <VirtualScrollDemo />
+          <EngineOverview />
         </>
       ) : (
         <div
@@ -675,6 +717,8 @@ export default function TextLayoutPage() {
           测量引擎加载中…
         </div>
       )}
+
+      <AlgorithmRules />
 
       {/* API 属性表 */}
       <div className="api-section">

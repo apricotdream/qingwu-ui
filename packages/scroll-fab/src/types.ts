@@ -10,10 +10,7 @@ export interface ScrollFabPosition {
 
 /** Lenis 实例的最小结构性类型（组件不硬依赖 lenis 包，按结构识别） */
 export interface LenisLike {
-  scrollTo: (
-    target: number | string | HTMLElement,
-    options?: Record<string, unknown>,
-  ) => void;
+  scrollTo: (target: number | string | HTMLElement, options?: Record<string, unknown>) => void;
   raf?: (time: number) => void;
   destroy?: () => void;
   start?: () => void;

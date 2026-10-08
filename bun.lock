@@ -64,7 +64,7 @@
     },
     "packages/ai-editor": {
       "name": "@qingwu-ui/ai-editor",
-      "version": "0.9.0-beta.24",
+      "version": "0.9.0-beta.25",
       "bin": {
         "qingwu-ai-editor": "scripts/cli.mjs",
       },
@@ -322,6 +322,10 @@
         "typescript": "^7.0.2",
         "vitest": "^4.1.10",
       },
+    },
+    "packages/tokens": {
+      "name": "@qingwu-ui/tokens",
+      "version": "0.9.0-beta.1",
     },
     "packages/upload": {
       "name": "@qingwu-ui/upload",
@@ -658,6 +662,8 @@
     "@qingwu-ui/text-layout": ["@qingwu-ui/text-layout@workspace:packages/text-layout"],
 
     "@qingwu-ui/toast": ["@qingwu-ui/toast@workspace:packages/toast"],
+
+    "@qingwu-ui/tokens": ["@qingwu-ui/tokens@workspace:packages/tokens"],
 
     "@qingwu-ui/tsconfig": ["@qingwu-ui/tsconfig@workspace:tooling/tsconfig"],
 

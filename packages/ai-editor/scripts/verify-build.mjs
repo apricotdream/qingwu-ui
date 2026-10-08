@@ -61,9 +61,15 @@ if (!dialogEl) {
 }
 const dialogText = await page.evaluate((el) => el.textContent, dialogEl);
 const has25 = dialogText.includes("0.9.0-beta.25");
-const versions = ["beta.19", "beta.20", "beta.21", "beta.22", "beta.23", "beta.24", "beta.25"].filter((v) =>
-  dialogText.includes(v),
-);
+const versions = [
+  "beta.19",
+  "beta.20",
+  "beta.21",
+  "beta.22",
+  "beta.23",
+  "beta.24",
+  "beta.25",
+].filter((v) => dialogText.includes(v));
 console.log(`3. 更新日志打开: OK；含 beta.25 = ${has25}；出现版本: ${versions.join(", ")}`);
 
 // 关闭弹窗：定位遮罩层（fixed + z-index 9999）内的关闭按钮，用 trusted click
@@ -76,11 +82,10 @@ const closeBtn = await page.evaluateHandle(() => {
 const closeEl = closeBtn.asElement();
 if (closeEl) await closeEl.click();
 await new Promise((r) => setTimeout(r, 500));
-const stillOpen = await page.evaluate(
-  () =>
-    Array.from(document.querySelectorAll("div.fixed.inset-0")).some(
-      (d) => getComputedStyle(d).zIndex === "9999",
-    ),
+const stillOpen = await page.evaluate(() =>
+  Array.from(document.querySelectorAll("div.fixed.inset-0")).some(
+    (d) => getComputedStyle(d).zIndex === "9999",
+  ),
 );
 console.log(`3. 更新日志关闭: ${stillOpen ? "FAIL（仍打开）" : "OK"}`);
 if (stillOpen) errors.push("dialog did not close");
@@ -89,9 +94,7 @@ await browser.close();
 
 console.log("\n=== 页面运行时错误 ===");
 // 过滤开发态无关噪音
-const real = errors.filter(
-  (e) => !/favicon|Download the React DevTools|cookie/i.test(e),
-);
+const real = errors.filter((e) => !/favicon|Download the React DevTools|cookie/i.test(e));
 if (real.length === 0) console.log("无");
 else real.forEach((e) => console.log(`  ${e}`));
 

@@ -45,7 +45,7 @@
     border-color 0.18s ease;
 }
 .qav-trigger:hover {
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
   border-color: var(--qav-teal);
   box-shadow: 0 14px 30px -18px rgba(30, 96, 90, 0.75);
 }
@@ -65,8 +65,8 @@
 }
 .qav-badge {
   position: absolute;
-  right: -4px;
-  bottom: -4px;
+  right: calc(-1 * var(--qw-space-1));
+  bottom: calc(-1 * var(--qw-space-1));
   display: grid;
   place-items: center;
   width: calc(var(--qav-size) * 0.34);
@@ -87,7 +87,7 @@
   inset: 0;
   display: grid;
   place-items: center;
-  padding: 18px;
+  padding: var(--qw-space-5);
   background: rgba(20, 31, 30, 0.48);
   backdrop-filter: blur(4px);
 }
@@ -95,12 +95,14 @@
   display: none;
 }
 .qav-panel {
-  width: min(430px, 100%);
+  width: min(26.875rem, 100%);
   max-height: calc(100vh - 36px);
+  /* biome-ignore lint/suspicious/noDuplicateProperties: 渐进增强，dvh 随移动端动态工具栏伸缩 */
+  max-height: calc(100dvh - 2.25rem);
   overflow: auto;
-  padding: 18px;
+  padding: var(--qw-space-5);
   border: 1px solid var(--qav-line);
-  border-radius: 18px;
+  border-radius: var(--qw-radius-2xl);
   background: var(--qav-card);
   box-shadow: 0 30px 80px -40px rgba(15, 38, 35, 0.7);
 }
@@ -108,22 +110,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 0.875rem;
 }
 .qav-title {
   margin: 0;
-  font-size: 17px;
+  font-size: var(--qw-text-lg);
 }
 .qav-close {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: var(--qw-space-6);
+  height: var(--qw-space-6);
   border: 0;
   border-radius: 50%;
   background: #f0f3f1;
   color: var(--qav-ink);
-  font-size: 20px;
+  font-size: var(--qw-text-xl);
   line-height: 1;
   cursor: pointer;
 }
@@ -143,16 +145,16 @@
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 292px;
+  min-height: 18.25rem;
   border: 1px dashed #bbc7c2;
-  border-radius: 16px;
+  border-radius: var(--qw-radius-xl);
   background:
     linear-gradient(45deg, #f5f7f5 25%, transparent 25%, transparent 75%, #f5f7f5 75%),
     linear-gradient(45deg, #f5f7f5 25%, #fff 25%, #fff 75%, #f5f7f5 75%);
-  background-size: 18px 18px;
+  background-size: 1.125rem 1.125rem;
   background-position:
     0 0,
-    9px 9px;
+    0.5625rem 0.5625rem;
 }
 .qav-editor.is-dragover {
   border-color: var(--qav-teal);
@@ -160,7 +162,7 @@
 }
 .qav-canvas {
   display: block;
-  width: min(288px, 72vw);
+  width: min(18rem, 72vw);
   aspect-ratio: 1;
   touch-action: none;
   cursor: grab;
@@ -171,14 +173,14 @@
 .qav-empty {
   position: absolute;
   display: grid;
-  gap: 4px;
+  gap: var(--qw-space-1);
   justify-items: center;
   color: var(--qav-ink-3);
-  font-size: 14px;
+  font-size: var(--qw-text-md);
   cursor: pointer;
 }
 .qav-empty small {
-  font-size: 12px;
+  font-size: var(--qw-text-xs);
   opacity: 0.75;
 }
 .qav-empty[hidden] {
@@ -187,22 +189,22 @@
 
 .qav-controls {
   display: grid;
-  gap: 10px;
-  margin-top: 14px;
+  gap: 0.625rem;
+  margin-top: 0.875rem;
 }
 .qav-control {
   display: grid;
-  grid-template-columns: 42px 1fr;
+  grid-template-columns: 2.625rem 1fr;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
 }
 .qav-control-label {
-  font-size: 12px;
+  font-size: var(--qw-text-xs);
   color: var(--qav-ink-3);
 }
 .qav-rotate {
   display: flex;
-  gap: 8px;
+  gap: var(--qw-space-2);
 }
 .qav-icon-btn,
 .qav-secondary,
@@ -210,7 +212,7 @@
   border: 0;
   border-radius: 999px;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--qw-text-sm);
   font-weight: 650;
   cursor: pointer;
   transition:
@@ -220,8 +222,8 @@
 .qav-icon-btn {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 30px;
+  width: 2.125rem;
+  height: 1.875rem;
   background: #f0f3f1;
   color: var(--qav-ink);
 }
@@ -236,12 +238,12 @@
 .qav-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  margin-top: 16px;
+  gap: var(--qw-space-2);
+  margin-top: var(--qw-space-4);
 }
 .qav-secondary,
 .qav-primary {
-  padding: 9px 15px;
+  padding: 0.5625rem 0.9375rem;
   background: #f0f3f1;
   color: var(--qav-ink);
 }
@@ -253,7 +255,7 @@
 .qav-secondary:hover:not(:disabled),
 .qav-primary:hover:not(:disabled) {
   filter: brightness(0.96);
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 }
 .qav-icon-btn:disabled,
 .qav-secondary:disabled,
@@ -264,9 +266,9 @@
   transform: none;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 40rem) {
   .qav-panel {
-    padding: 14px;
+    padding: 0.875rem;
   }
   .qav-actions {
     justify-content: stretch;

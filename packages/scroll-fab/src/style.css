@@ -7,14 +7,14 @@
   --qsf-amber: var(--amber, #b3721f);
   --qsf-card: var(--card, #ffffff);
   --qsf-line: var(--line, #dcdfd6);
-  --qsf-size: 48px;
+  --qsf-size: 3rem;
   --qsf-stroke: 3;
   --qsf-z: 9999;
 
   position: fixed;
   top: var(--qsf-top, auto);
-  right: var(--qsf-right, 24px);
-  bottom: var(--qsf-bottom, calc(24px + env(safe-area-inset-bottom, 0px)));
+  right: var(--qsf-right, max(1.5rem, env(safe-area-inset-right)));
+  bottom: var(--qsf-bottom, max(1.5rem, env(safe-area-inset-bottom)));
   left: var(--qsf-left, auto);
   z-index: var(--qsf-z);
   display: grid;
@@ -46,7 +46,7 @@
 /* hover 反馈仅限真悬停设备，触屏不粘住 */
 @media (hover: hover) {
   .qsf-root:hover {
-    transform: translateY(-2px);
+    transform: translateY(-0.125rem);
     box-shadow: 0 16px 32px -16px rgba(20, 31, 30, 0.55);
   }
 }

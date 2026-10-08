@@ -30,6 +30,7 @@ const StorageSettingsDialog = lazy(() =>
     default: m.StorageSettingsDialog,
   })),
 );
+
 import { ReleaseNotesDialog } from "./components/release-notes-dialog";
 
 const DialogFallback = () => (
@@ -237,15 +238,17 @@ export default function App() {
       position: "fixed",
       top: "0",
       left: "0",
-      width: "100vw",
-      height: "100vh",
+      width: "100%",
       zIndex: "99998",
       background: "var(--background, #fff)",
       maxWidth: "none",
       margin: "0",
-      padding: "24px",
+      padding: "1.5rem",
       overflow: "auto",
     });
+    // 视口高度双写：老浏览器吃 vh，支持 dvh 的设备跟随动态工具栏
+    el.style.height = "100vh";
+    el.style.height = "100dvh";
     document.body.style.overflow = "hidden";
   }, []);
 
@@ -699,10 +702,7 @@ export default function App() {
         </Suspense>
       )}
 
-      <ReleaseNotesDialog
-        open={showReleaseNotes}
-        onClose={() => setShowReleaseNotes(false)}
-      />
+      <ReleaseNotesDialog open={showReleaseNotes} onClose={() => setShowReleaseNotes(false)} />
 
       {showClipperSettings && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center">
@@ -710,7 +710,7 @@ export default function App() {
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setShowClipperSettings(false)}
           />
-          <div className="relative w-[calc(100vw-32px)] max-w-[460px] bg-background rounded-2xl border border-default-200 shadow-2xl overflow-hidden">
+          <div className="relative w-[calc(100vw-2rem)] max-w-[460px] bg-background rounded-2xl border border-default-200 shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-default-100">
               <h2 className="text-base font-semibold text-foreground">Web Clipper 接收器</h2>
               <button

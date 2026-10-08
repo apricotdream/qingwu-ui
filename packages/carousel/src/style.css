@@ -1,3 +1,8 @@
+/*
+ * 青梧UI · Carousel 大图轮播样式
+ * 宽屏左右分栏（左图右文）+ 底部缩略图条，窄屏自动改为上下堆叠。
+ * 容器使用 .qcar 类，缩略图悬浮条加 .qcar--thumbs-float。
+ */
 @layer qingwu.carousel {
   .qcar,
   .qcar * {
@@ -15,12 +20,12 @@
     --qcar-shadow: 0 24px 60px -42px rgba(23, 37, 38, 0.5);
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 36%);
+    grid-template-columns: minmax(0, 1fr) minmax(17.5rem, 36%);
     grid-template-rows: minmax(0, 1fr) auto;
-    height: 520px;
+    height: 32.5rem;
     overflow: hidden;
     border: 1px solid var(--qcar-line);
-    border-radius: 20px;
+    border-radius: var(--qw-radius-2xl);
     background: var(--qcar-card);
     color: var(--qcar-ink);
     box-shadow: var(--qcar-shadow);
@@ -79,7 +84,7 @@
     z-index: 1;
     width: 100%;
     height: 100%;
-    padding: clamp(20px, 3vw, 40px);
+    padding: clamp(1.25rem, 1.25vw + 0.8rem, 2.5rem);
     object-fit: contain;
     object-position: center;
     filter: drop-shadow(0 22px 30px rgba(23, 37, 38, 0.22));
@@ -96,28 +101,28 @@
     align-items: flex-end;
     text-align: right;
     min-width: 0;
-    padding: 32px 56px 32px 32px;
+    padding: 2rem 3.5rem 2rem 2rem;
     border-left: 1px solid var(--qcar-line);
     background: var(--qcar-card);
   }
 
   .qcar-line {
     opacity: 0;
-    /* 文字行从右侧就近位置向左滑入（从右到左逐行） */
-    transform: translateX(64px);
+    /* 文字行从右向左逐行滑入 */
+    transform: translateX(4rem);
   }
 
   .qcar-eyebrow {
-    margin-bottom: 12px;
+    margin-bottom: var(--qw-space-3);
     letter-spacing: 0.2em;
-    font-size: 12px;
+    font-size: var(--qw-text-xs);
     font-weight: 800;
     color: var(--qcar-blue);
   }
 
   .qcar-title {
     margin: 0;
-    font-size: clamp(34px, 3.6vw, 52px);
+    font-size: clamp(2.125rem, 2rem + 1.6vw, 3.25rem);
     line-height: 1.04;
     letter-spacing: -0.04em;
     font-weight: 900;
@@ -125,17 +130,17 @@
   }
 
   .qcar-subtitle {
-    margin-top: 10px;
-    font-size: 15px;
+    margin-top: 0.625rem;
+    font-size: 0.9375rem;
     font-weight: 800;
     letter-spacing: 0.04em;
     color: var(--qcar-ink-2);
   }
 
   .qcar-slash {
-    width: 96px;
+    width: 6rem;
     height: 1px;
-    margin: 18px 0 20px;
+    margin: 1.125rem 0 1.25rem;
     background: var(--qcar-ink-2);
     transform: rotate(-28deg);
     transform-origin: right center;
@@ -146,17 +151,17 @@
     max-width: 30ch;
     margin: 0;
     color: var(--qcar-ink-2);
-    font-size: 14px;
+    font-size: var(--qw-text-md);
     line-height: 1.8;
   }
 
   .qcar-link {
-    margin-top: 26px;
+    margin-top: 1.625rem;
     width: fit-content;
     padding-bottom: 2px;
     border-bottom: 2px solid color-mix(in srgb, var(--qcar-blue) 72%, transparent);
     color: var(--qcar-ink);
-    font-size: 15px;
+    font-size: 0.9375rem;
     font-weight: 800;
     text-decoration: none;
     transition:
@@ -169,14 +174,13 @@
     color: var(--qcar-blue);
   }
 
-  /* 底部缩略图条：仅占左列（图片列）宽度，条内右对齐，右缘与左侧图片右缘对齐；
-     入场动画挂在元素自身，仅首次插入时播放一次，切换图片不再重放 */
+  /* 底部缩略图条：占左列宽度、条内右对齐；入场动画只播一次 */
   .qcar-thumbs {
     grid-column: 1;
     grid-row: 2;
     display: flex;
-    gap: 10px;
-    padding: 12px 20px;
+    gap: 0.625rem;
+    padding: var(--qw-space-3) 1.25rem;
     border-top: 1px solid var(--qcar-line);
     overflow-x: auto;
     scrollbar-width: none;
@@ -190,12 +194,12 @@
 
   .qcar-thumb {
     flex: 0 0 auto;
-    width: 52px;
-    height: 52px;
+    width: 3.25rem;
+    height: 3.25rem;
     padding: 3px;
     overflow: hidden;
     border: 2px solid transparent;
-    border-radius: 12px;
+    border-radius: var(--qw-radius-lg);
     background: var(--qcar-card);
     box-shadow: 0 10px 24px -20px rgba(23, 37, 38, 0.5);
     opacity: 0.85;
@@ -210,10 +214,10 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: var(--qw-radius-md);
   }
 
-  /* 缩略图条整体右对齐（用 auto margin 而非 justify-content，避免缩略图过多时左侧溢出不可滚动） */
+  /* 缩略图整体右对齐：用 margin 而非 justify-content，数量过多时左侧仍可横向滚动 */
   .qcar-thumb:first-child {
     margin-inline-start: auto;
   }
@@ -232,13 +236,13 @@
     z-index: 4;
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     border: 1px solid color-mix(in srgb, var(--qcar-card) 55%, transparent);
     border-radius: 999px;
     background: color-mix(in srgb, var(--qcar-card) 82%, transparent);
     color: var(--qcar-ink);
-    font-size: 26px;
+    font-size: 1.625rem;
     line-height: 1;
     box-shadow: 0 12px 28px -18px rgba(23, 37, 38, 0.5);
     backdrop-filter: blur(8px);
@@ -251,11 +255,11 @@
   }
 
   .qcar-prev {
-    left: 14px;
+    left: 0.875rem;
   }
 
   .qcar-next {
-    right: 14px;
+    right: 0.875rem;
   }
 
   .qcar-arrow:hover:not(:disabled) {
@@ -271,17 +275,16 @@
 
   .qcar-empty {
     grid-column: 1 / -1;
-    padding: 44px 0;
+    padding: 2.75rem 0;
     color: var(--qcar-ink-3);
     text-align: center;
   }
 
-  /* 入场动画：背景从左往右滑入先行；角色随后淡入上移（delay 700ms，等背景播完）；
-     右列文字逐行从右往左滑入；缩略图条仅首次淡入上移 */
+  /* 入场动画：背景先行滑入，主体图与文案依次淡入，缩略图条淡入上移 */
   @keyframes qcar-bg-in {
     from {
       opacity: 0;
-      transform: translateX(-80px);
+      transform: translateX(-5rem);
     }
     to {
       opacity: 1;
@@ -292,7 +295,7 @@
   @keyframes qcar-figure-in {
     from {
       opacity: 0;
-      transform: translateY(16px);
+      transform: translateY(1rem);
     }
     to {
       opacity: 1;
@@ -303,7 +306,7 @@
   @keyframes qcar-line-in {
     from {
       opacity: 0;
-      transform: translateX(64px);
+      transform: translateX(4rem);
     }
     to {
       opacity: 1;
@@ -314,7 +317,7 @@
   @keyframes qcar-rail-in {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(0.625rem);
     }
     to {
       opacity: 1;
@@ -335,10 +338,11 @@
     animation-delay: calc(180ms + var(--qcar-step, 0) * 90ms);
   }
 
-  @media (max-width: 900px) {
+  /* 窄屏：左右分栏改为上下堆叠 */
+  @media (max-width: 48rem) {
     .qcar {
       grid-template-columns: 1fr;
-      grid-template-rows: minmax(300px, 46vh) auto auto;
+      grid-template-rows: minmax(18.75rem, 46vh) auto auto;
       height: auto;
     }
 
@@ -348,7 +352,7 @@
     }
 
     .qcar-figure {
-      padding: 18px;
+      padding: 1.125rem;
       object-position: center bottom;
     }
 
@@ -357,42 +361,40 @@
       grid-column: 1;
       align-items: flex-start;
       text-align: left;
-      padding: 26px 22px 30px;
+      padding: 1.625rem 1.375rem 1.875rem;
       border-top: 1px solid var(--qcar-line);
       border-left: none;
     }
 
     .qcar-title {
-      font-size: 34px;
+      font-size: 2.125rem;
     }
 
     .qcar-thumbs {
       grid-row: 3;
       grid-column: 1;
-      padding: 10px 16px;
+      padding: 0.625rem 1rem;
     }
   }
 
-  @media (max-width: 560px) {
+  @media (max-width: 40rem) {
     .qcar {
-      border-radius: 16px;
+      border-radius: var(--qw-radius-xl);
     }
 
     .qcar-arrow {
-      width: 34px;
-      height: 34px;
-      font-size: 22px;
+      width: 2.125rem;
+      height: 2.125rem;
+      font-size: 1.375rem;
     }
 
     .qcar-desc {
-      font-size: 13px;
+      font-size: var(--qw-text-sm);
     }
 
-    /* 悬浮缩略图变体（opt-in，加 .qcar--thumbs-float 启用）：
-       缩略图条与图片区同格重叠、毛玻璃胶囊悬浮在卡片底部，
-       缩略图出流后卡片少一行、整体变矮；仅真手机断点生效 */
+    /* 悬浮缩略图变体（.qcar--thumbs-float）：毛玻璃胶囊悬浮在图片区底部，卡片少一行 */
     .qcar--thumbs-float {
-      grid-template-rows: minmax(300px, 46vh) auto;
+      grid-template-rows: minmax(18.75rem, 46vh) auto;
     }
 
     .qcar--thumbs-float .qcar-thumbs {
@@ -402,8 +404,8 @@
       justify-self: center;
       justify-content: center;
       z-index: 2;
-      max-width: calc(100% - 24px);
-      padding: 6px 12px;
+      max-width: calc(100% - 1.5rem);
+      padding: 0.375rem var(--qw-space-3);
       border: 1px solid color-mix(in srgb, var(--qcar-card) 55%, transparent);
       border-radius: 999px;
       background: color-mix(in srgb, var(--qcar-card) 82%, transparent);

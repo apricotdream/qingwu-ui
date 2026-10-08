@@ -32,7 +32,10 @@ function formatGlyph(raw: string): { text: string; latin: boolean } {
   }
   // 单字符且本身就是拉丁（长拉丁单词截首字母的情况）
   const first = chars[0] ?? "";
-  return { text: /[A-Za-z0-9]/.test(first) ? first.toUpperCase() : first, latin: first !== "" && /[A-Za-z0-9]/.test(first) };
+  return {
+    text: /[A-Za-z0-9]/.test(first) ? first.toUpperCase() : first,
+    latin: first !== "" && /[A-Za-z0-9]/.test(first),
+  };
 }
 
 function el(tag: string, cls?: string, html?: string): HTMLElement {

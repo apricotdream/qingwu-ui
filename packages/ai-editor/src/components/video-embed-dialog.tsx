@@ -138,7 +138,7 @@ export const VideoEmbedDialog: FC<Props> = ({ open, onClose, onInsert }) => {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose} />
       <div
         ref={dialogRef}
-        className="relative w-[calc(100vw-32px)] max-w-[520px] max-h-[90vh] bg-background rounded-2xl shadow-2xl border border-default-200 overflow-hidden animate-in"
+        className="relative w-[calc(100vw-2rem)] max-w-[520px] max-h-[90dvh] bg-background rounded-2xl shadow-2xl border border-default-200 overflow-hidden animate-in"
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-default-100">
           <div className="flex items-center gap-2">

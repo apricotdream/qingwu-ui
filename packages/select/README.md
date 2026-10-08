@@ -65,6 +65,8 @@ React / Vue 集成时在 `useEffect` / `onMounted` 中实例化，卸载时调�
 | `maxStagger` | `number` | `12` | 超过该选项数降级为整体淡入，`0` 不降级 |
 | `frosted` | `boolean` | `true` | 面板半透明磨砂质感（半透明底 + backdrop-filter 毛玻璃）；`false` 回退不透明实体面板 |
 | `ariaLabel` | `string` | `placeholder` | 触发器无障碍标签 |
+| `hoverCloseDelay` | `number` | `3000` | 鼠标从触发器与面板同时移出后自动关闭的延迟 ms；`0` 不自动关闭。移出后面板底部显示倒计时进度条，重新移入取消 |
+| `activeIndex` | `number \| null` | `null` | 活动项索引，对应选项呈现黛青高亮（呼吸动画），区别于选中态；支持 `update({ activeIndex })` 动态更新 |
 | `onOpenChange` | `(open) => void` | `-` | 展开状态变化回调 |
 | `onChange` | `(value, option) => void` | `-` | 选中值变化回调（取消为 `null`） |
 

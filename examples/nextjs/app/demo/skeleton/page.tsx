@@ -1,9 +1,15 @@
 "use client";
 
 import { AutoSkeleton, extractElementInfo, renderSkeletonSnapshot } from "@qingwu-ui/skeleton";
+import "@qingwu-ui/skeleton/style.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DemoCard from "@/components/DemoCard";
+import Playground from "@/components/Playground";
+import { genAll } from "@/lib/codegen";
+import { PKG } from "@/lib/pkg-meta";
 import { COMPONENT_SECTIONS } from "@/docs.config";
+import { buildFormHTML, buildMiniCardHTML, buildProductCardHTML } from "./templates";
+import { SKELETON_FIELDS, createSkeleton, skeletonToCode } from "./playground.config";
 
 /* ============================================================
    API 属性表（数据源：docs.config.ts → skeleton.api）
@@ -12,80 +18,6 @@ import { COMPONENT_SECTIONS } from "@/docs.config";
 const SKELETON_API =
   COMPONENT_SECTIONS.find((s) => s.id === "data")?.pages.find((p) => p.href === "/demo/skeleton")
     ?.api ?? [];
-
-/* ── 产品卡片 HTML 模板 ── */
-function buildProductCardHTML(): string {
-  return `
-    <div class="sk-card" style="display:flex;flex-direction:column;gap:12px;padding:16px;background:#fff;border:1px solid #e5e5e5;border-radius:12px;max-width:360px;font-family:system-ui,-apple-system,sans-serif">
-      <div class="sk-card-img" style="height:200px;background:linear-gradient(135deg,#d4e0f0,#e8d4f0);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:48px;color:#fff">图</div>
-      <h3 style="margin:0;font-size:16px;font-weight:600;line-height:1.5;color:#1a1a1a">2025 春季新款女士连衣裙 优雅气质中长款法式收腰显瘦</h3>
-      <div style="font-size:20px;font-weight:700;color:#e8453c">¥299.00</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <span class="sk-tag" style="display:inline-block;padding:2px 8px;background:#fff0f0;color:#e8453c;border-radius:4px;font-size:12px">限时特惠</span>
-        <span class="sk-tag" style="display:inline-block;padding:2px 8px;background:#f0f7ff;color:#3b82f6;border-radius:4px;font-size:12px">包邮</span>
-        <span class="sk-tag" style="display:inline-block;padding:2px 8px;background:#f0fff4;color:#22c55e;border-radius:4px;font-size:12px">7天无理由</span>
-      </div>
-      <button class="sk-btn" style="width:100%;padding:10px 0;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">加入购物车</button>
-    </div>
-  `;
-}
-
-/* ── 表单 HTML 模板 ── */
-function buildFormHTML(): string {
-  const inputStyle =
-    "width:100%;padding:8px 12px;border:1px solid #d4d4d4;border-radius:6px;font-size:14px;box-sizing:border-box";
-  const labelStyle = "display:block;font-size:14px;font-weight:500;color:#333;margin-bottom:4px";
-  return `
-    <form class="sk-form" style="display:flex;flex-direction:column;gap:16px;padding:20px;background:#fff;border:1px solid #e5e5e5;border-radius:12px;max-width:420px;font-family:system-ui,-apple-system,sans-serif">
-      <div>
-        <label style="${labelStyle}">姓名</label>
-        <input style="${inputStyle}" placeholder="请输入姓名" />
-      </div>
-      <div>
-        <label style="${labelStyle}">手机号</label>
-        <input style="${inputStyle}" placeholder="请输入手机号" />
-      </div>
-      <div>
-        <label style="${labelStyle}">邮箱</label>
-        <input style="${inputStyle}" placeholder="请输入邮箱地址" />
-      </div>
-      <div>
-        <label style="${labelStyle}">性别</label>
-        <select style="${inputStyle}">
-          <option>请选择</option>
-          <option>男</option>
-          <option>女</option>
-        </select>
-      </div>
-      <div>
-        <label style="${labelStyle}">个人简介</label>
-        <textarea style="${inputStyle};min-height:80px;resize:vertical" placeholder="请介绍一下自己"></textarea>
-      </div>
-      <button type="button" style="width:100%;padding:10px 0;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">提交</button>
-    </form>
-  `;
-}
-
-/* ── 静态骨架 HTML 模板（快照渲染器） ── */
-function buildSSRSkeletonDemo(): string {
-  // 构建时对真实卡片 DOM 测量（extractElementInfo）得到的快照，
-  // 此处为演示手工构造等价数据
-  const snapshot = [
-    { x: 0, y: 0, width: 360, height: 200, borderRadius: "8px" }, // 图片区
-    { x: 0, y: 216, width: 340, height: 22, borderRadius: "4px" }, // 标题行 1
-    { x: 0, y: 244, width: 250, height: 22, borderRadius: "4px" }, // 标题行 2
-    { x: 0, y: 282, width: 120, height: 28, borderRadius: "4px" }, // 价格
-    { x: 0, y: 326, width: 90, height: 24, borderRadius: "12px" }, // 标签 1
-    { x: 102, y: 326, width: 60, height: 24, borderRadius: "12px" }, // 标签 2
-    { x: 0, y: 366, width: 360, height: 40, borderRadius: "8px" }, // 按钮
-  ];
-  return renderSkeletonSnapshot(snapshot, {
-    width: 360,
-    shimmerColor: "#f0f0f0",
-    backgroundColor: "#e0e0e0",
-    duration: 1500,
-  });
-}
 
 /* ── 工具：防抖 ── */
 function useDebounce<T>(value: T, delay: number): T {
@@ -165,12 +97,18 @@ function ProductCardDemo() {
     <DemoCard
       title="商品卡片骨架"
       desc="自动测量 DOM 生成精准骨架，无需手写第二套布局。点击按钮切换加载/完成态，骨架与真实内容像素级对齐。"
-      snippets={{
-        html: '<!-- 只需写一次真实布局 -->\n<div class="product-card">\n  <img ... />\n  <h3>2025 春季新款连衣裙</h3>\n  <span>¥299</span>\n</div>',
-        react:
-          'import { AutoSkeleton } from "@qingwu-ui/skeleton";\nimport "@qingwu-ui/skeleton/style.css";\n\nuseEffect(() => {\n  const el = document.getElementById("card")!;\n  el.innerHTML = cardHTML;\n  const sk = new AutoSkeleton(el, { loading: true });\n  // 数据加载完成后\n  sk.update({ loading: false });\n  return () => sk.destroy();\n}, []);',
-        vue: '<script setup>\nimport { ref, onMounted, onUnmounted } from "vue";\nimport { AutoSkeleton } from "@qingwu-ui/skeleton";\nimport "@qingwu-ui/skeleton/style.css";\n\nconst cardRef = ref<HTMLElement>();\nlet sk: AutoSkeleton | null = null;\n\nonMounted(() => {\n  if (!cardRef.value) return;\n  cardRef.value.innerHTML = cardHTML;\n  sk = new AutoSkeleton(cardRef.value, { loading: true });\n  // 数据加载完成后\n  sk.update({ loading: false });\n});\n\nonUnmounted(() => sk?.destroy());\n</script>\n\n<template>\n  <div ref="cardRef" />\n</template>',
-      }}
+      snippets={genAll({
+        meta: PKG.skeleton,
+        symbol: "AutoSkeleton",
+        stmt: `// 只写一次真实布局并注入容器
+el.innerHTML = productCardHTML;
+
+const sk = new AutoSkeleton(el, { loading: true, zIndex: 90 });
+
+// 数据加载完成：先让覆盖层淡出，300ms 后再退出骨架
+sk.overlay?.classList.add("is-exiting");
+setTimeout(() => sk.update({ loading: false }), 300);`,
+      })}
     >
       <div className="sk-stage">
         <div className="sk-toggle-row">
@@ -217,12 +155,17 @@ function FormDemo() {
     <DemoCard
       title="表单骨架"
       desc="表单含输入框、下拉选择、文本域等多种控件。骨架自动识别各类元素，精确匹配每个控件的尺寸和位置。"
-      snippets={{
-        html: '<form>\n  <input placeholder="姓名" />\n  <select>...</select>\n  <textarea />\n  <button>提交</button>\n</form>',
-        react:
-          'import { AutoSkeleton } from "@qingwu-ui/skeleton";\n\nuseEffect(() => {\n  const el = document.getElementById("form")!;\n  el.innerHTML = formHTML;\n  const sk = new AutoSkeleton(el, { loading: true });\n  return () => sk.destroy();\n}, []);\n\n// 数据就绪\nsk.update({ loading: false });',
-        vue: '<script setup>\nimport { ref, onMounted, onUnmounted } from "vue";\nimport { AutoSkeleton } from "@qingwu-ui/skeleton";\nimport "@qingwu-ui/skeleton/style.css";\n\nconst formRef = ref<HTMLElement>();\nconst sk = ref<AutoSkeleton>();\n\nonMounted(() => {\n  formRef.value!.innerHTML = formHTML;\n  sk.value = new AutoSkeleton(formRef.value!, { loading: true });\n});\n\n// 数据就绪后\n// sk.value?.update({ loading: false });\n\nonUnmounted(() => sk.value?.destroy());\n</script>\n\n<template>\n  <div ref="formRef" />\n</template>',
-      }}
+      snippets={genAll({
+        meta: PKG.skeleton,
+        symbol: "AutoSkeleton",
+        stmt: `// 真实表单只写一次
+el.innerHTML = formHTML;
+
+const sk = new AutoSkeleton(el, { loading: true, zIndex: 90 });
+
+// 数据就绪：切换为真实内容
+sk.update({ loading: false });`,
+      })}
     >
       <div className="sk-stage">
         <button
@@ -301,13 +244,23 @@ function TransitionDemo() {
   return (
     <DemoCard
       title="过渡动画"
-      desc="骨架与真实内容之间的平滑切换。退出时骨架覆盖层逐渐透明，内容文字同步恢复可见，300ms 过渡动画。"
-      snippets={{
-        html: `<div class="qs-skeleton-overlays is-exiting">...</div>`,
-        react:
-          '// 退出时给覆盖层添加 .is-exiting 类触发 CSS 过渡\nconst overlay = sk.overlay;\noverlay?.classList.add("is-exiting");\nsetTimeout(() => sk.update({ loading: false }), 250);',
-        vue: '// 退出时给覆盖层添加 .is-exiting 类触发 CSS 过渡\nconst overlay = sk.value?.overlay;\noverlay?.classList.add("is-exiting");\nsetTimeout(() => sk.value?.update({ loading: false }), 250);',
-      }}
+      desc="骨架与真实内容之间的平滑切换。退出时骨架覆盖层逐渐透明，内容文字同步恢复可见，350ms 过渡动画。"
+      snippets={genAll({
+        meta: PKG.skeleton,
+        symbol: "AutoSkeleton",
+        stmt: `const sk = new AutoSkeleton(el, {
+  loading: true,
+  shimmerColor: "#e8e8f0",
+  backgroundColor: "#d4d4e0",
+  duration: 1800,
+  fallbackBorderRadius: 6,
+  zIndex: 90,
+});
+
+// 退出：覆盖层先播放淡出，350ms 后再更新加载态
+sk.overlay?.classList.add("is-exiting");
+setTimeout(() => sk.update({ loading: false }), 350);`,
+      })}
     >
       <div className="sk-stage">
         <button
@@ -324,81 +277,7 @@ function TransitionDemo() {
 }
 
 /* ════════════════════════════════════════════════
- * Demo 4：SSR 骨架（构建时测量管线）
- * ════════════════════════════════════════════════ */
-function SSRDemo() {
-  const stageRef = useRef<HTMLDivElement>(null);
-  const [html, setHtml] = useState("");
-
-  // 模拟构建时测量管线：渲染真实卡片 → extractElementInfo 测量 → 静态骨架
-  const buildSkeleton = useCallback(() => {
-    const stage = stageRef.current;
-    if (!stage) return "";
-    stage.innerHTML = buildProductCardHTML();
-    const snapshot = extractElementInfo(stage);
-    // 容器宽度取内容实际宽度（构建时快照的真实语义）
-    const width = Math.max(...snapshot.map((b) => b.x + b.width));
-    return renderSkeletonSnapshot(snapshot, { width });
-  }, []);
-
-  useEffect(() => {
-    setHtml(buildSkeleton());
-  }, [buildSkeleton]);
-
-  const toggle = useCallback(() => {
-    // 数据就绪：真实内容替换静态骨架；重新加载：重建骨架
-    setHtml((prev) =>
-      prev.includes("qs-skel-container") ? buildProductCardHTML() : buildSkeleton(),
-    );
-  }, [buildSkeleton]);
-
-  return (
-    <DemoCard
-      title="SSR 骨架（无 JS 预览）"
-      desc="完整管线演示：渲染真实卡片 → extractElementInfo 测量 → renderSkeletonSnapshot 生成纯 CSS 骨架。骨架几何来自真实测量，与内容像素级对齐（同一测量引擎，按构造相等）。"
-      snippets={{
-        html: `<div class="qs-skel-container" style="...">\n  <!-- 骨架块由 renderSkeletonSnapshot() 生成 -->\n  <div class="qs-skel-block" style="..."></div>\n</div>`,
-        react:
-          'import { extractElementInfo, renderSkeletonSnapshot } from "@qingwu-ui/skeleton";\n\n// 构建时：渲染真实页面后测量\nconst snapshot = extractElementInfo(document.querySelector(".card")!);\n\nconst html = renderSkeletonSnapshot(snapshot, {\n  width: snapshot[0].x + snapshot[0].width,\n  shimmerColor: "#f0f0f0",\n  backgroundColor: "#e0e0e0",\n  duration: 1500,\n});\n// 返回完整 CSS 骨架 HTML 字符串',
-        vue: '<!-- Nuxt / Vue SSR 中使用 -->\n<script setup lang="ts">\nimport { renderSkeletonSnapshot } from "@qingwu-ui/skeleton";\n\nconst skeletonHTML = renderSkeletonSnapshot(snapshot, {\n  width: 360,\n});\n</script>\n\n<template>\n  <div v-html="skeletonHTML" />\n</template>',
-      }}
-    >
-      <div className="sk-stage">
-        <button
-          type="button"
-          className={
-            html.includes("qs-skel-container") ? "sk-toggle is-loading" : "sk-toggle is-ready"
-          }
-          onClick={toggle}
-        >
-          {html.includes("qs-skel-container") ? "▼ 数据就绪" : "▲ 重新加载"}
-        </button>
-        <div
-          id="ssr-demo-stage"
-          ref={stageRef}
-          style={{ minWidth: 360 }}
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: SSR skeleton demo
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      </div>
-    </DemoCard>
-  );
-}
-
-/* ── 迷你卡片 HTML 模板（多容器动画演示用） ── */
-function buildMiniCardHTML(tint: string): string {
-  return `
-    <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:${tint};border-radius:10px;font-family:system-ui">
-      <div style="height:80px;background:rgba(255,255,255,0.75);border-radius:8px"></div>
-      <div style="height:14px;background:rgba(255,255,255,0.75);border-radius:4px"></div>
-      <div style="height:14px;width:70%;background:rgba(255,255,255,0.75);border-radius:4px"></div>
-      <div style="height:28px;background:rgba(255,255,255,0.75);border-radius:6px"></div>
-    </div>
-  `;
-}
-
-/* ════════════════════════════════════════════════
- * Demo 5：动画样式按容器
+ * Demo 4：动画样式按容器
  * ════════════════════════════════════════════════ */
 function PerContainerDemo() {
   const refs = [
@@ -447,11 +326,23 @@ function PerContainerDemo() {
     <DemoCard
       title="动画样式按容器"
       desc="每个容器独立的流光颜色、时长、时序函数，互不覆盖。红色 600ms linear 快扫、蓝色 2600ms ease-out 缓扫、紫色默认配置。"
-      snippets={{
-        react:
-          'import { AutoSkeleton } from "@qingwu-ui/skeleton";\n\nconst sk = new AutoSkeleton(el, {\n  loading: true,\n  shimmerColor: "#ffb3b3",\n  backgroundColor: "#f5a3a3",\n  duration: 600,\n  timingFunction: "linear",\n});\n// 多个容器并存：各自动画样式独立生效',
-        vue: '<script setup>\nimport { onMounted, onUnmounted } from "vue";\nimport { AutoSkeleton } from "@qingwu-ui/skeleton";\n\nonMounted(() => {\n  sk.value = new AutoSkeleton(el.value!, {\n    loading: true,\n    shimmerColor: "#ffb3b3",\n    duration: 600,\n    timingFunction: "linear",\n  });\n});\nonUnmounted(() => sk.value?.destroy());\n</script>',
-      }}
+      snippets={genAll({
+        meta: PKG.skeleton,
+        symbol: "AutoSkeleton",
+        destroy: "instances.forEach((sk) => sk.destroy())",
+        stmt: `// 三个容器各自独立配置，流光样式互不覆盖
+const configs = [
+  { tint: "#fdecec", shimmerColor: "#ffb3b3", backgroundColor: "#f5a3a3", duration: 600, timingFunction: "linear" },
+  { tint: "#e9f1fd", shimmerColor: "#b3d1ff", backgroundColor: "#9dbcf5", duration: 2600, timingFunction: "ease-out" },
+  { tint: "#f3ecfd", shimmerColor: "#e3c8ff", backgroundColor: "#cfa6f5", duration: 1500 }
+];
+
+const instances = els.map((el, i) => {
+  el.innerHTML = miniCardHTML(configs[i].tint);
+  const { tint, ...opts } = configs[i];
+  return new AutoSkeleton(el, { loading: true, zIndex: 90, ...opts });
+});`,
+      })}
     >
       <div className="sk-stage">
         <button
@@ -484,11 +375,139 @@ function PerContainerDemo() {
 }
 
 /* ════════════════════════════════════════════════
+ * Demo 5：SSR 骨架（构建时测量管线 · 无运行时实例）
+ * 三框架代码均为「静态字符串渲染」，诚实呈现而非运行时挂载外壳
+ * ════════════════════════════════════════════════ */
+const SSR_SNIPPETS: Record<string, string> = {
+  react: `// 服务端组件 / 构建期：产出的是 HTML 字符串，无需浏览器实例
+import { extractElementInfo, renderSkeletonSnapshot } from "${PKG.skeleton.pkg}";
+// 注意：extractElementInfo 需要真实 DOM，应在 Node 端用 jsdom 等
+// 先渲染卡片再测量；纯浏览器构建步骤里可直接对卡片节点测量。
+import "${PKG.skeleton.css}";
+
+function measure() {
+  const card = document.querySelector(".product-card");
+  const snapshot = extractElementInfo(card);
+  const width = Math.max(...snapshot.map((b) => b.x + b.width));
+  return renderSkeletonSnapshot(snapshot, { width });
+}
+
+// 服务端直接把字符串作为初始 HTML 下发（dangerouslySetInnerHTML）
+export default function Page() {
+  return <div dangerouslySetInnerHTML={{ __html: measure() }} />;
+}`,
+  html: `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <!-- 骨架动画样式 -->
+  <link rel="stylesheet" href="${PKG.skeleton.cdnCssUrl}" />
+</head>
+<body>
+  <!-- 这里插入的是 renderSkeletonSnapshot() 返回的静态字符串：
+       纯 CSS 骨架，无任何运行时 JS 实例 -->
+  <div id="skeleton">
+    <div class="qs-skel-container" style="position:relative;width:360px;...">
+      <div class="qs-skel-block is-shimmer" style="position:absolute;..."></div>
+      <!-- 其余骨架块 -->
+    </div>
+  </div>
+
+  <script type="module">
+    // 构建期生成（Node）：
+    // import { extractElementInfo, renderSkeletonSnapshot } from "@qingwu-ui/skeleton";
+    // const snapshot = extractElementInfo(renderedCardDom);
+    // const html = renderSkeletonSnapshot(snapshot, { width: 360 });
+    // 再把 html 字符串写入上方 #skeleton，浏览器端无需再执行
+  </script>
+</body>
+</html>`,
+  vue: `<script setup lang="ts">
+// Nuxt / Vue SSR：构建或服务端测量后得到静态骨架字符串
+import { extractElementInfo, renderSkeletonSnapshot } from "${PKG.skeleton.pkg}";
+import "${PKG.skeleton.css}";
+
+// snapshot 来自服务端对真实卡片的 extractElementInfo 测量
+const skeletonHTML = renderSkeletonSnapshot(snapshot, {
+  width: 360,
+});
+</script>
+
+<template>
+  <!-- v-html 直接渲染静态字符串，无运行时组件实例 -->
+  <div v-html="skeletonHTML" />
+</template>`,
+};
+
+function SSRDemo() {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [html, setHtml] = useState("");
+
+  // 模拟构建时测量管线：渲染真实卡片 → extractElementInfo 测量 → 静态骨架
+  const buildSkeleton = useCallback(() => {
+    const stage = stageRef.current;
+    if (!stage) return "";
+    stage.innerHTML = buildProductCardHTML();
+    const snapshot = extractElementInfo(stage);
+    // 容器宽度取内容实际宽度（构建时快照的真实语义）
+    const width = Math.max(...snapshot.map((b) => b.x + b.width));
+    return renderSkeletonSnapshot(snapshot, { width });
+  }, []);
+
+  useEffect(() => {
+    setHtml(buildSkeleton());
+  }, [buildSkeleton]);
+
+  const toggle = useCallback(() => {
+    // 数据就绪：真实内容替换静态骨架；重新加载：重建骨架
+    setHtml((prev) =>
+      prev.includes("qs-skel-container") ? buildProductCardHTML() : buildSkeleton(),
+    );
+  }, [buildSkeleton]);
+
+  return (
+    <DemoCard
+      title="SSR 骨架（无 JS 预览）"
+      desc="完整管线演示：渲染真实卡片 → extractElementInfo 测量 → renderSkeletonSnapshot 生成纯 CSS 骨架。骨架几何来自真实测量，与内容像素级对齐（同一测量引擎，按构造相等）。"
+      snippets={SSR_SNIPPETS}
+    >
+      <div className="sk-stage">
+        <button
+          type="button"
+          className={
+            html.includes("qs-skel-container") ? "sk-toggle is-loading" : "sk-toggle is-ready"
+          }
+          onClick={toggle}
+        >
+          {html.includes("qs-skel-container") ? "▼ 数据就绪" : "▲ 重新加载"}
+        </button>
+        <div
+          id="ssr-demo-stage"
+          ref={stageRef}
+          style={{ minWidth: 360 }}
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: SSR skeleton demo
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      </div>
+    </DemoCard>
+  );
+}
+
+/* ════════════════════════════════════════════════
  * 骨架屏演示页
  * ════════════════════════════════════════════════ */
 export default function SkeletonDemoPage() {
   return (
     <div className="demo-grid">
+      <Playground
+        title="Skeleton 骨架屏"
+        desc="自动测量真实 DOM 生成像素级骨架，零布局重复。调整流光时长、时序函数与颜色后点「应用」；加载态开关实时生效。"
+        fields={SKELETON_FIELDS}
+        create={createSkeleton}
+        toCode={skeletonToCode}
+        log
+      />
+
       <ProductCardDemo />
       <FormDemo />
       <TransitionDemo />

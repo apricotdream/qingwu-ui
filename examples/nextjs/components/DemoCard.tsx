@@ -1,16 +1,13 @@
 "use client";
 
-import { ICON_CHEVRON_UP, ICON_CODE } from "@icon/icons";
-import { type ReactNode, useState } from "react";
+import { type ReactNode } from "react";
+import CodeTabs from "./CodeTabs";
 
-function SvgHtml({ html, size = 14 }: { html: string; size?: number }) {
-  const sized = html
-    .replace(/width="[^"]*"/, `width="${size}"`)
-    .replace(/height="[^"]*"/, `height="${size}"`);
-  // biome-ignore lint/security/noDangerouslySetInnerHtml: 渲染 @icon/icons 可信 SVG 字符串
-  return <span dangerouslySetInnerHTML={{ __html: sized }} />;
-}
-
+/**
+ * 演示卡片：标题 / 说明 / 预览舞台 / 代码区。
+ * - snippets：react/html/vue 多格式（推荐，新 demo 一律使用）
+ * - code：单格式回退
+ */
 export default function DemoCard({
   title,
   desc,
@@ -27,17 +24,9 @@ export default function DemoCard({
   snippets?: Record<string, string>;
   full?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
-  const [fmt, setFmt] = useState("react");
-
-  const hasTabs = snippets != null;
-  const displayCode = hasTabs ? (snippets[fmt] ?? snippets["react"] ?? "") : (code ?? "");
-
-  const tabLabels: Record<string, string> = {
-    react: "React",
-    html: "HTML",
-    vue: "Vue",
-  };
+  const tabs = snippets ?? (code ? { react: code } : null);
+  // 单格式代码不显示框架 tab 标签
+  const singleMode = snippets == null && code != null;
 
   return (
     <article className={`demo-card${full ? " is-full" : ""}`}>
@@ -46,36 +35,8 @@ export default function DemoCard({
         <p>{desc}</p>
       </div>
       <div className="demo-card-stage">{children}</div>
-      {displayCode && (
-        <>
-          <div className="demo-card-toolbar">
-            {hasTabs && (
-              <div className="demo-code-tabs">
-                {Object.keys(snippets).map((k) => (
-                  <button
-                    key={k}
-                    className={`demo-code-tab${fmt === k ? " is-active" : ""}`}
-                    type="button"
-                    onClick={() => setFmt(k)}
-                  >
-                    {tabLabels[k] ?? k}
-                  </button>
-                ))}
-              </div>
-            )}
-            <button className="demo-toggle-code" type="button" onClick={() => setOpen(!open)}>
-              <SvgHtml html={open ? ICON_CHEVRON_UP : ICON_CODE} />
-              {open ? "收起代码" : "展开代码"}
-            </button>
-          </div>
-          <div className={`demo-card-code${open ? " is-open" : ""}`}>
-            <div className="demo-card-code-inner">
-              <pre>
-                <code>{displayCode}</code>
-              </pre>
-            </div>
-          </div>
-        </>
+      {tabs && (
+        <CodeTabs snippets={tabs} defaultFmt={singleMode ? "react" : "react"} hideTabs={singleMode} />
       )}
     </article>
   );
