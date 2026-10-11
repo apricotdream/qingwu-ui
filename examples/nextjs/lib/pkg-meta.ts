@@ -49,25 +49,25 @@ function define(
 }
 
 export const PKG = {
-  select: define("@qingwu-ui/select", "0.9.0-beta.5"),
-  button: define("@qingwu-ui/button", "0.9.0-beta.1"),
-  upload: define("@qingwu-ui/upload", "0.9.0-beta.1"),
-  calendar: define("@qingwu-ui/calendar", "0.9.1-beta.1"),
-  search: define("@qingwu-ui/search", "0.9.1-beta.1"),
-  actionMenu: define("@qingwu-ui/action-menu", "0.9.0-beta.1"),
-  notifications: define("@qingwu-ui/notifications", "0.9.0-beta.3"),
-  carousel: define("@qingwu-ui/carousel", "0.9.2-beta.1"),
-  confirm: define("@qingwu-ui/confirm", "0.9.0-beta.1"),
-  skeleton: define("@qingwu-ui/skeleton", "0.9.0-beta.1"),
-  toast: define("@qingwu-ui/toast", "0.9.0-beta.1"),
-  tagInput: define("@qingwu-ui/tag-input", "0.9.0-beta.1"),
-  avatar: define("@qingwu-ui/avatar", "0.9.0-beta.3"),
-  scrollFab: define("@qingwu-ui/scroll-fab", "0.9.0-beta.4"),
-  aiEditor: define("@qingwu-ui/ai-editor", "0.9.0-beta.26", {
+  select: define("@qingwu-ui/select", "1.0.0"),
+  button: define("@qingwu-ui/button", "1.0.0"),
+  upload: define("@qingwu-ui/upload", "1.0.0"),
+  calendar: define("@qingwu-ui/calendar", "1.0.0"),
+  search: define("@qingwu-ui/search", "1.0.0"),
+  actionMenu: define("@qingwu-ui/action-menu", "1.0.0"),
+  notifications: define("@qingwu-ui/notifications", "1.0.0"),
+  carousel: define("@qingwu-ui/carousel", "1.0.0"),
+  confirm: define("@qingwu-ui/confirm", "1.0.0"),
+  skeleton: define("@qingwu-ui/skeleton", "1.0.0"),
+  toast: define("@qingwu-ui/toast", "1.0.0"),
+  tagInput: define("@qingwu-ui/tag-input", "1.0.0"),
+  avatar: define("@qingwu-ui/avatar", "1.0.0"),
+  scrollFab: define("@qingwu-ui/scroll-fab", "1.0.0"),
+  aiEditor: define("@qingwu-ui/ai-editor", "1.0.2", {
     css: "./styles",
     entry: "dist/index.js",
   }),
-  textLayout: define("@qingwu-ui/text-layout", "0.9.0-beta.1", { css: null }),
+  textLayout: define("@qingwu-ui/text-layout", "1.0.0", { css: null }),
 } as const;
 
 export type PkgKey = keyof typeof PKG;

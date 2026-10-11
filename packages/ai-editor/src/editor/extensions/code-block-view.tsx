@@ -267,6 +267,14 @@ export function CodeBlockView({
       if (!isEditable) return;
       if (!selected) return;
       if (isDeleteConfirmActive()) return;
+      // 仅在焦点位于 ProseMirror 编辑区内时拦截。triggerAI 会把代码块设为
+      // NodeSelection，但随后 AI 面板的「自定义指令」输入框（以及语言搜索框、
+      // 弹窗等外部表单控件）会夺走焦点——此时按 Backspace 是在编辑输入框内容，
+      // 不能误弹「确认删除代码块」。编辑器失焦或事件目标不在编辑区内一律放行。
+      const pmDom = editor?.view?.dom;
+      const target = e.target;
+      if (!editor?.isFocused) return;
+      if (!(target instanceof Node && pmDom?.contains(target))) return;
       e.preventDefault();
       e.stopPropagation();
       if (editor) {

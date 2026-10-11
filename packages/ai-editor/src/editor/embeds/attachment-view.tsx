@@ -488,6 +488,12 @@ export function AttachmentView({ node, deleteNode, selected, editor }: any) {
       if (!isEditable) return;
       if (!selected) return;
       if (isDeleteConfirmActive()) return; // 已有确认框，跳过
+      // 焦点已移到编辑器外的表单控件（如 AI 面板「自定义指令」输入框、弹窗）时，
+      // Backspace 是在编辑该输入框，不能误弹删除确认框。
+      const pmDom = editor?.view?.dom;
+      const target = e.target;
+      if (!editor?.isFocused) return;
+      if (!(target instanceof Node && pmDom?.contains(target))) return;
       e.preventDefault();
       e.stopPropagation();
       if (editor) {

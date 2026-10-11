@@ -3,6 +3,36 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "1.0.2",
+    date: "2026-10-11",
+    tag: "ai-editor",
+    changes: [
+      {
+        type: "fix",
+        text: "ai-editor 修复代码块处于选中（NodeSelection）状态时打开 AI 助手「自定义指令」，在指令输入框中按 Backspace 删字会误弹「确认删除代码块」的问题：删除确认的 keydown 监听原先挂在 window 捕获阶段、只判断代码块是否选中，不看焦点归属；现改为仅当焦点位于编辑区内才拦截。附件节点的同类 Backspace/Delete 监听一并加上相同守卫（包版本 1.0.1/1.0.2，1.0.2 仅同步编辑器内更新日志）",
+      },
+    ],
+  },
+  {
+    version: "1.0.0",
+    date: "2026-10-11",
+    tag: "全家桶首个稳定版（GA）",
+    changes: [
+      {
+        type: "feat",
+        text: "结束 0.9.x beta 系列，17 个包统一发布首个稳定正式版：tokens、select、button、upload、calendar、search、action-menu、notifications、carousel、confirm、skeleton、toast、tag-input、avatar、scroll-fab、text-layout、ai-editor。API 与最新 beta 保持兼容，无破坏性变更（各包版本 1.0.0）",
+      },
+      {
+        type: "feat",
+        text: "尺寸单位以 rem 为主：间距、字号、控件尺寸跟随浏览器字号设置；弹层与全屏高度使用 dvh/svh，适配移动端工具栏；大标题用 clamp 平滑缩放；贴边元素避让刘海与底部安全区",
+      },
+      {
+        type: "feat",
+        text: "文档站演示体系统一为 Playground 范式：每个组件页提供可实时调整的属性控制台（应用 / 重置 / live 更新）与 HTML / Vue / React 三框架代码，HTML 片段存盘即可在浏览器直接打开运行",
+      },
+    ],
+  },
+  {
     version: "0.9.0-beta.22",
     date: "2026-09-29",
     tag: "notifications",
