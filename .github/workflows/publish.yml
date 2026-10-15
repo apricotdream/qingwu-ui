@@ -38,9 +38,21 @@ jobs:
         with:
           bun-version: "1.3.13" # 与 packageManager 一致
 
-      # runner 自带 npm 10.9.9：无令牌 OIDC trusted publishing（含 --provenance）需 npm ≥ 11，
+      # runner 自带 npm 10.9.9：无令牌 OIDC trusted publishing（含 --provenance）需 npm ≥ 11.5.1，
       # npm 10 在本地预检即强制要 NODE_AUTH_TOKEN 抛 ENEEDAUTH，不会发网络请求。
-      - run: sudo npm install -g npm@11
+      # 装到独立前缀而不是 `sudo npm install -g npm@11`：sudo 走 secure_path，装出来的 npm 11
+      # 落在 /usr/local/bin，而后续步骤的 PATH 里排在前面的是 toolcache 自带的 npm 10，
+      # 发布时用的仍是旧 npm（run #1 就是这么失败在 ENEEDAUTH 上的）。前置 bin 目录确保生效。
+      - name: 装一份支持 OIDC 的 npm 11 并前置进 PATH
+        run: |
+          npm install -g npm@11 --prefix "$HOME/.npm-global"
+          echo "$HOME/.npm-global/bin" >> "$GITHUB_PATH"
+          "$HOME/.npm-global/bin/npm" -v
+
+      # 确认后面真正调用到的是 npm 11（PATH 被抢占时会静默退回 npm 10）
+      - run: |
+          which npm
+          npm -v
 
       - run: bun install --frozen-lockfile
 
