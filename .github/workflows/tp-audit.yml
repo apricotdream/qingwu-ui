@@ -31,7 +31,9 @@ jobs:
             for f in packages/*/package.json packages/*/ui/package.json; do
               [ -f "$f" ] || continue
               NAME=$(node -e 'process.stdout.write(require("./"+process.argv[1]).name)' "$f")
-              ENC=$(node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$NAME")
+              # 必须与 npm 内部一致：npa(name).escapedName —— 保留 @、只把小写 %2f 用于斜杠。
+              # 用 encodeURIComponent 会把 @ 编成 %40，registry 认不出包名，一律回 404「package not found」。
+              ENC=$(node -e 'process.stdout.write(process.argv[1].replace("/", "%2f"))' "$NAME")
               CODE=$(curl -sS -o /tmp/ex.json -w '%{http_code}' -X POST \
                 -H "Authorization: Bearer $JWT" \
                 "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/$ENC" || echo "ERR")
