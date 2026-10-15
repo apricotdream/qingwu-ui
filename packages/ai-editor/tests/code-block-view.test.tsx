@@ -104,6 +104,31 @@ describe("代码块视图", () => {
     expect(document.querySelector(".cb-code-pre code")).not.toBeInTheDocument();
   });
 
+  it("折叠后外层收起并展示语言胶囊，点击胶囊展开", async () => {
+    render(<QingWuAIEditor {...UPLOAD_LIMITS} initialContent={CODE_BLOCK_HTML} />);
+
+    await waitFor(() => expect(document.querySelector(".cb-header")).toBeInTheDocument());
+    const wrapper = document.querySelector(".code-block-node-view");
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper).not.toHaveClass("code-block-node-view--collapsed");
+
+    fireEvent.click(document.querySelector('.cb-actions button[title="折叠"]')!);
+
+    await waitFor(() =>
+      expect(wrapper).toHaveClass("code-block-node-view--collapsed"),
+    );
+    const collapsedBar = document.querySelector(".cb-collapsed-bar");
+    expect(collapsedBar).toBeInTheDocument();
+    expect(collapsedBar?.querySelector(".cb-lang-label")?.textContent).toContain("TypeScript");
+
+    fireEvent.click(collapsedBar!);
+
+    await waitFor(() =>
+      expect(wrapper).not.toHaveClass("code-block-node-view--collapsed"),
+    );
+    expect(document.querySelector(".cb-collapsed-bar")).not.toBeInTheDocument();
+  });
+
   it("代码块输入不触发首页无用 setTimeout 慢任务", async () => {
     let editor: Editor | null = null;
     const originalIntersectionObserver = globalThis.IntersectionObserver;

@@ -758,6 +758,7 @@
 /* 鈹€鈹€ 椤舵爮 鈥?璇█濮嬬粓鍙锛屾搷浣滄寜閽?hover 鍑虹幇 鈹€鈹€ */
 
 .cb-header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1024,11 +1025,84 @@
   color: #ef4444;
 }
 
+/* 折叠态：保留语言胶囊和操作按钮 */
+
+/* 折叠后整体收紧垂直外边距，代码块后面的内容随代码区收缩而上移 */
+.code-block-node-view--collapsed {
+  margin: 0.5rem 0;
+}
+
+/* 折叠后顶栏独立成完整圆角容器，统一包裹语言与操作按钮。 */
+.cb-header--collapsed {
+  border-radius: 0.625rem;
+}
+
+.cb-header--collapsed .cb-lang-wrap {
+  visibility: hidden;
+}
+
+.cb-header--collapsed .cb-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 与语言触发器同尺寸同位的「语言 + 箭头」胶囊，点击展开 */
+.cb-collapsed-bar {
+  position: absolute;
+  top: 0.375rem;
+  left: 0.75rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.5rem 0.1875rem 0.25rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.5rem;
+  background: #f4f4f5;
+  color: #3f3f46;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+}
+
+.cb-collapsed-bar:hover {
+  background: #ececee;
+  border-color: #a1a1aa;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.cb-collapsed-bar .cb-lang-chevron {
+  color: #a1a1aa;
+}
+
+/* 折叠时 mermaid 图表输出一并收起，避免与胶囊重叠 */
+.code-block-node-view--collapsed .cb-diagram-output {
+  display: none;
+}
+
 /* 鈹€鈹€ 鏆楄壊妯″紡 鈹€鈹€ */
 
 .dark .cb-header {
   background: #1a1a1f;
   border-color: #3f3f46;
+}
+
+.dark .cb-collapsed-bar {
+  background: #1f1f23;
+  border-color: #3f3f46;
+  color: #d4d4d8;
+}
+
+.dark .cb-collapsed-bar:hover {
+  background: #27272a;
+  border-color: #52525b;
 }
 
 .dark .cb-lang-trigger {
@@ -1076,16 +1150,25 @@
 
 .cb-code-area {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-rows: 1fr;
   overflow: hidden;
   /* 不设高度上限：超高代码块随内容自然撑高，滚动交给外层容器，
-     避免「代码块被截断」的观感（原 2000px 硬裁 ≈ 84 行/24px）。 */
-  max-height: none;
-  transition: max-height 0.3s ease;
+     避免「代码块被截断」的观感（原 2000px 硬裁 ≈ 84 行/24px）。
+     折叠时 grid-template-rows 1fr→0fr，代码区真正收缩为 0，
+     后续文档内容随之上移；展开时再向下推开。 */
+  transition: grid-template-rows 0.3s ease;
 }
 
-.cb-code-area--collapsed {
-  max-height: 3.5rem;
+.code-block-node-view--collapsed .cb-code-area {
+  grid-template-rows: 0fr;
+}
+
+/* 行号/pre/镜像的实际承载层：min-height:0 + overflow:hidden 让网格轨道
+   能收缩到 0（fr 轨道默认 min-height:auto 无法小于内容高度）。 */
+.cb-code-inner {
+  display: flex;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -1989,6 +2072,11 @@
   .cb-header {
     flex-wrap: wrap;
     gap: 0.25rem;
+  }
+
+  /* 折叠态语言胶囊与操作按钮保持同一行 */
+  .cb-header--collapsed {
+    flex-wrap: nowrap;
   }
 
   .cb-actions {

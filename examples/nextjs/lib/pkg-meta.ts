@@ -63,7 +63,7 @@ export const PKG = {
   tagInput: define("@qingwu-ui/tag-input", "1.0.0"),
   avatar: define("@qingwu-ui/avatar", "1.0.0"),
   scrollFab: define("@qingwu-ui/scroll-fab", "1.0.0"),
-  aiEditor: define("@qingwu-ui/ai-editor", "1.0.2", {
+  aiEditor: define("@qingwu-ui/ai-editor", "1.0.3", {
     css: "./styles",
     entry: "dist/index.js",
   }),

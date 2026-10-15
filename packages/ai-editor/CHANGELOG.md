@@ -1,5 +1,17 @@
 # @qingwu-ui/ai-editor
 
+## 1.0.3
+
+### 修复
+
+- 修复代码块「折叠」从未真正生效：折叠状态原先只切换代码区 `.cb-code-area` 的 class，而 React 外壳与代码区并非父子关系（外壳挂在 `reactHost > .react-renderer` 内，代码区是它的叔父节点），`parentElement.querySelector` 永远匹配不到，点击折叠只换图标、代码块纹丝不动。现改为在 NodeView 外层 `.code-block-node-view` 上切换 `--collapsed`。
+- 折叠改为真实收缩：代码区由 flex 改 grid（`grid-template-rows` 1fr→0fr），新增 `.cb-code-inner` 承载行号 / pre / 镜像并以 `min-height:0` + `overflow:hidden` 允许网格轨道收缩为 0。折叠后代码区高度归零、后续内容上移，展开时再向下推开（0.3s 过渡）。
+
+### 新增
+
+- 折叠态语言胶囊：顶栏收成完整圆角容器，在原语言触发器位置渲染「语言图标 + 名称 + 展开箭头」胶囊，点击即展开；操作按钮折叠态常驻（展开态仍 hover 显示）；mermaid 图表输出随折叠一并收起。
+- 回归测试：单测覆盖折叠 class 切换与点胶囊展开，Playwright 断言真实几何（代码区高度归零、下方内容 y 坐标上移、展开后高度复原）。
+
 ## 1.0.2
 
 ### 修复

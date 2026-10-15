@@ -3,6 +3,25 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "1.0.3",
+    date: "2026-10-15",
+    tag: "ai-editor",
+    changes: [
+      {
+        type: "fix",
+        text: "代码块「折叠」此前从未真正生效：折叠只切换了代码区 `.cb-code-area` 的 class，而 React 外壳与代码区并非父子关系（外壳挂在 reactHost > .react-renderer 内，代码区是其叔父节点），parentElement.querySelector 永远匹配不到，于是点折叠只换图标、代码块纹丝不动。现改为在 NodeView 外层 `.code-block-node-view` 上切换折叠态",
+      },
+      {
+        type: "fix",
+        text: "折叠改为真实收缩：代码区由 flex 改 grid（grid-template-rows 1fr→0fr），新增 `.cb-code-inner` 以 min-height:0 + overflow:hidden 让网格轨道能收为 0。折叠后代码区高度归零、后续内容上移，展开时再向下推开（0.3s 过渡）",
+      },
+      {
+        type: "feat",
+        text: "折叠态新增语言胶囊：顶栏收成完整圆角容器，在原语言触发器位置渲染「语言图标 + 名称 + 展开箭头」，点击即展开；操作按钮折叠态常驻可见；mermaid 图表输出随折叠一并收起（ai-editor 1.0.3）",
+      },
+    ],
+  },
+  {
     version: "1.0.2",
     date: "2026-10-11",
     tag: "ai-editor",

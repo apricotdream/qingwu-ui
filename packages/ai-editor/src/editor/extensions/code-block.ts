@@ -238,9 +238,14 @@ export const CodeBlock = CodeBlockLowlight.extend({
       reactHost.contentEditable = "false";
       wrapper.appendChild(reactHost);
 
-      // 代码区（原生，ProseMirror 管理 code 内容）
+      // 代码区（原生，ProseMirror 管理 code 内容）。
+      // .cb-code-area 是 grid 动画容器（折叠时 1fr→0fr），.cb-code-inner 承载
+      // 行号/pre/镜像三件套并以 min-height:0 + overflow:hidden 真正收缩为 0，
+      // 保证折叠后后续文档内容上移、展开时向下推开。
       const area = document.createElement("div");
       area.className = "cb-code-area";
+      const inner = document.createElement("div");
+      inner.className = "cb-code-inner";
       const lineNums = document.createElement("div");
       lineNums.className = "cb-line-numbers";
       lineNums.contentEditable = "false";
@@ -253,9 +258,10 @@ export const CodeBlock = CodeBlockLowlight.extend({
       mirror.className = "cb-code-mirror";
       mirror.contentEditable = "false";
       mirror.setAttribute("aria-hidden", "true");
-      area.appendChild(lineNums);
-      area.appendChild(pre);
-      area.appendChild(mirror);
+      inner.appendChild(lineNums);
+      inner.appendChild(pre);
+      inner.appendChild(mirror);
+      area.appendChild(inner);
       wrapper.appendChild(area);
 
       // 初始行号/镜像

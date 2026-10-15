@@ -190,10 +190,13 @@ export function CodeBlockView({
     );
   }, [search]);
 
-  // 折叠/展开：代码区由原生 NodeView 拥有，这里仅切换其 class
+  // 折叠/展开：代码区由原生 NodeView 拥有，这里仅切换外层 wrapper 的 class。
+  // React 外壳实际挂在 reactHost > .react-renderer 内，.cb-code-area 是其叔父节点
+  // 而非后代，故必须用 closest 向上查找 wrapper，旧实现的 parentElement.querySelector
+  // 永远匹配不到代码区（折叠实际上从未生效）。
   useEffect(() => {
-    const area = shellRef.current?.parentElement?.querySelector(".cb-code-area");
-    area?.classList.toggle("cb-code-area--collapsed", collapsed);
+    const wrapper = shellRef.current?.closest(".code-block-node-view");
+    wrapper?.classList.toggle("code-block-node-view--collapsed", collapsed);
   }, [collapsed]);
 
   // 打开下拉时聚焦搜索框；面板 portal 到 body（fixed），根据触发器在视口中的位置
@@ -405,7 +408,11 @@ export function CodeBlockView({
     <div ref={shellRef} className="cb-react-shell group/cb" style={{ display: "contents" }}>
       {/* 顶部栏 - 语言始终可见，操作按钮 hover 显示 */}
       {/* mousedown 不冒泡：工具栏属于不可编辑外壳，交互不应触发编辑器外层（ProseMirror/...）的全局 mousedown 处理 */}
-      <div className="cb-header" contentEditable={false} onMouseDown={(e) => e.stopPropagation()}>
+      <div
+        className={`cb-header${collapsed ? " cb-header--collapsed" : ""}`}
+        contentEditable={false}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <div className="cb-lang-wrap" ref={langDropdownRef} contentEditable={false}>
           {isReadonly ? (
             <span className="cb-lang-trigger cb-lang-trigger--static">{langDisplay}</span>
@@ -431,6 +438,31 @@ export function CodeBlockView({
             </button>
           )}
         </div>
+
+        {/* 折叠态：保留操作按钮，在原语言触发器位置展示「语言 + 下拉箭头」胶囊，
+            点击即展开。与语言触发器同位渲染，避免全宽栏缩成胶囊的布局跳变。 */}
+        {collapsed && (
+          <button
+            type="button"
+            className="cb-collapsed-bar"
+            contentEditable={false}
+            onClick={() => setCollapsed(false)}
+            title="展开代码块"
+          >
+            {langDisplay}
+            <svg
+              className="cb-lang-chevron"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+        )}
 
         {/* 语言下拉：portal 到 body 并用 fixed 定位，脱离编辑器祖先 overflow:hidden 裁切 */}
         {isEditable &&
@@ -507,7 +539,7 @@ export function CodeBlockView({
             document.body,
           )}
 
-        {/* 操作按钮 - hover 时显示 */}
+        {/* 操作按钮：展开时 hover 显示，折叠时始终显示 */}
         <div className="cb-actions">
           <button
             type="button"
