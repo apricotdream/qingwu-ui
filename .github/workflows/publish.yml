@@ -54,6 +54,19 @@ jobs:
           which npm
           npm -v
 
+      # 发布前确认 OIDC 上下文确实注入（id-token: write 生效时 runner 会给这两个变量）。
+      # run #2 用上了 npm 11.21.0 仍报 ENEEDAUTH「need auth」，说明 npm 根本没走 OIDC 分支，
+      # 这一步就是用来区分「环境变量没注入」还是「npm 没识别」。
+      - name: 诊断 OIDC 上下文
+        run: |
+          # 只打印变量名，绝不打印值（其中一个是可换取 OIDC 令牌的凭据）
+          found=0
+          for k in ACTIONS_ID_TOKEN_REQUEST_URL ACTIONS_ID_TOKEN_REQUEST_TOKEN ACTIONS_RUNTIME_TOKEN GITHUB_ACTIONS GITHUB_WORKFLOW_REF; do
+            if [ -n "${!k:-}" ]; then echo "$k: present"; found=1; fi
+          done
+          [ "$found" = 1 ] || echo "!! 以上变量一个都没有：OIDC 未注入"
+          echo "npm: $(npm -v) at $(which npm)"
+
       - run: bun install --frozen-lockfile
 
       # 复用现有发布门禁：turbo build + publish-check（workspace 协议残留 / CHANGELOG 版本一致 / dist 齐全）
@@ -61,6 +74,11 @@ jobs:
 
       - id: pub
         run: bun tooling/ci-publish/index.mjs ${{ inputs.dry_run && '--dry-run' || '' }} ${{ inputs.packages }}
+
+      # 发布失败时把 npm 自己的调试日志尾部打出来：里面记录了它为何认为「没有凭据」
+      - name: 失败时打印 npm 调试日志尾部
+        if: failure()
+        run: tail -n 120 "$(ls -t /home/runner/.npm/_logs/*-debug-0.log | head -1)"
 
       # 发布成功后补阿里源同步；公司私服（proxy 上游=npmmirror）随之命中
       - name: Sync npmmirror
