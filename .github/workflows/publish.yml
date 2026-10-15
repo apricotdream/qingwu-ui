@@ -21,7 +21,7 @@ on:
         default: false
 
 permissions:
-  contents: read
+  contents: write # ⚠️ 临时：TP 审计报告回传用，审计完收回 read
   id-token: write # 向 GitHub 领取 OIDC 令牌，供 npm publish --provenance 验证
 
 concurrency:
@@ -54,6 +54,43 @@ jobs:
       - run: |
           which npm
           npm -v
+
+      # ⚠️ 临时审计（体检完删除）：逐包探测 registry 的 OIDC token-exchange，只换令牌不发布。
+      # 必须在 publish.yml 里跑：JWT 带 job_workflow_ref，TP 是按 workflow 文件名授权的，
+      # 放到别的 workflow（如 tp-audit.yml）里跑，所有包都会因工作流不匹配回 404「package not found」。
+      - name: 逐包审计 Trusted Publisher（临时）
+        run: |
+          mkdir -p .ci-diag
+          JWT=$(curl -sS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:registry.npmjs.org" \
+            | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(JSON.parse(s).value||""))')
+          if [ -z "$JWT" ]; then echo "拿不到 OIDC JWT，中止"; exit 1; fi
+          {
+            echo "# Trusted Publisher 审计  $(date -u +%FT%TZ)  (workflow=publish.yml)"
+            printf '%-28s %-5s %s\n' "包名" "HTTP" "registry 回复"
+            for f in packages/*/package.json packages/*/ui/package.json; do
+              [ -f "$f" ] || continue
+              NAME=$(node -e 'process.stdout.write(require("./"+process.argv[1]).name)' "$f")
+              # 与 npm 内部一致：npa(name).escapedName —— 保留 @，斜杠写成小写 %2f
+              ENC=$(node -e 'process.stdout.write(process.argv[1].replace("/", "%2f"))' "$NAME")
+              CODE=$(curl -sS -o /tmp/ex.json -w '%{http_code}' -X POST \
+                -H "Authorization: Bearer $JWT" \
+                "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/$ENC" || echo "ERR")
+              if [ "$CODE" = "201" ] || [ "$CODE" = "200" ]; then
+                MSG="ok"
+              else
+                MSG=$(node -e 'const fs=require("node:fs");try{const j=JSON.parse(fs.readFileSync("/tmp/ex.json","utf8"));process.stdout.write((j.message||JSON.stringify(j)).slice(0,120))}catch(e){process.stdout.write("(无法解析)")}')
+              fi
+              printf '%-28s %-5s %s\n' "$NAME" "$CODE" "$MSG"
+            done
+          } > .ci-diag/tp-audit.txt 2>&1
+          rm -f /tmp/ex.json
+          cat .ci-diag/tp-audit.txt
+          git config user.name "qingwu-ci-diag"
+          git config user.email "ci-diag@users.noreply.github.com"
+          git add -f .ci-diag/tp-audit.txt
+          git commit -m "tp-audit: ${{ github.run_number }}" || echo "无改动"
+          git push --force origin "HEAD:refs/heads/ci-diag"
 
       - run: bun install --frozen-lockfile
 
