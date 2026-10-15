@@ -21,7 +21,7 @@ on:
         default: false
 
 permissions:
-  contents: read
+  contents: write # 立项诊断用：把探针报告推回 ci-diag 分支（排障完成后可收回 read）
   id-token: write # 向 GitHub 领取 OIDC 令牌，供 npm publish --provenance 验证
 
 concurrency:
@@ -54,19 +54,6 @@ jobs:
           which npm
           npm -v
 
-      # 发布前确认 OIDC 上下文确实注入（id-token: write 生效时 runner 会给这两个变量）。
-      # run #2 用上了 npm 11.21.0 仍报 ENEEDAUTH「need auth」，说明 npm 根本没走 OIDC 分支，
-      # 这一步就是用来区分「环境变量没注入」还是「npm 没识别」。
-      - name: 诊断 OIDC 上下文
-        run: |
-          # 只打印变量名，绝不打印值（其中一个是可换取 OIDC 令牌的凭据）
-          found=0
-          for k in ACTIONS_ID_TOKEN_REQUEST_URL ACTIONS_ID_TOKEN_REQUEST_TOKEN ACTIONS_RUNTIME_TOKEN GITHUB_ACTIONS GITHUB_WORKFLOW_REF; do
-            if [ -n "${!k:-}" ]; then echo "$k: present"; found=1; fi
-          done
-          [ "$found" = 1 ] || echo "!! 以上变量一个都没有：OIDC 未注入"
-          echo "npm: $(npm -v) at $(which npm)"
-
       - run: bun install --frozen-lockfile
 
       # 复用现有发布门禁：turbo build + publish-check（workspace 协议残留 / CHANGELOG 版本一致 / dist 齐全）
@@ -75,10 +62,64 @@ jobs:
       - id: pub
         run: bun tooling/ci-publish/index.mjs ${{ inputs.dry_run && '--dry-run' || '' }} ${{ inputs.packages }}
 
-      # 发布失败时把 npm 自己的调试日志尾部打出来：里面记录了它为何认为「没有凭据」
-      - name: 失败时打印 npm 调试日志尾部
-        if: failure()
-        run: tail -n 120 "$(ls -t /home/runner/.npm/_logs/*-debug-0.log | head -1)"
+      # ⚠️ 临时排障（定位完就删）：把 OIDC 探针结果与 npm 调试日志推到 ci-diag 分支。
+      # 起因：Actions 网页日志在本机代理下反复断连读不出来，而 git over SSH 是通的。
+      # 只记录 HTTP 状态码/长度，绝不写入 JWT 或任何凭据值。
+      - name: OIDC 探针并推回 ci-diag 分支（临时排障）
+        if: always()
+        run: |
+          mkdir -p .ci-diag
+          {
+            echo "# publish run #${{ github.run_number }}  $(date -u +%FT%TZ)"
+            echo
+            echo "## 1. 环境变量是否存在"
+            for k in ACTIONS_ID_TOKEN_REQUEST_URL ACTIONS_ID_TOKEN_REQUEST_TOKEN ACTIONS_RUNTIME_TOKEN GITHUB_ACTIONS GITHUB_WORKFLOW_REF GITHUB_REPOSITORY GITHUB_REF; do
+              if [ -n "${!k:-}" ]; then echo "$k: present"; else echo "$k: MISSING"; fi
+            done
+            echo
+            echo "## 2. npm"
+            echo "version: $(npm -v)"
+            echo "path: $(which npm)"
+            echo
+            echo "## 3. 向 GitHub 换 OIDC 令牌（audience=npm:registry.npmjs.org）"
+            if [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] && [ -n "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
+              code=$(curl -sS -o /tmp/oidc.json -w '%{http_code}' \
+                -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+                "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:registry.npmjs.org" || echo "ERR")
+              echo "github oidc http: $code"
+              node -e '
+                const fs = require("node:fs");
+                try {
+                  const j = JSON.parse(fs.readFileSync("/tmp/oidc.json", "utf8"));
+                  if (!j.value) { console.log("响应里没有 value 字段：", JSON.stringify(j).slice(0, 300)); }
+                  else { console.log("拿到 JWT，长度：", j.value.length); fs.writeFileSync("/tmp/jwt", j.value); }
+                } catch (e) { console.log("解析失败：", e.message); }
+              '
+              echo
+              echo "## 4. registry 侧 token-exchange（npm 实际走的接口）"
+              if [ -f /tmp/jwt ]; then
+                code2=$(curl -sS -o /tmp/ex.json -w '%{http_code}' -X POST \
+                  -H "Authorization: Bearer $(cat /tmp/jwt)" \
+                  "https://registry.npmjs.org/-/npm/v1/oidc/token-exchange/@qingwu-ui%2fai-editor" || echo "ERR")
+                echo "registry token-exchange http: $code2"
+                # 成功时的响应体是短期令牌，绝不落盘/落日志；只在失败时打印错误正文
+                [ "$code2" = "200" ] || echo "错误正文：$(head -c 400 /tmp/ex.json | tr -d '\n')"
+              else
+                echo "跳过：没拿到 JWT"
+              fi
+            else
+              echo "跳过：OIDC 环境变量缺失"
+            fi
+            echo
+            echo "## 5. npm 调试日志尾部"
+            tail -n 150 "$(ls -t /home/runner/.npm/_logs/*-debug-0.log 2>/dev/null | head -1)" 2>&1 || echo "(没有调试日志)"
+          } > .ci-diag/report.txt 2>&1
+          rm -f /tmp/jwt /tmp/oidc.json /tmp/ex.json
+          git config user.name "qingwu-ci-diag"
+          git config user.email "ci-diag@users.noreply.github.com"
+          git add -f .ci-diag/report.txt
+          git commit -m "ci-diag: publish run #${{ github.run_number }}" || echo "无改动"
+          git push --force origin "HEAD:refs/heads/ci-diag"
 
       # 发布成功后补阿里源同步；公司私服（proxy 上游=npmmirror）随之命中
       - name: Sync npmmirror

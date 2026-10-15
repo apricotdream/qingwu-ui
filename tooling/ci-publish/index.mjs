@@ -93,10 +93,16 @@ for (const { name, version, dir, tag } of toPublish) {
     continue;
   }
   console.log(`\n▶ PUBLISH ${name}@${version} (tag=${tag})`);
+  // trusted publishing 靠 ACTIONS_ID_TOKEN_REQUEST_* 换 OIDC 令牌，这两个变量必须原样传给
+  // 子进程；显式传 env 而不是依赖默认继承，避免不同 runtime 的差异把凭据吃掉。
+  console.log(
+    `OIDC 环境：ACTIONS_ID_TOKEN_REQUEST_URL=${process.env.ACTIONS_ID_TOKEN_REQUEST_URL ? "present" : "MISSING"}` +
+      ` / REQUEST_TOKEN=${process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN ? "present" : "MISSING"}`,
+  );
   const pub = spawnSync(
     "npm",
     ["publish", "--provenance", "--access", "public", `--tag=${tag}`, `--registry=${REGISTRY}`],
-    { cwd: dir, stdio: "inherit" },
+    { cwd: dir, stdio: "inherit", env: process.env },
   );
   if (pub.status !== 0) {
     console.error(`\n✗ ${name}@${version} 发布失败，中止（已发布的包不受影响，重跑会自动跳过）`);
