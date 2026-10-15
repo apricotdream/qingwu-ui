@@ -52,7 +52,7 @@ export const PKG = {
   select: define("@qingwu-ui/select", "1.0.0"),
   button: define("@qingwu-ui/button", "1.0.0"),
   upload: define("@qingwu-ui/upload", "1.0.0"),
-  calendar: define("@qingwu-ui/calendar", "1.0.0"),
+  calendar: define("@qingwu-ui/calendar", "1.1.0"),
   search: define("@qingwu-ui/search", "1.0.0"),
   actionMenu: define("@qingwu-ui/action-menu", "1.0.0"),
   notifications: define("@qingwu-ui/notifications", "1.0.0"),

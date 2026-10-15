@@ -14,6 +14,95 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe("Calendar · 预设时分秒", () => {
+  it("构造时带时分秒的 selected，输入框与 getSelectedDate 都保留时间", () => {
+    const cal = new Calendar(mount(), { selected: "2026-08-15 12:34:56" });
+    expect(cal.getSelectedDate()).toBe("2026-08-15 12:34:56");
+    expect(document.querySelector<HTMLInputElement>(".qw-cal-input")!.value).toBe(
+      "2026-08-15 12:34:56",
+    );
+    cal.destroy();
+  });
+});
+
+describe("Calendar · 空值 setter", () => {
+  it.each(["", null, undefined])("赋值 %s 后清空输入、选中值和各视图高亮", (value) => {
+    const onChange = vi.fn();
+    const cal = new Calendar(mount(), { selected: "2026-08-15 12:34:56", onChange });
+    cal.setSelectedDate(value);
+    expect(cal.getSelectedDate()).toBe("");
+    expect(document.querySelector<HTMLInputElement>(".qw-cal-input")!.value).toBe("");
+
+    cal.open();
+    expect(document.querySelector("[data-selected], .is-selected")).toBeNull();
+    expect(document.querySelector(".qw-cal-side.is-active")).toBeNull();
+    expect(document.querySelector<HTMLInputElement>('[aria-label="时"]')!.value).toBe("00");
+    document.querySelector<HTMLButtonElement>(".qw-cal-title-month")!.click();
+    expect(document.querySelector(".is-selected")).toBeNull();
+    document.querySelector<HTMLButtonElement>(".qw-cal-title-year")!.click();
+    expect(document.querySelector(".is-selected")).toBeNull();
+    expect(onChange).not.toHaveBeenCalled();
+    cal.destroy();
+  });
+
+  it.each([false, true])("面板打开时清空后，取消不会恢复旧值（dateOnly=%s）", (dateOnly) => {
+    const cal = new Calendar(mount(), { selected: "2026-08-15 12:34:56", dateOnly });
+    cal.open();
+    cal.setSelectedDate("");
+    expect(document.querySelector("[data-selected], .is-selected")).toBeNull();
+    expect(document.querySelector(".qw-cal-side.is-active")).toBeNull();
+    document.querySelector<HTMLButtonElement>(".qw-cal-cancel-btn")!.click();
+    expect(cal.getSelectedDate()).toBe("");
+    expect(document.querySelector<HTMLInputElement>(".qw-cal-input")!.value).toBe("");
+    cal.open();
+    expect(document.querySelector("[data-selected], .is-selected")).toBeNull();
+    cal.destroy();
+  });
+
+  it("空值确认保持为空并回发空字符串", () => {
+    const onChange = vi.fn();
+    const cal = new Calendar(mount(), { selected: "2026-08-15", onChange });
+    cal.setSelectedDate(null);
+    cal.open();
+    document.querySelector<HTMLButtonElement>(".qw-cal-confirm-btn")!.click();
+    expect(cal.getSelectedDate()).toBe("");
+    expect(onChange).toHaveBeenCalledExactlyOnceWith("");
+    cal.destroy();
+  });
+
+  it.each([false, true])(
+    "清空后可重新选择，取消恢复空值，确认提交新值（dateOnly=%s）",
+    (dateOnly) => {
+      const onChange = vi.fn();
+      const cal = new Calendar(mount(), { selected: "2026-08-15 12:34:56", dateOnly, onChange });
+      cal.open();
+      cal.setSelectedDate(undefined);
+      document.querySelector<HTMLElement>('[data-date="2026-08-20"]')!.click();
+      document.querySelector<HTMLButtonElement>(".qw-cal-cancel-btn")!.click();
+      expect(cal.getSelectedDate()).toBe("");
+      expect(onChange).not.toHaveBeenCalled();
+
+      cal.setSelectedDate("2026-08-01 01:02:03");
+      cal.open();
+      cal.setSelectedDate("");
+      document.querySelector<HTMLElement>('[data-date="2026-08-20"]')!.click();
+      document.querySelector<HTMLButtonElement>(".qw-cal-confirm-btn")!.click();
+      const expected = dateOnly ? "2026-08-20" : "2026-08-20 00:00:00";
+      expect(cal.getSelectedDate()).toBe(expected);
+      expect(document.querySelector<HTMLInputElement>(".qw-cal-input")!.value).toBe(expected);
+      expect(onChange).toHaveBeenCalledExactlyOnceWith(expected);
+      cal.destroy();
+    },
+  );
+
+  it("非空非法日期仍忽略", () => {
+    const cal = new Calendar(mount(), { selected: "2026-08-15" });
+    cal.setSelectedDate("invalid-date");
+    expect(cal.getSelectedDate()).toBe("2026-08-15 00:00:00");
+    cal.destroy();
+  });
+});
+
 describe("Calendar · 内置 Provider 默认注册", () => {
   it("打开后面板渲染出农历小字（内置 LunarDayMetaProvider）", () => {
     const cal = new Calendar(mount(), { selected: "2026-08-01" });

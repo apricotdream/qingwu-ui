@@ -27,11 +27,28 @@ function el(tag: string, cls?: string, html?: string): HTMLElement {
   return n;
 }
 
-function toDate(input: Date | string | undefined): Date | null {
+function toDate(input: Date | string | null | undefined): Date | null {
   if (!input) return null;
   if (input instanceof Date) return input;
   const d = new Date(input);
   return isNaN(d.getTime()) ? null : d;
+}
+
+/**
+ * 取调用方显式给出的时分秒；没写时间就返回 null（由调用处落回 00:00:00）。
+ * 纯日期串（"2026-08-15"）会被 Date 按 UTC 解析，本地取时分秒会得到 08:00 这种时区假值，
+ * 所以字符串一律从字面里找 HH:mm[:ss]，找不到就当没写时间。
+ */
+function parseExplicitTime(
+  input: Date | string | null | undefined,
+): { hour: number; minute: number; second: number } | null {
+  if (!input) return null;
+  if (input instanceof Date) {
+    return { hour: input.getHours(), minute: input.getMinutes(), second: input.getSeconds() };
+  }
+  const m = /(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(input);
+  if (!m) return null;
+  return { hour: Number(m[1]), minute: Number(m[2]), second: Number(m[3] ?? 0) };
 }
 
 function formatDate(date: Date): string {
@@ -46,7 +63,7 @@ export class Calendar {
   private readonly mode: CalendarMode;
   /** dateOnly：仅选日期，隐藏时分秒输入，onChange 回发 YYYY-MM-DD */
   private readonly dateOnly: boolean;
-  private selected: Date;
+  private selected: Date | null;
   private viewDate: Date; // 当前视图的年月
   private minDate: Date | null;
   private maxDate: Date | null;
@@ -74,7 +91,7 @@ export class Calendar {
 
   /* 提交制快照：open 时记录，取消/收起时回滚 */
   private snapshot: {
-    selected: Date;
+    selected: Date | null;
     time: { hour: number; minute: number; second: number };
     inputValue: string;
   } | null = null;
@@ -128,11 +145,7 @@ export class Calendar {
     ];
     this.panelProviders = [new DetailPanelProvider(), ...(opts.panelProviders ?? [])];
 
-    this.selectedTime = {
-      hour: this.selected.getHours(),
-      minute: this.selected.getMinutes(),
-      second: this.selected.getSeconds(),
-    };
+    this.selectedTime = parseExplicitTime(opts.selected) ?? { hour: 0, minute: 0, second: 0 };
     this.selected = new Date(
       this.selected.getFullYear(),
       this.selected.getMonth(),
@@ -409,19 +422,19 @@ export class Calendar {
       this.closeTimer = null;
     }
 
-    this.viewDate = new Date(this.selected);
+    this.viewDate = new Date(this.selected ?? new Date());
     this.viewDate.setDate(1);
     this.viewMode = "day";
 
     this.selectedTime = {
-      hour: this.selected.getHours(),
-      minute: this.selected.getMinutes(),
-      second: this.selected.getSeconds(),
+      hour: this.selected?.getHours() ?? 0,
+      minute: this.selected?.getMinutes() ?? 0,
+      second: this.selected?.getSeconds() ?? 0,
     };
 
     /* 提交制快照：取消/Esc/点外部/滚动收起时回滚 */
     this.snapshot = {
-      selected: new Date(this.selected),
+      selected: this.selected ? new Date(this.selected) : null,
       time: { ...this.selectedTime },
       inputValue: this.input.value,
     };
@@ -455,7 +468,7 @@ export class Calendar {
 
     this.render();
     /* 打开时渲染选中日期详情（popover 需先激活再量宽） */
-    if (this.showDetailPanel) {
+    if (this.showDetailPanel && this.selected) {
       this.showDetail(this.selected);
     } else {
       this.hideDetail();
@@ -496,14 +509,16 @@ export class Calendar {
   /** 确认选中：提交面板内状态（日期+时间），回发 onChange 后收起 */
   private confirm(): void {
     if (!this.isOpen) return;
-    this.selected = new Date(
-      this.selected.getFullYear(),
-      this.selected.getMonth(),
-      this.selected.getDate(),
-      this.selectedTime.hour,
-      this.selectedTime.minute,
-      this.selectedTime.second,
-    );
+    if (this.selected) {
+      this.selected = new Date(
+        this.selected.getFullYear(),
+        this.selected.getMonth(),
+        this.selected.getDate(),
+        this.selectedTime.hour,
+        this.selectedTime.minute,
+        this.selectedTime.second,
+      );
+    }
     this.syncInput();
     this.onChangeCb?.(this.getSelectedDate());
     this.close();
@@ -513,7 +528,7 @@ export class Calendar {
   private cancel(): void {
     if (!this.isOpen) return;
     if (this.snapshot) {
-      this.selected = new Date(this.snapshot.selected);
+      this.selected = this.snapshot.selected ? new Date(this.snapshot.selected) : null;
       this.selectedTime = { ...this.snapshot.time };
       /* 输入框按快照恢复（宿主可能用空值表"未设置"，不能经 syncInput 覆写） */
       this.input.value = this.snapshot.inputValue;
@@ -525,28 +540,37 @@ export class Calendar {
   /** 获取当前选中日期；dateOnly 回 `YYYY-MM-DD`，否则含时分秒 */
   getSelectedDate(): string {
     const d = this.selected;
+    if (!d) return "";
     if (this.dateOnly) return formatDate(d);
+    /* 时分秒一律取自 selectedTime：this.selected 只承载日期
+       （构造函数会把它的时间归零到当天 0 点），从 selected 读时分秒会永远得到 00:00:00 */
+    const { hour, minute, second } = this.selectedTime;
     const pad = (n: number) => String(n).padStart(2, "0");
-    return `${formatDate(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    return `${formatDate(d)} ${pad(hour)}:${pad(minute)}:${pad(second)}`;
   }
 
-  /** 设置选中日期 */
-  setSelectedDate(date: Date | string): void {
+  /** 设置选中日期；空字符串、null 或 undefined 清空选中值 */
+  setSelectedDate(date: Date | string | null | undefined): void {
     const d = toDate(date);
-    if (!d) return;
-    this.selected = new Date(
-      d.getFullYear(),
-      d.getMonth(),
-      d.getDate(),
-      d.getHours(),
-      d.getMinutes(),
-      d.getSeconds(),
-    );
-    this.viewDate = new Date(this.selected);
-    this.viewDate.setDate(1);
-    this.selectedTime = { hour: d.getHours(), minute: d.getMinutes(), second: d.getSeconds() };
+    if (!d && date != null && date !== "") return;
+    this.selected = d ? new Date(d) : null;
+    if (d) {
+      this.viewDate = new Date(d);
+      this.viewDate.setDate(1);
+    }
+    this.selectedTime = parseExplicitTime(date) ?? { hour: 0, minute: 0, second: 0 };
     this.syncInput();
-    if (this.isOpen) this.render();
+    if (this.isOpen) {
+      // 外部赋值成为新的回滚基准，取消时不能恢复 setter 之前的旧值。
+      this.snapshot = {
+        selected: this.selected ? new Date(this.selected) : null,
+        time: { ...this.selectedTime },
+        inputValue: this.input.value,
+      };
+      this.render();
+      if (this.showDetailPanel && this.selected) this.showDetail(this.selected);
+      else this.hideDetail();
+    }
   }
 
   /** 销毁 */
@@ -713,7 +737,7 @@ export class Calendar {
     const curYear = this.viewDate.getFullYear();
     const startYear = Math.floor(curYear / 12) * 12;
     const now = new Date();
-    const selY = this.selected.getFullYear();
+    const selY = this.selected?.getFullYear();
     const frag = document.createDocumentFragment();
 
     for (let i = 0; i < 12; i++) {
@@ -734,8 +758,8 @@ export class Calendar {
     this.grid.textContent = "";
     const y = this.viewDate.getFullYear();
     const now = new Date();
-    const selY = this.selected.getFullYear();
-    const selM = this.selected.getMonth() + 1;
+    const selY = this.selected?.getFullYear();
+    const selM = this.selected ? this.selected.getMonth() + 1 : null;
     const frag = document.createDocumentFragment();
 
     for (let m = 1; m <= 12; m++) {
@@ -757,7 +781,7 @@ export class Calendar {
     const m = this.viewDate.getMonth();
     const today = new Date();
     const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-    const selIso = formatDate(this.selected);
+    const selIso = this.selected ? formatDate(this.selected) : "";
 
     // 当月第一天（getDay：0=周日 → 映射为周一=0）
     const firstDay = new Date(y, m, 1).getDay();
@@ -892,13 +916,7 @@ export class Calendar {
   }
 
   private syncInput(): void {
-    const d = this.selected;
-    if (this.dateOnly) {
-      this.input.value = formatDate(this.selected);
-      return;
-    }
-    const pad = (n: number) => String(n).padStart(2, "0");
-    this.input.value = `${formatDate(this.selected)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    this.input.value = this.getSelectedDate();
   }
 
   private navigate(delta: number): void {

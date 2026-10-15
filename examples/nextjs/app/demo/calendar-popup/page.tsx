@@ -230,6 +230,31 @@ function DetailPositionDemo() {
   );
 }
 
+/* 清空选中：setSelectedDate 传空值 → 进入「未选中」状态 */
+function ClearableDemo() {
+  const host = useRef<HTMLDivElement>(null);
+  const calRef = useRef<Calendar | null>(null);
+  useEffect(() => {
+    const cal = new Calendar(host.current!, {
+      mode: "popover",
+      selected: "2026-08-15 12:34:56",
+    });
+    calRef.current = cal;
+    return () => {
+      cal.destroy();
+      calRef.current = null;
+    };
+  }, []);
+  return (
+    <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+      <div ref={host} />
+      <button className="qw-btn" type="button" onClick={() => calRef.current?.setSelectedDate("")}>
+        清空选中
+      </button>
+    </div>
+  );
+}
+
 export default function CalendarPopupPage() {
   /* 节假日开关（原 holiday demo） */
   const [enabled, setEnabled] = useState<Set<string>>(new Set(HOLIDAYS.map((h) => h.name)));
@@ -295,6 +320,25 @@ const c3 = new Calendar(elC, {
         )}
       >
         <DetailPositionDemo />
+      </DemoCard>
+
+      {/* ---- 清空选中（未选中状态） ---- */}
+      <DemoCard
+        title="清空选中（未选中状态）"
+        desc="setSelectedDate 传空字符串 / null / undefined 即清空选中值：输入框变空，日期网格与年份、月份视图都不再高亮，getSelectedDate() 返回空串。非空但非法的日期串仍按原样忽略，不会抹掉已有选中值。"
+        full
+        snippets={snippet(
+          `const cal = new Calendar(el, {
+  mode: "popover",
+  selected: "2026-08-15 12:34:56"
+});
+
+// 传空字符串 / null / undefined 即清空，进入未选中状态
+cal.setSelectedDate("");`,
+          "cal.destroy()",
+        )}
+      >
+        <ClearableDemo />
       </DemoCard>
 
       {/* ---- 日格结构（原 calendar-basic） ---- */}

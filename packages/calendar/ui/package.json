@@ -1,6 +1,6 @@
 {
   "name": "@qingwu-ui/calendar",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "青梧 UI 日历组件 —— 框架无关，支持农历、节假日与二十四节气",
   "type": "module",
   "license": "Apache-2.0",

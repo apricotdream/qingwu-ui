@@ -3,6 +3,33 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "1.1.0",
+    date: "2026-10-15",
+    tag: "calendar",
+    changes: [
+      {
+        type: "feat",
+        text: "日历支持「未选中」状态：setSelectedDate() 传空字符串 / null / undefined 即清空选中值 —— 输入框变空、日期网格与年份/月份视图都不高亮、详情侧栏收起，getSelectedDate() 返回空字符串；非空但非法的日期串仍按原样忽略，不会抹掉已有选中值",
+      },
+      {
+        type: "feat",
+        text: "面板打开期间外部赋值（含清空）同步成为新的回滚基准：之后按「取消」回到的是这次赋的值而非打开面板前的旧值；清空或重新选中后详情侧栏展开状态同步刷新。演示页新增「清空选中（未选中状态）」场景卡",
+      },
+      {
+        type: "fix",
+        text: "日历修复给 selected 传带时分秒的日期（如 2026-08-15 12:34:56）时，输入框与 getSelectedDate() 一律显示/回发 00:00:00 的问题：时分秒改从 selectedTime 读取（selected 只承载日期）",
+      },
+      {
+        type: "fix",
+        text: "日历修复纯日期串（2026-08-15）的时区假值：字符串被 Date 按 UTC 解析后本地读时分秒会得到 08:00 这类值，现在只有输入里显式写了 HH:mm[:ss] 才采用，纯日期串与未传 selected 一律按 00:00:00",
+      },
+      {
+        type: "fix",
+        text: "修正未选中状态下 syncInput() 读取空日期、往输入框写出 NaN 的问题：统一走 getSelectedDate()，未选中即写入空串（calendar 1.1.0）",
+      },
+    ],
+  },
+  {
     version: "1.0.3",
     date: "2026-10-15",
     tag: "ai-editor",
