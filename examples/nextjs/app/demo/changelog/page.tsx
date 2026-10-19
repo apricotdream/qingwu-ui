@@ -4,9 +4,21 @@ import Link from "next/link";
 const VERSIONS = [
   {
     version: "1.1.0",
-    date: "2026-10-15",
-    tag: "calendar",
+    date: "2026-10-19",
+    tag: "calendar · ai-editor",
     changes: [
+      {
+        type: "feat",
+        text: "ai-editor 新增 LaTeX 公式：行内 `$...$` / 块级 `$$...$$` 直接输入即可用 KaTeX 渲染，也可从斜杠菜单插入；点击公式打开浮层编辑并实时预览，Markdown 导入导出保留原始 TeX 源码",
+      },
+      {
+        type: "feat",
+        text: "ai-editor 的 Mermaid 图表改用青梧品牌主题：青色强调、透明底、自动跟随明暗模式，图表输出改为独立卡片外观",
+      },
+      {
+        type: "feat",
+        text: "ai-editor Mermaid 图表支持点击放大：灯箱内可放大 / 缩小 / 重置、滚轮缩放、拖拽平移、双击在 100% 与 200% 间切换，Esc 关闭",
+      },
       {
         type: "feat",
         text: "日历支持「未选中」状态：setSelectedDate() 传空字符串 / null / undefined 即清空选中值 —— 输入框变空、日期网格与年份/月份视图都不高亮、详情侧栏收起，getSelectedDate() 返回空字符串；非空但非法的日期串仍按原样忽略，不会抹掉已有选中值",
@@ -85,7 +97,7 @@ const VERSIONS = [
     changes: [
       {
         type: "fix",
-        text: "notifications 修复左侧徽标（glyph）传入长文本（如 \"system\"）时溢出 30px 方块、与右侧标题重叠错位：纯拉丁不超过 2 字符大写保留（\"ai\"→\"AI\"），超长取首字母（\"system\"→\"S\"），中日韩及混合文本取首字符（\"系统消息\"→\"系\"）；补充溢出兜底样式，拉丁字符改用 UI 字体（楷体拉丁字形怪异），完整值经 title 属性悬停可见（包版本 0.9.0-beta.2）",
+        text: 'notifications 修复左侧徽标（glyph）传入长文本（如 "system"）时溢出 30px 方块、与右侧标题重叠错位：纯拉丁不超过 2 字符大写保留（"ai"→"AI"），超长取首字母（"system"→"S"），中日韩及混合文本取首字符（"系统消息"→"系"）；补充溢出兜底样式，拉丁字符改用 UI 字体（楷体拉丁字形怪异），完整值经 title 属性悬停可见（包版本 0.9.0-beta.2）',
       },
     ],
   },

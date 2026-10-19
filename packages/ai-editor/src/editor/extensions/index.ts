@@ -54,6 +54,7 @@ import { CodeBlock } from "./code-block";
 import { ImageUpload } from "./image-upload";
 import { ImeCommitSpaceGuard } from "./ime-commit-space-guard";
 import { InlineCodeEnd } from "./inline-code-end";
+import { MathBlock, MathInline } from "./math";
 import { ObsidianMarkdown } from "./obsidian-markdown";
 import { QingwuUI } from "./qingwu-ui";
 import { RelativeMedia } from "./relative-media";
@@ -66,6 +67,8 @@ export {
   CodeBlock,
   createSlashCommandExtension,
   ImageUpload,
+  MathBlock,
+  MathInline,
   ObsidianMarkdown,
   QingwuUI,
   RelativeMedia,
@@ -109,6 +112,8 @@ export function getEditorExtensions(config: EditorExtensionsConfig = {}): AnyExt
     CharacterCount.configure(config.maxLength ? { limit: config.maxLength } : {}),
     HorizontalRule,
     InlineCodeEnd,
+    MathInline,
+    MathBlock,
     CodeBlock,
     Table.configure({ resizable: true }),
     TableRow,

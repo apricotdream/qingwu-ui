@@ -248,7 +248,7 @@ const MEDIA_NODE_KIND: Record<string, LocalMediaKind> = {
  */
 export function collectLocalMediaRefs(
   rootNode: {
-    descendants: (fn: (node: any, pos: number) => boolean | undefined | void) => void;
+    descendants: (fn: (node: any, pos: number) => boolean | undefined) => void;
     nodeAt?: (pos: number) => any;
   },
   isOwned?: (src: string) => boolean,

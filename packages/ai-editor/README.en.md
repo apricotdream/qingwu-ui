@@ -12,8 +12,8 @@
 - **Multiple storage backends** - local / Alibaba Cloud OSS / Tencent Cloud COS / S3-compatible storage, with persisted config
 - **Bilingual (ZH/EN)** - switchable at runtime, no reload
 - **Slash commands** - `/` to insert headings, lists, images, video, etc.
-- **Code highlighting** - 30+ languages via lowlight
-- **Math formulas** - [KaTeX](https://katex.org/)
+- **Code highlighting** - 30+ languages via lowlight; Mermaid diagrams with the QingWu brand theme and click-to-zoom
+- **Math formulas** - inline `$...$` / block `$$...$$` rendered with [KaTeX](https://katex.org/); click to edit with live preview, TeX source preserved in Markdown import/export
 - **Video playback** - [xgplayer](https://h5player.bytedance.com/)
 - **File preview** - based on @file-viewer/react-full, supports Office / PDF / CAD / archives and 206+ formats
 - **Export** - HTML / Markdown / JSON / plain text / PDF

@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import "katex/dist/katex.min.css";
 import "./styles/globals.css";
 import "@qingwu-ui/toast/style.css";
 import "devicon/devicon.min.css";

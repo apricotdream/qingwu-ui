@@ -1947,25 +1947,170 @@
   color: #a1a1aa;
 }
 
+/* === LaTeX 公式 === */
+
+.math-node {
+  display: inline-block;
+  vertical-align: baseline;
+  max-width: 100%;
+  padding: 0.08em 0.3em;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.math-node:hover {
+  background: color-mix(in srgb, var(--color-qingwu-500, #06b6d4) 9%, transparent);
+}
+
+.math-node.is-selected {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-qingwu-500, #06b6d4) 55%, transparent);
+}
+
+.math-node--block {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  background: var(--color-default-50, #fafafa);
+  border: 1px solid var(--color-default-200, #e4e4e7);
+  border-radius: 10px;
+}
+
+.dark .math-node--block {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--color-default-700, #3f3f46);
+}
+
+.math-node .katex {
+  font-size: 1.05em;
+}
+
+.math-node--block .katex-display {
+  margin: 0;
+}
+
+.math-node--block .katex-display > .katex {
+  white-space: normal;
+}
+
+.math-placeholder {
+  color: var(--color-default-400, #a1a1aa);
+  font-size: 0.85em;
+  font-style: italic;
+  padding: 0.1em 0.2em;
+}
+
+.dark .math-placeholder {
+  color: var(--color-default-500, #71717a);
+}
+
+.math-fallback {
+  color: #dc2626;
+  font-family: var(--font-mono, monospace);
+}
+
+.math-dialog-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.5rem;
+  max-height: 14rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  overflow: auto;
+  border: 1px dashed var(--color-default-200, #e4e4e7);
+  border-radius: 8px;
+  background: var(--color-default-50, #fafafa);
+}
+
+.dark .math-dialog-preview {
+  border-color: var(--color-default-700, #3f3f46);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.math-dialog-preview .katex-display {
+  margin: 0;
+}
+
 /* === Mermaid 鍥捐〃杈撳嚭 === */
 
 .cb-diagram-output {
-  border-top: 1px dashed #e4e4e7;
+  margin-top: var(--qw-space-2);
   padding: var(--qw-space-4);
-  background: #fafafa;
+  border: 1px solid var(--color-default-200, #e4e4e7);
+  border-radius: 12px;
+  background: var(--color-default-50, #fafafa);
   overflow: auto;
 }
 
 .cb-diagram-svg {
+  position: relative;
   display: flex;
   justify-content: center;
   min-width: fit-content;
   padding: var(--qw-space-2);
+  border-radius: 8px;
+  cursor: zoom-in;
+  transition: background-color 0.15s ease;
+}
+
+.cb-diagram-svg:hover {
+  background: color-mix(in srgb, var(--color-qingwu-500, #06b6d4) 5%, transparent);
+}
+
+.cb-diagram-svg:focus-visible {
+  outline: 2px solid var(--color-qingwu-500, #06b6d4);
+  outline-offset: 2px;
+}
+
+.cb-diagram-svg-inner {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .cb-diagram-svg svg {
   height: auto;
   max-width: 100%;
+  overflow: visible;
+}
+
+.cb-diagram-zoom-hint {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(24, 24, 27, 0.72);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.cb-diagram-svg:hover .cb-diagram-zoom-hint,
+.cb-diagram-svg:focus-visible .cb-diagram-zoom-hint {
+  opacity: 1;
+}
+
+.cb-diagram-zoom-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cb-diagram-zoom-content svg {
+  width: auto;
+  height: auto;
+  max-width: 88vw;
+  max-height: 76vh;
   overflow: visible;
 }
 

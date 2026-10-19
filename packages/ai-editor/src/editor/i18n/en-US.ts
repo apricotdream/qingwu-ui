@@ -53,8 +53,23 @@ export const enUS = {
       audioDesc: "Select audio file from local (mp3/wav/flac/aac)",
       attachment: "Add Attachment",
       attachmentDesc: "Upload any file type as attachment link",
+      mathInline: "Inline Formula",
+      mathInlineDesc: "Insert an inline LaTeX formula, e.g. $E=mc^2$",
+      mathBlock: "Block Formula",
+      mathBlockDesc: "Insert a block LaTeX formula with multi-line support",
       xiaohongshu: "RedNote",
       xiaohongshuDesc: "Embed RedNote post",
+    },
+
+    math: {
+      inlineTitle: "Edit Inline Formula",
+      blockTitle: "Edit Block Formula",
+      placeholder: "Enter LaTeX, e.g. \\frac{a}{b}",
+      empty: "Click to add formula",
+      emptyPreview: "Preview appears here",
+      hint: "LaTeX supported; Ctrl/Cmd + Enter to save",
+      cancel: "Cancel",
+      save: "Save",
     },
 
     bubble: {

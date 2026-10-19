@@ -51,6 +51,8 @@ export {
   createSlashCommandExtension,
   getEditorExtensions,
   ImageUpload,
+  MathBlock,
+  MathInline,
   RelativeMedia,
   SearchHighlight,
   VideoEmbed,

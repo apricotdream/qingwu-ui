@@ -479,6 +479,20 @@ export function getDefaultSlashCommands(
       command: ({ editor }) => editor.chain().focus().setHorizontalRule().run(),
     },
     {
+      title: t("editor.slash.mathInline"),
+      description: t("editor.slash.mathInlineDesc"),
+      icon: "∑",
+      command: ({ editor }) =>
+        editor.chain().focus().insertContent({ type: "mathInline", attrs: { latex: "" } }).run(),
+    },
+    {
+      title: t("editor.slash.mathBlock"),
+      description: t("editor.slash.mathBlockDesc"),
+      icon: "∫",
+      command: ({ editor }) =>
+        editor.chain().focus().insertContent({ type: "mathBlock", attrs: { latex: "" } }).run(),
+    },
+    {
       title: t("editor.slash.image"),
       description: t("editor.slash.imageDesc"),
       icon: "🖼",

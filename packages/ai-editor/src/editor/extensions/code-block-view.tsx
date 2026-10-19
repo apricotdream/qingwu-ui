@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type PointerEvent as ReactPointerEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import { isDeleteConfirmActive, setDeleteConfirmActive } from "../utils/delete-confirm";
 import { DeleteConfirmDialog } from "../utils/delete-confirm-dialog";
@@ -7,14 +14,32 @@ import { sanitizeSvg } from "../utils/sanitize";
 // 语言图标依赖可选 peer 依赖 devicon 样式（宿主 import "devicon/devicon.min.css"）；未引入时图标位留空
 
 type BeautifulMermaid = typeof import("beautiful-mermaid");
+type MermaidRenderOptions = NonNullable<Parameters<BeautifulMermaid["renderMermaidSVG"]>[1]>;
 let beautifulMermaidModule: BeautifulMermaid | null = null;
 
-async function renderBeautifulMermaid(text: string): Promise<string> {
+/** 青梧品牌图表主题：透明底 + 青色强调，明暗模式由 CSS 变量自动切换 */
+const QINGWU_MERMAID_THEME: MermaidRenderOptions = {
+  bg: "var(--color-background, #ffffff)",
+  fg: "var(--color-foreground, #11181c)",
+  accent: "var(--color-qingwu-600, #0891b2)",
+  transparent: true,
+  font: "Inter, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif",
+  padding: 32,
+};
+
+const ZOOM_MIN = 0.25;
+const ZOOM_MAX = 4;
+const ZOOM_STEP = 0.25;
+
+async function renderBeautifulMermaid(
+  text: string,
+  options?: MermaidRenderOptions,
+): Promise<string> {
   if (!beautifulMermaidModule) {
     beautifulMermaidModule = await import("beautiful-mermaid");
   }
   const render = beautifulMermaidModule.renderMermaidSVG;
-  return render(text);
+  return render(text, options);
 }
 
 interface LangItem {
@@ -152,6 +177,12 @@ export function CodeBlockView({
   const [mermaidSvg, setMermaidSvg] = useState<string | null>(null);
   const [mermaidError, setMermaidError] = useState<string | null>(null);
   const [mermaidRendering, setMermaidRendering] = useState(false);
+  // 图表缩放灯箱
+  const [zoomOpen, setZoomOpen] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const dragRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
   const langDropdownRef = useRef<HTMLDivElement>(null);
   // 下拉面板 portal 到 body，需独立 ref 供外部点击判定（不再是触发器的 DOM 后代）。
   const langPanelRef = useRef<HTMLDivElement>(null);
@@ -164,6 +195,64 @@ export function CodeBlockView({
   const lang: string = node.attrs.language || "";
   const currentLang = LANGUAGES.find((l) => l.value === (LANG_ALIAS[lang] ?? lang));
   const isDiagram = lang === "mermaid";
+
+  const clampZoom = (value: number) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, value));
+  const zoomBy = (delta: number) =>
+    setZoom((current) => Math.round(clampZoom(current + delta) * 100) / 100);
+  const resetZoom = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+  const openZoom = () => {
+    resetZoom();
+    setZoomOpen(true);
+  };
+
+  // 重新渲染/取消渲染时关闭灯箱
+  useEffect(() => {
+    if (!mermaidSvg) setZoomOpen(false);
+  }, [mermaidSvg]);
+
+  // 灯箱打开时锁定页面滚动并支持 Esc 关闭
+  useEffect(() => {
+    if (!zoomOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setZoomOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [zoomOpen]);
+
+  const handleZoomPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      panX: pan.x,
+      panY: pan.y,
+    };
+    setDragging(true);
+  };
+
+  const handleZoomPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const start = dragRef.current;
+    if (!start) return;
+    setPan({
+      x: start.panX + event.clientX - start.x,
+      y: start.panY + event.clientY - start.y,
+    });
+  };
+
+  const handleZoomPointerEnd = () => {
+    dragRef.current = null;
+    setDragging(false);
+  };
 
   const getCodeBlockRange = useCallback(() => {
     if (!editor || typeof getPos !== "function") return null;
@@ -371,7 +460,7 @@ export function CodeBlockView({
         setMermaidError("代码块内容为空");
         return;
       }
-      const svg = await renderBeautifulMermaid(text);
+      const svg = await renderBeautifulMermaid(text, QINGWU_MERMAID_THEME);
       const cleaned = sanitizeSvg(svg);
       setMermaidSvg(cleaned);
     } catch (e) {
@@ -700,10 +789,116 @@ export function CodeBlockView({
             </div>
           )}
           {mermaidSvg && (
-            <div className="cb-diagram-svg" dangerouslySetInnerHTML={{ __html: mermaidSvg }} />
+            <div
+              className="cb-diagram-svg"
+              role="button"
+              tabIndex={0}
+              title="点击放大查看"
+              onClick={openZoom}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  openZoom();
+                }
+              }}
+            >
+              <div
+                className="cb-diagram-svg-inner"
+                dangerouslySetInnerHTML={{ __html: mermaidSvg }}
+              />
+              <span className="cb-diagram-zoom-hint">点击放大</span>
+            </div>
           )}
         </div>
       )}
+
+      {/* Mermaid 图表缩放灯箱 */}
+      {zoomOpen &&
+        mermaidSvg &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[10002] flex flex-col bg-black/75 backdrop-blur-sm select-none"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mermaid 图表预览"
+          >
+            <div className="flex items-center justify-between gap-3 px-4 py-3 text-white">
+              <span className="text-sm font-medium">Mermaid 图表</span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-white/10 px-2 text-base text-white transition-colors hover:bg-white/20"
+                  onClick={() => zoomBy(-ZOOM_STEP)}
+                  title="缩小"
+                  aria-label="缩小"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  className="flex h-8 min-w-14 items-center justify-center rounded-lg bg-white/10 px-2 text-xs text-white transition-colors hover:bg-white/20"
+                  onClick={resetZoom}
+                  title="重置为 100%"
+                  aria-label="重置缩放"
+                >
+                  {Math.round(zoom * 100)}%
+                </button>
+                <button
+                  type="button"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-white/10 px-2 text-base text-white transition-colors hover:bg-white/20"
+                  onClick={() => zoomBy(ZOOM_STEP)}
+                  title="放大"
+                  aria-label="放大"
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-white/10 px-2 text-sm text-white transition-colors hover:bg-white/20"
+                  onClick={resetZoom}
+                  title="重置"
+                  aria-label="重置"
+                >
+                  ⟲
+                </button>
+                <span className="mx-1 h-5 w-px bg-white/20" />
+                <button
+                  type="button"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-white/10 px-2 text-lg text-white transition-colors hover:bg-white/20"
+                  onClick={() => setZoomOpen(false)}
+                  title="关闭"
+                  aria-label="关闭"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <div
+              className="flex flex-1 touch-none items-center justify-center overflow-hidden"
+              style={{ cursor: dragging ? "grabbing" : zoom > 1 ? "grab" : "default" }}
+              onWheel={(event) => zoomBy(event.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP)}
+              onPointerDown={handleZoomPointerDown}
+              onPointerMove={handleZoomPointerMove}
+              onPointerUp={handleZoomPointerEnd}
+              onPointerCancel={handleZoomPointerEnd}
+              onDoubleClick={() => {
+                setZoom((current) => (current === 1 ? 2 : 1));
+                setPan({ x: 0, y: 0 });
+              }}
+            >
+              <div
+                className="cb-diagram-zoom-content"
+                style={{
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                  transition: dragging ? "none" : "transform 120ms ease-out",
+                }}
+                dangerouslySetInnerHTML={{ __html: mermaidSvg }}
+              />
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {/* 删除确认对话框 - portal 到 body，select-none 防止 Ctrl+A 全选时把弹框文字也选中 */}
       <DeleteConfirmDialog

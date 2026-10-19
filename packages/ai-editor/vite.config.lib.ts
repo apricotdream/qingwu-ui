@@ -1,11 +1,55 @@
+import fs from "node:fs";
 import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
+
+/**
+ * Vite 库模式会把 CSS 里的字体强制内联成 base64（assetsInlineLimit 不生效）。
+ * KaTeX 字体约 1MB，内联后 styles.css 体积翻十倍；这里在产物阶段把 data:font
+ * 还原成 dist/assets/katex-fonts 下的独立文件，并把 CSS 改回相对 URL。
+ */
+function extractKatexFonts(): Plugin {
+  return {
+    name: "qingwu-extract-katex-fonts",
+    writeBundle(options) {
+      const outDir = options.dir ?? path.resolve(__dirname, "dist");
+      const cssPath = path.resolve(outDir, "styles.css");
+      if (!fs.existsSync(cssPath)) return;
+
+      const source = fs.readFileSync(cssPath, "utf8");
+      const fontsDir = path.resolve(outDir, "assets/katex-fonts");
+      let index = 0;
+      const replaced = source.replace(
+        /url\((data:font\/([a-z0-9.+-]+);base64,([^)]+))\)/gi,
+        (_match, _uri, mime: string, base64: string) => {
+          const ext = mime.includes("woff2")
+            ? "woff2"
+            : mime.includes("woff")
+              ? "woff"
+              : mime.includes("ttf")
+                ? "ttf"
+                : mime.includes("otf")
+                  ? "otf"
+                  : "bin";
+          const fileName = `katex-${index}.${ext}`;
+          index += 1;
+          fs.mkdirSync(fontsDir, { recursive: true });
+          fs.writeFileSync(path.join(fontsDir, fileName), Buffer.from(base64, "base64"));
+          return `url(./assets/katex-fonts/${fileName})`;
+        },
+      );
+
+      if (replaced !== source) {
+        fs.writeFileSync(cssPath, replaced);
+      }
+    },
+  };
+}
 
 export default defineConfig({
   publicDir: false,
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), extractKatexFonts()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -13,6 +57,8 @@ export default defineConfig({
     },
   },
   build: {
+    // 库模式默认会把字体等资源内联成 base64；KaTeX 字体体积大，强制落盘到 dist/assets
+    assetsInlineLimit: 0,
     lib: {
       entry: {
         index: path.resolve(__dirname, "src/index.ts"),
@@ -33,6 +79,8 @@ export default defineConfig({
         if (id.startsWith("@ai-sdk/")) return true;
         if (id.startsWith("@file-viewer/")) return true;
         if (id === "highlight.js" || id.startsWith("highlight.js/")) return true;
+        // 只外部化运行时入口；katex/dist/*.css 由 Vite 在构建期解析并打进 styles.css
+        if (id === "katex") return true;
         return [
           "ai",
           "dompurify",

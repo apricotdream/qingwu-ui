@@ -17,7 +17,8 @@
 - **多存储后端** - 本地存储 / 阿里云 OSS / 腾讯云 COS / S3 兼容存储，配置持久化
 - **中英双语** - 运行时可切换，无需刷新页面
 - **斜杠命令** - `/` 快速插入标题、列表、图片、视频等
-- **代码块** - 30+ 语言语法高亮（lowlight）、行号列、折叠/展开、语言图标，兼容 Obsidian 逐行 div 导出格式；Mermaid 图表渲染
+- **代码块** - 30+ 语言语法高亮（lowlight）、行号列、折叠/展开、语言图标，兼容 Obsidian 逐行 div 导出格式；Mermaid 图表渲染（青梧品牌主题，点击可放大/缩放）
+- **LaTeX 公式** - 行内 `$...$` / 块级 `$$...$$`，KaTeX 渲染；点击公式浮层编辑并实时预览，Markdown 导入导出保留 TeX 源码
 - **视频播放** - [xgplayer](https://h5player.bytedance.com/)
 - **文件预览** - 基于 @file-viewer，支持 PDF / Word / Excel / PPT / 压缩包 / 文本等格式，渲染器随包自动安装、按需懒加载（静态资源通过 `copy-assets` 命令一键准备）
 - **导出** - HTML / Markdown / JSON / 纯文本 / PDF

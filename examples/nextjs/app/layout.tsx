@@ -233,13 +233,13 @@ function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
             aria-haspopup="menu"
             onClick={() => setVersionOpen(!versionOpen)}
           >
-            v1.0.0
+            v1.1.0
             <SvgHtml html={ICON_CHEVRON_DOWN} size={12} />
           </button>
           {versionOpen && (
             <div className="qw-version-menu" role="menu">
               <button className="qw-version-item is-current" type="button" role="menuitem">
-                v1.0.0 <span>当前版本</span>
+                v1.1.0 <span>当前版本</span>
               </button>
               <Link
                 className="qw-version-item"

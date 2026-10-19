@@ -127,7 +127,7 @@ function layoutAIPanel(
 }
 
 function looksLikeMarkdown(text: string): boolean {
-  return /(^|\n)```|(^|\n)#{1,6}\s|(^|\n)>\s?|(^|\n)\s*([-*_])(?:\s*\4){2,}\s*(?=\n|$)|(^|\n)\s*[-*+]\s+|(^|\n)\s*\d+[.)]\s+|(^|\n)\s*<img\s+|(^|\n)\s*\|.+\|/i.test(
+  return /(^|\n)```|(^|\n)#{1,6}\s|(^|\n)>\s?|(^|\n)\s*([-*_])(?:\s*\4){2,}\s*(?=\n|$)|(^|\n)\s*[-*+]\s+|(^|\n)\s*\d+[.)]\s+|(^|\n)\s*<img\s+|(^|\n)\s*\|.+\||(^|\n)\s*\$\$[\s\S]*?\$\$|(^|[^\\$])\$[^\s$\n](?:[^$\n]*[^\s$\n])?\$/i.test(
     text,
   );
 }

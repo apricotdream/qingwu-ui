@@ -53,8 +53,23 @@ export const zhCN = {
       audioDesc: "从本地选择音频文件，支持 mp3/wav/flac/aac 等",
       attachment: "添加附件",
       attachmentDesc: "上传任意类型文件，以附件链接形式插入",
+      mathInline: "行内公式",
+      mathInlineDesc: "插入 LaTeX 行内公式，如 $E=mc^2$",
+      mathBlock: "块级公式",
+      mathBlockDesc: "插入 LaTeX 块级公式，支持多行",
       xiaohongshu: "小红书",
       xiaohongshuDesc: "嵌入小红书笔记",
+    },
+
+    math: {
+      inlineTitle: "编辑行内公式",
+      blockTitle: "编辑块级公式",
+      placeholder: "输入 LaTeX，例如 \\frac{a}{b}",
+      empty: "点击输入公式",
+      emptyPreview: "输入 LaTeX 后在此预览",
+      hint: "支持 LaTeX 语法；Ctrl/Cmd + Enter 保存",
+      cancel: "取消",
+      save: "保存",
     },
 
     bubble: {
