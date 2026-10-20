@@ -1,5 +1,11 @@
 # @qingwu-ui/calendar
 
+## 1.1.1
+
+### 修复
+
+- 修复 1.1.0 发布产物缺少 `dist` 的问题：日历包位于 `packages/calendar/ui` 嵌套目录，发布流程原先只构建 `packages/*` 顶层包，CI 检出后没有 dist，最终只发布了 LICENSE / README / package.json。现在发布构建改为匹配所有嵌套工作区包，发布前校验也会扫描 `packages/*/ui`，避免再次发布空包。
+
 ## 1.1.0
 
 ### 新增

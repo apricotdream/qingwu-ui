@@ -5,8 +5,12 @@ const VERSIONS = [
   {
     version: "1.1.2",
     date: "2026-10-20",
-    tag: "ai-editor",
+    tag: "ai-editor · calendar",
     changes: [
+      {
+        type: "fix",
+        text: "calendar 1.1.1 修复 1.1.0 官方包缺少 dist 的问题：日历包位于 packages/calendar/ui 嵌套目录，发布流程只构建了 packages/* 顶层包，CI 检出后没有产物，tarball 里只有 LICENSE / README / package.json。现在 release 构建覆盖所有嵌套工作区包，publish-check 也会扫描 packages/*/ui 并在产物缺失时阻断发布",
+      },
       {
         type: "improve",
         text: "ai-editor 分隔线改为深青色渐变（3px 高），明暗模式下都更清晰，不再使用浏览器默认的浅灰细线；编辑器演示页新增「公式入口」提示，说明输入 / 后选择行内公式或块级公式",

@@ -21,9 +21,16 @@ const fix = process.argv.includes("--fix");
 const errors = [];
 const fixes = [];
 
-const pkgDirs = readdirSync(join(root, "packages"), { withFileTypes: true })
-  .filter((d) => d.isDirectory())
-  .map((d) => join(root, "packages", d.name));
+/** 发现 packages 下的真实包：兼容 calendar/ui 这类嵌套包（与 ci-publish 保持一致） */
+const pkgDirs = [];
+for (const d of readdirSync(join(root, "packages"), { withFileTypes: true })) {
+  if (!d.isDirectory()) continue;
+  const base = join(root, "packages", d.name);
+  for (const sub of ["", "ui"]) {
+    const dir = sub ? join(base, sub) : base;
+    if (existsSync(join(dir, "package.json"))) pkgDirs.push(dir);
+  }
+}
 
 /** packages 下各包的当前版本（用于 workspace 替换） */
 const versions = new Map();

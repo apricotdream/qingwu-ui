@@ -25,7 +25,7 @@
     "publish-check:fix": "bun tooling/publish-check/index.mjs --fix",
     "npmmirror-sync": "bun tooling/npmmirror-sync/index.mjs",
     "npmmirror-check": "bun tooling/npmmirror-sync/index.mjs --check",
-    "release": "turbo build --filter='./packages/*' && bun run publish-check",
+    "release": "turbo build --filter='./packages/**' && bun run publish-check",
     "serve": "bun run serve.ts",
     "push:all": "git push origin HEAD && git push github HEAD"
   },
