@@ -99,6 +99,18 @@ setLocale("en-US"); // switch to English
 setLocale("zh-CN"); // switch to Chinese
 ```
 
+### LaTeX formulas
+
+Type `/` in the editor to open the slash command menu, then choose “Inline Formula” or “Block Formula” to open the formula editor. The result renders as soon as you save.
+
+You can also type the syntax directly:
+
+- Inline: `$E=mc^2$`
+- Block: `$$\frac{20}{100}$$`
+- Multi-line block: type `$$`, press Enter, write the formula, then type `$$` on the last line
+
+Click a rendered formula to edit it again. Markdown import/export preserves the original TeX source.
+
 ## Browser extension (QingWu Web Clipper)
 
 [QingWu Web Clipper](./extension) is the companion browser clipping extension. Clip web content into QingWu Editor with one click. Supports Chrome / Edge / Firefox.

@@ -864,6 +864,53 @@ export default function App() {
           )}
         </div>
 
+        <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-qingwu-200 bg-qingwu-50 px-4 py-3 text-xs text-default-600 dark:border-qingwu-800 dark:bg-qingwu-900/20 dark:text-default-300">
+          <span className="mt-0.5 shrink-0 text-base font-semibold leading-none text-qingwu-700 dark:text-qingwu-300">
+            ∑
+          </span>
+          <div className="leading-relaxed">
+            {currentLocale === "en-US" ? (
+              <>
+                <strong className="font-medium text-qingwu-700 dark:text-qingwu-300">
+                  Formula picker:
+                </strong>{" "}
+                type{" "}
+                <kbd className="rounded bg-white px-1 py-0.5 font-mono text-[11px] text-qingwu-700 dark:bg-zinc-800 dark:text-qingwu-300">
+                  /
+                </kbd>{" "}
+                in the editor and choose “Inline Formula” or “Block Formula”. You can also type{" "}
+                <code className="rounded bg-white px-1 py-0.5 font-mono text-[11px] text-qingwu-700 dark:bg-zinc-800 dark:text-qingwu-300">
+                  $...$
+                </code>{" "}
+                /{" "}
+                <code className="rounded bg-white px-1 py-0.5 font-mono text-[11px] text-qingwu-700 dark:bg-zinc-800 dark:text-qingwu-300">
+                  $$...$$
+                </code>
+                . Click a rendered formula to edit it again.
+              </>
+            ) : (
+              <>
+                <strong className="font-medium text-qingwu-700 dark:text-qingwu-300">
+                  公式入口：
+                </strong>
+                在编辑区输入{" "}
+                <kbd className="rounded bg-white px-1 py-0.5 font-mono text-[11px] text-qingwu-700 dark:bg-zinc-800 dark:text-qingwu-300">
+                  /
+                </kbd>{" "}
+                打开命令菜单，选择「行内公式」或「块级公式」；也可直接输入{" "}
+                <code className="rounded bg-white px-1 py-0.5 font-mono text-[11px] text-qingwu-700 dark:bg-zinc-800 dark:text-qingwu-300">
+                  $...$
+                </code>{" "}
+                /{" "}
+                <code className="rounded bg-white px-1 py-0.5 font-mono text-[11px] text-qingwu-700 dark:bg-zinc-800 dark:text-qingwu-300">
+                  $$...$$
+                </code>
+                ，点击已渲染的公式可再次编辑。
+              </>
+            )}
+          </div>
+        </div>
+
         <QingWuAIEditor
           initialContent={readmeContent}
           mode={editorMode}

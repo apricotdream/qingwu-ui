@@ -289,6 +289,32 @@
   cursor: pointer;
 }
 
+/* 分隔线：深青色为主，明暗模式下都保持清晰可见 */
+.qingwu-editor .ProseMirror hr {
+  height: 3px;
+  margin: 1.75rem 0;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--color-qingwu-600, #0891b2) 0%,
+    var(--color-qingwu-800, #155e75) 50%,
+    var(--color-qingwu-600, #0891b2) 100%
+  );
+  opacity: 1;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-qingwu-800, #155e75) 25%, transparent);
+}
+
+.dark .qingwu-editor .ProseMirror hr {
+  background: linear-gradient(
+    90deg,
+    var(--color-qingwu-500, #06b6d4) 0%,
+    var(--color-qingwu-700, #0e7490) 50%,
+    var(--color-qingwu-500, #06b6d4) 100%
+  );
+  box-shadow: 0 1px 3px rgba(6, 182, 212, 0.25);
+}
+
 /* 琛ㄦ牸鍩虹鏍峰紡 */
 .qingwu-editor .ProseMirror table {
   border-collapse: collapse;

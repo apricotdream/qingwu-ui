@@ -13,6 +13,11 @@ interface Note {
 
 const NOTES: Note[] = [
   {
+    version: "1.1.2",
+    date: "2026-10-20",
+    items: ["分隔线改为深青色渐变（3px 高），明暗模式下都更清晰；不再使用默认的浅灰细线"],
+  },
+  {
     version: "1.1.1",
     date: "2026-10-20",
     items: [

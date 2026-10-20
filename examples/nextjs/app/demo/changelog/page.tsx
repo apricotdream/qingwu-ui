@@ -3,6 +3,21 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "1.1.2",
+    date: "2026-10-20",
+    tag: "ai-editor",
+    changes: [
+      {
+        type: "improve",
+        text: "ai-editor 分隔线改为深青色渐变（3px 高），明暗模式下都更清晰，不再使用浏览器默认的浅灰细线；编辑器演示页新增「公式入口」提示，说明输入 / 后选择行内公式或块级公式",
+      },
+      {
+        type: "improve",
+        text: "移除独立的 LaTeX 公式演示页，公式用法统一收进「AI Editor 编辑器」演示页的提示卡与 README",
+      },
+    ],
+  },
+  {
     version: "1.1.1",
     date: "2026-10-20",
     tag: "ai-editor",

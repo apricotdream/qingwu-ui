@@ -1591,14 +1591,6 @@ export const COMPONENT_SECTIONS: DocSection[] = [
         keywords: ["编辑器", "editor", "ai editor", "markdown", "wysiwyg", "AI"],
         icon: ICON_EDIT,
       },
-      {
-        href: "/demo/editor/math",
-        title: "LaTeX 公式演示",
-        en: "LaTeX Demo",
-        desc: "行内 / 块级 / 多行 LaTeX 公式与 Mermaid 图表缩放演示。",
-        keywords: ["latex", "katex", "公式", "math", "mermaid", "图表"],
-        icon: ICON_FILE,
-      },
     ],
   },
 ];
