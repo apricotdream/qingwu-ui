@@ -1,6 +1,6 @@
-import { InputRule, Node } from "@tiptap/core";
+import { type Editor, InputRule, Node } from "@tiptap/core";
 import type { NodeType } from "@tiptap/pm/model";
-import { TextSelection } from "@tiptap/pm/state";
+import { Plugin, TextSelection } from "@tiptap/pm/state";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { escapeAttr, renderMathHtml } from "./math-utils";
 import { MathView } from "./math-view";
@@ -9,6 +9,68 @@ import { MathView } from "./math-view";
 const INLINE_MATH_INPUT_RE = /(?:^|[^\\$])\$([^\s$](?:[^$\n]*[^\s$])?)\$$/;
 // 块级 `$$...$$`：整段文本就是一个公式时转换为块节点
 const BLOCK_MATH_INPUT_RE = /^\$\$([\s\S]+?)\$\$$/;
+
+/**
+ * 自动把「$$ / 内容 / $$」三行（或多行）纯文本转成块级公式。
+ * 输入规则只能匹配单个段落，用户逐行键入多行公式时不会触发；
+ * 这里在每次文档变化后扫描顶层段落，闭合的 $$ 一出现就转换。
+ */
+function createMultilineBlockMathPlugin(editor: Editor): Plugin {
+  return new Plugin({
+    appendTransaction(transactions, _oldState, newState) {
+      if (!editor.isEditable || editor.view.composing) return null;
+      if (!transactions.some((tr) => tr.docChanged)) return null;
+
+      const paragraphType = newState.schema.nodes.paragraph;
+      const mathBlockType = newState.schema.nodes.mathBlock;
+      if (!paragraphType || !mathBlockType) return null;
+
+      const matches: Array<{ from: number; to: number; latex: string }> = [];
+      let open: { from: number; lines: string[] } | null = null;
+
+      newState.doc.forEach((node, offset) => {
+        if (node.type !== paragraphType) {
+          open = null;
+          return;
+        }
+        const text = node.textContent.trim();
+        const current = open;
+        if (!current) {
+          if (text === "$$") open = { from: offset, lines: [] };
+          return;
+        }
+        if (text === "$$") {
+          matches.push({
+            from: current.from,
+            to: offset + node.nodeSize,
+            latex: current.lines.join("\n"),
+          });
+          open = null;
+          return;
+        }
+        current.lines.push(node.textContent);
+      });
+
+      if (!matches.length) return null;
+
+      const tr = newState.tr;
+      // 从后往前替换，避免前面的位置变化影响后面的范围
+      for (const match of matches.reverse()) {
+        const mathNode = mathBlockType.create({ latex: match.latex });
+        tr.replaceWith(match.from, match.to, mathNode);
+
+        // 保证公式后仍有可输入的段落
+        const afterPos = match.from + mathNode.nodeSize;
+        const $after = tr.doc.resolve(afterPos);
+        if (!$after.nodeAfter || !$after.nodeAfter.isTextblock) {
+          tr.insert(afterPos, paragraphType.create());
+        }
+        tr.setSelection(TextSelection.near(tr.doc.resolve(afterPos), 1));
+      }
+      return tr;
+    },
+  });
+}
 
 function inlineMathInputRule(type: NodeType): InputRule {
   return new InputRule({
@@ -302,6 +364,10 @@ export const MathBlock = Node.create({
 
   addInputRules() {
     return [blockMathInputRule(this.type)];
+  },
+
+  addProseMirrorPlugins() {
+    return [createMultilineBlockMathPlugin(this.editor)];
   },
 
   addStorage() {

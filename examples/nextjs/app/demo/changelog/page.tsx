@@ -3,6 +3,17 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "1.1.1",
+    date: "2026-10-20",
+    tag: "ai-editor",
+    changes: [
+      {
+        type: "fix",
+        text: "ai-editor 修复逐行输入多行块级公式（$$ / 换行 / 公式内容 / 换行 / $$）后不渲染的问题：闭合的 $$ 出现后会自动把连续段落转换为块级公式；单行 $$...$$、粘贴与 Markdown 导入不受影响",
+      },
+    ],
+  },
+  {
     version: "1.1.0",
     date: "2026-10-19",
     tag: "calendar · ai-editor",

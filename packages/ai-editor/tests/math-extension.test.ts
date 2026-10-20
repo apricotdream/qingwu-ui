@@ -52,6 +52,18 @@ describe("KaTeX 数学公式扩展", () => {
     expect(html).toContain('class="katex"');
   });
 
+  it("逐行输入的多行块级公式会自动转换", () => {
+    const instance = createEditor("占位");
+    instance.commands.setContent("<p>$$</p><p>\\frac{20}{100}</p><p>$$</p>");
+
+    const blocks: Array<{ latex: string }> = [];
+    instance.state.doc.descendants((node) => {
+      if (node.type.name === "mathBlock") blocks.push({ latex: node.attrs.latex });
+    });
+
+    expect(blocks).toEqual([{ latex: "\\frac{20}{100}" }]);
+  });
+
   it("不会把货币金额误判为公式", () => {
     const instance = createEditor("价格是 $5 到 $10 之间");
     const json = JSON.stringify(instance.getJSON());
