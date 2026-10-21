@@ -2065,13 +2065,50 @@
 
 /* === Mermaid 鍥捐〃杈撳嚭 === */
 
+/* pele 青梧主题（浅色）：透明底 + 青色强调，颜色经 CSS 变量注入 */
 .cb-diagram-output {
+  --pele-bg: transparent;
+  --pele-fg: var(--color-foreground, #11181c);
+  --pele-muted: var(--color-default-500, #71717a);
+  --pele-line: var(--color-default-400, #a1a1aa);
+  --pele-surface: var(--color-default-50, #fafafa);
+  --pele-surface-alt: var(--color-default-100, #f4f4f5);
+  --pele-border: var(--color-default-300, #d4d4d8);
+  --pele-accent: var(--color-qingwu-600, #0891b2);
+  --pele-radius: 8px;
+
   margin-top: var(--qw-space-2);
   padding: var(--qw-space-4);
   border: 1px solid var(--color-default-200, #e4e4e7);
   border-radius: 12px;
   background: var(--color-default-50, #fafafa);
   overflow: auto;
+}
+
+/* pele 青梧主题（深色） */
+.dark .cb-diagram-output {
+  --pele-fg: #f4f4f5;
+  --pele-muted: #a1a1aa;
+  --pele-line: #71717a;
+  --pele-surface: #27272a;
+  --pele-surface-alt: #3f3f46;
+  --pele-border: #52525b;
+  --pele-accent: var(--color-qingwu-500, #06b6d4);
+  background: var(--color-default-900, #18181b);
+  border-color: var(--color-default-700, #3f3f46);
+}
+
+/* 缩放灯箱恒为黑色遮罩，SVG portal 到 body，需单独注入一套暗色变量 */
+.cb-diagram-zoom-content {
+  --pele-bg: transparent;
+  --pele-fg: #f4f4f5;
+  --pele-muted: #a1a1aa;
+  --pele-line: #a1a1aa;
+  --pele-surface: #27272a;
+  --pele-surface-alt: #3f3f46;
+  --pele-border: #52525b;
+  --pele-accent: #22d3ee;
+  --pele-radius: 8px;
 }
 
 .cb-diagram-svg {

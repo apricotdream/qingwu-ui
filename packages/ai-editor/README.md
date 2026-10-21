@@ -105,7 +105,7 @@ export default function Page() {
 
 - **Tiptap 全套**（`@tiptap/core`、`@tiptap/react` 及各扩展，锁定 `^3.28.0`）——编辑器内核，已由本包统一管理版本，避免你逐个安装、版本错配。
 - **文件预览全套**（`@file-viewer/react` 及 pdf / word / spreadsheet / presentation / archive / text 各渲染器，锁定 `2.2.2`）——附件在线预览能力，且全部按需懒加载，不点开附件不会下载。
-- 其余内部实现库（dompurify、lowlight、xgplayer、cmdk、beautiful-mermaid 等）同样自动带入。
+- 其余内部实现库（dompurify、lowlight、xgplayer、cmdk、pele 等）同样自动带入。
 
 你只需保证宿主已有的 **peer 依赖**：
 

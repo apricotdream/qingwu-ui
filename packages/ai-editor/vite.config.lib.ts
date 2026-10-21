@@ -88,7 +88,7 @@ export default defineConfig({
           "tiptap-markdown",
           "xgplayer",
           "cmdk",
-          "beautiful-mermaid",
+          "pele",
           "devicon",
         ].includes(id);
       },

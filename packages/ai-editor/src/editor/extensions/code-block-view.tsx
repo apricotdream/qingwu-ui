@@ -13,33 +13,26 @@ import { sanitizeSvg } from "../utils/sanitize";
 
 // 语言图标依赖可选 peer 依赖 devicon 样式（宿主 import "devicon/devicon.min.css"）；未引入时图标位留空
 
-type BeautifulMermaid = typeof import("beautiful-mermaid");
-type MermaidRenderOptions = NonNullable<Parameters<BeautifulMermaid["renderMermaidSVG"]>[1]>;
-let beautifulMermaidModule: BeautifulMermaid | null = null;
+type Pele = typeof import("pele");
+type PeleRenderOptions = NonNullable<Parameters<Pele["render"]>[1]>;
+let peleModule: Pele | null = null;
 
-/** 青梧品牌图表主题：透明底 + 青色强调，明暗模式由 CSS 变量自动切换 */
-const QINGWU_MERMAID_THEME: MermaidRenderOptions = {
-  bg: "var(--color-background, #ffffff)",
-  fg: "var(--color-foreground, #11181c)",
-  accent: "var(--color-qingwu-600, #0891b2)",
-  transparent: true,
-  font: "Inter, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif",
-  padding: 32,
+/** pele 渲染选项：颜色走 CSS 变量（--pele-* 见 globals.css），此处仅控字体/留白 */
+const PELE_OPTIONS: PeleRenderOptions = {
+  fontFamily:
+    "Inter, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif",
+  padding: 24,
 };
 
 const ZOOM_MIN = 0.25;
 const ZOOM_MAX = 4;
 const ZOOM_STEP = 0.25;
 
-async function renderBeautifulMermaid(
-  text: string,
-  options?: MermaidRenderOptions,
-): Promise<string> {
-  if (!beautifulMermaidModule) {
-    beautifulMermaidModule = await import("beautiful-mermaid");
+async function renderPeleSvg(text: string): Promise<string> {
+  if (!peleModule) {
+    peleModule = await import("pele");
   }
-  const render = beautifulMermaidModule.renderMermaidSVG;
-  return render(text, options);
+  return peleModule.render(text, PELE_OPTIONS).svg;
 }
 
 interface LangItem {
@@ -460,11 +453,11 @@ export function CodeBlockView({
         setMermaidError("代码块内容为空");
         return;
       }
-      const svg = await renderBeautifulMermaid(text, QINGWU_MERMAID_THEME);
+      const svg = await renderPeleSvg(text);
       const cleaned = sanitizeSvg(svg);
       setMermaidSvg(cleaned);
     } catch (e) {
-      setMermaidError(e instanceof Error ? e.message : "Mermaid 渲染失败");
+      setMermaidError(e instanceof Error ? e.message : "图表渲染失败");
     } finally {
       setMermaidRendering(false);
     }
