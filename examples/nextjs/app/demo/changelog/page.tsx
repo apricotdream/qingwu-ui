@@ -3,6 +3,21 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "1.1.3",
+    date: "2026-10-22",
+    tag: "ai-editor",
+    changes: [
+      {
+        type: "improve",
+        text: "ai-editor Mermaid 图表渲染引擎由 beautiful-mermaid 切换为 pele（obsidianmd/pele，MIT、零运行时依赖）：渲染器体积减小近一半（gzip 475KB → 254KB），加载更快；支持图表从 6 种扩展到 32 种，新增甘特图、饼图、思维导图、看板、时间线等；明暗主题改为 CSS 变量驱动，切换主题无需重新渲染。原有 Mermaid 语法、存量文档与「mermaid」代码块标识完全兼容，语法错误仍显示带行号的错误提示",
+      },
+      {
+        type: "improve",
+        text: "缩放灯箱内的图表改为独立注入 pele 主题变量：灯箱 portal 到 body 拿不到编辑器暗色上下文，现单例维护青梧青色强调与明暗配色，滚轮缩放、拖拽平移、Esc 关闭等交互不变",
+      },
+    ],
+  },
+  {
     version: "1.1.2",
     date: "2026-10-20",
     tag: "ai-editor · calendar",
