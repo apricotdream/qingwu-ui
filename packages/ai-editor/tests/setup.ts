@@ -59,3 +59,21 @@ if (typeof Text !== "undefined") {
     Text.prototype.getBoundingClientRect = emptyDomRect;
   }
 }
+
+// jsdom 未实现 DataTransfer，粘贴测试需要用它携带 text/plain
+if (typeof globalThis.DataTransfer === "undefined") {
+  class DataTransferStub {
+    private store = new Map<string, string>();
+    setData(type: string, value: string) {
+      this.store.set(type, value);
+    }
+    getData(type: string) {
+      return this.store.get(type) ?? "";
+    }
+    clearData(type?: string) {
+      if (type) this.store.delete(type);
+      else this.store.clear();
+    }
+  }
+  globalThis.DataTransfer = DataTransferStub as unknown as typeof DataTransfer;
+}

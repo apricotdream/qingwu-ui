@@ -23,7 +23,11 @@ import { AISelector } from "./ai/components/ai-selector";
 import { flushPendingRemovals } from "./ai/pending-removal";
 import { formatBytes, getDocAttachmentTotal, validateAttachmentFile } from "./attachment-limits";
 import { getEditorExtensions } from "./extensions";
-import { type BubbleMenuAction, getBubbleMenuActions } from "./extensions/bubble-menu";
+import {
+  type BubbleMenuAction,
+  getBubbleMenuActions,
+  looksLikeMath,
+} from "./extensions/bubble-menu";
 import { TableToolbar } from "./extensions/table-toolbar";
 import { t } from "./i18n";
 import { MoreIcon, SparklesIcon } from "./icons";
@@ -303,6 +307,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   // 气泡菜单：主行容器 ref（子面板定位锚点）+ 「⋯」二级菜单开关
   const bubbleBoxRef = useRef<HTMLDivElement | null>(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [selectionLooksLikeMath, setSelectionLooksLikeMath] = useState(false);
   const [editorWebFS, setEditorWebFS] = useState(false);
   const [editorNativeFS, setEditorNativeFS] = useState(false);
   // 移动端目录抽屉 DOM 引用（portal 到 body）：用于「点抽屉外自动收起」判定
@@ -453,6 +458,11 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
       }, 300);
     },
     onCreate: () => {},
+    onSelectionUpdate: ({ editor: ed }) => {
+      const { from, to } = ed.state.selection;
+      const text = from === to ? "" : ed.state.doc.textBetween(from, to, "\n");
+      setSelectionLooksLikeMath(looksLikeMath(text));
+    },
     editorProps: {
       attributes: {
         class:
@@ -664,7 +674,10 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   // 主行紧凑展示高频键（排版组 + AI + ⋯），低频键（高亮/链接/表格/复制/搜索）折叠进「⋯」下拉
   const mainActions = bubbleActions.filter((action) => !action.more);
   const moreActions = bubbleActions.filter((action) => action.more);
-  const formatActions = mainActions.filter((action) => action.key !== "ai");
+  // 「行内公式」仅在选中数字/公式样式文本时出现，避免普通中文选词被噪声按钮干扰
+  const formatActions = mainActions.filter(
+    (action) => action.key !== "ai" && (action.key !== "mathInline" || selectionLooksLikeMath),
+  );
   const aiAction = mainActions.find((action) => action.key === "ai");
 
   // 气泡按钮统一点击处理：链接/高亮走二级浮层，其余执行命令

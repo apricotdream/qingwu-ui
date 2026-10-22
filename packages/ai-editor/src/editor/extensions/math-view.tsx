@@ -1,14 +1,16 @@
-import { NodeViewWrapper } from "@tiptap/react";
+import { type Editor, NodeViewWrapper } from "@tiptap/react";
 import { type MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { TextSelection } from "@tiptap/pm/state";
 import { t } from "../i18n";
 import { renderMathHtml } from "./math-utils";
 
 interface MathViewProps {
-  node: { type: { name: string }; attrs: { latex?: string } };
+  node: { type: { name: string }; nodeSize: number; attrs: { latex?: string } };
   updateAttributes: (attributes: { latex: string }) => void;
   deleteNode?: () => void;
-  editor?: { isEditable?: boolean };
+  editor?: Editor;
+  getPos?: () => number | undefined;
   selected?: boolean;
 }
 
@@ -18,7 +20,14 @@ interface MathViewProps {
  * - 可编辑态点击公式打开浮层，输入源码并实时预览；
  * - 新建的空公式自动打开浮层，取消时删除节点。
  */
-export function MathView({ node, updateAttributes, deleteNode, editor, selected }: MathViewProps) {
+export function MathView({
+  node,
+  updateAttributes,
+  deleteNode,
+  editor,
+  getPos,
+  selected,
+}: MathViewProps) {
   const isBlock = node.type.name === "mathBlock";
   const latex = String(node.attrs.latex ?? "");
   const isEditable = editor?.isEditable ?? true;
@@ -86,6 +95,22 @@ export function MathView({ node, updateAttributes, deleteNode, editor, selected 
     if (isEditable) setOpen(true);
   };
 
+  // 行内公式：单击左/右半区把光标定位到公式前/后，双击才打开编辑浮层。
+  // 之前统一 preventDefault + 打开浮层，导致行文中的公式无法点选定位。
+  const placeCaretBeside = (event: ReactMouseEvent) => {
+    if (!editor || typeof getPos !== "function") return;
+    const nodePos = getPos();
+    if (nodePos === undefined) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const side: "before" | "after" =
+      event.clientX - rect.left < rect.width / 2 ? "before" : "after";
+    const target = side === "before" ? nodePos : nodePos + node.nodeSize;
+    const { state, view } = editor;
+    const selection = TextSelection.near(state.doc.resolve(target), side === "before" ? -1 : 1);
+    view.dispatch(state.tr.setSelection(selection));
+    view.focus();
+  };
+
   return (
     <>
       <NodeViewWrapper
@@ -94,13 +119,21 @@ export function MathView({ node, updateAttributes, deleteNode, editor, selected 
           selected ? " is-selected" : ""
         }`}
         contentEditable={false}
+        title={isEditable && !isBlock ? t("editor.math.inlineClickHint") : undefined}
         onMouseDown={(event: ReactMouseEvent) => {
-          if (isEditable) event.preventDefault();
+          // 行内公式需要接管点击定位；块级公式保持原行为（阻止默认、单击编辑）
+          if (isEditable && isBlock) event.preventDefault();
         }}
         onClick={(event: ReactMouseEvent) => {
+          if (!isEditable) return;
           event.preventDefault();
           event.stopPropagation();
-          openEditor();
+          if (isBlock) {
+            openEditor();
+            return;
+          }
+          if (event.detail >= 2) openEditor();
+          else placeCaretBeside(event);
         }}
       >
         {latex ? (

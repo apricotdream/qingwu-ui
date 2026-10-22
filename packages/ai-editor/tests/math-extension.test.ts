@@ -71,4 +71,44 @@ describe("KaTeX 数学公式扩展", () => {
     expect(json).not.toContain("mathInline");
     expect(instance.getText()).toContain("$5 到 $10");
   });
+
+  function paste(text: string): Editor {
+    const instance = createEditor("<p>占位</p>");
+    instance.commands.focus();
+    instance.commands.setTextSelection(3);
+    const dataTransfer = new DataTransfer();
+    dataTransfer.setData("text/plain", text);
+    const event = new Event("paste", { bubbles: true, cancelable: true });
+    Object.defineProperty(event, "clipboardData", { value: dataTransfer });
+    instance.view.dom.dispatchEvent(event);
+    return instance;
+  }
+
+  it("粘贴混在中文中的行内 $...$ 自动转换且保留反斜杠", () => {
+    const instance = paste("如果$\\dfrac{20}{100}=\\dfrac{1}{5}$，那么");
+    const nodes: string[] = [];
+    instance.state.doc.descendants((node) => {
+      if (node.type.name === "mathInline") nodes.push(node.attrs.latex);
+    });
+    expect(nodes).toEqual(["\\dfrac{20}{100}=\\dfrac{1}{5}"]);
+  });
+
+  it("粘贴单行 $$...$$ 自动转换为块级公式", () => {
+    const instance = paste("$$\\frac{1}{2}$$");
+    const nodes: string[] = [];
+    instance.state.doc.descendants((node) => {
+      if (node.type.name === "mathBlock") nodes.push(node.attrs.latex);
+    });
+    expect(nodes).toEqual(["\\frac{1}{2}"]);
+  });
+
+  it("粘贴多行 $$...$$ 自动转换为块级公式", () => {
+    const instance = paste("$$\n\\frac{20}{100}=\\frac{1}{5}\n$$");
+    const nodes: string[] = [];
+    instance.state.doc.descendants((node) => {
+      if (node.type.name === "mathBlock") nodes.push(node.attrs.latex);
+    });
+    expect(nodes).toEqual(["\\frac{20}{100}=\\frac{1}{5}"]);
+  });
 });
+

@@ -8,12 +8,31 @@ import {
   HighlightIcon,
   ItalicIcon,
   LinkIcon,
+  MathIcon,
   SearchIcon,
   SparklesIcon,
   StrikethroughIcon,
   TableIcon,
   UnderlineIcon,
 } from "../icons";
+
+/** 剥掉用户手输的 $...$ / $$...$$ 包裹，返回纯 LaTeX 源码；无包裹时原样返回 */
+export function unwrapDollars(text: string): string {
+  const trimmed = text.trim();
+  const inline = /^\$([^$]+?)\$$/.exec(trimmed);
+  if (inline) return inline[1].trim();
+  const block = /^\$\$([\s\S]+?)\$\$$/.exec(trimmed);
+  if (block) return block[1].trim();
+  return trimmed;
+}
+
+/** 选中文本是否值得转成公式：含数字/数学符号，或本身已被 $ 包裹 */
+export function looksLikeMath(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return false;
+  if (/^\${1,2}[\s\S]*\${1,2}$/.test(trimmed)) return true;
+  return /[0-9=]/.test(trimmed) && /[+\-*/^=(){}_\\]/.test(trimmed);
+}
 
 export interface BubbleMenuAction {
   key: string;
@@ -76,6 +95,25 @@ export function getBubbleMenuActions(t: (key: string) => string): BubbleMenuActi
       command: (editor) => editor.isEditable && editor.chain().focus().toggleCode().run(),
     },
 
+    {
+      key: "mathInline",
+      label: t("editor.bubble.mathInline"),
+      icon: <MathIcon />,
+      isActive: (editor) => editor.isActive("mathInline"),
+      command: (editor) => {
+        if (!editor.isEditable) return;
+        const { from, to } = editor.state.selection;
+        if (from === to) return;
+        const selected = editor.state.doc.textBetween(from, to, "\n");
+        const latex = unwrapDollars(selected);
+        if (!latex) return;
+        editor
+          .chain()
+          .focus()
+          .insertContentAt({ from, to }, { type: "mathInline", attrs: { latex } })
+          .run();
+      },
+    },
     {
       key: "highlight",
       label: t("editor.bubble.highlight"),

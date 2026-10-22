@@ -99,6 +99,12 @@ export const SparklesIcon = (p: SVGProps<SVGSVGElement>) => (
   </Icon>
 );
 
+export const MathIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Icon {...p}>
+    <path d="M18 5H6l6 7-6 7h12" />
+  </Icon>
+);
+
 export const MoreIcon = (p: SVGProps<SVGSVGElement>) => (
   <Icon {...p}>
     <circle cx="5" cy="12" r="1" />
