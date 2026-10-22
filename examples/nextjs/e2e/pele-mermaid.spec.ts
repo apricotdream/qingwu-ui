@@ -20,41 +20,33 @@ const DIAGRAMS: Record<string, string> = {
   pie: ['pie title 占比', '  "A" : 40', '  "B" : 60'].join("\n"),
 };
 
-// 在文末新起一段，用 ```mermaid 输入规则创建代码块并填入源码
+// 直接通过 ProseMirror 事务在文末插入 mermaid 代码块节点，
+// 避开键盘输入规则/选区时序导致块内容被邻段文字污染
 async function insertMermaidBlock(page: Page, source: string) {
-  await page.evaluate(() => {
-    const ps = document.querySelectorAll(".ProseMirror > p");
-    (ps[ps.length - 1] as HTMLElement).scrollIntoView({ block: "center" });
-  });
-  const ps = page.locator(".ProseMirror > p");
-  await ps.last().click();
-  await page.keyboard.press("End");
-  await page.keyboard.press("Enter");
-  await page.waitForTimeout(100);
-  await page.keyboard.type("```mermaid", { delay: 15 });
-  await page.waitForTimeout(300);
-  await page.keyboard.press("Enter");
-  await page.waitForTimeout(400);
+  await page.evaluate((src) => {
+    const pm = document.querySelector(".ProseMirror") as HTMLElement & { editor: any };
+    const view = pm.editor.view;
+    const { schema, doc } = view.state;
+    const node = schema.nodes.codeBlock.create({ language: "mermaid" }, schema.text(src));
+    view.dispatch(view.state.tr.insert(doc.content.size, node).scrollIntoView());
+  }, source);
 
-  const block = page
-    .locator(".code-block-node-view")
-    .filter({ has: page.locator('button[title="渲染图表"]') })
-    .last();
+  // 事务插入的块在文档末尾且必为 mermaid；注意不能用 button[title="渲染图表"]
+  // 过滤定位——点击后 title 会变成"取消渲染"，locator 重查时会失效
+  const block = page.locator(".code-block-node-view").last();
   await expect(block).toBeVisible();
-
-  // 新块为空，光标应已在块内；一次性插入多行源码（CDP insertText，
-  // 不逐键按 Enter，避免代码块与紧邻下段发生合并）
-  await page.keyboard.insertText(source);
+  await expect(block.locator('button[title="渲染图表"]')).toBeVisible();
   await expect
-    .poll(async () => (await block.locator("code").textContent())?.replace(/\u200b/g, ""))
+    .poll(async () => (await block.locator("code").textContent())?.replace(/​/g, ""))
     .toBe(source);
   return block;
 }
 
-async function clickRender(block: ReturnType<Page["locator"]>) {
+async function clickRender(page: Page, block: ReturnType<Page["locator"]>) {
   await block
     .locator('.cb-actions button[title="渲染图表"]')
     .evaluate((el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true })));
+  await page.waitForTimeout(200);
 }
 
 for (const [name, source] of Object.entries(DIAGRAMS)) {
@@ -65,7 +57,7 @@ for (const [name, source] of Object.entries(DIAGRAMS)) {
     await expect(page.locator(".ProseMirror")).toBeVisible({ timeout: 60_000 });
 
     const block = await insertMermaidBlock(page, source);
-    await clickRender(block);
+    await clickRender(page, block);
 
     await expect(block.locator(".cb-diagram-error")).toHaveCount(0, { timeout: 30_000 });
     const svg = block.locator(".cb-diagram-svg svg.pele");
@@ -95,7 +87,7 @@ test("pele 语法错误显示错误信息且不崩溃", async ({ page }) => {
   await expect(page.locator(".ProseMirror")).toBeVisible({ timeout: 60_000 });
 
   const block = await insertMermaidBlock(page, "flowchart LR\n  A --> --> ");
-  await clickRender(block);
+  await clickRender(page, block);
 
   await expect(block.locator(".cb-diagram-error")).toBeVisible({ timeout: 30_000 });
   await expect(block.locator(".cb-diagram-error")).toContainText(/line|Parse|Expecting/i);
@@ -107,7 +99,7 @@ test("暗色模式下 pele 变量正确切换", async ({ page }) => {
   await expect(page.locator(".ProseMirror")).toBeVisible({ timeout: 60_000 });
 
   const block = await insertMermaidBlock(page, DIAGRAMS.flowchart);
-  await clickRender(block);
+  await clickRender(page, block);
   const output = block.locator(".cb-diagram-output");
   await expect(output.locator("svg.pele")).toBeVisible({ timeout: 30_000 });
 

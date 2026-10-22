@@ -1,5 +1,13 @@
 # @qingwu-ui/ai-editor
 
+## 1.1.3
+
+### 优化
+
+- Mermaid 渲染引擎由 beautiful-mermaid 切换为 [pele](https://pele.run)（Obsidian 团队出品，MIT，零运行时依赖）：浏览器加载体积由 gzip 约 475KB 降至约 254KB，图表类型由 6 种扩展至 Mermaid 12.1.0 全部内置类型（32 种，新增甘特、饼图、思维导图、看板、时间线、Sankey、C4 等）。
+- 图表主题改由 `--pele-*` CSS 变量驱动：青梧品牌配色、明暗模式切换与缩放灯箱均无需重渲染；Mermaid 语法、代码块语言标识（`mermaid`）与存量文档完全兼容，用户无感知。
+- 新增 Playwright 真机回归：覆盖 flowchart / 时序图 / 甘特 / 饼图渲染、点击缩放灯箱、语法错误提示与暗色模式主题变量。
+
 ## 1.1.2
 
 ### 修复
