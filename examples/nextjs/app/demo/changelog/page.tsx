@@ -3,6 +3,17 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "1.1.6",
+    date: "2026-10-24",
+    tag: "ai-editor",
+    changes: [
+      {
+        type: "improve",
+        text: "ai-editor 引用块（Markdown `>`）样式改版：圆角卡片 + 青色左竖条 + 浅青底 + 青色斜体文字，替换 tailwind typography 默认的灰色竖条与引号样式；暗色模式同步适配（青色半透明底 + 浅青文字），编辑态与只读态一致",
+      },
+    ],
+  },
+  {
     version: "1.1.3",
     date: "2026-10-22",
     tag: "ai-editor",
