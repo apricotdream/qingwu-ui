@@ -247,7 +247,6 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
       <NodeViewWrapper
         as="div"
         className="video-embed video-embed--bilibili group/video"
-        style={{ margin: "1rem 0" }}
         contentEditable={false}
       >
         <div ref={innerRef} style={{ borderRadius: 12, overflow: "hidden" }}>
@@ -381,7 +380,6 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
           alignItems: "center",
           gap: 12,
           maxWidth: 480,
-          margin: "1rem 0",
         }}
         contentEditable={false}
       >
@@ -421,7 +419,7 @@ export function VideoEmbedView({ node, deleteNode, editor }: any) {
     <NodeViewWrapper
       as="div"
       className="video-embed video-embed--direct group/video"
-      style={{ margin: "1rem 0", borderRadius: 12, overflow: "hidden", background: "#000" }}
+      style={{ borderRadius: 12, overflow: "hidden", background: "#000" }}
       contentEditable={false}
       onKeyDown={(event: KeyboardEvent) => event.stopPropagation()}
     >

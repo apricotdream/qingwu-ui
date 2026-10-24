@@ -442,7 +442,7 @@ export class SearchBox {
     this.menuBtn.setAttribute("aria-pressed", String(on));
     this.filterbar.classList.toggle("show", on);
     if (on) {
-      this.filterChip.innerHTML = `${cat} <i aria-hidden="true">&times;</i>`;
+      this.filterChip.innerHTML = `${escapeHTML(cat)} <i aria-hidden="true">&times;</i>`;
       this.filterChip.setAttribute("aria-label", `清除筛选：${cat}`);
     }
     /* 异步模式：复用最近一次结果按新类别过滤，避免重复请求 */

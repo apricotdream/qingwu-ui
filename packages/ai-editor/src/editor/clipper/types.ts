@@ -3,6 +3,9 @@
 /** 稳定错误码：大写下划线，扩展侧可据此精确处理 */
 export type ClipperErrorCode =
   | "UNAUTHORIZED" // 401 token 校验失败
+  | "FORBIDDEN" // 403 不可信的浏览器来源
+  | "PAYLOAD_TOO_LARGE" // 413 请求体超过限制
+  | "UNSUPPORTED_MEDIA_TYPE" // 415 仅接受 JSON
   | "INVALID_JSON" // 400 请求体不是合法 JSON
   | "MARKDOWN_REQUIRED" // 422 缺少 markdown 字段
   | "NOT_FOUND" // 404 路由不存在
@@ -38,6 +41,8 @@ export interface ClipperReceiverOptions {
   port?: number;
   host?: string;
   token?: string;
+  /** 允许向本地服务推送的网页/扩展 Origin；缺省仅接受同源或无 Origin 的原生请求。 */
+  allowedOrigins?: string[];
   onClip: (clip: IncomingClip, req: Request) => Promise<unknown> | unknown;
   onHealth?: () => Promise<unknown> | unknown;
 }

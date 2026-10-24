@@ -115,7 +115,11 @@ async function signS3Request(
   return headers;
 }
 
-export function createS3Storage(config: S3StorageOptions): StorageProvider {
+/** 统一访问边界，签名和删除都只能作用于当前桶的资源地址。 */
+export function getS3ResourceBases(config: S3StorageOptions): {
+  apiBase: string;
+  accessBase: string;
+} {
   const endpoint = config.endpoint.replace(/\/+$/, "");
   const endpointUrl = new URL(endpoint);
   const endpointPath = endpointUrl.pathname.replace(/\/+$/, "");
@@ -128,20 +132,31 @@ export function createS3Storage(config: S3StorageOptions): StorageProvider {
   const accessBase = config.customDomain
     ? `https://${config.customDomain.replace(/^https?:\/\//, "").replace(/\/+$/, "")}`
     : apiBase;
+  return { apiBase, accessBase };
+}
 
-  const getObjectKey = (url: string) => {
-    if (url.startsWith(`${accessBase}/`)) return url.slice(accessBase.length + 1);
-    if (url.startsWith(`${apiBase}/`)) return url.slice(apiBase.length + 1);
-    try {
-      const parsed = new URL(url);
-      const path = parsed.pathname.replace(/^\/+/, "");
-      return endpointHasBucket
-        ? path
-        : path.replace(new RegExp(`^${config.bucket.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/`), "");
-    } catch {
-      return url.replace(/^\/+/, "");
+export function getS3ObjectKey(url: string, config: S3StorageOptions): string | null {
+  try {
+    const target = new URL(url);
+    for (const base of Object.values(getS3ResourceBases(config))) {
+      const prefix = new URL(`${base}/`);
+      if (
+        target.origin === prefix.origin &&
+        target.pathname.startsWith(prefix.pathname) &&
+        !target.username &&
+        !target.password
+      ) {
+        return target.pathname.slice(prefix.pathname.length) || null;
+      }
     }
-  };
+  } catch {
+    // 无效地址和外部媒体都不能被映射为当前桶的对象名。
+  }
+  return null;
+}
+
+export function createS3Storage(config: S3StorageOptions): StorageProvider {
+  const { apiBase, accessBase } = getS3ResourceBases(config);
 
   return {
     name: `S3 (${config.bucket})`,
@@ -188,7 +203,8 @@ export function createS3Storage(config: S3StorageOptions): StorageProvider {
     },
 
     async remove(url: string): Promise<void> {
-      const key = getObjectKey(url);
+      const key = getS3ObjectKey(url, config);
+      if (key === null) return;
       const deleteUrl = `${apiBase}/${key}`;
       const headers = await signS3Request(
         "DELETE",

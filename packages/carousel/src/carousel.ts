@@ -312,7 +312,18 @@ export class Carousel {
       nodes.push(desc);
     }
 
+    // 用浏览器 URL 解析协议，避免换行等混淆绕过 javascript: 检查。
+    let safeLink = false;
     if (item.href) {
+      try {
+        safeLink = ["http:", "https:", "mailto:", "tel:"].includes(
+          new URL(item.href, document.baseURI).protocol,
+        );
+      } catch {
+        // 无效地址不生成可点击链接。
+      }
+    }
+    if (safeLink && item.href) {
       const link = lineTag("a", "qcar-link", step++) as HTMLAnchorElement;
       link.href = item.href;
       link.textContent = item.linkLabel ?? "查看详情";

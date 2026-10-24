@@ -3,6 +3,21 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "1.1.7",
+    date: "2026-10-24",
+    tag: "ai-editor · calendar · carousel · search",
+    changes: [
+      {
+        type: "fix",
+        text: "ai-editor 修复标题样式及回车失效，优化图片附件间距、响应式气泡菜单、插入后光标和列表、引用交互；支持 Ctrl+Enter 退出标题，Markdown 导出携带资源，PDF 展示图片与附件名称",
+      },
+      {
+        type: "fix",
+        text: "组件安全修复：加强编辑器内容清洗、剪藏来源校验、S3 资源归属和预览代理防护；calendar 1.1.2、carousel 1.0.1、search 1.0.1 修复 HTML 注入及危险链接问题，并升级相关依赖",
+      },
+    ],
+  },
+  {
     version: "1.1.6",
     date: "2026-10-24",
     tag: "ai-editor",

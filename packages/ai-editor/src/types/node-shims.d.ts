@@ -9,6 +9,7 @@ declare module "node:http" {
     url?: string;
     headers: Record<string, string | string[] | undefined>;
     [Symbol.asyncIterator](): AsyncIterableIterator<Buffer | Uint8Array | string>;
+    iterator(options: { destroyOnReturn: boolean }): AsyncIterableIterator<Buffer | Uint8Array | string>;
   }
   export interface ServerResponse {
     writeHead(status: number, headers?: Record<string, string>): void;
@@ -16,6 +17,8 @@ declare module "node:http" {
     end(data?: string | Buffer): void;
   }
   export interface Server {
+    requestTimeout: number;
+    address(): { port: number } | string | null;
     listen(port: number, host: string, cb?: () => void): Server;
     close(cb?: (err?: Error) => void): Server;
   }

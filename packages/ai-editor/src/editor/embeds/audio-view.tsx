@@ -66,12 +66,7 @@ export function AudioEmbedView({ node, deleteNode, editor }: any) {
   }, [src]);
 
   return (
-    <NodeViewWrapper
-      as="div"
-      className="audio-embed group/audio"
-      style={{ margin: "1rem 0" }}
-      contentEditable={false}
-    >
+    <NodeViewWrapper as="div" className="audio-embed group/audio" contentEditable={false}>
       <div className="audio-embed-inner">
         {/* Header bar */}
         <div className="audio-embed-header">

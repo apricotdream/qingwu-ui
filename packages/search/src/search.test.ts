@@ -20,6 +20,17 @@ describe("SearchBox", () => {
     root = makeContainer();
   });
 
+  test("分类名称按文本渲染，不能注入事件处理器", () => {
+    const category = '<img src=x onerror="window.securityTest=1">';
+    const box = new SearchBox(root, { categories: ["全部", category], typewriter: false });
+    box.open();
+    document.querySelector<HTMLButtonElement>(".qs-iconbtn")!.click();
+    const chip = document.querySelector(".qs-filter-chip")!;
+    expect(chip.textContent).toContain(category);
+    expect(chip.querySelector("img")).toBeNull();
+    box.destroy();
+  });
+
   afterEach(() => {
     document.body.innerHTML = "";
   });

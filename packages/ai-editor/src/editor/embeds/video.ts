@@ -1,6 +1,7 @@
 import { Node } from "@tiptap/core";
 import { NodeSelection, Plugin } from "@tiptap/pm/state";
 import { ReactNodeViewRenderer } from "@tiptap/react";
+import { insertMedia, insertMediaTransaction } from "../utils/insert-media";
 import { VideoEmbedView } from "./video-view";
 
 export type VideoSource = "bilibili" | "xiaohongshu" | "direct" | "unknown";
@@ -81,8 +82,7 @@ export const VideoEmbed = Node.create({
                 src: text,
                 source,
               });
-              const tr = view.state.tr.replaceSelectionWith(node);
-              view.dispatch(tr);
+              insertMedia(view, node);
               return true;
             }
 
@@ -208,14 +208,14 @@ export const VideoEmbed = Node.create({
     return {
       insertVideo:
         (options: { src: string }) =>
-        ({ chain }: { chain: () => any }) => {
+        ({ chain }: { chain: import("@tiptap/core").CommandProps["chain"] }) => {
           const source = detectSource(options.src);
           return chain()
-            .insertContent({
-              type: this.name,
-              attrs: { ...options, source },
-            })
+            .command(({ tr }) =>
+              insertMediaTransaction(tr, this.type.create({ ...options, source })),
+            )
             .focus()
+            .scrollIntoView()
             .run();
         },
     };

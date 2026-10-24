@@ -13,11 +13,15 @@ export function startBrowserClipperReceiver(
     const data = event.data;
     if (!data || typeof data !== "object") return;
     if (data.kind !== CLIP_MESSAGE_KIND) return;
-    // 仅接受同源消息（插件脚本与页面同源）；兼容 jsdom 等 origin 为空或 "null"
-    const origin = event.origin;
-    if (origin && origin !== "null" && origin !== window.location.origin) return;
+    // 插件在当前页面主世界投递；沙箱 iframe 的 null 来源不能视作可信同源。
+    if (
+      event.origin !== window.location.origin ||
+      event.origin === "null" ||
+      event.source !== window
+    )
+      return;
     const clip = data.clip as IncomingClip | undefined;
-    if (!clip?.markdown) return;
+    if (typeof clip?.markdown !== "string" || !clip.markdown.trim()) return;
     try {
       await opts.onClip(clip, event as unknown as Request);
     } catch (e) {

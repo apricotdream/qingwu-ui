@@ -39,8 +39,21 @@ export async function startClipperReceiver(opts: ClipperReceiverOptions): Promis
     sendJson(res, status, { ok: false, error: { code, message } });
 
   const server = http.createServer(async (req, res) => {
-    // CORS 预检
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    // 不能向任意网页开放本地写入接口；拒绝 null Origin 和 DNS rebinding 的网页来源。
+    const address = server.address();
+    const localOrigin = `http://${host}:${typeof address === "object" && address ? address.port : port}`;
+    const origin = req.headers.origin;
+    if (
+      origin !== undefined &&
+      (typeof origin !== "string" ||
+        (origin !== localOrigin && !opts.allowedOrigins?.includes(origin)) ||
+        origin === "null")
+    ) {
+      sendErr(res, 403, "FORBIDDEN", "不允许此来源访问本地接收器");
+      return;
+    }
+    res.setHeader("Vary", "Origin");
+    if (origin) res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
@@ -65,6 +78,14 @@ export async function startClipperReceiver(opts: ClipperReceiverOptions): Promis
 
     // 剪藏推送
     if (req.method === "POST" && url === "/clip") {
+      const contentType = req.headers["content-type"];
+      if (
+        typeof contentType !== "string" ||
+        contentType.split(";")[0].trim().toLowerCase() !== "application/json"
+      ) {
+        sendErr(res, 415, "UNSUPPORTED_MEDIA_TYPE", "仅接受 application/json");
+        return;
+      }
       // token 校验
       if (opts.token) {
         const auth = req.headers.authorization ?? "";
@@ -74,8 +95,21 @@ export async function startClipperReceiver(opts: ClipperReceiverOptions): Promis
         }
       }
       const chunks: Buffer[] = [];
-      for await (const chunk of req) {
-        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      let size = 0;
+      try {
+        for await (const chunk of req.iterator({ destroyOnReturn: false })) {
+          const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+          size += bytes.byteLength;
+          if (size > 10 * 1024 * 1024) {
+            res.setHeader("Connection", "close");
+            sendErr(res, 413, "PAYLOAD_TOO_LARGE", "请求体不能超过 10MB");
+            return;
+          }
+          chunks.push(bytes);
+        }
+      } catch {
+        sendErr(res, 400, "INVALID_JSON", "读取请求体失败");
+        return;
       }
       const raw = Buffer.concat(chunks).toString("utf-8");
       let payload: IncomingClip;
@@ -85,7 +119,7 @@ export async function startClipperReceiver(opts: ClipperReceiverOptions): Promis
         sendErr(res, 400, "INVALID_JSON", "请求体不是合法 JSON");
         return;
       }
-      if (!payload.markdown) {
+      if (!payload || typeof payload.markdown !== "string" || !payload.markdown.trim()) {
         sendErr(res, 422, "MARKDOWN_REQUIRED", "缺少 markdown 字段");
         return;
       }
@@ -100,9 +134,11 @@ export async function startClipperReceiver(opts: ClipperReceiverOptions): Promis
 
     sendErr(res, 404, "NOT_FOUND", "路由不存在");
   });
+  server.requestTimeout = 15_000;
 
   await new Promise<void>((resolve) => server.listen(port, host, resolve));
-  const url = `http://${host}:${port}`;
+  const address = server.address();
+  const url = `http://${host}:${typeof address === "object" && address ? address.port : port}`;
 
   return {
     url,

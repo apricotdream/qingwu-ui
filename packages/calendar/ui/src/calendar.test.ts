@@ -14,6 +14,18 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+it("日期说明和角标只显示文字，不解析外部数据中的 HTML", () => {
+  const text = '<img src=x onerror="window.securityTest=1">';
+  const cal = new Calendar(mount(), {
+    selected: "2026-08-15",
+    dayMetaProviders: [{ id: "untrusted", getDayMeta: () => ({ sub: text, badge: text }) }],
+  });
+  cal.open();
+  expect(document.querySelector(".qw-cal-cell-sub")?.textContent).toBe(text);
+  expect(document.querySelector(".qw-cal-grid img")).toBeNull();
+  cal.destroy();
+});
+
 describe("Calendar · 预设时分秒", () => {
   it("构造时带时分秒的 selected，输入框与 getSelectedDate 都保留时间", () => {
     const cal = new Calendar(mount(), { selected: "2026-08-15 12:34:56" });

@@ -18,6 +18,17 @@ export interface QingwuUIStorage {
 
 export const QingwuUI = Extension.create({
   name: "qingwuUI",
+  // 优先处理标题退出，避免 Ctrl+Enter 被默认的硬换行快捷键接管。
+  priority: 1000,
+
+  addKeyboardShortcuts() {
+    return {
+      "Ctrl-Enter": () =>
+        this.editor.isEditable &&
+        this.editor.isActive("heading") &&
+        this.editor.commands.setParagraph(),
+    };
+  },
 
   addStorage() {
     return {} as QingwuUIStorage;

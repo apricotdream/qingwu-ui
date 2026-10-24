@@ -468,7 +468,7 @@ export default function App() {
   return (
     <div className={`min-h-screen bg-background text-foreground ${fontClass}`}>
       <header className="sticky top-0 z-40 border-b border-default-200 bg-background/80 backdrop-blur-md">
-        <div className="max-w-4xl mx-auto flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3">
+        <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-2 px-3 sm:px-6 py-2 sm:py-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <h1 className="text-base sm:text-lg font-semibold tracking-wide truncate">
               {t("app.title")}
@@ -478,7 +478,7 @@ export default function App() {
             </span>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-1 sm:gap-3">
             <button
               type="button"
               data-tour="mode-toggle"

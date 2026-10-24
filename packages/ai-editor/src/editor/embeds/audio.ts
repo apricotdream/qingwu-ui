@@ -2,6 +2,7 @@
 import { Node } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 import { ReactNodeViewRenderer } from "@tiptap/react";
+import { insertMedia } from "../utils/insert-media";
 import { AudioEmbedView } from "./audio-view";
 
 function detectAudio(src: string): boolean {
@@ -37,7 +38,7 @@ export const AudioEmbed = Node.create({
 
               event.preventDefault();
               const node = view.state.schema.nodes.audioEmbed.create({ src: text });
-              view.dispatch(view.state.tr.replaceSelectionWith(node));
+              insertMedia(view, node);
               return true;
             }
             return false;

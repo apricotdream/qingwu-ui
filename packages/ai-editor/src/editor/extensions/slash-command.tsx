@@ -12,6 +12,7 @@ import {
   getEditorAttachmentLimits,
   validateAttachmentFile,
 } from "../attachment-limits";
+import { insertMedia } from "../utils/insert-media";
 import { uploadPlaceholder } from "./image-upload";
 
 export interface SlashCommandItem {
@@ -483,14 +484,22 @@ export function getDefaultSlashCommands(
       description: t("editor.slash.mathInlineDesc"),
       icon: "∑",
       command: ({ editor }) =>
-        editor.chain().focus().insertContent({ type: "mathInline", attrs: { latex: "" } }).run(),
+        editor
+          .chain()
+          .focus()
+          .insertContent({ type: "mathInline", attrs: { latex: "" } })
+          .run(),
     },
     {
       title: t("editor.slash.mathBlock"),
       description: t("editor.slash.mathBlockDesc"),
       icon: "∫",
       command: ({ editor }) =>
-        editor.chain().focus().insertContent({ type: "mathBlock", attrs: { latex: "" } }).run(),
+        editor
+          .chain()
+          .focus()
+          .insertContent({ type: "mathBlock", attrs: { latex: "" } })
+          .run(),
     },
     {
       title: t("editor.slash.image"),
@@ -542,7 +551,7 @@ export function getDefaultSlashCommands(
             size: file.size,
           });
           if (!node) return;
-          editor.chain().focus().insertContent(node).run();
+          insertMedia(editor.view, node);
           // 上传到存储并替换占位 src（存储未配置时保持 placeholder）
           await uploadPlaceholder(editor.view, file, placeholderSrc);
         };
@@ -575,18 +584,15 @@ export function getDefaultSlashCommands(
             const attType = editor.schema.nodes.attachmentEmbed;
             if (!attType) continue;
             try {
-              editor
-                .chain()
-                .focus()
-                .insertContent(
-                  attType.create({
-                    src: placeholderSrc,
-                    name: file.name,
-                    size: file.size,
-                    type: file.type,
-                  }),
-                )
-                .run();
+              insertMedia(
+                editor.view,
+                attType.create({
+                  src: placeholderSrc,
+                  name: file.name,
+                  size: file.size,
+                  type: file.type,
+                }),
+              );
             } catch {
               continue;
             }

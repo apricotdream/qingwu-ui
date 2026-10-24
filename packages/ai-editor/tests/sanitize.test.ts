@@ -66,6 +66,18 @@ describe("escapeHtml", () => {
 });
 
 describe("sanitizeSvg", () => {
+  it.each([
+    '<svg><a href="jav&#x61;script:alert(1)"><text>link</text></a></svg>',
+    '<svg><a href="java&#10;script:alert(1)"><text>link</text></a></svg>',
+    '<svg><a href="https://example.com"><set attributeName="href" to="javascript:alert(1)"/></a></svg>',
+  ])("拦截 SVG 实体编码和动画属性的脚本链接", (svg) => {
+    const container = document.createElement("div");
+    container.innerHTML = sanitizeSvg(svg);
+    expect(container.querySelector("set")).toBeNull();
+    for (const link of container.querySelectorAll("a")) {
+      expect((link.getAttribute("href") || "").replace(/\s/g, "")).not.toMatch(/^javascript:/i);
+    }
+  });
   it("strips <script> from svg but keeps svg structure", () => {
     const result = sanitizeSvg("<svg><script>alert(1)</script><circle/></svg>");
     expect(result).not.toContain("<script");

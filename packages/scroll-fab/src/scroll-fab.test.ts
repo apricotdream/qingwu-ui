@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { ScrollFab } from "./scroll-fab";
-import type { LenisLike } from "./types";
+import type { LenisLike, ScrollFabMode } from "./types";
 
 const lenisState = vi.hoisted(() => ({
   instances: [] as Array<Record<string, unknown>>,

@@ -22,6 +22,25 @@ afterEach(() => {
 });
 
 describe("Carousel", () => {
+  test.each([
+    "javascript:alert(1)",
+    "java\nscript:alert(1)",
+    "data:text/html,<script>alert(1)</script>",
+    "file:///secret",
+  ])("拒绝危险跳转链接 %s", (href) => {
+    const car = new Carousel(root, { items: [{ ...ITEMS[0]!, href }] });
+    expect(root.querySelector(".qcar-link")).toBeNull();
+    car.destroy();
+  });
+
+  test.each(["/guide", "#details", "https://example.com/page", "mailto:test@example.com"])(
+    "保留安全链接 %s",
+    (href) => {
+      const car = new Carousel(root, { items: [{ ...ITEMS[0]!, href }] });
+      expect(root.querySelector(".qcar-link")?.getAttribute("href")).toBe(href);
+      car.destroy();
+    },
+  );
   test("渲染默认项和缩略图", () => {
     const car = new Carousel(root, { items: ITEMS });
     expect(root.classList.contains("qcar")).toBe(true);

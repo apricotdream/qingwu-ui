@@ -31,6 +31,7 @@ import {
 import { TableToolbar } from "./extensions/table-toolbar";
 import { t } from "./i18n";
 import { MoreIcon, SparklesIcon } from "./icons";
+import { insertMedia } from "./utils/insert-media";
 import { sanitizeHtml } from "./utils/sanitize";
 
 type FloatingPoint = { top: number; left: number; width: number };
@@ -306,6 +307,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   const tocDesktopRef = useRef<HTMLElement | null>(null);
   // 气泡菜单：主行容器 ref（子面板定位锚点）+ 「⋯」二级菜单开关
   const bubbleBoxRef = useRef<HTMLDivElement | null>(null);
+  const moreMenuRef = useRef<HTMLDivElement | null>(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [selectionLooksLikeMath, setSelectionLooksLikeMath] = useState(false);
   const [editorWebFS, setEditorWebFS] = useState(false);
@@ -606,23 +608,43 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   }, [editor, maxAttachmentSize, maxTotalAttachmentSize]);
 
   // 子面板定位：锚定气泡矩形；给出真实高度后空间不足则向上翻转。
-  // 宽度约 240（链接面板），横向夹紧到视口内，纵向 8px 间距。
+  // 面板横向夹紧到视口内，纵向保留 8px 间距。
   const computeSubPanelStyle = useCallback(
     (anchor: DOMRect | null, height: number | undefined): React.CSSProperties => {
-      const panelWidth = 240;
+      const viewport = window.visualViewport;
+      const viewportLeft = viewport?.offsetLeft ?? 0;
+      const viewportTop = viewport?.offsetTop ?? 0;
+      const viewportWidth = viewport?.width ?? window.innerWidth;
+      const viewportHeight = viewport?.height ?? window.innerHeight;
+      const panelWidth = Math.min(252, viewportWidth - 16);
       const left = anchor
-        ? Math.max(8, Math.min(anchor.left, window.innerWidth - panelWidth - 8))
-        : 8;
+        ? Math.max(
+            viewportLeft + 8,
+            Math.min(anchor.left, viewportLeft + viewportWidth - panelWidth - 8),
+          )
+        : viewportLeft + 8;
       let top: number;
       if (!anchor) {
-        top = 8;
-      } else if (height && anchor.bottom + 8 + height > window.innerHeight) {
+        top = viewportTop + 8;
+      } else if (height && anchor.bottom + 8 + height > viewportTop + viewportHeight - 8) {
         // 下方放不下 → 向上翻转；上方也放不下时夹到视口内
-        top = Math.max(8, anchor.top - height - 8);
+        top = anchor.top - height - 8;
       } else {
         top = anchor.bottom + 8;
       }
-      return { position: "fixed", top, left, zIndex: 9999 };
+      top = Math.max(
+        viewportTop + 8,
+        Math.min(top, viewportTop + viewportHeight - (height ?? 0) - 8),
+      );
+      return {
+        position: "fixed",
+        top,
+        left,
+        width: panelWidth,
+        maxHeight: viewportHeight - 16,
+        overflowY: "auto",
+        zIndex: 9999,
+      };
     },
     [],
   );
@@ -648,6 +670,38 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     );
   }, [subPanel, computeSubPanelStyle]);
 
+  const positionMoreMenu = useCallback(() => {
+    const menu = moreMenuRef.current;
+    const anchor = bubbleBoxRef.current;
+    if (!menu || !anchor) return;
+    const rect = anchor.getBoundingClientRect();
+    const viewport = window.visualViewport;
+    const viewportTop = viewport?.offsetTop ?? 0;
+    const viewportHeight = viewport?.height ?? window.innerHeight;
+    const below = viewportTop + viewportHeight - rect.bottom - 16;
+    const above = rect.top - viewportTop - 16;
+    const openAbove = below < menu.scrollHeight + 2 && above > below;
+    menu.dataset.placement = openAbove ? "above" : "below";
+    menu.style.maxHeight = `${Math.max(40, Math.min(viewportHeight - 16, openAbove ? above : below))}px`;
+  }, []);
+
+  // 同时监听可视视口，手机软键盘弹起或横竖屏切换时重新避让。
+  useLayoutEffect(() => {
+    if (!showMoreMenu) return;
+    positionMoreMenu();
+    const viewport = window.visualViewport;
+    window.addEventListener("resize", positionMoreMenu);
+    window.addEventListener("scroll", positionMoreMenu, true);
+    viewport?.addEventListener("resize", positionMoreMenu);
+    viewport?.addEventListener("scroll", positionMoreMenu);
+    return () => {
+      window.removeEventListener("resize", positionMoreMenu);
+      window.removeEventListener("scroll", positionMoreMenu, true);
+      viewport?.removeEventListener("resize", positionMoreMenu);
+      viewport?.removeEventListener("scroll", positionMoreMenu);
+    };
+  }, [showMoreMenu, positionMoreMenu]);
+
   // 面板打开期间：滚动即关闭（气泡菜单与面板会随之错位），窗口缩放时重新定位
   useEffect(() => {
     if (subPanel === "none") return;
@@ -655,14 +709,22 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     const onResize = () => {
       const panel = subPanelRef.current;
       setSubPanelStyle(
-        computeSubPanelStyle(subPanelAnchorRef.current, panel?.offsetHeight || undefined),
+        computeSubPanelStyle(
+          bubbleBoxRef.current?.getBoundingClientRect() ?? subPanelAnchorRef.current,
+          panel?.offsetHeight || undefined,
+        ),
       );
     };
+    const viewport = window.visualViewport;
     window.addEventListener("scroll", close, true);
     window.addEventListener("resize", onResize);
+    viewport?.addEventListener("resize", onResize);
+    viewport?.addEventListener("scroll", onResize);
     return () => {
       window.removeEventListener("scroll", close, true);
       window.removeEventListener("resize", onResize);
+      viewport?.removeEventListener("resize", onResize);
+      viewport?.removeEventListener("scroll", onResize);
     };
   }, [subPanel, computeSubPanelStyle]);
 
@@ -871,7 +933,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
 
   const handleImageInsert = useCallback(
     (url: string) => {
-      editor?.chain().focus().setImage({ src: url }).run();
+      if (editor) insertMedia(editor.view, editor.schema.nodes.image.create({ src: url }));
     },
     [editor],
   );
@@ -1161,12 +1223,24 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
               if (state.selection.empty) return false;
               return true;
             }}
-            options={{ placement: "bottom", offset: 8, flip: true }}
-            className="bubble-menu-pop bg-background border border-default-200 rounded-xl p-1 shadow-lg"
+            options={{
+              placement: "bottom",
+              offset: 8,
+              flip: { padding: 8 },
+              shift: { padding: 8 },
+              size: {
+                padding: 8,
+                apply: ({ availableWidth, elements }) => {
+                  elements.floating.style.maxWidth = `${availableWidth}px`;
+                },
+              },
+              onUpdate: positionMoreMenu,
+            }}
+            className="qw-bubble bubble-menu-pop"
           >
             <div
               ref={bubbleBoxRef}
-              className="bubble-menu-items relative flex items-center gap-0.5"
+              className="bubble-menu-items"
               onPointerDown={(e) => {
                 if ((e.target as HTMLElement).closest("button")) e.preventDefault();
               }}
@@ -1176,11 +1250,9 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                 <button
                   key={action.key}
                   type="button"
-                  className={`flex items-center justify-center w-7 h-7 rounded-lg transition-colors ${
-                    action.isActive(editor)
-                      ? "bg-primary/10 text-primary"
-                      : "text-default-600 hover:bg-default-100"
-                  }`}
+                  className="qw-bubble-button"
+                  data-active={action.isActive(editor)}
+                  aria-pressed={action.isActive(editor)}
                   onClick={(event) => {
                     event.preventDefault();
                     handleBubbleAction(action);
@@ -1192,14 +1264,13 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                 </button>
               ))}
 
-              <span className="w-px h-4 bg-default-200 mx-0.5 shrink-0" aria-hidden="true" />
+              <span className="qw-bubble-divider" aria-hidden="true" />
 
               {/* AI 专属 - 品牌色 */}
               <button
                 type="button"
-                className={`flex items-center justify-center w-7 h-7 rounded-lg transition-colors ${
-                  showAI ? "bg-primary/15 text-primary" : "text-primary hover:bg-primary/10"
-                }`}
+                className="qw-bubble-button qw-bubble-button--ai"
+                data-active={showAI}
                 onClick={(event) => {
                   event.preventDefault();
                   setShowMoreMenu(false);
@@ -1212,17 +1283,15 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                 <SparklesIcon />
               </button>
 
-              <span className="w-px h-4 bg-default-200 mx-0.5 shrink-0" aria-hidden="true" />
+              <span className="qw-bubble-divider" aria-hidden="true" />
 
               {/* 「⋯」低频操作入口 - 展开竖向下拉 */}
               <button
                 type="button"
                 aria-expanded={showMoreMenu}
-                className={`flex items-center justify-center w-7 h-7 rounded-lg transition-colors ${
-                  showMoreMenu
-                    ? "bg-default-100 text-default-900"
-                    : "text-default-600 hover:bg-default-100"
-                }`}
+                aria-haspopup="menu"
+                className="qw-bubble-button"
+                data-active={showMoreMenu}
                 onClick={(event) => {
                   event.preventDefault();
                   setShowMoreMenu((v) => !v);
@@ -1236,8 +1305,9 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
               {/* 「⋯」二级菜单：图标+文字，独立浮层不增高气泡 */}
               {showMoreMenu && (
                 <div
+                  ref={moreMenuRef}
                   role="menu"
-                  className="bubble-more-menu absolute right-0 top-full z-[9999] mt-1 w-max max-h-[70dvh] overflow-y-auto flex-col gap-1 rounded-xl border border-default-200 bg-background p-1.5 shadow-xl"
+                  className="bubble-more-menu"
                   onPointerDown={(e) => {
                     if ((e.target as HTMLElement).closest("button")) e.preventDefault();
                   }}
@@ -1247,21 +1317,16 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                       key={action.key}
                       type="button"
                       role="menuitem"
-                      className={`flex items-center gap-2 w-full whitespace-nowrap px-3 py-1.5 text-xs rounded-md transition-colors ${
-                        isMoreActionActive(action)
-                          ? "bg-primary/10 text-primary"
-                          : "text-default-600 hover:bg-default-100"
-                      }`}
+                      className="qw-bubble-menu-item"
+                      data-active={isMoreActionActive(action)}
                       onClick={(event) => {
                         event.preventDefault();
                         handleBubbleAction(action);
                       }}
                       title={action.label}
                     >
-                      <span className="w-4 h-4 flex items-center justify-center shrink-0">
-                        {action.icon}
-                      </span>
-                      <span className="tracking-wide">{action.label}</span>
+                      <span className="qw-bubble-menu-icon">{action.icon}</span>
+                      <span>{action.label}</span>
                     </button>
                   ))}
                 </div>
@@ -1280,18 +1345,19 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
               <div
                 ref={subPanelRef}
                 style={subPanelStyle}
-                className="bg-background border border-default-200 rounded-xl shadow-xl"
+                className="qw-bubble-panel"
                 onClick={(e) => e.stopPropagation()}
               >
                 {subPanel === "highlight" ? (
-                  <div className="flex items-center gap-1 p-1.5 flex-wrap">
+                  <div className="qw-bubble-colors">
                     {HIGHLIGHT_COLORS.map((c) => (
                       <button
                         key={c.color}
                         type="button"
-                        className="w-5 h-5 rounded-full border border-default-200 hover:scale-110 transition-transform"
+                        className="qw-bubble-swatch"
                         style={{ background: c.color }}
                         title={c.name}
+                        aria-label={c.name}
                         onClick={() => {
                           editor.chain().focus().setHighlight({ color: c.color }).run();
                           setSubPanel("none");
@@ -1300,8 +1366,9 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                     ))}
                     <button
                       type="button"
-                      className="w-5 h-5 rounded-full border border-default-200 text-default-500 hover:bg-default-100 flex items-center justify-center text-[10px]"
+                      className="qw-bubble-swatch qw-bubble-clear"
                       title="清除高亮"
+                      aria-label="清除高亮"
                       onClick={() => {
                         editor.chain().focus().unsetHighlight().run();
                         setSubPanel("none");
@@ -1311,11 +1378,12 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5 p-1.5">
+                  <div className="qw-bubble-link">
                     <input
                       type="url"
-                      className="flex-1 px-2 py-1 text-xs rounded-md border border-default-200 bg-background focus:outline-none focus:border-primary"
+                      className="qw-bubble-link-input"
                       placeholder="https://..."
+                      aria-label="链接地址"
                       value={linkUrl}
                       onChange={(e) => setLinkUrl(e.target.value)}
                       onKeyDown={(e) => {
@@ -1331,7 +1399,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                     />
                     <button
                       type="button"
-                      className="px-2 py-1 text-xs rounded-md bg-primary text-white hover:opacity-90"
+                      className="qw-bubble-link-apply"
                       onClick={() => {
                         if (linkUrl.trim()) {
                           editor.chain().focus().setLink({ href: linkUrl.trim() }).run();

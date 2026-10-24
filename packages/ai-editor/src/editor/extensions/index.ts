@@ -54,6 +54,7 @@ import { CodeBlock } from "./code-block";
 import { ImageUpload } from "./image-upload";
 import { ImeCommitSpaceGuard } from "./ime-commit-space-guard";
 import { InlineCodeEnd } from "./inline-code-end";
+import { ListQuoteHighlight } from "./list-quote-highlight";
 import { MathBlock, MathInline } from "./math";
 import { ObsidianMarkdown } from "./obsidian-markdown";
 import { QingwuUI } from "./qingwu-ui";
@@ -141,6 +142,7 @@ export function getEditorExtensions(config: EditorExtensionsConfig = {}): AnyExt
     RelativeMedia,
     ObsidianMarkdown,
     SearchHighlight,
+    ListQuoteHighlight,
     ImeCommitSpaceGuard,
     QingwuUI,
     VideoEmbed,

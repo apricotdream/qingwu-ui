@@ -1,6 +1,6 @@
 {
   "name": "@qingwu-ui/carousel",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "青梧 UI 主视觉轮播 —— 大图视觉、内容面板、缩略图导航、零依赖",
   "type": "module",
   "license": "Apache-2.0",
@@ -33,11 +33,11 @@
   "devDependencies": {
     "@qingwu-ui/tsconfig": "workspace:*",
     "@size-limit/preset-small-lib": "^13.0.1",
-    "happy-dom": "^20.11.1",
+    "happy-dom": "^21.0.4",
     "size-limit": "^13.0.1",
     "tsdown": "^0.22.14",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.12"
   },
   "size-limit": [
     {

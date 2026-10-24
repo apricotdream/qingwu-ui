@@ -855,9 +855,17 @@ export class Calendar {
         if (meta.cellClass) cellClasses.push(...meta.cellClass.split(/\s+/));
       }
 
-      if (sub) cell.append(el("span", subClass, sub));
+      if (sub) {
+        const label = el("span", subClass);
+        label.textContent = sub;
+        cell.append(label);
+      }
       for (const c of cellClasses) if (c) cell.classList.add(c);
-      if (badge) cell.append(el("span", "qw-cal-cell-badge", badge));
+      if (badge) {
+        const label = el("span", "qw-cal-cell-badge");
+        label.textContent = badge;
+        cell.append(label);
+      }
 
       frag.append(cell);
     }

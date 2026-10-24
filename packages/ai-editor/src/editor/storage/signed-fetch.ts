@@ -1,6 +1,6 @@
 /** S3 签名 GET 请求：附件预览时对私有桶发起认证读取 */
 
-import type { S3StorageOptions } from "./providers/s3";
+import { getS3ObjectKey, type S3StorageOptions } from "./providers/s3";
 
 let currentS3Config: S3StorageOptions | null = null;
 
@@ -164,20 +164,7 @@ export async function signUrl(
 }
 
 function belongsToS3Config(url: string, config: S3StorageOptions): boolean {
-  try {
-    const u = new URL(url);
-    const ep = new URL(config.endpoint.replace(/\/+$/, ""));
-    if (u.host === ep.host) return true;
-    if (config.customDomain) {
-      const cd = new URL(
-        `https://${config.customDomain.replace(/^https?:\/\//, "").replace(/\/+$/, "")}`,
-      );
-      if (u.host === cd.host) return true;
-    }
-    return false;
-  } catch {
-    return false;
-  }
+  return getS3ObjectKey(url, config) !== null;
 }
 
 /** 对已配置 S3 的 URL 注入签名头，否则透传 */

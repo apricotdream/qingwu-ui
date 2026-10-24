@@ -1,4 +1,7 @@
 import { Editor } from "@tiptap/core";
+import { EditorContent } from "@tiptap/react";
+import { act, cleanup, render } from "@testing-library/react";
+import { createElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getEditorExtensions } from "../src/editor/extensions";
 import { setStorageProvider } from "../src/editor/storage";
@@ -102,18 +105,22 @@ describe("全栈：真实扩展（含 React ImageView）下本地图片换链后
   });
 
   afterEach(() => {
-    editor?.destroy();
+    act(() => editor?.destroy());
+    cleanup();
     document.body.innerHTML = "";
   });
 
   it("多图粘贴：文档换链且 DOM 占位消失、<img> 指向存储 URL", async () => {
     const el = document.createElement("div");
     document.body.appendChild(el);
-    editor = new Editor({ element: el, extensions: getEditorExtensions() });
+    editor = new Editor({ extensions: getEditorExtensions() });
+    render(createElement(EditorContent, { editor }), { container: el });
 
     // 复刻用户真实文档形状：[Open: x.png](a.jpeg) 链接 + 同路径图片节点
-    editor.commands.setContent(
-      '<p><a href="a.jpeg">Open: Pasted image 20250810232353.png</a></p><img src="a.jpeg"><p>技巧：</p><p><a href="b.jpeg">Open: Pasted image 20250810232428.png</a></p><img src="b.jpeg">',
+    act(() =>
+      editor.commands.setContent(
+        '<p><a href="a.jpeg">Open: Pasted image 20250810232353.png</a></p><img src="a.jpeg"><p>技巧：</p><p><a href="b.jpeg">Open: Pasted image 20250810232428.png</a></p><img src="b.jpeg">',
+      ),
     );
 
     // 文档层：两个 image 节点与两个同路径链接都换链
@@ -136,9 +143,8 @@ describe("全栈：真实扩展（含 React ImageView）下本地图片换链后
     // 授权弹窗报"文件数"而非"引用条数"：2 个文件（各含节点+链接共 4 条引用）→ 报 2
     expect(h.consentArg).toBe(2);
 
-    // 渲染层说明：jsdom 下 ReactNodeViewRenderer 不挂载 React 节点视图
-    // （DOM 为 ProseMirror 默认 <img> 渲染），React 视图的跟进无法在此验证；
-    // 此处只断言默认渲染已指向存储 URL（即占位语义消失）
+    // 挂载真实 EditorContent，验证升级后 React 图片视图也已完成换链。
+    await vi.waitFor(() => expect(el.querySelectorAll("img").length).toBeGreaterThanOrEqual(2));
     const imgs = el.querySelectorAll("img");
     expect(imgs.length).toBeGreaterThanOrEqual(2);
     for (const img of Array.from(imgs)) {

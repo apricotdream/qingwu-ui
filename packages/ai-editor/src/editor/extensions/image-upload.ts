@@ -8,6 +8,7 @@ import {
 } from "../attachment-limits";
 import { getStorageProvider, ownedUrlChecker } from "../storage";
 import { openImportChoiceDialog } from "../utils/import-choice-dialog";
+import { insertMedia } from "../utils/insert-media";
 import { textHasLocalMediaRefs } from "../utils/local-media";
 
 type MediaType = "image" | "video" | "audio" | "file" | "markdown";
@@ -70,7 +71,7 @@ async function insertMdFile(view: any, file: File, pos?: number, editor?: any) {
     });
     if (attNode) {
       try {
-        view.dispatch(view.state.tr.insert(insertPos, attNode));
+        insertMedia(view, attNode, pos);
       } catch {
         /* skip */
       }
@@ -190,9 +191,8 @@ async function uploadAndInsert(view: any, file: File, pos?: number, editor?: any
   const node = createNode(view.state.schema, file, placeholderSrc);
   if (!node) return;
 
-  const insertPos = pos ?? view.state.selection.from;
   try {
-    view.dispatch(view.state.tr.insert(insertPos, node));
+    insertMedia(view, node, pos);
   } catch {
     return;
   }
@@ -225,12 +225,14 @@ export const ImageUpload = Extension.create<AttachmentLimits>({
             // MD 文件 → 直接渲染；其他文件 → embed/attachment
             const pos = view.posAtCoords({ left: event.clientX, top: event.clientY });
 
+            let dropPos = pos?.pos;
             for (const file of Array.from(files)) {
               if (isMdFile(file)) {
-                insertMdFile(view, file, pos?.pos, editor);
+                insertMdFile(view, file, dropPos, editor);
               } else {
-                uploadAndInsert(view, file, pos?.pos, editor);
+                uploadAndInsert(view, file, dropPos, editor);
               }
+              dropPos = undefined;
             }
             return true;
           },
