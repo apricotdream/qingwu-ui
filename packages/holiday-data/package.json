@@ -1,6 +1,6 @@
 {
   "name": "@qingwu-ui/holiday-data",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "中国年度放假调休 JSON 与附来源的节日资料，离线可用",
   "type": "module",
   "license": "Apache-2.0",
