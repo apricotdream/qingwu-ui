@@ -88,6 +88,9 @@ export class Calendar {
   private scrollListener: (() => void) | null = null;
   private scrollTargets: Array<Window | HTMLElement> = [];
   private readonly popoverMinWidth = 320;
+  private readonly reposition = () => {
+    if (this.isOpen) this.placePopover();
+  };
 
   /* 提交制快照：open 时记录，取消/收起时回滚 */
   private snapshot: {
@@ -172,6 +175,7 @@ export class Calendar {
   }
 
   private build(): void {
+    this.root.classList.add("qw-cal-root");
     this.triggerWrap = el("div", "qw-cal-trigger");
 
     this.input = el("input", "qw-cal-input") as HTMLInputElement;
@@ -305,12 +309,8 @@ export class Calendar {
     this.panel.append(this.mainArea, this.detailPanel);
     this.overlay.append(this.panel);
     this.root.append(this.triggerWrap);
-    /* popover 浮层挂到 body：fixed 定位脱离宿主 overflow/transform 裁剪 */
-    if (this.mode === "popover") {
-      document.body.appendChild(this.overlay);
-    } else {
-      this.root.append(this.overlay);
-    }
+    /* 两种浮层都脱离宿主的 overflow/transform，始终以视口定位。 */
+    document.body.appendChild(this.overlay);
   }
 
   private bind(): void {
@@ -589,33 +589,48 @@ export class Calendar {
   /** popover 锚定：宽=触发区+详情栏，左缘对齐；放不下向上翻，仍放不下钳制高度内滚 */
   private placePopover(): void {
     const ir = this.input.getBoundingClientRect();
-    const vh = window.innerHeight || 0;
-    const vw = window.innerWidth || 0;
+    const viewport = window.visualViewport;
+    const vh = viewport?.height ?? window.innerHeight;
+    const vw = viewport?.width ?? window.innerWidth;
+    const viewportTop = viewport?.offsetTop ?? 0;
+    const viewportLeft = viewport?.offsetLeft ?? 0;
     const gap = 8;
-    const base = ir.width > 0 ? ir.width : this.popoverMinWidth;
+    const availableWidth = Math.max(0, vw - gap * 2);
+    const base = Math.min(Math.max(ir.width, this.popoverMinWidth), availableWidth);
     const sideActive = this.showDetailPanel && this.detailPanel.classList.contains("is-active");
     /* inside 详情为面板内覆盖，不参与宽度；left/right 详情参与面板宽度 */
     /* 测宽前临时取消 width 过渡（过渡中间值会测不准） */
     const prevSideTrans = this.detailPanel.style.transition;
     this.detailPanel.style.transition = "none";
-    const sideW = sideActive && this.detailPosition !== "inside" ? this.detailPanel.offsetWidth : 0;
+    this.overlay.classList.remove("is-detail-compact");
+    let sideW = sideActive && this.detailPosition !== "inside" ? this.detailPanel.offsetWidth : 0;
+    // 横向放不下详情时，改为面板内覆盖；关闭详情即可回到日期网格。
+    const compact = base + sideW > availableWidth;
+    this.overlay.classList.toggle("is-detail-compact", compact);
+    if (compact) sideW = 0;
     this.detailPanel.style.transition = prevSideTrans;
 
-    /* 先按 输入框+详情宽 定位，再以面板实际宽度兜底（防窄输入框裁掉右侧） */
-    this.overlay.style.width = `${base + sideW}px`;
-    const panelW = Math.max(base + sideW, this.panel.offsetWidth);
+    /* 日期网格和可见详情的总宽度，已限制在视口内。 */
+    const panelW = base + sideW;
     this.overlay.style.width = `${panelW}px`;
 
     /* left：向左展开（网格锚点保持输入框处）；right/inside：左缘对齐输入框 */
     const leftShift = sideActive && this.detailPosition === "left" ? sideW : 0;
-    const left = Math.max(gap, Math.min(ir.left - leftShift, vw - panelW - gap));
+    const left = Math.max(
+      viewportLeft + gap,
+      Math.min(ir.left - leftShift, viewportLeft + vw - panelW - gap),
+    );
     this.overlay.style.left = `${left}px`;
 
     /* 复位钳制后测量自然高度 */
     this.panel.style.maxHeight = "";
     const natural = this.panel.offsetHeight;
-    const spaceBelow = vh - ir.bottom - gap * 2;
-    const spaceAbove = ir.top - gap * 2;
+    const availableHeight = Math.max(0, vh - gap * 2);
+    const spaceBelow = Math.max(
+      0,
+      Math.min(availableHeight, viewportTop + vh - ir.bottom - gap * 2),
+    );
+    const spaceAbove = Math.max(0, Math.min(availableHeight, ir.top - viewportTop - gap * 2));
 
     let flip = false;
     if (vh > 0 && natural > spaceBelow) {
@@ -627,7 +642,8 @@ export class Calendar {
 
     const h = this.panel.offsetHeight;
     this.overlay.classList.toggle("is-flip", flip);
-    this.overlay.style.top = flip ? `${Math.max(gap, ir.top - h - gap)}px` : `${ir.bottom + gap}px`;
+    const top = flip ? ir.top - h - gap : ir.bottom + gap;
+    this.overlay.style.top = `${Math.max(viewportTop + gap, Math.min(top, viewportTop + vh - h - gap))}px`;
   }
 
   /** popover 滚动即收起：监听 window 与输入框所有可滚动祖先的 scroll */
@@ -647,6 +663,8 @@ export class Calendar {
     }
     this.scrollTargets = scrollables;
     this.scrollListener = onScroll;
+    window.addEventListener("resize", this.reposition);
+    window.visualViewport?.addEventListener("resize", this.reposition);
   }
 
   private unbindPopoverScroll(): void {
@@ -656,6 +674,8 @@ export class Calendar {
     }
     this.scrollTargets = [];
     this.scrollListener = null;
+    window.removeEventListener("resize", this.reposition);
+    window.visualViewport?.removeEventListener("resize", this.reposition);
   }
 
   private render(): void {
@@ -666,6 +686,7 @@ export class Calendar {
     this.grid.classList.remove("is-year-grid", "is-month-grid");
     if (this.viewMode === "year") {
       if (weekEl) weekEl.style.display = "none";
+      this.grid.classList.add("is-year-grid");
       this.renderYearGrid();
     } else if (this.viewMode === "month") {
       if (weekEl) weekEl.style.display = "none";

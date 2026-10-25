@@ -414,6 +414,121 @@ describe("Calendar · popover 视口钳制（溢出可滚）", () => {
   });
 });
 
+describe("Calendar · 响应式浮层", () => {
+  function setup(width = 320) {
+    vi.stubGlobal("innerWidth", width);
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
+    const onChange = vi.fn();
+    const cal = new Calendar(mount(), { mode: "popover", selected: "2026-08-01", onChange });
+    const input = document.querySelector<HTMLElement>(".qw-cal-input")!;
+    input.getBoundingClientRect = () =>
+      ({ left: 40, right: 160, top: 100, bottom: 142, width: 120, height: 42 }) as DOMRect;
+    const overlay = document.querySelector<HTMLElement>(".qw-cal-overlay")!;
+    const side = overlay.querySelector<HTMLElement>(".qw-cal-side")!;
+    Object.defineProperty(side, "offsetWidth", { configurable: true, get: () => 240 });
+    cal.open();
+    return { cal, overlay, onChange };
+  }
+
+  it.each(["modal", "popover"] as const)("%s 脱离带 transform / overflow 的宿主", (mode) => {
+    const host = mount();
+    host.style.transform = "translateX(0)";
+    host.style.overflow = "hidden";
+    const cal = new Calendar(host, { mode });
+    expect(host.classList.contains("qw-cal-root")).toBe(true);
+    expect(document.querySelector(".qw-cal-overlay")!.parentElement).toBe(document.body);
+    cal.destroy();
+    expect(document.querySelector(".qw-cal-overlay")).toBeNull();
+  });
+
+  it("窄输入框保留可用的日历宽度，两边不越过视口", () => {
+    const { cal, overlay } = setup();
+    expect(overlay.style.width).toBe("304px");
+    expect(overlay.style.left).toBe("8px");
+    expect(overlay.classList.contains("is-detail-compact")).toBe(true);
+    expect(overlay.querySelector(".qw-cal-side.is-active")).not.toBeNull();
+    cal.destroy();
+  });
+
+  it("年、月视图使用独立网格，选完后恢复日期网格", () => {
+    const { cal, overlay } = setup();
+    const grid = overlay.querySelector<HTMLElement>(".qw-cal-grid")!;
+    overlay.querySelector<HTMLButtonElement>(".qw-cal-title-year")!.click();
+    expect(grid.classList.contains("is-year-grid")).toBe(true);
+    expect(grid.querySelectorAll(".qw-cal-year-cell")).toHaveLength(12);
+    grid.querySelector<HTMLButtonElement>('[data-year="2026"]')!.click();
+    expect(grid.classList.contains("is-year-grid")).toBe(false);
+    overlay.querySelector<HTMLButtonElement>(".qw-cal-title-month")!.click();
+    expect(grid.classList.contains("is-month-grid")).toBe(true);
+    expect(grid.querySelectorAll(".qw-cal-month-cell")).toHaveLength(12);
+    grid.querySelector<HTMLButtonElement>('[data-month="8"]')!.click();
+    expect(grid.className).toBe("qw-cal-grid");
+    expect(grid.querySelector('[data-date="2026-08-15"]')).not.toBeNull();
+    cal.destroy();
+  });
+
+  it("窗口变窄改为覆盖详情，变宽后恢复侧栏且不提交日期", () => {
+    const { cal, overlay, onChange } = setup(1000);
+    expect(overlay.style.width).toBe("560px");
+    expect(overlay.classList.contains("is-detail-compact")).toBe(false);
+    vi.stubGlobal("innerWidth", 375);
+    window.dispatchEvent(new Event("resize"));
+    expect(overlay.style.width).toBe("320px");
+    expect(overlay.classList.contains("is-detail-compact")).toBe(true);
+    vi.stubGlobal("innerWidth", 1000);
+    window.dispatchEvent(new Event("resize"));
+    expect(overlay.style.width).toBe("560px");
+    expect(overlay.classList.contains("is-detail-compact")).toBe(false);
+    expect(onChange).not.toHaveBeenCalled();
+    cal.close();
+    vi.stubGlobal("innerWidth", 320);
+    window.dispatchEvent(new Event("resize"));
+    expect(overlay.style.width).toBe("560px");
+    cal.destroy();
+  });
+
+  it("软键盘缩小可见视口后重新限制位置与高度，并清理监听", () => {
+    const viewport = Object.assign(new EventTarget(), {
+      width: 320,
+      height: 300,
+      offsetTop: 50,
+      offsetLeft: 20,
+    });
+    vi.stubGlobal("visualViewport", viewport);
+    const remove = vi.spyOn(viewport, "removeEventListener");
+    const { cal, overlay } = setup(1000);
+    const panel = overlay.querySelector<HTMLElement>(".qw-cal-panel")!;
+    Object.defineProperty(panel, "offsetHeight", {
+      get: () => Math.min(500, Number.parseFloat(panel.style.maxHeight) || 500),
+    });
+    viewport.dispatchEvent(new Event("resize"));
+    expect(overlay.style.width).toBe("304px");
+    expect(overlay.style.left).toBe("28px");
+    expect(overlay.style.top).toBe("150px");
+    expect(panel.style.maxHeight).toBe("192px");
+    cal.destroy();
+    expect(remove).toHaveBeenCalledWith("resize", expect.any(Function));
+  });
+
+  it("尺寸变化使输入框移出可见区时，面板仍限制在视口内", () => {
+    vi.stubGlobal("innerHeight", 600);
+    const { cal, overlay } = setup();
+    document.querySelector<HTMLElement>(".qw-cal-input")!.getBoundingClientRect = () =>
+      ({ left: 40, right: 160, top: -120, bottom: -78, width: 120, height: 42 }) as DOMRect;
+    const panel = overlay.querySelector<HTMLElement>(".qw-cal-panel")!;
+    Object.defineProperty(panel, "offsetHeight", {
+      get: () => Math.min(800, Number.parseFloat(panel.style.maxHeight) || 800),
+    });
+    window.dispatchEvent(new Event("resize"));
+    expect(overlay.style.top).toBe("8px");
+    expect(panel.style.maxHeight).toBe("584px");
+    cal.destroy();
+  });
+});
+
 describe("Calendar · modal 提交制", () => {
   it("modal 点日期不回发；确认回发完整 datetime 并收起", () => {
     vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {

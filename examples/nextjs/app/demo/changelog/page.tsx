@@ -3,6 +3,21 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "1.1.3",
+    date: "2026-10-25",
+    tag: "calendar",
+    changes: [
+      {
+        type: "fix",
+        text: "calendar 修复窄屏日期列和时间操作区溢出、浮层被宿主裁切及尺寸变化后定位失效；详情侧栏空间不足时改为可关闭的面板内覆盖，改善弹窗滚动和底部操作可达性",
+      },
+      {
+        type: "improve",
+        text: "calendar 统一输入框、标题、日期数字、节假日角标和主题色选中态，优化确认按钮、明暗主题对比度及移动端间距",
+      },
+    ],
+  },
+  {
     version: "1.1.7",
     date: "2026-10-24",
     tag: "ai-editor · calendar · carousel · search",
