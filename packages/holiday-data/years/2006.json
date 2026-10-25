@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "year": 2006,
+  "updatedAt": "2026-10-25",
+  "sources": [
+    {
+      "title": "转发国务院办公厅关于2006年部分节假日安排的通知",
+      "publisher": "吉林省人民政府办公厅（转发国务院办公厅原文）",
+      "url": "https://xxgk.jl.gov.cn/szf/gkml/201812/t20181205_5350003.html",
+      "accessedAt": "2026-10-25"
+    }
+  ],
+  "days": [
+    {
+      "date": "2005-12-31",
+      "name": "元旦",
+      "isOffDay": false
+    },
+    {
+      "date": "2006-01-01",
+      "name": "元旦",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-01-02",
+      "name": "元旦",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-01-03",
+      "name": "元旦",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-01-28",
+      "name": "春节",
+      "isOffDay": false
+    },
+    {
+      "date": "2006-01-29",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-01-30",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-01-31",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-02-01",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-02-02",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-02-03",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-02-04",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-02-05",
+      "name": "春节",
+      "isOffDay": false
+    },
+    {
+      "date": "2006-04-29",
+      "name": "劳动节",
+      "isOffDay": false
+    },
+    {
+      "date": "2006-04-30",
+      "name": "劳动节",
+      "isOffDay": false
+    },
+    {
+      "date": "2006-05-01",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-05-02",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-05-03",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-05-04",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-05-05",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-05-06",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-05-07",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-09-30",
+      "name": "国庆节",
+      "isOffDay": false
+    },
+    {
+      "date": "2006-10-01",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-10-02",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-10-03",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-10-04",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-10-05",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-10-06",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-10-07",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2006-10-08",
+      "name": "国庆节",
+      "isOffDay": false
+    }
+  ]
+}

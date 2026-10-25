@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "year": 2002,
+  "updatedAt": "2026-10-25",
+  "sources": [
+    {
+      "title": "关于2002年部分节假日休息安排的通知",
+      "publisher": "福建省人民政府办公厅",
+      "url": "https://zfgb.fujian.gov.cn/7038",
+      "accessedAt": "2026-10-25"
+    }
+  ],
+  "days": [
+    {
+      "date": "2001-12-29",
+      "name": "元旦",
+      "isOffDay": false
+    },
+    {
+      "date": "2001-12-30",
+      "name": "元旦",
+      "isOffDay": false
+    },
+    {
+      "date": "2002-01-01",
+      "name": "元旦",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-01-02",
+      "name": "元旦",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-01-03",
+      "name": "元旦",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-02-09",
+      "name": "春节",
+      "isOffDay": false
+    },
+    {
+      "date": "2002-02-10",
+      "name": "春节",
+      "isOffDay": false
+    },
+    {
+      "date": "2002-02-12",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-02-13",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-02-14",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-02-15",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-02-16",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-02-17",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-02-18",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-04-27",
+      "name": "劳动节",
+      "isOffDay": false
+    },
+    {
+      "date": "2002-04-28",
+      "name": "劳动节",
+      "isOffDay": false
+    },
+    {
+      "date": "2002-05-01",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-05-02",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-05-03",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-05-04",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-05-05",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-05-06",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-05-07",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-09-28",
+      "name": "国庆节",
+      "isOffDay": false
+    },
+    {
+      "date": "2002-09-29",
+      "name": "国庆节",
+      "isOffDay": false
+    },
+    {
+      "date": "2002-10-01",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-10-02",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-10-03",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-10-04",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-10-05",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-10-06",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2002-10-07",
+      "name": "国庆节",
+      "isOffDay": true
+    }
+  ]
+}

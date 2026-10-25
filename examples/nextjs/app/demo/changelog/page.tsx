@@ -3,6 +3,17 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "1.2.0",
+    date: "2026-10-25",
+    tag: "calendar · holiday-data",
+    changes: [
+      {
+        type: "improve",
+        text: "新增 @qingwu-ui/holiday-data 1.1.0：1998—2026 年覆盖状态与可核实历史安排（1998—2000 缺失，2001、2003 部分收录），以及附来源的节日介绍、渊源及习俗；calendar 默认可选接入，支持自带 JSON、独立 /core 入口及主动加载在线数据，演示页同步展示来源和数据更新时间",
+      },
+    ],
+  },
+  {
     version: "1.1.3",
     date: "2026-10-25",
     tag: "calendar",

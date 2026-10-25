@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "year": 2003,
+  "updatedAt": "2026-10-25",
+  "sources": [
+    {
+      "title": "关于2003年部分节假日休息安排的通知（五一原方案已调整，不录入）",
+      "publisher": "深圳市人民政府办公厅",
+      "url": "https://www.sz.gov.cn/zfgb/2003/gb317/content/post_5004142.html",
+      "accessedAt": "2026-10-25"
+    },
+    {
+      "title": "国务院新闻办新闻发布会答问记录：因非典暂停五一长假",
+      "publisher": "国务院新闻办公室（外交部网站刊载）",
+      "url": "https://www.fmprc.gov.cn/ziliao_674904/zt_674979/ywzt_675099/zt2003_675963/2267_675979/200304/t20030420_7965016.shtml",
+      "accessedAt": "2026-10-25"
+    }
+  ],
+  "days": [
+    {
+      "date": "2003-01-01",
+      "name": "元旦",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-02-01",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-02-02",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-02-03",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-02-04",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-02-05",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-02-06",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-02-07",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-02-08",
+      "name": "春节",
+      "isOffDay": false
+    },
+    {
+      "date": "2003-02-09",
+      "name": "春节",
+      "isOffDay": false
+    },
+    {
+      "date": "2003-09-27",
+      "name": "国庆节",
+      "isOffDay": false
+    },
+    {
+      "date": "2003-09-28",
+      "name": "国庆节",
+      "isOffDay": false
+    },
+    {
+      "date": "2003-10-01",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-10-02",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-10-03",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-10-04",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-10-05",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-10-06",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2003-10-07",
+      "name": "国庆节",
+      "isOffDay": true
+    }
+  ],
+  "missingHolidays": ["劳动节（非典期间调整后的最终安排待核实）"]
+}

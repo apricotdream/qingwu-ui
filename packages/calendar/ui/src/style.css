@@ -847,6 +847,42 @@
   margin-right: var(--qw-space-1);
 }
 
+.qw-detail-references {
+  margin-top: 0.625rem;
+  color: var(--qw-ink-2);
+  font-size: 0.75rem;
+}
+.qw-detail-references summary {
+  cursor: pointer;
+  padding-block: 0.5rem;
+}
+.qw-detail-references summary:focus-visible,
+.qw-detail-sources a:focus-visible {
+  outline: 2px solid var(--qw-teal);
+  outline-offset: 2px;
+}
+.qw-detail-sources {
+  display: grid;
+  gap: 0.625rem;
+  padding: 0.5rem 0;
+  list-style: none;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.qw-detail-sources a {
+  color: var(--qw-teal);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.qw-detail-sources span,
+.qw-detail-meta {
+  display: block;
+  color: var(--qw-ink-2);
+  font-size: 0.6875rem;
+}
+
 /* 黄历宜忌 */
 .qw-almanac-item {
   font-size: var(--qw-text-sm);

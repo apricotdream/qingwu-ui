@@ -24,6 +24,7 @@ function run(cmd, args, env) {
 try {
   // 1) 同步 file-viewer 静态资源（与 build/dev 一致）
   run(process.execPath, ["scripts/sync-file-viewer.mjs"]);
+  run(process.execPath, ["scripts/sync-holiday-data.mjs"]);
 
   // 2) 临时移走 API 路由（export 不支持）
   const hadApi = existsSync(apiDir);

@@ -1,6 +1,6 @@
 /** 农历引擎：纯函数无副作用；数据基于天文历书（1900-2100 查表）；节气用近似算法+年份修正；UTC 计算避免时区漂移 */
 
-/** 农历年数据（1900-2100）：每项 hex 编码一年——bits0-3 闰月月份，bits4-15 各月大小（bit4=正月，1=大月30天），bit16 闰月大小；来源：紫金山天文台历书 */
+/** 农历年数据（1900-2100）：bits0-3 闰月，bits15→4 正月→腊月（1=30天），bit16 闰月大小；日期可与香港天文台公农历对照表核对。 */
 const LUNAR_INFO: number[] = [
   // 1900-1909
   0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2,
@@ -70,7 +70,7 @@ function getLunarYearMeta(lunarYear: number): LunarYearMeta {
   const monthDays: number[] = [];
 
   for (let i = 0; i < 12; i++) {
-    monthDays.push((info >> (4 + i)) & 1 ? 30 : 29);
+    monthDays.push((info >> (15 - i)) & 1 ? 30 : 29);
   }
 
   if (leapMonth > 0) {
@@ -360,7 +360,7 @@ const SOLAR_TERM_NAMES: string[] = [
   "冬至",
 ];
 
-/** 节气年份修正表：键 "YYYY-节气序号"，值=修正天数（仅记非 0，覆盖 2020-2030；来源：紫金山天文台） */
+/** 旧版近似节气修正表；已核对年份优先使用下方天文台日期。 */
 const SOLAR_TERM_ADJ: Record<string, number> = {
   // 2020 年
   "2020-1": -1,
@@ -450,8 +450,21 @@ const SOLAR_TERM_ADJ: Record<string, number> = {
   "2030-19": -1,
 };
 
+/** 香港天文台公农历对照表，按小寒→冬至排列。
+ * https://www.hko.gov.hk/tc/gts/time/calendar/pdf/files/2024.pdf
+ * https://www.hko.gov.hk/tc/gts/time/calendar/pdf/files/2025.pdf
+ * https://www.hko.gov.hk/tc/gts/time/calendar/pdf/files/2026.pdf
+ */
+const VERIFIED_TERM_DAYS: Record<number, number[]> = {
+  2024: [6, 20, 4, 19, 5, 20, 4, 19, 5, 20, 5, 21, 6, 22, 7, 22, 7, 22, 8, 23, 7, 22, 6, 21],
+  2025: [5, 20, 3, 18, 5, 20, 4, 20, 5, 21, 5, 21, 7, 22, 7, 23, 7, 23, 8, 23, 7, 22, 7, 21],
+  2026: [5, 20, 4, 18, 5, 20, 5, 20, 5, 21, 5, 21, 7, 23, 7, 23, 7, 23, 8, 23, 7, 22, 7, 22],
+};
+
 function _getSolarTermDate(year: number, termIndex: number): { month: number; day: number } {
   const base = SOLAR_TERM_BASE[termIndex]!;
+  const verified = VERIFIED_TERM_DAYS[year]?.[termIndex];
+  if (verified !== undefined) return { month: base[0], day: verified };
   const adj = SOLAR_TERM_ADJ[`${year}-${termIndex}`] ?? 0;
   return { month: base[0], day: base[1] + adj };
 }

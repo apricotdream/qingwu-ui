@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "year": 2001,
+  "updatedAt": "2026-10-25",
+  "sources": [
+    {
+      "title": "转发国务院办公厅关于2001年春节、“五一”、“十一”放假安排的通知",
+      "publisher": "福建省人民政府办公厅",
+      "url": "https://zfgb.fj.gov.cn/945",
+      "accessedAt": "2026-10-25"
+    }
+  ],
+  "days": [
+    {
+      "date": "2001-01-20",
+      "name": "春节",
+      "isOffDay": false
+    },
+    {
+      "date": "2001-01-21",
+      "name": "春节",
+      "isOffDay": false
+    },
+    {
+      "date": "2001-01-24",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-01-25",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-01-26",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-01-27",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-01-28",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-01-29",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-01-30",
+      "name": "春节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-04-28",
+      "name": "劳动节",
+      "isOffDay": false
+    },
+    {
+      "date": "2001-04-29",
+      "name": "劳动节",
+      "isOffDay": false
+    },
+    {
+      "date": "2001-05-01",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-05-02",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-05-03",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-05-04",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-05-05",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-05-06",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-05-07",
+      "name": "劳动节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-09-29",
+      "name": "国庆节",
+      "isOffDay": false
+    },
+    {
+      "date": "2001-09-30",
+      "name": "国庆节",
+      "isOffDay": false
+    },
+    {
+      "date": "2001-10-01",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-10-02",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-10-03",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-10-04",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-10-05",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-10-06",
+      "name": "国庆节",
+      "isOffDay": true
+    },
+    {
+      "date": "2001-10-07",
+      "name": "国庆节",
+      "isOffDay": true
+    }
+  ],
+  "missingHolidays": ["元旦"]
+}

@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "青梧节假日数据协议",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/year"
+    },
+    {
+      "$ref": "#/$defs/data"
+    }
+  ],
+  "$defs": {
+    "source": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "publisher": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https?://"
+        },
+        "accessedAt": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": ["title", "publisher", "url", "accessedAt"]
+    },
+    "text": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["text", "sources"]
+    },
+    "day": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "name": {
+          "type": "string"
+        },
+        "isOffDay": {
+          "type": "boolean"
+        }
+      },
+      "required": ["date", "name", "isOffDay"]
+    },
+    "year": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "year": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          }
+        },
+        "days": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/day"
+          }
+        },
+        "missingHolidays": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "非空表示该年度仅部分收录，列出尚未核实的节假日"
+        }
+      },
+      "required": ["schemaVersion", "year", "updatedAt", "sources", "days"]
+    },
+    "rule": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "calendar": {
+              "enum": ["lunar", "solar"]
+            },
+            "month": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "day": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 31
+            }
+          },
+          "required": ["calendar", "month", "day"]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "calendar": {
+              "const": "solar-term"
+            },
+            "term": {
+              "type": "string"
+            }
+          },
+          "required": ["calendar", "term"]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "calendar": {
+              "const": "lunar-eve"
+            }
+          },
+          "required": ["calendar"]
+        }
+      ]
+    },
+    "festival": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rule": {
+          "$ref": "#/$defs/rule"
+        },
+        "description": {
+          "$ref": "#/$defs/text"
+        },
+        "origin": {
+          "$ref": "#/$defs/text"
+        },
+        "customs": {
+          "$ref": "#/$defs/text"
+        }
+      },
+      "required": ["id", "name", "rule", "description", "origin", "customs"]
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date"
+        },
+        "years": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/year"
+          }
+        },
+        "festivals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/festival"
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "properties": {
+            "startYear": {
+              "type": "integer"
+            },
+            "endYear": {
+              "type": "integer"
+            },
+            "missingYears": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "uniqueItems": true
+            }
+          },
+          "required": ["startYear", "endYear", "missingYears"]
+        }
+      },
+      "required": ["schemaVersion", "updatedAt", "years", "festivals"]
+    }
+  }
+}

@@ -1,0 +1,5551 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-25",
+  "years": [
+    {
+      "schemaVersion": 1,
+      "year": 2001,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "转发国务院办公厅关于2001年春节、“五一”、“十一”放假安排的通知",
+          "publisher": "福建省人民政府办公厅",
+          "url": "https://zfgb.fj.gov.cn/945",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "date": "2001-01-20",
+          "name": "春节",
+          "isOffDay": false
+        },
+        {
+          "date": "2001-01-21",
+          "name": "春节",
+          "isOffDay": false
+        },
+        {
+          "date": "2001-01-24",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-01-25",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-01-26",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-01-27",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-01-28",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-01-29",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-01-30",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-04-28",
+          "name": "劳动节",
+          "isOffDay": false
+        },
+        {
+          "date": "2001-04-29",
+          "name": "劳动节",
+          "isOffDay": false
+        },
+        {
+          "date": "2001-05-01",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-05-02",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-05-03",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-05-04",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-05-05",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-05-06",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-05-07",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-09-29",
+          "name": "国庆节",
+          "isOffDay": false
+        },
+        {
+          "date": "2001-09-30",
+          "name": "国庆节",
+          "isOffDay": false
+        },
+        {
+          "date": "2001-10-01",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-10-02",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-10-03",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-10-04",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-10-05",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-10-06",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2001-10-07",
+          "name": "国庆节",
+          "isOffDay": true
+        }
+      ],
+      "missingHolidays": ["元旦"]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2002,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "关于2002年部分节假日休息安排的通知",
+          "publisher": "福建省人民政府办公厅",
+          "url": "https://zfgb.fujian.gov.cn/7038",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "date": "2001-12-29",
+          "name": "元旦",
+          "isOffDay": false
+        },
+        {
+          "date": "2001-12-30",
+          "name": "元旦",
+          "isOffDay": false
+        },
+        {
+          "date": "2002-01-01",
+          "name": "元旦",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-01-02",
+          "name": "元旦",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-01-03",
+          "name": "元旦",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-02-09",
+          "name": "春节",
+          "isOffDay": false
+        },
+        {
+          "date": "2002-02-10",
+          "name": "春节",
+          "isOffDay": false
+        },
+        {
+          "date": "2002-02-12",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-02-13",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-02-14",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-02-15",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-02-16",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-02-17",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-02-18",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-04-27",
+          "name": "劳动节",
+          "isOffDay": false
+        },
+        {
+          "date": "2002-04-28",
+          "name": "劳动节",
+          "isOffDay": false
+        },
+        {
+          "date": "2002-05-01",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-05-02",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-05-03",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-05-04",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-05-05",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-05-06",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-05-07",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-09-28",
+          "name": "国庆节",
+          "isOffDay": false
+        },
+        {
+          "date": "2002-09-29",
+          "name": "国庆节",
+          "isOffDay": false
+        },
+        {
+          "date": "2002-10-01",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-10-02",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-10-03",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-10-04",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-10-05",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-10-06",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2002-10-07",
+          "name": "国庆节",
+          "isOffDay": true
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2003,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "关于2003年部分节假日休息安排的通知（五一原方案已调整，不录入）",
+          "publisher": "深圳市人民政府办公厅",
+          "url": "https://www.sz.gov.cn/zfgb/2003/gb317/content/post_5004142.html",
+          "accessedAt": "2026-10-25"
+        },
+        {
+          "title": "国务院新闻办新闻发布会答问记录：因非典暂停五一长假",
+          "publisher": "国务院新闻办公室（外交部网站刊载）",
+          "url": "https://www.fmprc.gov.cn/ziliao_674904/zt_674979/ywzt_675099/zt2003_675963/2267_675979/200304/t20030420_7965016.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "date": "2003-01-01",
+          "name": "元旦",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-02-01",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-02-02",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-02-03",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-02-04",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-02-05",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-02-06",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-02-07",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-02-08",
+          "name": "春节",
+          "isOffDay": false
+        },
+        {
+          "date": "2003-02-09",
+          "name": "春节",
+          "isOffDay": false
+        },
+        {
+          "date": "2003-09-27",
+          "name": "国庆节",
+          "isOffDay": false
+        },
+        {
+          "date": "2003-09-28",
+          "name": "国庆节",
+          "isOffDay": false
+        },
+        {
+          "date": "2003-10-01",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-10-02",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-10-03",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-10-04",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-10-05",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-10-06",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2003-10-07",
+          "name": "国庆节",
+          "isOffDay": true
+        }
+      ],
+      "missingHolidays": ["劳动节（非典期间调整后的最终安排待核实）"]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2004,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "关于2004年部分节假日安排的通知",
+          "publisher": "深圳市人民政府办公厅",
+          "url": "https://www.sz.gov.cn/zfgb/2004/gb371/content/post_5002319.html",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "date": "2004-01-01",
+          "name": "元旦",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-01-17",
+          "name": "春节",
+          "isOffDay": false
+        },
+        {
+          "date": "2004-01-18",
+          "name": "春节",
+          "isOffDay": false
+        },
+        {
+          "date": "2004-01-22",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-01-23",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-01-24",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-01-25",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-01-26",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-01-27",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-01-28",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-05-01",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-05-02",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-05-03",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-05-04",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-05-05",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-05-06",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-05-07",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-05-08",
+          "name": "劳动节",
+          "isOffDay": false
+        },
+        {
+          "date": "2004-05-09",
+          "name": "劳动节",
+          "isOffDay": false
+        },
+        {
+          "date": "2004-10-01",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-10-02",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-10-03",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-10-04",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-10-05",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-10-06",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-10-07",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2004-10-09",
+          "name": "国庆节",
+          "isOffDay": false
+        },
+        {
+          "date": "2004-10-10",
+          "name": "国庆节",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2005,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "关于2005年部分节假日安排的通知",
+          "publisher": "重庆市人民政府办公厅",
+          "url": "https://slj.cq.gov.cn/zwgk_250/zfxxgkml/tzgg/200412/t20041229_2922877.html",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "date": "2005-01-01",
+          "name": "元旦",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-01-02",
+          "name": "元旦",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-01-03",
+          "name": "元旦",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-02-05",
+          "name": "春节",
+          "isOffDay": false
+        },
+        {
+          "date": "2005-02-06",
+          "name": "春节",
+          "isOffDay": false
+        },
+        {
+          "date": "2005-02-09",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-02-10",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-02-11",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-02-12",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-02-13",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-02-14",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-02-15",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-04-30",
+          "name": "劳动节",
+          "isOffDay": false
+        },
+        {
+          "date": "2005-05-01",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-05-02",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-05-03",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-05-04",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-05-05",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-05-06",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-05-07",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-05-08",
+          "name": "劳动节",
+          "isOffDay": false
+        },
+        {
+          "date": "2005-10-01",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-10-02",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-10-03",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-10-04",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-10-05",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-10-06",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-10-07",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2005-10-08",
+          "name": "国庆节",
+          "isOffDay": false
+        },
+        {
+          "date": "2005-10-09",
+          "name": "国庆节",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2006,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "转发国务院办公厅关于2006年部分节假日安排的通知",
+          "publisher": "吉林省人民政府办公厅（转发国务院办公厅原文）",
+          "url": "https://xxgk.jl.gov.cn/szf/gkml/201812/t20181205_5350003.html",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "date": "2005-12-31",
+          "name": "元旦",
+          "isOffDay": false
+        },
+        {
+          "date": "2006-01-01",
+          "name": "元旦",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-01-02",
+          "name": "元旦",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-01-03",
+          "name": "元旦",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-01-28",
+          "name": "春节",
+          "isOffDay": false
+        },
+        {
+          "date": "2006-01-29",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-01-30",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-01-31",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-02-01",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-02-02",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-02-03",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-02-04",
+          "name": "春节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-02-05",
+          "name": "春节",
+          "isOffDay": false
+        },
+        {
+          "date": "2006-04-29",
+          "name": "劳动节",
+          "isOffDay": false
+        },
+        {
+          "date": "2006-04-30",
+          "name": "劳动节",
+          "isOffDay": false
+        },
+        {
+          "date": "2006-05-01",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-05-02",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-05-03",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-05-04",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-05-05",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-05-06",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-05-07",
+          "name": "劳动节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-09-30",
+          "name": "国庆节",
+          "isOffDay": false
+        },
+        {
+          "date": "2006-10-01",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-10-02",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-10-03",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-10-04",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-10-05",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-10-06",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-10-07",
+          "name": "国庆节",
+          "isOffDay": true
+        },
+        {
+          "date": "2006-10-08",
+          "name": "国庆节",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2007,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2007 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2008-03/28/content_1761.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2006-12-30",
+          "isOffDay": false
+        },
+        {
+          "name": "元旦",
+          "date": "2006-12-31",
+          "isOffDay": false
+        },
+        {
+          "name": "元旦",
+          "date": "2007-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2007-01-02",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2007-01-03",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2007-02-17",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2007-02-18",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2007-02-19",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2007-02-20",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2007-02-21",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2007-02-22",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2007-02-23",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2007-02-24",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2007-02-25",
+          "isOffDay": false
+        },
+        {
+          "name": "“五一”",
+          "date": "2007-04-28",
+          "isOffDay": false
+        },
+        {
+          "name": "“五一”",
+          "date": "2007-04-29",
+          "isOffDay": false
+        },
+        {
+          "name": "“五一”",
+          "date": "2007-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "“五一”",
+          "date": "2007-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "“五一”",
+          "date": "2007-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "“五一”",
+          "date": "2007-05-04",
+          "isOffDay": true
+        },
+        {
+          "name": "“五一”",
+          "date": "2007-05-05",
+          "isOffDay": true
+        },
+        {
+          "name": "“五一”",
+          "date": "2007-05-06",
+          "isOffDay": true
+        },
+        {
+          "name": "“五一”",
+          "date": "2007-05-07",
+          "isOffDay": true
+        },
+        {
+          "name": "“十一”",
+          "date": "2007-09-29",
+          "isOffDay": false
+        },
+        {
+          "name": "“十一”",
+          "date": "2007-09-30",
+          "isOffDay": false
+        },
+        {
+          "name": "“十一”",
+          "date": "2007-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "“十一”",
+          "date": "2007-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "“十一”",
+          "date": "2007-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "“十一”",
+          "date": "2007-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "“十一”",
+          "date": "2007-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "“十一”",
+          "date": "2007-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "“十一”",
+          "date": "2007-10-07",
+          "isOffDay": true
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2008,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2008 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2008-03/28/content_1645.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2007-12-29",
+          "isOffDay": false
+        },
+        {
+          "name": "元旦",
+          "date": "2007-12-30",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2007-12-31",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2008-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2008-02-02",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2008-02-03",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2008-02-06",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2008-02-07",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2008-02-08",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2008-02-09",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2008-02-10",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2008-02-11",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2008-02-12",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2008-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2008-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2008-04-06",
+          "isOffDay": true
+        },
+        {
+          "name": "“五一”国际劳动节",
+          "date": "2008-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "“五一”国际劳动节",
+          "date": "2008-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "“五一”国际劳动节",
+          "date": "2008-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "“五一”国际劳动节",
+          "date": "2008-05-04",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2008-06-07",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2008-06-08",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2008-06-09",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2008-09-13",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2008-09-14",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2008-09-15",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2008-09-27",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2008-09-28",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2008-09-29",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2008-09-30",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2008-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2008-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2008-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2008-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2008-10-05",
+          "isOffDay": true
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2009,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2009 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2008-12/10/content_1572.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2009-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2009-01-02",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2009-01-03",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2009-01-04",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2009-01-24",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2009-01-25",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2009-01-26",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2009-01-27",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2009-01-28",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2009-01-29",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2009-01-30",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2009-01-31",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2009-02-01",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2009-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2009-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2009-04-06",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2009-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2009-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2009-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2009-05-28",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2009-05-29",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2009-05-30",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2009-05-31",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2009-09-27",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2009-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2009-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2009-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2009-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2009-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2009-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2009-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2009-10-08",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2009-10-10",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2010,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2010 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2009-12/08/content_1476.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2010-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2010-01-02",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2010-01-03",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2010-02-13",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2010-02-14",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2010-02-15",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2010-02-16",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2010-02-17",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2010-02-18",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2010-02-19",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2010-02-20",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2010-02-21",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2010-04-03",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2010-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2010-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2010-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2010-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2010-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2010-06-12",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2010-06-13",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2010-06-14",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2010-06-15",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2010-06-16",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2010-09-19",
+          "isOffDay": false
+        },
+        {
+          "name": "中秋节",
+          "date": "2010-09-22",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2010-09-23",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2010-09-24",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2010-09-25",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2010-09-26",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2010-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2010-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2010-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2010-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2010-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2010-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2010-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2010-10-09",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2011,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2011 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2010-12/10/content_1423.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2011-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2011-01-02",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2011-01-03",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2011-01-30",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2011-02-02",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2011-02-03",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2011-02-04",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2011-02-05",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2011-02-06",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2011-02-07",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2011-02-08",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2011-02-12",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2011-04-02",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2011-04-03",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2011-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2011-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2011-04-30",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2011-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2011-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2011-06-04",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2011-06-05",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2011-06-06",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2011-09-10",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2011-09-11",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2011-09-12",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2011-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2011-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2011-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2011-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2011-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2011-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2011-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2011-10-08",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2011-10-09",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2012,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2012 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2011-12/06/content_1411.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2011-12-31",
+          "isOffDay": false
+        },
+        {
+          "name": "元旦",
+          "date": "2012-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2012-01-02",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2012-01-03",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2012-01-21",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2012-01-22",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2012-01-23",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2012-01-24",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2012-01-25",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2012-01-26",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2012-01-27",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2012-01-28",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2012-01-29",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2012-03-31",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2012-04-01",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2012-04-02",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2012-04-03",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2012-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2012-04-28",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2012-04-29",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2012-04-30",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2012-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2012-06-22",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2012-06-23",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2012-06-24",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2012-09-29",
+          "isOffDay": false
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2012-09-30",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2012-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2012-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2012-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2012-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2012-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2012-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2012-10-07",
+          "isOffDay": true
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2013,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2013 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2012-12/10/content_1353.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2013-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2013-01-02",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2013-01-03",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2013-01-05",
+          "isOffDay": false
+        },
+        {
+          "name": "元旦",
+          "date": "2013-01-06",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2013-02-09",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2013-02-10",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2013-02-11",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2013-02-12",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2013-02-13",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2013-02-14",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2013-02-15",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2013-02-16",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2013-02-17",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2013-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2013-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2013-04-06",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2013-04-07",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2013-04-27",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2013-04-28",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2013-04-29",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2013-04-30",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2013-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2013-06-08",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2013-06-09",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2013-06-10",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2013-06-11",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2013-06-12",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2013-09-19",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2013-09-20",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2013-09-21",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2013-09-22",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2013-09-29",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2013-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2013-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2013-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2013-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2013-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2013-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2013-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2013-10-12",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2014,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2014 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2014-01/02/content_1194.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2014-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2014-01-26",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2014-01-31",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2014-02-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2014-02-02",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2014-02-03",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2014-02-04",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2014-02-05",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2014-02-06",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2014-02-08",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2014-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2014-04-07",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2014-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2014-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2014-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2014-05-04",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2014-06-02",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2014-09-08",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2014-09-28",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2014-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2014-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2014-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2014-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2014-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2014-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2014-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2014-10-11",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2015,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2015 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2014-12/16/content_9302.htm",
+          "accessedAt": "2026-10-25"
+        },
+        {
+          "title": "2015 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2015-05/13/content_9742.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2015-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2015-01-02",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2015-01-03",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2015-01-04",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2015-02-15",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2015-02-18",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2015-02-19",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2015-02-20",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2015-02-21",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2015-02-22",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2015-02-23",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2015-02-24",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2015-02-28",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2015-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2015-04-06",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2015-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2015-06-20",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2015-06-22",
+          "isOffDay": true
+        },
+        {
+          "name": "抗日战争暨世界反法西斯战争胜利70周年纪念日",
+          "date": "2015-09-03",
+          "isOffDay": true
+        },
+        {
+          "name": "抗日战争暨世界反法西斯战争胜利70周年纪念日",
+          "date": "2015-09-04",
+          "isOffDay": true
+        },
+        {
+          "name": "抗日战争暨世界反法西斯战争胜利70周年纪念日",
+          "date": "2015-09-05",
+          "isOffDay": true
+        },
+        {
+          "name": "抗日战争暨世界反法西斯战争胜利70周年纪念日",
+          "date": "2015-09-06",
+          "isOffDay": false
+        },
+        {
+          "name": "中秋节",
+          "date": "2015-09-27",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2015-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2015-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2015-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2015-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2015-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2015-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2015-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2015-10-10",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2016,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2016 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2015-12/10/content_10394.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2016-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2016-02-06",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2016-02-07",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2016-02-08",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2016-02-09",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2016-02-10",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2016-02-11",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2016-02-12",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2016-02-13",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2016-02-14",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2016-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2016-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2016-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2016-06-09",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2016-06-10",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2016-06-11",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2016-06-12",
+          "isOffDay": false
+        },
+        {
+          "name": "中秋节",
+          "date": "2016-09-15",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2016-09-16",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2016-09-17",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2016-09-18",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2016-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2016-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2016-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2016-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2016-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2016-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2016-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2016-10-08",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2016-10-09",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2017,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2017 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2016-12/01/content_5141603.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2017-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2017-01-02",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2017-01-22",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2017-01-27",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2017-01-28",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2017-01-29",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2017-01-30",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2017-01-31",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2017-02-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2017-02-02",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2017-02-04",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2017-04-01",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2017-04-02",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2017-04-03",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2017-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2017-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2017-05-27",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2017-05-28",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2017-05-29",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2017-05-30",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2017-09-30",
+          "isOffDay": false
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2017-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2017-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2017-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2017-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2017-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2017-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2017-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2017-10-08",
+          "isOffDay": true
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2018,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2018 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2017-11/30/content_5243579.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2018-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2018-02-11",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2018-02-15",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2018-02-16",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2018-02-17",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2018-02-18",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2018-02-19",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2018-02-20",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2018-02-21",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2018-02-24",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2018-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2018-04-06",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2018-04-07",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2018-04-08",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2018-04-28",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2018-04-29",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2018-04-30",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2018-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2018-06-18",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2018-09-24",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2018-09-29",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2018-09-30",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2018-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2018-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2018-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2018-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2018-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2018-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2018-10-07",
+          "isOffDay": true
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2019,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2019 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2018-12/06/content_5346276.htm",
+          "accessedAt": "2026-10-25"
+        },
+        {
+          "title": "2019 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2019-03/22/content_5375877.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2018-12-29",
+          "isOffDay": false
+        },
+        {
+          "name": "元旦",
+          "date": "2018-12-30",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2018-12-31",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2019-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2019-02-02",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2019-02-03",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2019-02-04",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2019-02-05",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2019-02-06",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2019-02-07",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2019-02-08",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2019-02-09",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2019-02-10",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2019-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2019-04-28",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2019-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2019-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2019-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2019-05-04",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2019-05-05",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2019-06-07",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2019-09-13",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2019-09-29",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2019-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2019-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2019-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2019-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2019-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2019-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2019-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2019-10-12",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2020,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2020 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2019-11/21/content_5454164.htm",
+          "accessedAt": "2026-10-25"
+        },
+        {
+          "title": "2020 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2020-01/27/content_5472352.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2020-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2020-01-19",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2020-01-24",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2020-01-25",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2020-01-26",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2020-01-27",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2020-01-28",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2020-01-29",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2020-01-30",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2020-01-31",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2020-02-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2020-02-02",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2020-02-03",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2020-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2020-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2020-04-06",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2020-04-26",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2020-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2020-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2020-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2020-05-04",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2020-05-05",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2020-05-09",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2020-06-25",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2020-06-26",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2020-06-27",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2020-06-28",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2020-09-27",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2020-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2020-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2020-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2020-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2020-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2020-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2020-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2020-10-08",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2020-10-10",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2021,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2021 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2020-11/25/content_5564127.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2021-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2021-01-02",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2021-01-03",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2021-02-07",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2021-02-11",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2021-02-12",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2021-02-13",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2021-02-14",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2021-02-15",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2021-02-16",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2021-02-17",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2021-02-20",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2021-04-03",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2021-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2021-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2021-04-25",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2021-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2021-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2021-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2021-05-04",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2021-05-05",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2021-05-08",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2021-06-12",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2021-06-13",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2021-06-14",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2021-09-18",
+          "isOffDay": false
+        },
+        {
+          "name": "中秋节",
+          "date": "2021-09-19",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2021-09-20",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2021-09-21",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2021-09-26",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2021-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2021-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2021-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2021-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2021-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2021-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2021-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2021-10-09",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2022,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2022 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2021-10/25/content_5644835.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2022-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2022-01-02",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2022-01-03",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2022-01-29",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2022-01-30",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2022-01-31",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2022-02-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2022-02-02",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2022-02-03",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2022-02-04",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2022-02-05",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2022-02-06",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2022-04-02",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2022-04-03",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2022-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2022-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2022-04-24",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2022-04-30",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2022-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2022-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2022-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2022-05-04",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2022-05-07",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2022-06-03",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2022-06-04",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2022-06-05",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2022-09-10",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2022-09-11",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2022-09-12",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2022-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2022-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2022-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2022-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2022-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2022-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2022-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2022-10-08",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2022-10-09",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2023,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2023 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "http://www.gov.cn/zhengce/zhengceku/2022-12/08/content_5730844.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2022-12-31",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2023-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2023-01-02",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2023-01-21",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2023-01-22",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2023-01-23",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2023-01-24",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2023-01-25",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2023-01-26",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2023-01-27",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2023-01-28",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2023-01-29",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2023-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2023-04-23",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2023-04-29",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2023-04-30",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2023-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2023-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2023-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2023-05-06",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2023-06-22",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2023-06-23",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2023-06-24",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2023-06-25",
+          "isOffDay": false
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2023-09-29",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2023-09-30",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2023-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2023-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2023-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2023-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2023-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2023-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2023-10-07",
+          "isOffDay": false
+        },
+        {
+          "name": "中秋节、国庆节",
+          "date": "2023-10-08",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2024,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2024 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "https://www.gov.cn/zhengce/zhengceku/202310/content_6911528.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2024-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2024-02-04",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2024-02-10",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2024-02-11",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2024-02-12",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2024-02-13",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2024-02-14",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2024-02-15",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2024-02-16",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2024-02-17",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2024-02-18",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2024-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2024-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2024-04-06",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2024-04-07",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2024-04-28",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2024-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2024-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2024-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2024-05-04",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2024-05-05",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2024-05-11",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2024-06-10",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2024-09-14",
+          "isOffDay": false
+        },
+        {
+          "name": "中秋节",
+          "date": "2024-09-15",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2024-09-16",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2024-09-17",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2024-09-29",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节",
+          "date": "2024-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2024-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2024-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2024-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2024-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2024-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2024-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2024-10-12",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2025,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2025 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "https://www.gov.cn/zhengce/zhengceku/202411/content_6986383.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2025-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2025-01-26",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2025-01-28",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2025-01-29",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2025-01-30",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2025-01-31",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2025-02-01",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2025-02-02",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2025-02-03",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2025-02-04",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2025-02-08",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2025-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2025-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2025-04-06",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2025-04-27",
+          "isOffDay": false
+        },
+        {
+          "name": "劳动节",
+          "date": "2025-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2025-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2025-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2025-05-04",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2025-05-05",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2025-05-31",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2025-06-01",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2025-06-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2025-09-28",
+          "isOffDay": false
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2025-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2025-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2025-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2025-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2025-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2025-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2025-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2025-10-08",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节、中秋节",
+          "date": "2025-10-11",
+          "isOffDay": false
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "year": 2026,
+      "updatedAt": "2026-10-25",
+      "sources": [
+        {
+          "title": "2026 年部分节假日安排公告",
+          "publisher": "国务院办公厅",
+          "url": "https://www.gov.cn/zhengce/zhengceku/202511/content_7047091.htm",
+          "accessedAt": "2026-10-25"
+        }
+      ],
+      "days": [
+        {
+          "name": "元旦",
+          "date": "2026-01-01",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2026-01-02",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2026-01-03",
+          "isOffDay": true
+        },
+        {
+          "name": "元旦",
+          "date": "2026-01-04",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2026-02-14",
+          "isOffDay": false
+        },
+        {
+          "name": "春节",
+          "date": "2026-02-15",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2026-02-16",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2026-02-17",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2026-02-18",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2026-02-19",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2026-02-20",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2026-02-21",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2026-02-22",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2026-02-23",
+          "isOffDay": true
+        },
+        {
+          "name": "春节",
+          "date": "2026-02-28",
+          "isOffDay": false
+        },
+        {
+          "name": "清明节",
+          "date": "2026-04-04",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2026-04-05",
+          "isOffDay": true
+        },
+        {
+          "name": "清明节",
+          "date": "2026-04-06",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2026-05-01",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2026-05-02",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2026-05-03",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2026-05-04",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2026-05-05",
+          "isOffDay": true
+        },
+        {
+          "name": "劳动节",
+          "date": "2026-05-09",
+          "isOffDay": false
+        },
+        {
+          "name": "端午节",
+          "date": "2026-06-19",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2026-06-20",
+          "isOffDay": true
+        },
+        {
+          "name": "端午节",
+          "date": "2026-06-21",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2026-09-20",
+          "isOffDay": false
+        },
+        {
+          "name": "中秋节",
+          "date": "2026-09-25",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2026-09-26",
+          "isOffDay": true
+        },
+        {
+          "name": "中秋节",
+          "date": "2026-09-27",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2026-10-01",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2026-10-02",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2026-10-03",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2026-10-04",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2026-10-05",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2026-10-06",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2026-10-07",
+          "isOffDay": true
+        },
+        {
+          "name": "国庆节",
+          "date": "2026-10-10",
+          "isOffDay": false
+        }
+      ]
+    }
+  ],
+  "festivals": [
+    {
+      "id": "spring-festival",
+      "name": "春节",
+      "rule": {
+        "calendar": "lunar",
+        "month": 1,
+        "day": 1
+      },
+      "description": {
+        "text": "农历新年的重要节日，寄托团圆与辞旧迎新的愿望。",
+        "sources": [
+          {
+            "title": "春节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cj/202303/t20230314_2936365.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "传统年节在长期的岁时生活中形成，庆祝时间与地方习惯有所差异。",
+        "sources": [
+          {
+            "title": "春节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cj/202303/t20230314_2936365.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "家人团聚、拜年、贴春联、守岁等。",
+        "sources": [
+          {
+            "title": "春节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cj/202303/t20230314_2936365.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lantern-festival",
+      "name": "元宵节",
+      "rule": {
+        "calendar": "lunar",
+        "month": 1,
+        "day": 15
+      },
+      "description": {
+        "text": "农历正月十五的传统节日，又称上元节。",
+        "sources": [
+          {
+            "title": "元宵节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/yxj/202303/t20230303_2928272.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "元宵赏灯在长期的岁时庆典中逐步发展，各地形成不同灯会传统。",
+        "sources": [
+          {
+            "title": "元宵节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/yxj/202303/t20230303_2928272.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "赏灯、猜灯谜，吃元宵或汤圆。",
+        "sources": [
+          {
+            "title": "元宵节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/yxj/202303/t20230303_2928272.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dragon-head",
+      "name": "龙抬头",
+      "rule": {
+        "calendar": "lunar",
+        "month": 2,
+        "day": 2
+      },
+      "description": {
+        "text": "农历二月初二的民俗节日，与春耕和祈愿丰收有关。",
+        "sources": [
+          {
+            "title": "“二月二”龙抬头的民俗",
+            "publisher": "上海市虹口区人民政府",
+            "url": "https://www.shhk.gov.cn/xwzx/002008/002008040/20240312/cb401e90-eb94-4729-aaaf-f677c6fe6c3c.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "与农时、降雨和龙的文化意象相联系；相关龙王故事属于民间传说。",
+        "sources": [
+          {
+            "title": "“二月二”龙抬头的民俗",
+            "publisher": "上海市虹口区人民政府",
+            "url": "https://www.shhk.gov.cn/xwzx/002008/002008040/20240312/cb401e90-eb94-4729-aaaf-f677c6fe6c3c.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "部分地区有理发、食用带“龙”名食物等习俗。",
+        "sources": [
+          {
+            "title": "“二月二”龙抬头的民俗",
+            "publisher": "上海市虹口区人民政府",
+            "url": "https://www.shhk.gov.cn/xwzx/002008/002008040/20240312/cb401e90-eb94-4729-aaaf-f677c6fe6c3c.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dragon-boat",
+      "name": "端午节",
+      "rule": {
+        "calendar": "lunar",
+        "month": 5,
+        "day": 5
+      },
+      "description": {
+        "text": "农历五月初五的传统节日，又称端阳。",
+        "sources": [
+          {
+            "title": "端午节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/dwj/202303/t20230303_2928401.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "具有禳灾祈福等多种文化内涵；纪念屈原是广泛流传的一种叙事，各地还有其他传说。",
+        "sources": [
+          {
+            "title": "端午节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/dwj/202303/t20230303_2928401.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "赛龙舟、吃粽子、悬挂艾草等，地域习俗各有不同。",
+        "sources": [
+          {
+            "title": "端午节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/dwj/202303/t20230303_2928401.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qixi",
+      "name": "七夕节",
+      "rule": {
+        "calendar": "lunar",
+        "month": 7,
+        "day": 7
+      },
+      "description": {
+        "text": "农历七月初七，又称乞巧节、女儿节。",
+        "sources": [
+          {
+            "title": "七夕节",
+            "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆",
+            "url": "https://www.ihchina.cn/Article/Index/detail?id=14926",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "与织女信仰及乞巧活动有关；牛郎织女鹊桥相会属于民间传说。",
+        "sources": [
+          {
+            "title": "七夕节",
+            "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆",
+            "url": "https://www.ihchina.cn/Article/Index/detail?id=14926",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "穿针乞巧、制作巧果等，具体活动因地区而异。",
+        "sources": [
+          {
+            "title": "七夕节",
+            "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆",
+            "url": "https://www.ihchina.cn/Article/Index/detail?id=14926",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "zhongyuan",
+      "name": "中元节",
+      "rule": {
+        "calendar": "lunar",
+        "month": 7,
+        "day": 15
+      },
+      "description": {
+        "text": "俗称“七月半”，是部分地区追思先人的民俗时节。",
+        "sources": [
+          {
+            "title": "中元节习俗",
+            "publisher": "天门市人民政府",
+            "url": "https://www.tianmen.gov.cn/zjtm/tmwh/tmms/201604/t20160419_1930964.shtml",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "祖先祭祀与相关宗教文化长期交融，过节日期和形式存在地域差异。",
+        "sources": [
+          {
+            "title": "中元节习俗",
+            "publisher": "天门市人民政府",
+            "url": "https://www.tianmen.gov.cn/zjtm/tmwh/tmms/201604/t20160419_1930964.shtml",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "部分地区有祭祖、追思等活动，资料描述的是当地民俗。",
+        "sources": [
+          {
+            "title": "中元节习俗",
+            "publisher": "天门市人民政府",
+            "url": "https://www.tianmen.gov.cn/zjtm/tmwh/tmms/201604/t20160419_1930964.shtml",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mid-autumn",
+      "name": "中秋节",
+      "rule": {
+        "calendar": "lunar",
+        "month": 8,
+        "day": 15
+      },
+      "description": {
+        "text": "农历八月十五，以赏月、团圆为重要主题。",
+        "sources": [
+          {
+            "title": "中秋节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/zqj/202303/t20230303_2928408.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "与古代秋祀、拜月传统有关，后发展为广泛庆祝的节日；嫦娥奔月属于神话传说。",
+        "sources": [
+          {
+            "title": "中秋节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/zqj/202303/t20230303_2928408.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "赏月、吃月饼、家人团聚。",
+        "sources": [
+          {
+            "title": "中秋节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/zqj/202303/t20230303_2928408.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "double-ninth",
+      "name": "重阳节",
+      "rule": {
+        "calendar": "lunar",
+        "month": 9,
+        "day": 9
+      },
+      "description": {
+        "text": "农历九月初九的传统节日，也承载敬老主题。",
+        "sources": [
+          {
+            "title": "重阳节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cyj/202303/t20230303_2928420.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "“九九”重叠得名，传统岁时活动逐步形成登高、赏菊等风俗。",
+        "sources": [
+          {
+            "title": "重阳节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cyj/202303/t20230303_2928420.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "登高、赏菊、吃重阳糕、敬老。",
+        "sources": [
+          {
+            "title": "重阳节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cyj/202303/t20230303_2928420.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "laba",
+      "name": "腊八节",
+      "rule": {
+        "calendar": "lunar",
+        "month": 12,
+        "day": 8
+      },
+      "description": {
+        "text": "农历腊月初八，是春节前的重要民俗时节。",
+        "sources": [
+          {
+            "title": "春节古时称“元旦”",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+            "accessedAt": "2026-10-25"
+          },
+          {
+            "title": "“我们的节日”东城区非遗主题系列活动——腊八节",
+            "publisher": "北京市东城区人民政府",
+            "url": "https://www.bjdch.gov.cn/zwgk/jgdh/qzfzcbmdh/qwhhlyj/ggfwxxgk/202401/t20240124_3544532.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "传统腊祭与佛教成道纪念等文化在历史中交融。",
+        "sources": [
+          {
+            "title": "春节古时称“元旦”",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+            "accessedAt": "2026-10-25"
+          },
+          {
+            "title": "“我们的节日”东城区非遗主题系列活动——腊八节",
+            "publisher": "北京市东城区人民政府",
+            "url": "https://www.bjdch.gov.cn/zwgk/jgdh/qzfzcbmdh/qwhhlyj/ggfwxxgk/202401/t20240124_3544532.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "喝腊八粥，北方部分地区泡腊八蒜。",
+        "sources": [
+          {
+            "title": "春节古时称“元旦”",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+            "accessedAt": "2026-10-25"
+          },
+          {
+            "title": "“我们的节日”东城区非遗主题系列活动——腊八节",
+            "publisher": "北京市东城区人民政府",
+            "url": "https://www.bjdch.gov.cn/zwgk/jgdh/qzfzcbmdh/qwhhlyj/ggfwxxgk/202401/t20240124_3544532.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "little-new-year-north",
+      "name": "小年（北）",
+      "rule": {
+        "calendar": "lunar",
+        "month": 12,
+        "day": 23
+      },
+      "description": {
+        "text": "北方不少地区在腊月二十三过小年。",
+        "sources": [
+          {
+            "title": "春节古时称“元旦”",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "与传统祭灶活动相联系；灶神上天的故事属于民间信仰与传说。",
+        "sources": [
+          {
+            "title": "春节古时称“元旦”",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "祭灶、扫尘、准备年货等，各地并不完全相同。",
+        "sources": [
+          {
+            "title": "春节古时称“元旦”",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "little-new-year-south",
+      "name": "小年（南）",
+      "rule": {
+        "calendar": "lunar",
+        "month": 12,
+        "day": 24
+      },
+      "description": {
+        "text": "南方部分地区在腊月二十四过小年。",
+        "sources": [
+          {
+            "title": "春节古时称“元旦”",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "各地的小年日期并不统一，与地方祭灶传统有关。",
+        "sources": [
+          {
+            "title": "春节古时称“元旦”",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "祭灶、扫尘、准备过年。",
+        "sources": [
+          {
+            "title": "春节古时称“元旦”",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "new-years-eve",
+      "name": "除夕",
+      "rule": {
+        "calendar": "lunar-eve"
+      },
+      "description": {
+        "text": "农历一年的最后一天，可能是腊月二十九或三十。",
+        "sources": [
+          {
+            "title": "春节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cj/202303/t20230314_2936365.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "是辞旧迎新年节文化的重要组成部分，与家族团聚和岁末仪式相联系。",
+        "sources": [
+          {
+            "title": "春节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cj/202303/t20230314_2936365.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "吃年夜饭、守岁，迎接新年。",
+        "sources": [
+          {
+            "title": "春节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cj/202303/t20230314_2936365.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "qingming",
+      "name": "清明节",
+      "rule": {
+        "calendar": "solar-term",
+        "term": "清明"
+      },
+      "description": {
+        "text": "兼具节气与传统节日性质，日期随当年清明节气确定。",
+        "sources": [
+          {
+            "title": "清明节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/qmj/202303/t20230303_2928277.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "在岁时发展中融合祭祖、寒食等文化传统。",
+        "sources": [
+          {
+            "title": "清明节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/qmj/202303/t20230303_2928277.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "扫墓追思、踏青、插柳等。",
+        "sources": [
+          {
+            "title": "清明节",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/qmj/202303/t20230303_2928277.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "new-year",
+      "name": "元旦",
+      "rule": {
+        "calendar": "solar",
+        "month": 1,
+        "day": 1
+      },
+      "description": {
+        "text": "公历新年的第一天。",
+        "sources": [
+          {
+            "title": "春节古时称“元旦”",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "“元旦”在古代曾指传统历法岁首，采用公历后与春节名称逐渐区分。",
+        "sources": [
+          {
+            "title": "春节古时称“元旦”",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "以不同形式迎接新年，具体放假日期以年度公告为准。",
+        "sources": [
+          {
+            "title": "春节古时称“元旦”",
+            "publisher": "北京市人民政府",
+            "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "valentines",
+      "name": "情人节",
+      "rule": {
+        "calendar": "solar",
+        "month": 2,
+        "day": 14
+      },
+      "description": {
+        "text": "每年二月十四日，常以卡片等方式表达情感。",
+        "sources": [
+          {
+            "title": "Valentine’s Day",
+            "publisher": "British Council",
+            "url": "https://learnenglish.britishcouncil.org/sites/podcasts/files/LearnEnglish-Magazine-Valentines-Day.pdf",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "与名为瓦伦丁的圣人有关的传说有不同版本，确切历史并不完全明确。",
+        "sources": [
+          {
+            "title": "Valentine’s Day",
+            "publisher": "British Council",
+            "url": "https://learnenglish.britishcouncil.org/sites/podcasts/files/LearnEnglish-Magazine-Valentines-Day.pdf",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "赠送或制作情人节卡片。",
+        "sources": [
+          {
+            "title": "Valentine’s Day",
+            "publisher": "British Council",
+            "url": "https://learnenglish.britishcouncil.org/sites/podcasts/files/LearnEnglish-Magazine-Valentines-Day.pdf",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "womens-day",
+      "name": "妇女节",
+      "rule": {
+        "calendar": "solar",
+        "month": 3,
+        "day": 8
+      },
+      "description": {
+        "text": "国际妇女节，关注妇女权利与性别平等。",
+        "sources": [
+          {
+            "title": "国际妇女节：节日历史",
+            "publisher": "联合国",
+            "url": "https://www.un.org/zh/events/womensday/history.shtml",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "与二十世纪初争取妇女权益的运动有关，后发展为国际性纪念日。",
+        "sources": [
+          {
+            "title": "国际妇女节：节日历史",
+            "publisher": "联合国",
+            "url": "https://www.un.org/zh/events/womensday/history.shtml",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "举办讨论、宣传和纪念活动，关注妇女与女童的平等权利。",
+        "sources": [
+          {
+            "title": "国际妇女节：节日历史",
+            "publisher": "联合国",
+            "url": "https://www.un.org/zh/events/womensday/history.shtml",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "april-fools",
+      "name": "愚人节",
+      "rule": {
+        "calendar": "solar",
+        "month": 4,
+        "day": 1
+      },
+      "description": {
+        "text": "每年四月一日的民间节日。",
+        "sources": [
+          {
+            "title": "愚人節",
+            "publisher": "教育部《重編國語辭典修訂本》",
+            "url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=163313&la=0&powerMode=0",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "确切起源未有定论，不宜把单一改历传说当作确定历史。",
+        "sources": [
+          {
+            "title": "愚人節",
+            "publisher": "教育部《重編國語辭典修訂本》",
+            "url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=163313&la=0&powerMode=0",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "以玩笑、趣味消息等方式娱乐。",
+        "sources": [
+          {
+            "title": "愚人節",
+            "publisher": "教育部《重編國語辭典修訂本》",
+            "url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=163313&la=0&powerMode=0",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "labour-day",
+      "name": "劳动节",
+      "rule": {
+        "calendar": "solar",
+        "month": 5,
+        "day": 1
+      },
+      "description": {
+        "text": "国际劳动节，纪念劳动者争取权益的努力。",
+        "sources": [
+          {
+            "title": "五一国际劳动节的由来",
+            "publisher": "淄博市财政局",
+            "url": "https://sczj.zibo.gov.cn/art/2017/5/25/art_725_368844.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "与十九世纪工人争取八小时工作制的运动有关。",
+        "sources": [
+          {
+            "title": "五一国际劳动节的由来",
+            "publisher": "淄博市财政局",
+            "url": "https://sczj.zibo.gov.cn/art/2017/5/25/art_725_368844.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "举办纪念与庆祝活动，具体放假调休以年度公告为准。",
+        "sources": [
+          {
+            "title": "五一国际劳动节的由来",
+            "publisher": "淄博市财政局",
+            "url": "https://sczj.zibo.gov.cn/art/2017/5/25/art_725_368844.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "childrens-day",
+      "name": "儿童节",
+      "rule": {
+        "calendar": "solar",
+        "month": 6,
+        "day": 1
+      },
+      "description": {
+        "text": "六一国际儿童节，关注儿童权益与成长。",
+        "sources": [
+          {
+            "title": "儿童节节日简介",
+            "publisher": "国家卫生健康委员会",
+            "url": "https://www.nhc.gov.cn/jnr/etjjrjj/etj_lmtt.shtml",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "1949 年国际民主妇女联合会决定以六月一日为国际儿童节，我国随后采用这一日期。",
+        "sources": [
+          {
+            "title": "儿童节节日简介",
+            "publisher": "国家卫生健康委员会",
+            "url": "https://www.nhc.gov.cn/jnr/etjjrjj/etj_lmtt.shtml",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "举办适合儿童的庆祝和关爱活动。",
+        "sources": [
+          {
+            "title": "儿童节节日简介",
+            "publisher": "国家卫生健康委员会",
+            "url": "https://www.nhc.gov.cn/jnr/etjjrjj/etj_lmtt.shtml",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "national-day",
+      "name": "国庆节",
+      "rule": {
+        "calendar": "solar",
+        "month": 10,
+        "day": 1
+      },
+      "description": {
+        "text": "中华人民共和国国庆日。",
+        "sources": [
+          {
+            "title": "关于中华人民共和国国庆日的决议",
+            "publisher": "国务院港澳事务办公室",
+            "url": "https://www.hmo.gov.cn/2026/08/21/ARTIZZHLS5A3wMrwgN0VL4Qw260821.shtml",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "1949 年十二月通过的决议明确以十月一日为国庆日。",
+        "sources": [
+          {
+            "title": "关于中华人民共和国国庆日的决议",
+            "publisher": "国务院港澳事务办公室",
+            "url": "https://www.hmo.gov.cn/2026/08/21/ARTIZZHLS5A3wMrwgN0VL4Qw260821.shtml",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "举行纪念与庆祝活动；放假调休具体安排另见年度公告。",
+        "sources": [
+          {
+            "title": "关于中华人民共和国国庆日的决议",
+            "publisher": "国务院港澳事务办公室",
+            "url": "https://www.hmo.gov.cn/2026/08/21/ARTIZZHLS5A3wMrwgN0VL4Qw260821.shtml",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "christmas",
+      "name": "圣诞节",
+      "rule": {
+        "calendar": "solar",
+        "month": 12,
+        "day": 25
+      },
+      "description": {
+        "text": "基督教纪念耶稣诞生的节日，许多教会于十二月二十五日庆祝。",
+        "sources": [
+          {
+            "title": "Solemnity of the Nativity of Our Lord or Christmas",
+            "publisher": "Vatican News",
+            "url": "https://www.vaticannews.va/en/liturgical-holidays/solemnity-of-the-nativity-of-our-lord-or-christmas.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "origin": {
+        "text": "十二月二十五日的庆祝传统在教会历史中逐步形成，日期并非已确定的历史生日。",
+        "sources": [
+          {
+            "title": "Solemnity of the Nativity of Our Lord or Christmas",
+            "publisher": "Vatican News",
+            "url": "https://www.vaticannews.va/en/liturgical-holidays/solemnity-of-the-nativity-of-our-lord-or-christmas.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      },
+      "customs": {
+        "text": "参加节日礼仪、布置圣诞马槽等；不同地区传统不同。",
+        "sources": [
+          {
+            "title": "Solemnity of the Nativity of Our Lord or Christmas",
+            "publisher": "Vatican News",
+            "url": "https://www.vaticannews.va/en/liturgical-holidays/solemnity-of-the-nativity-of-our-lord-or-christmas.html",
+            "accessedAt": "2026-10-25"
+          }
+        ]
+      }
+    }
+  ],
+  "coverage": {
+    "startYear": 1998,
+    "endYear": 2026,
+    "missingYears": [1998, 1999, 2000]
+  }
+}

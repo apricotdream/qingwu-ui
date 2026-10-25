@@ -1,5 +1,6 @@
 /** 青梧UI 日历组件：输入框触发弹出面板，日期格含农历/节日/节气/休假标记，详情面板展示渊源/节气/黄历；纯 DOM+CSS */
 
+import { normalizeHolidayData } from "./holiday-data";
 import { getYearGanzhi } from "./lunar";
 import type { DayMetaProvider, PanelProvider } from "./providers";
 import { DetailPanelProvider, HolidayBadgeProvider, LunarDayMetaProvider } from "./providers";
@@ -138,15 +139,19 @@ export class Calendar {
     this.showDetailPanel = opts.showDetailPanel ?? true;
     this.detailPosition = opts.detailPosition ?? "right";
     this.holidays = opts.holidays ?? {};
+    const holidayData = normalizeHolidayData(opts.holidayData);
     this.animate = !PREFERS_REDUCED;
 
     /* 内置 provider 默认注册；用户 provider 追加在后（顺序即渲染顺序） */
     this.dayMetaProviders = [
-      new LunarDayMetaProvider(),
-      new HolidayBadgeProvider(this.holidays),
+      new LunarDayMetaProvider(holidayData),
+      new HolidayBadgeProvider(this.holidays, holidayData),
       ...(opts.dayMetaProviders ?? []),
     ];
-    this.panelProviders = [new DetailPanelProvider(), ...(opts.panelProviders ?? [])];
+    this.panelProviders = [
+      new DetailPanelProvider(holidayData, this.holidays),
+      ...(opts.panelProviders ?? []),
+    ];
 
     this.selectedTime = parseExplicitTime(opts.selected) ?? { hour: 0, minute: 0, second: 0 };
     this.selected = new Date(

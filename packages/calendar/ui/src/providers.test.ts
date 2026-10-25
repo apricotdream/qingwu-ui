@@ -12,16 +12,16 @@ describe("LunarDayMetaProvider", () => {
   });
 
   it("节气日显示节气名", () => {
-    // 2026-02-03 立春（2026 年修正 -1 日）
-    const meta = p.getDayMeta(new Date(2026, 1, 3));
+    // 香港天文台对照表：2026-02-04 立春。
+    const meta = p.getDayMeta(new Date(2026, 1, 4));
     expect(meta?.sub).toBe("立春");
     expect(meta?.subClass).toBe("is-term");
   });
 
   it("普通日显示农历日", () => {
-    // 2026-08-01 农历 2026-06-18
+    // 香港天文台公农历对照表：2026-08-01 为六月十九。
     const meta = p.getDayMeta(new Date(2026, 7, 1));
-    expect(meta?.sub).toBe("十八");
+    expect(meta?.sub).toBe("十九");
     expect(meta?.subClass).toBe("is-lunar");
   });
 });
@@ -42,11 +42,11 @@ describe("HolidayBadgeProvider", () => {
     });
   });
 
-  it("未配置时春节仍标记为休", () => {
+  it("未接入年度数据时不推测春节放假", () => {
     const p = new HolidayBadgeProvider();
     // 2026-02-17 春节（正月初一）
     const meta = p.getDayMeta(new Date(2026, 1, 17));
-    expect(meta).toEqual({ badge: "休", cellClass: "is-holiday" });
+    expect(meta).toBeNull();
   });
 
   it("普通日期无角标", () => {

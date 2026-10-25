@@ -48,7 +48,7 @@ for (const dir of pkgDirs) {
   if (pkg.private) continue;
 
   /* 1. workspace 协议残留（devDependencies 不发版，不检查） */
-  const deps = { ...pkg.dependencies, ...pkg.peerDependencies };
+  const deps = { ...pkg.dependencies, ...pkg.peerDependencies, ...pkg.optionalDependencies };
   for (const [name, ver] of Object.entries(deps)) {
     if (!ver.includes("workspace:")) continue;
     const msg = `${pkg.name}: 依赖 ${name} 仍是 workspace 协议 (${ver})`;
@@ -57,11 +57,12 @@ for (const dir of pkgDirs) {
       fixes.push(`${pkg.name} → ${name}@^${target}`);
       if (pkg.dependencies?.[name]) pkg.dependencies[name] = `^${target}`;
       if (pkg.peerDependencies?.[name]) pkg.peerDependencies[name] = `^${target}`;
+      if (pkg.optionalDependencies?.[name]) pkg.optionalDependencies[name] = `^${target}`;
     } else {
       errors.push(`${msg}，发布前需替换为 ^<版本>（可用 --fix）`);
     }
   }
-  if (fix && (pkg.dependencies || pkg.peerDependencies)) {
+  if (fix && (pkg.dependencies || pkg.peerDependencies || pkg.optionalDependencies)) {
     writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
   }
 

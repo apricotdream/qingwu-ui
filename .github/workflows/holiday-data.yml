@@ -1,0 +1,56 @@
+name: Update holiday data
+
+on:
+  schedule:
+    # 每天北京时间 09:23 检查；避开整点，另保留手动触发。
+    - cron: "23 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: holiday-data-update
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.13"
+      - run: bun install --frozen-lockfile
+      - name: 同步已公布的年度 JSON（抓取失败立即停止）
+        run: bun packages/holiday-data/scripts/sync.ts
+      - id: diff
+        name: 仅在数据变化时更新版本
+        shell: bash
+        run: |
+          if git diff --quiet -- packages/holiday-data; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            node packages/holiday-data/scripts/bump.mjs
+            bun install
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: 数据校验和日历回归
+        if: steps.diff.outputs.changed == 'true'
+        run: bunx turbo build typecheck test --filter=@qingwu-ui/holiday-data --filter=@qingwu-ui/calendar
+      - name: 保存更新并触发独立发版与演示站部署
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/holiday-data bun.lock
+          git commit -m "chore(holiday-data): sync published holiday arrangements"
+          git push origin HEAD:main
+          gh workflow run publish.yml --ref main -f packages=holiday-data -f dry_run=false
+          gh workflow run pages.yml --ref main

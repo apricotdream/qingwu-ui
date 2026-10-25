@@ -1,0 +1,899 @@
+[
+  {
+    "id": "spring-festival",
+    "name": "春节",
+    "rule": {
+      "calendar": "lunar",
+      "month": 1,
+      "day": 1
+    },
+    "description": {
+      "text": "农历新年的重要节日，寄托团圆与辞旧迎新的愿望。",
+      "sources": [
+        {
+          "title": "春节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cj/202303/t20230314_2936365.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "传统年节在长期的岁时生活中形成，庆祝时间与地方习惯有所差异。",
+      "sources": [
+        {
+          "title": "春节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cj/202303/t20230314_2936365.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "家人团聚、拜年、贴春联、守岁等。",
+      "sources": [
+        {
+          "title": "春节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cj/202303/t20230314_2936365.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "lantern-festival",
+    "name": "元宵节",
+    "rule": {
+      "calendar": "lunar",
+      "month": 1,
+      "day": 15
+    },
+    "description": {
+      "text": "农历正月十五的传统节日，又称上元节。",
+      "sources": [
+        {
+          "title": "元宵节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/yxj/202303/t20230303_2928272.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "元宵赏灯在长期的岁时庆典中逐步发展，各地形成不同灯会传统。",
+      "sources": [
+        {
+          "title": "元宵节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/yxj/202303/t20230303_2928272.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "赏灯、猜灯谜，吃元宵或汤圆。",
+      "sources": [
+        {
+          "title": "元宵节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/yxj/202303/t20230303_2928272.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "dragon-head",
+    "name": "龙抬头",
+    "rule": {
+      "calendar": "lunar",
+      "month": 2,
+      "day": 2
+    },
+    "description": {
+      "text": "农历二月初二的民俗节日，与春耕和祈愿丰收有关。",
+      "sources": [
+        {
+          "title": "“二月二”龙抬头的民俗",
+          "publisher": "上海市虹口区人民政府",
+          "url": "https://www.shhk.gov.cn/xwzx/002008/002008040/20240312/cb401e90-eb94-4729-aaaf-f677c6fe6c3c.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "与农时、降雨和龙的文化意象相联系；相关龙王故事属于民间传说。",
+      "sources": [
+        {
+          "title": "“二月二”龙抬头的民俗",
+          "publisher": "上海市虹口区人民政府",
+          "url": "https://www.shhk.gov.cn/xwzx/002008/002008040/20240312/cb401e90-eb94-4729-aaaf-f677c6fe6c3c.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "部分地区有理发、食用带“龙”名食物等习俗。",
+      "sources": [
+        {
+          "title": "“二月二”龙抬头的民俗",
+          "publisher": "上海市虹口区人民政府",
+          "url": "https://www.shhk.gov.cn/xwzx/002008/002008040/20240312/cb401e90-eb94-4729-aaaf-f677c6fe6c3c.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "dragon-boat",
+    "name": "端午节",
+    "rule": {
+      "calendar": "lunar",
+      "month": 5,
+      "day": 5
+    },
+    "description": {
+      "text": "农历五月初五的传统节日，又称端阳。",
+      "sources": [
+        {
+          "title": "端午节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/dwj/202303/t20230303_2928401.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "具有禳灾祈福等多种文化内涵；纪念屈原是广泛流传的一种叙事，各地还有其他传说。",
+      "sources": [
+        {
+          "title": "端午节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/dwj/202303/t20230303_2928401.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "赛龙舟、吃粽子、悬挂艾草等，地域习俗各有不同。",
+      "sources": [
+        {
+          "title": "端午节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/dwj/202303/t20230303_2928401.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "qixi",
+    "name": "七夕节",
+    "rule": {
+      "calendar": "lunar",
+      "month": 7,
+      "day": 7
+    },
+    "description": {
+      "text": "农历七月初七，又称乞巧节、女儿节。",
+      "sources": [
+        {
+          "title": "七夕节",
+          "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆",
+          "url": "https://www.ihchina.cn/Article/Index/detail?id=14926",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "与织女信仰及乞巧活动有关；牛郎织女鹊桥相会属于民间传说。",
+      "sources": [
+        {
+          "title": "七夕节",
+          "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆",
+          "url": "https://www.ihchina.cn/Article/Index/detail?id=14926",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "穿针乞巧、制作巧果等，具体活动因地区而异。",
+      "sources": [
+        {
+          "title": "七夕节",
+          "publisher": "中国非物质文化遗产网·中国非物质文化遗产数字博物馆",
+          "url": "https://www.ihchina.cn/Article/Index/detail?id=14926",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "zhongyuan",
+    "name": "中元节",
+    "rule": {
+      "calendar": "lunar",
+      "month": 7,
+      "day": 15
+    },
+    "description": {
+      "text": "俗称“七月半”，是部分地区追思先人的民俗时节。",
+      "sources": [
+        {
+          "title": "中元节习俗",
+          "publisher": "天门市人民政府",
+          "url": "https://www.tianmen.gov.cn/zjtm/tmwh/tmms/201604/t20160419_1930964.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "祖先祭祀与相关宗教文化长期交融，过节日期和形式存在地域差异。",
+      "sources": [
+        {
+          "title": "中元节习俗",
+          "publisher": "天门市人民政府",
+          "url": "https://www.tianmen.gov.cn/zjtm/tmwh/tmms/201604/t20160419_1930964.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "部分地区有祭祖、追思等活动，资料描述的是当地民俗。",
+      "sources": [
+        {
+          "title": "中元节习俗",
+          "publisher": "天门市人民政府",
+          "url": "https://www.tianmen.gov.cn/zjtm/tmwh/tmms/201604/t20160419_1930964.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mid-autumn",
+    "name": "中秋节",
+    "rule": {
+      "calendar": "lunar",
+      "month": 8,
+      "day": 15
+    },
+    "description": {
+      "text": "农历八月十五，以赏月、团圆为重要主题。",
+      "sources": [
+        {
+          "title": "中秋节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/zqj/202303/t20230303_2928408.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "与古代秋祀、拜月传统有关，后发展为广泛庆祝的节日；嫦娥奔月属于神话传说。",
+      "sources": [
+        {
+          "title": "中秋节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/zqj/202303/t20230303_2928408.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "赏月、吃月饼、家人团聚。",
+      "sources": [
+        {
+          "title": "中秋节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/zqj/202303/t20230303_2928408.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "double-ninth",
+    "name": "重阳节",
+    "rule": {
+      "calendar": "lunar",
+      "month": 9,
+      "day": 9
+    },
+    "description": {
+      "text": "农历九月初九的传统节日，也承载敬老主题。",
+      "sources": [
+        {
+          "title": "重阳节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cyj/202303/t20230303_2928420.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "“九九”重叠得名，传统岁时活动逐步形成登高、赏菊等风俗。",
+      "sources": [
+        {
+          "title": "重阳节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cyj/202303/t20230303_2928420.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "登高、赏菊、吃重阳糕、敬老。",
+      "sources": [
+        {
+          "title": "重阳节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cyj/202303/t20230303_2928420.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "laba",
+    "name": "腊八节",
+    "rule": {
+      "calendar": "lunar",
+      "month": 12,
+      "day": 8
+    },
+    "description": {
+      "text": "农历腊月初八，是春节前的重要民俗时节。",
+      "sources": [
+        {
+          "title": "春节古时称“元旦”",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+          "accessedAt": "2026-10-25"
+        },
+        {
+          "title": "“我们的节日”东城区非遗主题系列活动——腊八节",
+          "publisher": "北京市东城区人民政府",
+          "url": "https://www.bjdch.gov.cn/zwgk/jgdh/qzfzcbmdh/qwhhlyj/ggfwxxgk/202401/t20240124_3544532.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "传统腊祭与佛教成道纪念等文化在历史中交融。",
+      "sources": [
+        {
+          "title": "春节古时称“元旦”",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+          "accessedAt": "2026-10-25"
+        },
+        {
+          "title": "“我们的节日”东城区非遗主题系列活动——腊八节",
+          "publisher": "北京市东城区人民政府",
+          "url": "https://www.bjdch.gov.cn/zwgk/jgdh/qzfzcbmdh/qwhhlyj/ggfwxxgk/202401/t20240124_3544532.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "喝腊八粥，北方部分地区泡腊八蒜。",
+      "sources": [
+        {
+          "title": "春节古时称“元旦”",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+          "accessedAt": "2026-10-25"
+        },
+        {
+          "title": "“我们的节日”东城区非遗主题系列活动——腊八节",
+          "publisher": "北京市东城区人民政府",
+          "url": "https://www.bjdch.gov.cn/zwgk/jgdh/qzfzcbmdh/qwhhlyj/ggfwxxgk/202401/t20240124_3544532.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "little-new-year-north",
+    "name": "小年（北）",
+    "rule": {
+      "calendar": "lunar",
+      "month": 12,
+      "day": 23
+    },
+    "description": {
+      "text": "北方不少地区在腊月二十三过小年。",
+      "sources": [
+        {
+          "title": "春节古时称“元旦”",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "与传统祭灶活动相联系；灶神上天的故事属于民间信仰与传说。",
+      "sources": [
+        {
+          "title": "春节古时称“元旦”",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "祭灶、扫尘、准备年货等，各地并不完全相同。",
+      "sources": [
+        {
+          "title": "春节古时称“元旦”",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "little-new-year-south",
+    "name": "小年（南）",
+    "rule": {
+      "calendar": "lunar",
+      "month": 12,
+      "day": 24
+    },
+    "description": {
+      "text": "南方部分地区在腊月二十四过小年。",
+      "sources": [
+        {
+          "title": "春节古时称“元旦”",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "各地的小年日期并不统一，与地方祭灶传统有关。",
+      "sources": [
+        {
+          "title": "春节古时称“元旦”",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "祭灶、扫尘、准备过年。",
+      "sources": [
+        {
+          "title": "春节古时称“元旦”",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "new-years-eve",
+    "name": "除夕",
+    "rule": {
+      "calendar": "lunar-eve"
+    },
+    "description": {
+      "text": "农历一年的最后一天，可能是腊月二十九或三十。",
+      "sources": [
+        {
+          "title": "春节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cj/202303/t20230314_2936365.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "是辞旧迎新年节文化的重要组成部分，与家族团聚和岁末仪式相联系。",
+      "sources": [
+        {
+          "title": "春节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cj/202303/t20230314_2936365.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "吃年夜饭、守岁，迎接新年。",
+      "sources": [
+        {
+          "title": "春节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/cj/202303/t20230314_2936365.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "qingming",
+    "name": "清明节",
+    "rule": {
+      "calendar": "solar-term",
+      "term": "清明"
+    },
+    "description": {
+      "text": "兼具节气与传统节日性质，日期随当年清明节气确定。",
+      "sources": [
+        {
+          "title": "清明节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/qmj/202303/t20230303_2928277.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "在岁时发展中融合祭祖、寒食等文化传统。",
+      "sources": [
+        {
+          "title": "清明节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/qmj/202303/t20230303_2928277.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "扫墓追思、踏青、插柳等。",
+      "sources": [
+        {
+          "title": "清明节",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/zt/wmdjr/qmj/202303/t20230303_2928277.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "new-year",
+    "name": "元旦",
+    "rule": {
+      "calendar": "solar",
+      "month": 1,
+      "day": 1
+    },
+    "description": {
+      "text": "公历新年的第一天。",
+      "sources": [
+        {
+          "title": "春节古时称“元旦”",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "“元旦”在古代曾指传统历法岁首，采用公历后与春节名称逐渐区分。",
+      "sources": [
+        {
+          "title": "春节古时称“元旦”",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "以不同形式迎接新年，具体放假日期以年度公告为准。",
+      "sources": [
+        {
+          "title": "春节古时称“元旦”",
+          "publisher": "北京市人民政府",
+          "url": "https://www.beijing.gov.cn/renwen/pjsx/201902/t20190201_1874837.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "valentines",
+    "name": "情人节",
+    "rule": {
+      "calendar": "solar",
+      "month": 2,
+      "day": 14
+    },
+    "description": {
+      "text": "每年二月十四日，常以卡片等方式表达情感。",
+      "sources": [
+        {
+          "title": "Valentine’s Day",
+          "publisher": "British Council",
+          "url": "https://learnenglish.britishcouncil.org/sites/podcasts/files/LearnEnglish-Magazine-Valentines-Day.pdf",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "与名为瓦伦丁的圣人有关的传说有不同版本，确切历史并不完全明确。",
+      "sources": [
+        {
+          "title": "Valentine’s Day",
+          "publisher": "British Council",
+          "url": "https://learnenglish.britishcouncil.org/sites/podcasts/files/LearnEnglish-Magazine-Valentines-Day.pdf",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "赠送或制作情人节卡片。",
+      "sources": [
+        {
+          "title": "Valentine’s Day",
+          "publisher": "British Council",
+          "url": "https://learnenglish.britishcouncil.org/sites/podcasts/files/LearnEnglish-Magazine-Valentines-Day.pdf",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "womens-day",
+    "name": "妇女节",
+    "rule": {
+      "calendar": "solar",
+      "month": 3,
+      "day": 8
+    },
+    "description": {
+      "text": "国际妇女节，关注妇女权利与性别平等。",
+      "sources": [
+        {
+          "title": "国际妇女节：节日历史",
+          "publisher": "联合国",
+          "url": "https://www.un.org/zh/events/womensday/history.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "与二十世纪初争取妇女权益的运动有关，后发展为国际性纪念日。",
+      "sources": [
+        {
+          "title": "国际妇女节：节日历史",
+          "publisher": "联合国",
+          "url": "https://www.un.org/zh/events/womensday/history.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "举办讨论、宣传和纪念活动，关注妇女与女童的平等权利。",
+      "sources": [
+        {
+          "title": "国际妇女节：节日历史",
+          "publisher": "联合国",
+          "url": "https://www.un.org/zh/events/womensday/history.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "april-fools",
+    "name": "愚人节",
+    "rule": {
+      "calendar": "solar",
+      "month": 4,
+      "day": 1
+    },
+    "description": {
+      "text": "每年四月一日的民间节日。",
+      "sources": [
+        {
+          "title": "愚人節",
+          "publisher": "教育部《重編國語辭典修訂本》",
+          "url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=163313&la=0&powerMode=0",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "确切起源未有定论，不宜把单一改历传说当作确定历史。",
+      "sources": [
+        {
+          "title": "愚人節",
+          "publisher": "教育部《重編國語辭典修訂本》",
+          "url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=163313&la=0&powerMode=0",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "以玩笑、趣味消息等方式娱乐。",
+      "sources": [
+        {
+          "title": "愚人節",
+          "publisher": "教育部《重編國語辭典修訂本》",
+          "url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=163313&la=0&powerMode=0",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "labour-day",
+    "name": "劳动节",
+    "rule": {
+      "calendar": "solar",
+      "month": 5,
+      "day": 1
+    },
+    "description": {
+      "text": "国际劳动节，纪念劳动者争取权益的努力。",
+      "sources": [
+        {
+          "title": "五一国际劳动节的由来",
+          "publisher": "淄博市财政局",
+          "url": "https://sczj.zibo.gov.cn/art/2017/5/25/art_725_368844.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "与十九世纪工人争取八小时工作制的运动有关。",
+      "sources": [
+        {
+          "title": "五一国际劳动节的由来",
+          "publisher": "淄博市财政局",
+          "url": "https://sczj.zibo.gov.cn/art/2017/5/25/art_725_368844.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "举办纪念与庆祝活动，具体放假调休以年度公告为准。",
+      "sources": [
+        {
+          "title": "五一国际劳动节的由来",
+          "publisher": "淄博市财政局",
+          "url": "https://sczj.zibo.gov.cn/art/2017/5/25/art_725_368844.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "childrens-day",
+    "name": "儿童节",
+    "rule": {
+      "calendar": "solar",
+      "month": 6,
+      "day": 1
+    },
+    "description": {
+      "text": "六一国际儿童节，关注儿童权益与成长。",
+      "sources": [
+        {
+          "title": "儿童节节日简介",
+          "publisher": "国家卫生健康委员会",
+          "url": "https://www.nhc.gov.cn/jnr/etjjrjj/etj_lmtt.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "1949 年国际民主妇女联合会决定以六月一日为国际儿童节，我国随后采用这一日期。",
+      "sources": [
+        {
+          "title": "儿童节节日简介",
+          "publisher": "国家卫生健康委员会",
+          "url": "https://www.nhc.gov.cn/jnr/etjjrjj/etj_lmtt.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "举办适合儿童的庆祝和关爱活动。",
+      "sources": [
+        {
+          "title": "儿童节节日简介",
+          "publisher": "国家卫生健康委员会",
+          "url": "https://www.nhc.gov.cn/jnr/etjjrjj/etj_lmtt.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "national-day",
+    "name": "国庆节",
+    "rule": {
+      "calendar": "solar",
+      "month": 10,
+      "day": 1
+    },
+    "description": {
+      "text": "中华人民共和国国庆日。",
+      "sources": [
+        {
+          "title": "关于中华人民共和国国庆日的决议",
+          "publisher": "国务院港澳事务办公室",
+          "url": "https://www.hmo.gov.cn/2026/08/21/ARTIZZHLS5A3wMrwgN0VL4Qw260821.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "1949 年十二月通过的决议明确以十月一日为国庆日。",
+      "sources": [
+        {
+          "title": "关于中华人民共和国国庆日的决议",
+          "publisher": "国务院港澳事务办公室",
+          "url": "https://www.hmo.gov.cn/2026/08/21/ARTIZZHLS5A3wMrwgN0VL4Qw260821.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "举行纪念与庆祝活动；放假调休具体安排另见年度公告。",
+      "sources": [
+        {
+          "title": "关于中华人民共和国国庆日的决议",
+          "publisher": "国务院港澳事务办公室",
+          "url": "https://www.hmo.gov.cn/2026/08/21/ARTIZZHLS5A3wMrwgN0VL4Qw260821.shtml",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  },
+  {
+    "id": "christmas",
+    "name": "圣诞节",
+    "rule": {
+      "calendar": "solar",
+      "month": 12,
+      "day": 25
+    },
+    "description": {
+      "text": "基督教纪念耶稣诞生的节日，许多教会于十二月二十五日庆祝。",
+      "sources": [
+        {
+          "title": "Solemnity of the Nativity of Our Lord or Christmas",
+          "publisher": "Vatican News",
+          "url": "https://www.vaticannews.va/en/liturgical-holidays/solemnity-of-the-nativity-of-our-lord-or-christmas.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "origin": {
+      "text": "十二月二十五日的庆祝传统在教会历史中逐步形成，日期并非已确定的历史生日。",
+      "sources": [
+        {
+          "title": "Solemnity of the Nativity of Our Lord or Christmas",
+          "publisher": "Vatican News",
+          "url": "https://www.vaticannews.va/en/liturgical-holidays/solemnity-of-the-nativity-of-our-lord-or-christmas.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    },
+    "customs": {
+      "text": "参加节日礼仪、布置圣诞马槽等；不同地区传统不同。",
+      "sources": [
+        {
+          "title": "Solemnity of the Nativity of Our Lord or Christmas",
+          "publisher": "Vatican News",
+          "url": "https://www.vaticannews.va/en/liturgical-holidays/solemnity-of-the-nativity-of-our-lord-or-christmas.html",
+          "accessedAt": "2026-10-25"
+        }
+      ]
+    }
+  }
+]

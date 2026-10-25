@@ -1,6 +1,16 @@
 "use client";
 
-import { Calendar } from "@qingwu-ui/calendar";
+import {
+  Calendar,
+  getLunarDayName,
+  getLunarFestival,
+  getLunarMonthName,
+  getSolarFestival,
+  getSolarTerm,
+  getYearGanzhi,
+  holidayData,
+  solarToLunar,
+} from "@qingwu-ui/calendar";
 import { useEffect, useRef, useState } from "react";
 import "@qingwu-ui/calendar/style.css";
 import "@qingwu-ui/button/style.css";
@@ -8,7 +18,8 @@ import DemoCard from "@/components/DemoCard";
 import Playground from "@/components/Playground";
 import { genAll } from "@/lib/codegen";
 import { PKG } from "@/lib/pkg-meta";
-import { CALENDAR_FIELDS, createCalendar, calendarToCode } from "./playground.config";
+import HolidayDataDemo from "./holiday-data-demo";
+import { CALENDAR_FIELDS, calendarToCode, createCalendar } from "./playground.config";
 
 /* ============================================================
    日格可视化（原 calendar-basic demo）
@@ -16,86 +27,66 @@ import { CALENDAR_FIELDS, createCalendar, calendarToCode } from "./playground.co
 
 const WEEKDAYS = ["一", "二", "三", "四", "五", "六", "日"];
 
-interface VisCell {
-  d: number;
-  sub: string;
-  m: string;
-  holiday?: boolean;
-  badge?: string;
-  badgeClass?: string;
-  today?: boolean;
-  term?: string;
-}
-
-const GRID_CELLS: VisCell[] = [
-  /* 7/27 - 8/2 */ { d: 27, sub: "廿三", m: "prev" },
-  { d: 28, sub: "廿四", m: "prev" },
-  { d: 29, sub: "廿五", m: "prev" },
-  { d: 30, sub: "廿六", m: "prev" },
-  { d: 31, sub: "廿七", m: "prev" },
-  { d: 1, sub: "建军", m: "curr", holiday: true, badge: "休", badgeClass: "rest" },
-  { d: 2, sub: "十九", m: "curr" },
-  ...[7, 8, 9, 10, 11, 12, 13].map((d) => ({
-    d,
-    sub: ["二十", "廿一", "廿二", "廿三", "廿四", "廿五", "廿六"][d - 7],
-    m: "curr",
-  })),
-  ...[14, 15, 16, 17, 18, 19, 20].map((d) => {
-    const subs: Record<number, string> = {
-      14: "廿七",
-      15: "廿八",
-      16: "廿九",
-      17: "三十",
-      18: "初一",
-      19: "初二",
-      20: "初三",
+function gridCells(view: Date) {
+  const year = view.getFullYear();
+  const month = view.getMonth();
+  const offset = (new Date(year, month, 1).getDay() + 6) % 7;
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(year, month, index - offset + 1);
+    const lunar = solarToLunar(date);
+    const iso = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const day = holidayData.years.flatMap((item) => item.days).find((item) => item.date === iso);
+    const festival =
+      (!lunar.isLeap && getLunarFestival(lunar.month, lunar.day)) ||
+      getSolarFestival(date.getMonth() + 1, date.getDate());
+    return {
+      d: date.getDate(),
+      sub:
+        festival?.name ??
+        getSolarTerm(date)?.name ??
+        (lunar.day === 1
+          ? getLunarMonthName(lunar.month, lunar.isLeap)
+          : getLunarDayName(lunar.day)),
+      m: date.getMonth() === month ? "curr" : "other",
+      holiday: day?.isOffDay,
+      badge: day ? (day.isOffDay ? "休" : "工") : undefined,
+      badgeClass: day?.isOffDay ? "rest" : "work",
     };
-    return { d, sub: subs[d] ?? `${d}`, m: "curr" };
-  }),
-  ...[21, 22, 23, 24, 25, 26, 27].map((d) => ({
-    d,
-    sub: `初${["四", "五", "六", "七", "八", "九", "十"][d - 21]}`,
-    m: "curr",
-  })),
-  ...[28, 29, 30, 31, 1, 2, 3].map((d) => ({
-    d,
-    sub: d <= 31 ? `十${d - 27}` : `${d}`,
-    m: "curr",
-  })),
-].map((cell) => ({ ...cell, today: cell.d === 31 && cell.m === "curr" }));
+  });
+}
 
 /* ============================================================
    节假日与调休（原 holiday demo）
    ============================================================ */
 
-const HOLIDAYS = [
-  { start: "2026-01-01", end: "2026-01-03", name: "元旦", color: "var(--vermilion)" },
-  { start: "2026-02-17", end: "2026-02-23", name: "春节", color: "var(--vermilion)" },
-  { start: "2026-04-04", end: "2026-04-06", name: "清明", color: "var(--teal)" },
-  { start: "2026-05-01", end: "2026-05-05", name: "劳动节", color: "var(--amber)" },
-  { start: "2026-06-19", end: "2026-06-21", name: "端午", color: "var(--teal)" },
-  { start: "2026-09-25", end: "2026-09-27", name: "中秋", color: "var(--amber)" },
-  { start: "2026-10-01", end: "2026-10-08", name: "国庆", color: "var(--vermilion)" },
-];
+const YEAR_DAYS = holidayData.years.find((year) => year.year === 2026)?.days ?? [];
+const HOLIDAYS = [...new Set(YEAR_DAYS.filter((day) => day.isOffDay).map((day) => day.name))].map(
+  (name) => {
+    const dates = YEAR_DAYS.filter((day) => day.name === name && day.isOffDay)
+      .map((day) => day.date)
+      .sort();
+    return {
+      start: dates[0] ?? "",
+      end: dates[dates.length - 1] ?? "",
+      name,
+      color: "var(--teal)",
+    };
+  },
+);
+const WORKDAYS = YEAR_DAYS.filter((day) => !day.isOffDay).map((day) => ({
+  date: day.date,
+  name: `${day.name}补班`,
+}));
 
-const WORKDAYS = [
-  { date: "2026-01-04", name: "元旦补班" },
-  { date: "2026-02-14", name: "春节补班" },
-  { date: "2026-02-28", name: "春节补班" },
-  { date: "2026-10-10", name: "国庆补班" },
-  { date: "2026-10-11", name: "国庆补班" },
-];
-
-/* 模拟 2026 日历布局：展示节假日如何映射到日格 */
-const MONTH_DAYS: Record<string, { days: number; startDow: number }> = {
-  "1": { days: 31, startDow: 4 },
-  "2": { days: 28, startDow: 0 },
-  "4": { days: 30, startDow: 3 },
-  "5": { days: 31, startDow: 5 },
-  "6": { days: 30, startDow: 1 },
-  "9": { days: 30, startDow: 2 },
-  "10": { days: 31, startDow: 4 },
-};
+const MONTH_DAYS = Object.fromEntries(
+  [1, 2, 4, 5, 6, 9, 10].map((month) => [
+    String(month),
+    {
+      days: new Date(2026, month, 0).getDate(),
+      startDow: (new Date(2026, month - 1, 1).getDay() + 6) % 7,
+    },
+  ]),
+);
 
 /* ============================================================
    禁用规则（原 rules demo）
@@ -256,6 +247,8 @@ function ClearableDemo() {
 }
 
 export default function CalendarPopupPage() {
+  const [gridMonth, setGridMonth] = useState(new Date(2026, 7, 1));
+  const ganzhi = getYearGanzhi(gridMonth.getFullYear());
   /* 节假日开关（原 holiday demo） */
   const [enabled, setEnabled] = useState<Set<string>>(new Set(HOLIDAYS.map((h) => h.name)));
   const toggleHoliday = (name: string) => {
@@ -294,6 +287,8 @@ export default function CalendarPopupPage() {
         toCode={calendarToCode}
         log
       />
+
+      <HolidayDataDemo />
 
       {/* ---- 详情悬浮方式（detailPosition） ---- */}
       <DemoCard
@@ -351,14 +346,33 @@ cal.setSelectedDate("");`,
           <div style={{ maxWidth: 500, width: "100%" }}>
             {/* 月导航 */}
             <div className="cal-top" style={{ justifyContent: "center", marginBottom: 14 }}>
-              <button className="btn icon" style={{ width: 32, height: 32, fontSize: 14 }}>
+              <button
+                aria-label="日格示例上个月"
+                onClick={() =>
+                  setGridMonth(new Date(gridMonth.getFullYear(), gridMonth.getMonth() - 1, 1))
+                }
+                className="btn icon"
+                style={{ width: 32, height: 32, fontSize: 14 }}
+              >
                 ‹
               </button>
               <div className="cal-title" style={{ minWidth: 120, justifyContent: "center" }}>
-                <span className="cal-month">2026 年 8 月</span>
-                <span className="cal-lunar-year">丙午年·七月</span>
+                <span className="cal-month">
+                  {gridMonth.getFullYear()} 年 {gridMonth.getMonth() + 1} 月
+                </span>
+                <span className="cal-lunar-year">
+                  {ganzhi.stem}
+                  {ganzhi.branch}年
+                </span>
               </div>
-              <button className="btn icon" style={{ width: 32, height: 32, fontSize: 14 }}>
+              <button
+                aria-label="日格示例下个月"
+                onClick={() =>
+                  setGridMonth(new Date(gridMonth.getFullYear(), gridMonth.getMonth() + 1, 1))
+                }
+                className="btn icon"
+                style={{ width: 32, height: 32, fontSize: 14 }}
+              >
                 ›
               </button>
             </div>
@@ -372,10 +386,10 @@ cal.setSelectedDate("");`,
 
             {/* 日格网格 */}
             <div className="vis-cal">
-              {GRID_CELLS.map((cell, i) => (
+              {gridCells(gridMonth).map((cell, i) => (
                 <div
                   key={i}
-                  className={`vis-cal-cell${cell.m === "prev" ? " other-month" : ""}${cell.today ? " today" : ""}${cell.holiday ? " holiday" : ""}`}
+                  className={`vis-cal-cell${cell.m !== "curr" ? " other-month" : ""}${cell.holiday ? " holiday" : ""}`}
                 >
                   <span className="vis-cal-cell-num">{cell.d}</span>
                   <span className="vis-cal-cell-sub">{cell.sub}</span>
@@ -441,7 +455,7 @@ cal.setSelectedDate("");`,
       {/* ---- 节假日与调休（原 holiday demo） ---- */}
       <DemoCard
         title="节假日与调休"
-        desc="通过 createHolidayPlugin() 注入自定义节假日数据，与农历插件走同一 DayMetaProvider 管线。下方是 2026 年法定节假日在日历网格上的映射。"
+        desc="下方日期来自 @qingwu-ui/holiday-data 的 2026 年年度 JSON，包含已公布的放假与调休补班安排。"
         full
       >
         <div className="holiday-toggles">

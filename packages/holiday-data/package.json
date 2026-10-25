@@ -1,0 +1,63 @@
+{
+  "name": "@qingwu-ui/holiday-data",
+  "version": "1.1.0",
+  "description": "中国年度放假调休 JSON 与附来源的节日资料，离线可用",
+  "type": "module",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./data.json": "./data.json",
+    "./festivals.json": "./festivals.json",
+    "./schema.json": "./schema.json",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist",
+    "years",
+    "data.json",
+    "festivals.json",
+    "schema.json",
+    "LICENSE",
+    "LICENSE-holiday-cn"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "sync": "bun scripts/sync.ts"
+  },
+  "devDependencies": {
+    "@qingwu-ui/tsconfig": "workspace:*",
+    "@types/node": "^22.15.3",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.12"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apricotdream/qingwu-ui.git",
+    "directory": "packages/holiday-data"
+  },
+  "keywords": [
+    "holiday",
+    "china",
+    "calendar",
+    "json",
+    "festival",
+    "qingwu"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}

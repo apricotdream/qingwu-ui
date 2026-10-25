@@ -1,20 +1,7 @@
 import { Calendar, type CalendarUiOptions } from "@qingwu-ui/calendar";
+import type { FieldDef, LogFn, PlaygroundHandle } from "@/components/Playground";
 import type { CodegenInput } from "@/lib/codegen";
 import { PKG } from "@/lib/pkg-meta";
-import type { FieldDef, LogFn, PlaygroundHandle } from "@/components/Playground";
-
-const DEFAULT_HOLIDAYS = {
-  holidays: [
-    "2026-10-01",
-    "2026-10-02",
-    "2026-10-03",
-    "2026-10-04",
-    "2026-10-05",
-    "2026-10-06",
-    "2026-10-07",
-  ],
-  workdays: ["2026-10-10", "2026-10-11"],
-};
 
 export const CALENDAR_FIELDS: FieldDef[] = [
   {
@@ -66,9 +53,9 @@ export const CALENDAR_FIELDS: FieldDef[] = [
   },
   {
     key: "holidays",
-    label: "休假日历（JSON）",
+    label: "额外日期覆盖（JSON，可选）",
     type: "text",
-    defaultValue: JSON.stringify(DEFAULT_HOLIDAYS),
+    defaultValue: "{}",
   },
 ];
 

@@ -9,6 +9,13 @@ import {
   getSolarTermDetail,
 } from "./data";
 import {
+  type DataSource,
+  type FestivalRecord,
+  findFestivals,
+  findHolidayDay,
+  type HolidayData,
+} from "./holiday-data";
+import {
   formatLunarDate,
   getLunarDayName,
   getLunarMonthName,
@@ -63,13 +70,16 @@ function formatDate(date: Date): string {
 /** 内置：农历 / 节日 / 节气小字（日期格） */
 export class LunarDayMetaProvider implements DayMetaProvider {
   readonly id = "lunar";
+  constructor(private readonly data: HolidayData | undefined = undefined) {}
 
   getDayMeta(date: Date): DayMeta {
     const lunar = solarToLunar(date);
+    const festival = findFestivals(this.data, date)[0];
+    if (festival) return { sub: festival.name, subClass: "is-festival" };
     const lunarStr =
       lunar.day === 1 ? getLunarMonthName(lunar.month, lunar.isLeap) : getLunarDayName(lunar.day);
 
-    const lunarFest = getLunarFestival(lunar.month, lunar.day);
+    const lunarFest = lunar.isLeap ? null : getLunarFestival(lunar.month, lunar.day);
     const solarFest = getSolarFestival(date.getMonth() + 1, date.getDate());
     const term = getSolarTerm(date);
 
@@ -87,7 +97,10 @@ export class LunarDayMetaProvider implements DayMetaProvider {
 export class HolidayBadgeProvider implements DayMetaProvider {
   readonly id = "holiday";
 
-  constructor(private readonly holidays: HolidayConfig = {}) {}
+  constructor(
+    private readonly holidays: HolidayConfig = {},
+    private readonly data: HolidayData | undefined = undefined,
+  ) {}
 
   getDayMeta(date: Date): DayMeta | null {
     const iso = formatDate(date);
@@ -96,17 +109,12 @@ export class HolidayBadgeProvider implements DayMetaProvider {
     if (workdays.includes(iso)) return { badge: "工", cellClass: "is-workday" };
     if (holidays.includes(iso)) return { badge: "休", cellClass: "is-holiday" };
 
-    // 兜底：未配置 holidays 时仍标记春节/国庆/劳动节
-    const lunar = solarToLunar(date);
-    const lunarFest = getLunarFestival(lunar.month, lunar.day);
-    const solarFest = getSolarFestival(date.getMonth() + 1, date.getDate());
-    if (
-      lunarFest?.name === "春节" ||
-      solarFest?.name === "国庆节" ||
-      solarFest?.name === "劳动节"
-    ) {
-      return { badge: "休", cellClass: "is-holiday" };
-    }
+    const day = findHolidayDay(this.data, iso);
+    if (day)
+      return day.isOffDay
+        ? { badge: "休", cellClass: "is-holiday" }
+        : { badge: "工", cellClass: "is-workday" };
+    // 未收录的日期不猜测放假；普通周末仍由日历周末样式表示。
     return null;
   }
 }
@@ -115,10 +123,14 @@ export class HolidayBadgeProvider implements DayMetaProvider {
 export class DetailPanelProvider implements PanelProvider {
   readonly id = "detail";
   readonly title = "详情";
+  constructor(
+    private readonly data: HolidayData | undefined = undefined,
+    private readonly holidays: HolidayConfig = {},
+  ) {}
 
   render(date: Date): string {
     const lunar = solarToLunar(date);
-    const lunarFest = getLunarFestival(lunar.month, lunar.day);
+    const lunarFest = lunar.isLeap ? null : getLunarFestival(lunar.month, lunar.day);
     const solarFest = getSolarFestival(date.getMonth() + 1, date.getDate());
     const term = getSolarTerm(date);
     const terms = getNearbySolarTerms(date);
@@ -139,9 +151,44 @@ export class DetailPanelProvider implements PanelProvider {
       `<div class="qw-detail-ganzhi">${ganzhiStr}</div>`,
     );
 
-    // 节日信息
-    if (lunarFest) rows.push(...renderFestivalDetail(lunarFest));
-    if (solarFest && !lunarFest) rows.push(...renderFestivalDetail(solarFest));
+    const iso = formatDate(date);
+    const day = findHolidayDay(this.data, iso);
+    const currentYear = this.data?.years.find((year) => year.year === date.getFullYear());
+    if (currentYear?.missingHolidays?.length)
+      rows.push(
+        `<div class="qw-detail-meta">本年仅部分收录，尚缺：${escapeText(currentYear.missingHolidays.join("、"))}。未收录日期不代表工作日。</div>`,
+      );
+    else if (this.data?.coverage?.missingYears.includes(date.getFullYear()))
+      rows.push('<div class="qw-detail-meta">本年放假调休资料缺失，未收录日期不代表工作日。</div>');
+    const explicitWorkday = this.holidays.workdays?.includes(iso);
+    const explicitHoliday = this.holidays.holidays?.includes(iso);
+    if (explicitWorkday || explicitHoliday || day) {
+      const isOffDay = explicitWorkday ? false : explicitHoliday ? true : day?.isOffDay;
+      rows.push(
+        `<div class="qw-detail-section"><div class="qw-detail-label">放假与调休</div><div class="qw-detail-text">${isOffDay ? "休息" : "调休上班"}${day ? ` · ${escapeText(day.name)}` : ""}</div>`,
+      );
+      if (explicitWorkday || explicitHoliday)
+        rows.push('<div class="qw-detail-text">用户自定义日期配置</div>');
+      else {
+        const year = [...(this.data?.years ?? [])]
+          .reverse()
+          .find((y) => y.days.some((d) => d.date === iso));
+        if (year)
+          rows.push(
+            renderSources(year.sources),
+            `<div class="qw-detail-meta">数据更新：${escapeText(year.updatedAt)}</div>`,
+          );
+      }
+      rows.push("</div>");
+    }
+    // 数据包中的资料逐字段记录来源，多个同日节日均展示。
+    const festivals = findFestivals(this.data, date);
+    if (festivals.length)
+      for (const festival of festivals) rows.push(...renderSourcedFestival(festival));
+    else {
+      if (lunarFest) rows.push(...renderFestivalDetail(lunarFest));
+      if (solarFest && !lunarFest) rows.push(...renderFestivalDetail(solarFest));
+    }
 
     // 节气信息
     if (term) {
@@ -157,18 +204,42 @@ export class DetailPanelProvider implements PanelProvider {
   }
 }
 
-function renderFestivalDetail(fest: FestivalInfo): string[] {
-  const rows: string[] = [];
-  rows.push(`<div class="qw-detail-section"><div class="qw-detail-label">节日</div>`);
-  rows.push(`<div class="qw-detail-fest-name">${fest.name}</div>`);
-  if (fest.origin) {
-    rows.push(`<div class="qw-detail-text"><b>渊源</b> ${fest.origin}</div>`);
+function escapeText(value: string): string {
+  return value.replace(
+    /[&<>"']/g,
+    (char) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] ?? char,
+  );
+}
+
+function renderSources(sources: DataSource[]): string {
+  const unique = [...new Map(sources.map((source) => [source.url, source])).values()];
+  return `<ul class="qw-detail-sources" aria-label="资料来源">${unique.map((source) => `<li><a href="${escapeText(source.url)}" target="_blank" rel="noopener noreferrer">${escapeText(source.title)}</a><span>${escapeText(source.publisher)} · 查阅 ${escapeText(source.accessedAt)}</span></li>`).join("")}</ul>`;
+}
+
+function renderSourcedFestival(festival: FestivalRecord): string[] {
+  const rows = [
+    `<div class="qw-detail-section"><div class="qw-detail-label">节日资料</div><div class="qw-detail-fest-name">${escapeText(festival.name)}</div>`,
+  ];
+  for (const [label, part] of [
+    ["介绍", festival.description],
+    ["渊源", festival.origin],
+    ["习俗", festival.customs],
+  ] as const) {
+    rows.push(`<div class="qw-detail-text"><b>${label}</b> ${escapeText(part.text)}</div>`);
   }
-  if (fest.description) {
-    rows.push(`<div class="qw-detail-text"><b>习俗</b> ${fest.description}</div>`);
-  }
-  rows.push("</div>");
+  rows.push(
+    `<details class="qw-detail-references"><summary>资料来源</summary>${renderSources([...festival.description.sources, ...festival.origin.sources, ...festival.customs.sources])}</details>`,
+    "</div>",
+  );
   return rows;
+}
+
+function renderFestivalDetail(fest: FestivalInfo): string[] {
+  // 无资料库时保留节日名称；渊源和习俗只展示带来源的资料。
+  return [
+    `<div class="qw-detail-section"><div class="qw-detail-label">节日</div><div class="qw-detail-fest-name">${escapeText(fest.name)}</div></div>`,
+  ];
 }
 
 function renderTermDetail(term: SolarTerm, isExact: boolean): string[] {

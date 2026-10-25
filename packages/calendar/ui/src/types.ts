@@ -1,5 +1,6 @@
 /** 日历组件类型定义 */
 
+import type { HolidayData, HolidayYear } from "./holiday-data";
 import type { DayMetaProvider, PanelProvider } from "./providers";
 
 /** 节假日配置 */
@@ -41,7 +42,9 @@ export interface CalendarUiOptions {
   /** 详情面板悬浮方式（默认 `right`：右侧展开、面板加宽；`left`：左侧展开、面板向左加宽；
    *  `inside`：面板内右缘覆盖浮层、不改变面板宽度） */
   detailPosition?: DetailPosition;
-  /** 节假日配置（放假日期 + 调休上班日期；默认无） */
+  /** 年度或完整 JSON 数据；默认入口自动接入数据包，false 关闭。/core 入口须自行提供。 */
+  holidayData?: HolidayData | HolidayYear | false;
+  /** 显式日期配置优先于年度数据，冲突时补班优先。 */
   holidays?: HolidayConfig;
   /** 自定义日期格 meta Provider（追加在内置 provider 之后） */
   dayMetaProviders?: DayMetaProvider[];

@@ -1,0 +1,128 @@
+.layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+.layout section {
+  min-width: 0;
+}
+.layout h3 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--ink);
+}
+.layout p {
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  color: var(--ink-2);
+  margin-block: 0.5rem 0.875rem;
+}
+.layout label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.8125rem;
+}
+.editor {
+  display: block;
+  width: 100%;
+  min-height: 13rem;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--qw-code-bg);
+  color: var(--ink);
+  padding: 0.75rem;
+  font:
+    0.75rem / 1.6 var(--font-mono),
+    monospace;
+  box-sizing: border-box;
+}
+.editor:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+.yearSelect {
+  width: 100%;
+  min-height: 2.75rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  color: var(--ink);
+  background: var(--card);
+  font: inherit;
+}
+.yearSelect:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+.historySources {
+  margin-block: 0.75rem;
+}
+.historySources a {
+  display: block;
+  margin-block: 0.5rem;
+  color: var(--teal);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.actions,
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-block: 0.875rem;
+}
+.actions button {
+  min-height: 2.75rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  color: var(--ink);
+  background: var(--card);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8125rem;
+}
+.actions button:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.actions button:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+.actions button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.links a {
+  color: var(--teal);
+  font-size: 0.8125rem;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.code {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0.875rem;
+  background: var(--qw-code-bg);
+  border-radius: 0.5rem;
+  color: var(--ink-2);
+  font:
+    0.75rem / 1.7 var(--font-mono),
+    monospace;
+}
+.layout .error {
+  color: var(--vermilion);
+}
+@media (max-width: 700px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .customSection {
+    border-top: 1px solid var(--line);
+    padding-top: 1.25rem;
+  }
+}
