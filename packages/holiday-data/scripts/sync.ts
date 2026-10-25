@@ -110,7 +110,8 @@ validateHolidayData(data);
 if (!isISODate(data.updatedAt)) throw new Error("无效更新时间");
 if (checkOnly) {
   if (changed) throw new Error("节假日数据有更新，请运行 sync");
-} else {
+} else if (changed) {
+  // 保留未变化文件的字节格式，避免格式化器缩进差异触发定时任务误发版。
   await mkdir(join(root, "years"), { recursive: true });
   for (const year of years)
     await writeFile(join(root, "years", `${year.year}.json`), `${JSON.stringify(year, null, 2)}\n`);
