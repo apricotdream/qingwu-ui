@@ -50,6 +50,7 @@ import { AttachmentEmbed } from "../embeds/attachment";
 import { AudioEmbed } from "../embeds/audio";
 import { VideoEmbed } from "../embeds/video";
 import { t } from "../i18n";
+import { ChineseEmphasis } from "./chinese-emphasis";
 import { CodeBlock } from "./code-block";
 import { ImageUpload } from "./image-upload";
 import { ImeCommitSpaceGuard } from "./ime-commit-space-guard";
@@ -141,6 +142,7 @@ export function getEditorExtensions(config: EditorExtensionsConfig = {}): AnyExt
     // 粘贴外部 Markdown 后解析本地相对路径图片/附件（读盘需用户授权）
     RelativeMedia,
     ObsidianMarkdown,
+    ChineseEmphasis,
     SearchHighlight,
     ListQuoteHighlight,
     ImeCommitSpaceGuard,

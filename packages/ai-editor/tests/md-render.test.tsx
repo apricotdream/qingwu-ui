@@ -6,6 +6,21 @@ import { getEditorExtensions } from "../src/editor/extensions";
 describe("markdown 渲染", () => {
   afterEach(() => cleanup());
 
+  it.each([
+    [
+      "情景喜剧**《地下交通站》，角色贾贵（贾队长，颜冠英饰演）**的名台词。",
+      "<strong>《地下交通站》，角色贾贵（贾队长，颜冠英饰演）</strong>",
+    ],
+    ["中文**《标题》**后文", "<strong>《标题》</strong>"],
+    ["中文**普通加粗**后文", "<strong>普通加粗</strong>"],
+    ["`中文**《代码》**后文`", "<code>中文**《代码》**后文</code>"],
+    [String.raw`中文\*\*《原文》\*\*后文`, "中文**《原文》**后文"],
+  ])("兼容中文加粗并保留代码和转义：%s", (content, expected) => {
+    const editor = new Editor({ extensions: getEditorExtensions({}), content });
+    expect(editor.getHTML()).toContain(expected);
+    editor.destroy();
+  });
+
   it("渲染 > 引用块 / - 列表 / --- 分割线", () => {
     const md = "# 标题\n\n> 引用文本\n\n---\n\n- 列表项1\n- 列表项2\n\n正文";
     const editor = new Editor({

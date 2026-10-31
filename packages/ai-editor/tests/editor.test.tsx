@@ -33,6 +33,18 @@ describe("QingWuAIEditor 组件", () => {
     expect(document.body.textContent).toMatch(/字/);
   });
 
+  it("可自定义字数口径，同时保留字符上限统计", () => {
+    render(
+      <QingWuAIEditor
+        {...UPLOAD_LIMITS}
+        initialContent="<p>你好 hello</p>"
+        wordCounter={() => 3}
+        maxLength={100}
+      />,
+    );
+    expect(document.body.textContent).toContain("3 字（8 / 100 字符）");
+  });
+
   it("渲染初始内容", () => {
     render(<QingWuAIEditor {...UPLOAD_LIMITS} initialContent="<p>测试内容</p>" />);
 

@@ -271,6 +271,25 @@
   letter-spacing: 0.04em;
 }
 
+/* 标题配色仅作用于编辑器正文；深色模式单独提高亮度。 */
+.qingwu-editor {
+  --qw-heading-1: #6e9c87;
+  --qw-heading-2: #709ab3;
+  --qw-heading-3: #a08bb6;
+  --qw-heading-4: #b98688;
+  --qw-heading-5: #aa905f;
+  --qw-heading-6: #6e9c9b;
+}
+.dark.qingwu-editor,
+.dark .qingwu-editor {
+  --qw-heading-1: #9fc9b4;
+  --qw-heading-2: #a2c7dc;
+  --qw-heading-3: #c3afd6;
+  --qw-heading-4: #dbafb1;
+  --qw-heading-5: #d5bd8d;
+  --qw-heading-6: #a0c9c7;
+}
+
 /* 标题样式置于层外，避免 scoped preflight 覆盖 typography 的字号与字重。 */
 .qingwu-editor .ProseMirror :is(h1, h2, h3, h4, h5, h6) {
   font-weight: 700;
@@ -278,27 +297,33 @@
 }
 
 .qingwu-editor .ProseMirror h1 {
-  font-size: 2.25em;
+  color: var(--qw-heading-1);
+  font-size: 2.25rem;
 }
 
 .qingwu-editor .ProseMirror h2 {
-  font-size: 1.5em;
+  color: var(--qw-heading-2);
+  font-size: 1.75rem;
 }
 
 .qingwu-editor .ProseMirror h3 {
-  font-size: 1.25em;
+  color: var(--qw-heading-3);
+  font-size: 1.5rem;
 }
 
 .qingwu-editor .ProseMirror h4 {
-  font-size: 1.125em;
+  color: var(--qw-heading-4);
+  font-size: 1.3125rem;
 }
 
 .qingwu-editor .ProseMirror h5 {
-  font-size: 1.0625em;
+  color: var(--qw-heading-5);
+  font-size: 1.1875rem;
 }
 
 .qingwu-editor .ProseMirror h6 {
-  font-size: 1em;
+  color: var(--qw-heading-6);
+  font-size: 1.0625rem;
 }
 
 /* 浠ｇ爜鍧椾腑鏂囧瓧浣?*/

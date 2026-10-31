@@ -325,6 +325,7 @@ startBrowserClipperReceiver({
 | `mode` | `"edit" \| "view"` | `"edit"` | 编辑模式；`"view"` 为只读查看 |
 | `readonly` | `boolean` | `false` | **已废弃**，请用 `mode="view"` |
 | `maxLength` | `number` | - | 最大字符限制 |
+| `wordCounter` | `(text: string) => number` | - | 自定义显示字数的统计口径；不传则显示字符数，`maxLength` 始终按字符限制 |
 | `maxAttachmentSize` | `number` | **必填** | 单文件上传大小上限（字节）；超限文件被拦截并经 `onToast` 提示 |
 | `maxTotalAttachmentSize` | `number` | **必填** | 文档内所有附件总大小上限（字节）；超限拒绝新附件上传 |
 | `onToast` | `(message: string, type: `"success"` \| `"error"` \| `"info"`, options?) => void` | - | 全局提示回调（附件超限拦截 / 文档附件超限警告等）。由宿主接入自己的 Toast 组件；第三参 `options` 透传展示选项（`persist`/`maxLines`/`duration`），旧二参签名自动兼容 |

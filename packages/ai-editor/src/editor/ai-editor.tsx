@@ -194,6 +194,8 @@ export interface QingWuAIEditorProps {
   readonly?: boolean;
   /** 最大字符数限制，不传则不限制 */
   maxLength?: number;
+  /** 自定义显示字数的统计口径；字符上限仍按 maxLength 判断。 */
+  wordCounter?: (text: string) => number;
   /** 单文件上传大小上限（字节），必填；超限文件将被拦截并 toast 提示 */
   maxAttachmentSize: number;
   /** 文档内所有附件总大小上限（字节），必填；超出后拒绝新附件上传 */
@@ -231,6 +233,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   mode,
   readonly = false,
   maxLength,
+  wordCounter,
   maxAttachmentSize,
   maxTotalAttachmentSize,
   className = "",
@@ -810,6 +813,10 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     [editor, charTick],
   );
   const limitExceeded = maxLength ? characterCount > maxLength : false;
+  const displayWordCount = useMemo(
+    () => (wordCounter && editor ? wordCounter(editor.getText({ blockSeparator: "" })) : null),
+    [editor, wordCounter, charTick],
+  );
 
   // 组件卸载时清理 debounce timer
   useEffect(() => {
@@ -1534,8 +1541,8 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                       : "text-default-300"
                 }`}
               >
-                {characterCount}
-                {maxLength ? ` / ${maxLength}` : ""} 字
+                {displayWordCount !== null ? `${displayWordCount} 字` : `${characterCount} 字符`}
+                {maxLength ? `（${characterCount} / ${maxLength} 字符）` : ""}
               </span>
             </div>
           </div>
