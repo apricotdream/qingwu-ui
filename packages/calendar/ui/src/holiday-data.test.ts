@@ -72,8 +72,33 @@ describe("日历节假日数据接入", () => {
     expect(p.getDayMeta(new Date(2026, 8, 20))?.badge).toBe("休");
     expect(p.getDayMeta(new Date(2026, 9, 1))?.badge).toBe("工");
   });
-  it("未来空年份不猜测休工，跨年公告优先", () => {
-    expect(new HolidayBadgeProvider({}, holidayData).getDayMeta(new Date(2027, 9, 1))).toBeNull();
+  it.each([
+    { name: "未收录年份", years: [] },
+    { name: "空占位年份", years: [{ ...customYear, year: 2027, days: [] }] },
+  ])("$name 不猜测休工", ({ years }) => {
+    // 使用固定输入，避免新年度公告发布后，内置数据变化导致测试误报。
+    const data = normalizeHolidayData({
+      schemaVersion: 1,
+      updatedAt: "2026-10-25",
+      festivals: [],
+      years,
+    });
+    expect(new HolidayBadgeProvider({}, data).getDayMeta(new Date(2027, 9, 1))).toBeNull();
+  });
+  it("新年度公布后按数据展示休假与补班", () => {
+    const data = normalizeHolidayData({
+      ...customYear,
+      year: 2027,
+      days: [
+        { date: "2027-10-01", name: "国庆节", isOffDay: true },
+        { date: "2027-10-09", name: "国庆节", isOffDay: false },
+      ],
+    });
+    const provider = new HolidayBadgeProvider({}, data);
+    expect(provider.getDayMeta(new Date(2027, 9, 1))?.badge).toBe("休");
+    expect(provider.getDayMeta(new Date(2027, 9, 9))?.badge).toBe("工");
+  });
+  it("跨年公告优先", () => {
     const data = normalizeHolidayData({
       schemaVersion: 1,
       updatedAt: "2026-10-25",
