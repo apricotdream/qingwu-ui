@@ -57,8 +57,23 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # 复用现有发布门禁：turbo build + publish-check（workspace 协议残留 / CHANGELOG 版本一致 / dist 齐全）
-      - run: bun run release
+      # 指定包时只检查这些包，避免其他组件的发布记录阻断日历数据自动发版。
+      # 未指定包时仍运行全仓发布门禁。
+      - name: 构建并校验待发布包
+        env:
+          RELEASE_PACKAGES: ${{ inputs.packages }}
+        run: |
+          node --test tooling/publish-check/index.test.mjs
+          if [ -z "$RELEASE_PACKAGES" ]; then
+            bun run release
+          else
+            filters=()
+            for package in $RELEASE_PACKAGES; do
+              filters+=("--filter=@qingwu-ui/${package#@qingwu-ui/}")
+            done
+            bunx turbo build "${filters[@]}"
+            bun tooling/publish-check/index.mjs $RELEASE_PACKAGES
+          fi
 
       - id: pub
         run: bun tooling/ci-publish/index.mjs ${{ inputs.dry_run && '--dry-run' || '' }} ${{ inputs.packages }}

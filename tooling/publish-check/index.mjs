@@ -12,12 +12,14 @@
  * 用法：
  *   bun tooling/publish-check/index.mjs
  *   bun tooling/publish-check/index.mjs --fix
+ *   bun tooling/publish-check/index.mjs holiday-data
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const root = process.cwd();
 const fix = process.argv.includes("--fix");
+const requested = process.argv.slice(2).filter((arg) => !arg.startsWith("--"));
 const errors = [];
 const fixes = [];
 
@@ -41,11 +43,22 @@ for (const dir of pkgDirs) {
   if (pkg.name) versions.set(pkg.name, pkg.version);
 }
 
+const selected = new Set();
+for (const name of requested) {
+  const fullName = name.startsWith("@qingwu-ui/") ? name : `@qingwu-ui/${name}`;
+  if (!versions.has(fullName)) {
+    console.error(`未知包：${name}`);
+    process.exit(1);
+  }
+  selected.add(fullName);
+}
+
 for (const dir of pkgDirs) {
   const pkgPath = join(dir, "package.json");
   if (!existsSync(pkgPath)) continue;
   const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
   if (pkg.private) continue;
+  if (selected.size && !selected.has(pkg.name)) continue;
 
   /* 1. workspace 协议残留（devDependencies 不发版，不检查） */
   const deps = { ...pkg.dependencies, ...pkg.peerDependencies, ...pkg.optionalDependencies };
