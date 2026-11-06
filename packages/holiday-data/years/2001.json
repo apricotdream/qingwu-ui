@@ -147,5 +147,7 @@
       "isOffDay": true
     }
   ],
-  "missingHolidays": ["元旦"]
+  "missingHolidays": [
+    "元旦"
+  ]
 }

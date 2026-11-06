@@ -113,5 +113,7 @@
       "isOffDay": true
     }
   ],
-  "missingHolidays": ["劳动节（非典期间调整后的最终安排待核实）"]
+  "missingHolidays": [
+    "劳动节（非典期间调整后的最终安排待核实）"
+  ]
 }
