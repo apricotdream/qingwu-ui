@@ -11,5 +11,7 @@ export function createDeepSeekProvider(config: Partial<AIConfig> & { apiKey: str
     baseURL: config.baseURL || "https://api.deepseek.com/v1",
     model: config.model || "deepseek-v4-flash",
     headers: config.headers,
+    maxOutputTokens: config.maxOutputTokens,
+    reasoningEffort: config.reasoningEffort,
   });
 }

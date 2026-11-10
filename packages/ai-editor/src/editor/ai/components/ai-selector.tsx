@@ -141,6 +141,7 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
   const [selectedMode, setSelectedMode] = useState<AIMode | null>(null);
   const [customInstruction, setCustomInstruction] = useState("");
   const [streamingText, setStreamingText] = useState("");
+  const [reasoningText, setReasoningText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /** 全文替换 / 选区替换前，若会移除媒体节点则弹确认（列出类型×数量） */
@@ -154,6 +155,8 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
   /** 流式文本区 ref + 自动滚底跟随标志：生成中最新内容始终可见 */
   const streamingBoxRef = useRef<HTMLDivElement>(null);
   const followStreamRef = useRef(true);
+  const reasoningBoxRef = useRef<HTMLDivElement>(null);
+  const followReasoningRef = useRef(true);
 
   const handleModeSelect = useCallback(
     async (mode: AIMode) => {
@@ -179,25 +182,34 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
       selectionRef.current = { from: sel.from, to: sel.to, empty: sel.empty };
       setIsLoading(true);
       setStreamingText("");
+      setReasoningText("");
+      followReasoningRef.current = true;
       // 新一轮生成：恢复自动滚底跟随（上一轮若用户上滚已暂停）
       followStreamRef.current = true;
       setError(null);
 
       try {
         const provider = getAIProvider();
+        const markdown = (
+          editor.storage as { markdown?: { getMarkdown?: () => string } } | undefined
+        )?.markdown;
+        // 无选区默认发送全文 Markdown，保留标题、段落、列表及媒体引用。
         const selectedText = sel.empty
-          ? editor.state.doc.textContent
-          : editor.state.doc.textBetween(sel.from, sel.to);
+          ? (markdown?.getMarkdown?.() ?? editor.getText({ blockSeparator: "\n\n" }))
+          : editor.state.doc.textBetween(sel.from, sel.to, "\n\n");
 
         const chunks: string[] = [];
         for await (const chunk of provider.stream({
           mode,
           context: selectedText,
           instruction: mode === "zap" ? customInstruction : undefined,
+          onReasoning: (chunk) => setReasoningText((text) => text + chunk),
         })) {
           chunks.push(chunk);
           setStreamingText(chunks.join(""));
         }
+        // 自定义 provider 也可能正常结束却没有正文，不能静默回到指令输入框。
+        if (!chunks.join("").trim()) throw new Error(t("editor.ai.emptyResult"));
       } catch (err) {
         setError(err instanceof Error ? err.message : t("editor.ai.error"));
       } finally {
@@ -225,6 +237,11 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
     if (!el || !followStreamRef.current) return;
     el.scrollTop = el.scrollHeight;
   }, [streamingText]);
+
+  useLayoutEffect(() => {
+    const el = reasoningBoxRef.current;
+    if (el && followReasoningRef.current) el.scrollTop = el.scrollHeight;
+  }, [reasoningText]);
 
   /** 执行替换并清理孤儿资源：旧媒体 − 新媒体 → 延迟删（undo 窗口内可救回） */
   const applyAIResult = useCallback(
@@ -280,6 +297,7 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
 
   const handleDiscard = useCallback(() => {
     setStreamingText("");
+    setReasoningText("");
     setSelectedMode(null);
     setError(null);
   }, []);
@@ -321,6 +339,7 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
                   : "border-default-200 text-default-600 hover:bg-default-100 hover:text-default-900"
               }`}
               onClick={() => handleModeSelect(mode)}
+              disabled={isLoading}
               title={t(descKey)}
             >
               <span className="text-base leading-none">{icon}</span>
@@ -370,17 +389,61 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
             </div>
           )}
 
-          {(isLoading || streamingText || error) && (
+          {(isLoading || reasoningText || streamingText || error) && (
             <div className="flex-1 min-h-0 flex flex-col">
-              {isLoading && !streamingText && (
-                <div className="flex items-center gap-2 text-sm text-default-500">
+              {isLoading && !reasoningText && !streamingText && (
+                <div role="status" className="flex items-center gap-2 text-sm text-default-600">
                   <span className="animate-spin">⏳</span>
                   {t("editor.ai.thinking")}
                 </div>
               )}
 
+              {reasoningText && (
+                <details open className="mb-3 shrink-0">
+                  <summary className="cursor-pointer text-xs font-medium text-default-600">
+                    {t("editor.ai.reasoning")}
+                    <span role="status" className="ml-2 font-normal">
+                      {t(
+                        streamingText
+                          ? "editor.ai.reasoningDone"
+                          : error
+                            ? "editor.ai.reasoningStopped"
+                            : isLoading
+                              ? "editor.ai.thinking"
+                              : "editor.ai.reasoningDone",
+                      )}
+                    </span>
+                  </summary>
+                  <div
+                    ref={reasoningBoxRef}
+                    className="mt-2 max-h-36 overflow-y-auto whitespace-pre-wrap break-words text-sm text-default-600"
+                    onScroll={(e) => {
+                      const el = e.currentTarget;
+                      followReasoningRef.current =
+                        el.scrollHeight - el.scrollTop - el.clientHeight < 24;
+                    }}
+                  >
+                    {reasoningText}
+                  </div>
+                </details>
+              )}
+
               {streamingText && (
                 <>
+                  <div className="mb-2 flex items-center justify-between gap-2 shrink-0">
+                    <h3 className="text-xs font-medium text-default-700">
+                      {t("editor.ai.result")}
+                    </h3>
+                    <span role="status" className="text-xs text-default-600">
+                      {t(
+                        isLoading
+                          ? "editor.ai.generating"
+                          : error
+                            ? "editor.ai.interrupted"
+                            : "editor.ai.completed",
+                      )}
+                    </span>
+                  </div>
                   {/* 流式文本区：面板被 max-height 钳制时收缩并滚动；ref 供自动滚底跟随 */}
                   <div
                     ref={streamingBoxRef}
@@ -429,14 +492,16 @@ export function AISelector({ editor, onClose }: AISelectorProps) {
 
               {error && (
                 <div className="text-sm text-danger">
-                  <p>{error}</p>
+                  <p role="alert">
+                    <strong>
+                      {t(streamingText ? "editor.ai.interrupted" : "editor.ai.failed")}
+                    </strong>
+                    ：{error}
+                  </p>
                   <button
                     type="button"
                     className="mt-2 px-3 py-1 text-xs border border-default-200 rounded-lg hover:bg-default-100"
-                    onClick={() => {
-                      setError(null);
-                      setSelectedMode(null);
-                    }}
+                    onClick={handleDiscard}
                   >
                     {t("editor.ai.back")}
                   </button>

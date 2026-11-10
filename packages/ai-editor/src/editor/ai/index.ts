@@ -1,4 +1,17 @@
 import { generateText, streamText } from "ai";
+import { t } from "../i18n";
+import { createOpenAICompatProvider } from "./providers/openai-compat";
+
+// 推理模型的思考与正文共用输出额度，默认预留足够空间。
+export const DEFAULT_MAX_OUTPUT_TOKENS = 8192;
+
+export function assertAIResult(text: string, finishReason?: string) {
+  if (!text.trim()) {
+    throw new Error(
+      t(finishReason === "length" ? "editor.ai.outputLimit" : "editor.ai.emptyResult"),
+    );
+  }
+}
 
 export type AIMode = "continue" | "improve" | "shorter" | "longer" | "fix" | "translate" | "zap";
 
@@ -7,6 +20,8 @@ export interface AIRequest {
   prompt?: string;
   context: string;
   instruction?: string;
+  /** 思考增量单独回传，不作为可插入文章的正文 */
+  onReasoning?: (chunk: string) => void;
 }
 
 export interface AIProvider {
@@ -21,6 +36,10 @@ export interface AILanguageModelConfig {
   baseURL: string;
   /** 模型名称 */
   model: string;
+  /** 最大输出 token 数（包含模型思考），默认 8192 */
+  maxOutputTokens?: number;
+  /** 思考强度，none 表示关闭；仅支持此参数的模型生效，默认由服务决定 */
+  reasoningEffort?: "none" | "low" | "high" | "max";
 }
 
 /** @deprecated 请使用 AILanguageModelConfig */
@@ -29,6 +48,9 @@ export interface AIConfig {
   baseURL: string;
   model: string;
   headers?: Record<string, string>;
+  /** 最大输出 token 数（包含模型思考），默认 8192 */
+  maxOutputTokens?: number;
+  reasoningEffort?: AILanguageModelConfig["reasoningEffort"];
 }
 
 export function buildSystemPrompt(mode: AIMode, instruction?: string): string {
@@ -74,19 +96,44 @@ export async function createAILanguageModelProvider(
   });
   // 必须显式 openai.chat()：默认 openai(model) 走 Responses API，而 DeepSeek/通义/GLM 兼容端点只实现 /chat/completions
   const model = openai.chat(config.model);
+  // SDK 的 OpenAI 适配器忽略 reasoning_content，且会暂存正文前的消息。
+  // 流式复用现有 SSE 解析器，确保 DeepSeek 等兼容服务的思考可实时展示。
+  const streamProvider = createOpenAICompatProvider(config);
+
+  async function* streamWithSDK(req: AIRequest): AsyncIterable<string> {
+    const result = streamText({
+      model,
+      system: buildSystemPrompt(req.mode, req.instruction),
+      prompt: req.context,
+      temperature: 0.7,
+      maxOutputTokens: config.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+      providerOptions: { openai: { reasoningEffort: config.reasoningEffort } },
+    });
+    let text = "";
+    let finishReason: string | undefined;
+    for await (const part of result.fullStream) {
+      if (part.type === "error") {
+        if (part.error instanceof Error) throw part.error;
+        throw new Error(
+          (part.error as { message?: string } | null)?.message || t("editor.ai.error"),
+        );
+      }
+      if (part.type === "finish") finishReason = part.finishReason;
+      if (part.type === "reasoning-delta") req.onReasoning?.(part.text);
+      if (part.type === "text-delta") {
+        text += part.text;
+        yield part.text;
+      }
+    }
+    assertAIResult(text, finishReason);
+  }
 
   return {
-    async *stream(req: AIRequest): AsyncIterable<string> {
-      const result = await streamText({
-        model,
-        system: buildSystemPrompt(req.mode, req.instruction),
-        prompt: req.context,
-        temperature: 0.7,
-        maxOutputTokens: 2048,
-      });
-      for await (const chunk of result.textStream) {
-        yield chunk;
-      }
+    stream(req: AIRequest): AsyncIterable<string> {
+      // OpenAI 官方继续使用 SDK，保留其模型参数适配。
+      return new URL(config.baseURL).hostname === "api.openai.com"
+        ? streamWithSDK(req)
+        : streamProvider.stream(req);
     },
 
     async generate(req: AIRequest): Promise<string> {
@@ -95,8 +142,10 @@ export async function createAILanguageModelProvider(
         system: buildSystemPrompt(req.mode, req.instruction),
         prompt: req.context,
         temperature: 0.7,
-        maxOutputTokens: 2048,
+        maxOutputTokens: config.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+        providerOptions: { openai: { reasoningEffort: config.reasoningEffort } },
       });
+      assertAIResult(result.text, result.finishReason);
       return result.text;
     },
   };

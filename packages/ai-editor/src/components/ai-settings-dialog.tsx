@@ -1,15 +1,17 @@
 import { type FC, useCallback, useEffect, useState } from "react";
-import { createAILanguageModelProvider, getAIProvider, setAIProvider } from "../editor/ai";
+import {
+  type AILanguageModelConfig,
+  createAILanguageModelProvider,
+  DEFAULT_MAX_OUTPUT_TOKENS,
+  getAIProvider,
+  setAIProvider,
+} from "../editor/ai";
 
 const STORAGE_KEY = "qingwu_ai_config";
 // 安全增强：API Key 改用 sessionStorage，关闭标签页后自动清除
 const SESSION_STORAGE_KEY = "qingwu_ai_config_session";
 
-interface AIConfig {
-  apiKey: string;
-  baseURL: string;
-  model: string;
-}
+type AIConfig = AILanguageModelConfig;
 
 function loadAIConfig(): AIConfig | null {
   try {
@@ -61,6 +63,8 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
   const [apiKey, setApiKey] = useState("");
   const [baseURL, setBaseURL] = useState("https://api.deepseek.com/v1");
   const [model, setModel] = useState("deepseek-v4-flash");
+  const [maxOutputTokens, setMaxOutputTokens] = useState(DEFAULT_MAX_OUTPUT_TOKENS);
+  const [reasoningEffort, setReasoningEffort] = useState<AIConfig["reasoningEffort"]>();
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
@@ -75,6 +79,8 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
       setApiKey(saved.apiKey || "");
       setBaseURL(saved.baseURL || "https://api.deepseek.com/v1");
       setModel(saved.model || "deepseek-v4-flash");
+      setMaxOutputTokens(saved.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS);
+      setReasoningEffort(saved.reasoningEffort);
     }
     // 检查是否已配置写作助手
     try {
@@ -104,7 +110,13 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
     setTestToast(null);
     setTesting(true);
     try {
-      const provider = await createAILanguageModelProvider({ apiKey, baseURL, model });
+      const provider = await createAILanguageModelProvider({
+        apiKey,
+        baseURL,
+        model,
+        maxOutputTokens,
+        reasoningEffort,
+      });
       await provider.generate({
         mode: "zap",
         context: "请只回复 OK，用于测试连接。",
@@ -119,16 +131,22 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
     } finally {
       setTesting(false);
     }
-  }, [apiKey, baseURL, model, testing]);
+  }, [apiKey, baseURL, model, maxOutputTokens, reasoningEffort, testing]);
 
   const handleSave = useCallback(async () => {
     if (!apiKey || !baseURL || !model) return;
     setError(null);
     setTestToast(null);
     try {
-      const provider = await createAILanguageModelProvider({ apiKey, baseURL, model });
+      const provider = await createAILanguageModelProvider({
+        apiKey,
+        baseURL,
+        model,
+        maxOutputTokens,
+        reasoningEffort,
+      });
       setAIProvider(provider);
-      saveAIConfig({ apiKey, baseURL, model });
+      saveAIConfig({ apiKey, baseURL, model, maxOutputTokens, reasoningEffort });
       setHasProvider(true);
       setSaved(true);
       setTimeout(() => {
@@ -138,7 +156,7 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
     } catch (e) {
       setError(e instanceof Error ? e.message : "创建 Provider 失败");
     }
-  }, [apiKey, baseURL, model, onClose]);
+  }, [apiKey, baseURL, model, maxOutputTokens, reasoningEffort, onClose]);
 
   if (!open) return null;
 
@@ -236,6 +254,43 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
             />
           </div>
 
+          <div>
+            <label htmlFor="ai-max-output-tokens" className="block text-xs text-default-500 mb-1">
+              总输出上限（token，包含思考与正文）
+            </label>
+            <input
+              id="ai-max-output-tokens"
+              type="number"
+              min={1}
+              step={1}
+              className="w-full px-3 py-2 rounded-lg border border-default-200 bg-background text-sm focus:outline-none focus:border-primary"
+              value={maxOutputTokens}
+              onChange={(e) => setMaxOutputTokens(Number(e.target.value))}
+            />
+          </div>
+          <div>
+            <label htmlFor="ai-reasoning-effort" className="block text-xs text-default-500 mb-1">
+              思考强度
+            </label>
+            <select
+              id="ai-reasoning-effort"
+              className="w-full px-3 py-2 rounded-lg border border-default-200 bg-background text-sm focus:outline-none focus:border-primary"
+              value={reasoningEffort ?? ""}
+              onChange={(e) =>
+                setReasoningEffort((e.target.value || undefined) as AIConfig["reasoningEffort"])
+              }
+            >
+              <option value="">服务默认</option>
+              <option value="none">关闭思考</option>
+              <option value="low">低</option>
+              <option value="high">高</option>
+              <option value="max">最高</option>
+            </select>
+            <p className="mt-1 text-[11px] text-default-500">
+              仅支持此参数的模型生效；思考与正文共享总输出额度。
+            </p>
+          </div>
+
           <div className="p-3 rounded-lg bg-default-50 text-[11px] text-default-500 leading-relaxed">
             所有兼容 OpenAI Chat Completions API 的服务均可使用。
             <br />
@@ -248,7 +303,14 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
             <button
               type="button"
               className="py-2.5 rounded-xl text-sm font-medium border border-default-200 hover:bg-default-100 transition-all disabled:opacity-40"
-              disabled={!apiKey || !baseURL || !model || testing}
+              disabled={
+                !apiKey ||
+                !baseURL ||
+                !model ||
+                !Number.isInteger(maxOutputTokens) ||
+                maxOutputTokens < 1 ||
+                testing
+              }
               onClick={handleTest}
             >
               {testing ? "测试中..." : "测试连接"}
@@ -258,7 +320,14 @@ export const AISettingsDialog: FC<Props> = ({ open, onClose }) => {
               className={`py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-40 ${
                 saved ? "bg-green-500 text-white" : "bg-primary text-white hover:opacity-90"
               }`}
-              disabled={!apiKey || !baseURL || !model || testing}
+              disabled={
+                !apiKey ||
+                !baseURL ||
+                !model ||
+                !Number.isInteger(maxOutputTokens) ||
+                maxOutputTokens < 1 ||
+                testing
+              }
               onClick={handleSave}
             >
               {saved ? "✓ 已保存" : "保存并应用"}

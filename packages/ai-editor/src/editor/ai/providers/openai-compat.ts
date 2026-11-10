@@ -1,5 +1,5 @@
 import type { AIConfig, AIProvider, AIRequest } from "../index";
-import { buildSystemPrompt } from "../index";
+import { assertAIResult, buildSystemPrompt, DEFAULT_MAX_OUTPUT_TOKENS } from "../index";
 
 /**
  * OpenAI 兼容提供商，适用于所有兼容 OpenAI API 格式的服务：
@@ -8,7 +8,11 @@ import { buildSystemPrompt } from "../index";
 export function createOpenAICompatProvider(config: AIConfig): AIProvider {
   const { apiKey, baseURL, model, headers: extraHeaders } = config;
 
-  async function* streamChat(systemPrompt: string, userContent: string): AsyncIterable<string> {
+  async function* streamChat(
+    systemPrompt: string,
+    userContent: string,
+    onReasoning?: AIRequest["onReasoning"],
+  ): AsyncIterable<string> {
     const response = await fetch(`${baseURL}/chat/completions`, {
       method: "POST",
       headers: {
@@ -24,7 +28,8 @@ export function createOpenAICompatProvider(config: AIConfig): AIProvider {
         ],
         stream: true,
         temperature: 0.7,
-        max_tokens: 2048,
+        max_tokens: config.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+        reasoning_effort: config.reasoningEffort,
       }),
     });
 
@@ -38,28 +43,58 @@ export function createOpenAICompatProvider(config: AIConfig): AIProvider {
 
     const decoder = new TextDecoder();
     let buffer = "";
+    let text = "";
+    let finishReason: string | undefined;
+    let ended = false;
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    try {
+      while (!ended) {
+        const { done, value } = await reader.read();
 
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || "";
+        buffer += decoder.decode(value, { stream: !done });
+        const lines = buffer.split("\n");
+        buffer = done ? "" : lines.pop() || "";
 
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || !trimmed.startsWith("data: ")) continue;
-        const data = trimmed.slice(6);
-        if (data === "[DONE]") return;
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith("data:")) continue;
+          const data = trimmed.slice(5).trim();
+          if (data === "[DONE]") {
+            ended = true;
+            break;
+          }
 
-        try {
-          const json = JSON.parse(data);
-          const content = json.choices?.[0]?.delta?.content;
-          if (content) yield content;
-        } catch {
-          // 跳过解析失败的行
+          let json: {
+            error?: { message?: string };
+            choices?: Array<{
+              finish_reason?: string | null;
+              delta?: { content?: string | null; reasoning_content?: string | null };
+            }>;
+          };
+          try {
+            json = JSON.parse(data);
+          } catch {
+            // 跳过解析失败的行
+            continue;
+          }
+          if (json.error) throw new Error(json.error.message || "AI API 错误");
+          const choice = json.choices?.[0];
+          if (choice?.finish_reason) finishReason = choice.finish_reason;
+          if (choice?.delta?.reasoning_content) onReasoning?.(choice.delta.reasoning_content);
+          const content = choice?.delta?.content;
+          if (content) {
+            text += content;
+            yield content;
+          }
         }
+        if (done) break;
+      }
+      assertAIResult(text, finishReason);
+    } finally {
+      try {
+        await reader.cancel();
+      } finally {
+        reader.releaseLock();
       }
     }
   }
@@ -67,7 +102,7 @@ export function createOpenAICompatProvider(config: AIConfig): AIProvider {
   return {
     async *stream(req: AIRequest): AsyncIterable<string> {
       const systemPrompt = buildSystemPrompt(req.mode, req.instruction);
-      yield* streamChat(systemPrompt, req.context);
+      yield* streamChat(systemPrompt, req.context, req.onReasoning);
     },
 
     async generate(req: AIRequest): Promise<string> {

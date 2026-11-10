@@ -8,5 +8,7 @@ export function createOpenAIProvider(config: Partial<AIConfig> & { apiKey: strin
     baseURL: config.baseURL || "https://api.openai.com/v1",
     model: config.model || "gpt-5.6-luna",
     headers: config.headers,
+    maxOutputTokens: config.maxOutputTokens,
+    reasoningEffort: config.reasoningEffort,
   });
 }
