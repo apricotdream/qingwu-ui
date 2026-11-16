@@ -400,6 +400,36 @@
   color: var(--color-qingwu-200, #a5f3fc);
 }
 
+/* 任务项将复选框与正文分列，长文字在正文区域内续行。 */
+.qingwu-editor .prose ul[data-type="taskList"] {
+  list-style: none;
+  padding-inline-start: 0;
+}
+
+.qingwu-editor .prose ul[data-type="taskList"] > li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-inline-start: 0;
+}
+
+.qingwu-editor .prose ul[data-type="taskList"] > li > label {
+  flex: none;
+}
+
+.qingwu-editor .prose ul[data-type="taskList"] > li > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.qingwu-editor .prose ul[data-type="taskList"] > li > div > p:first-child {
+  margin-block-start: 0;
+}
+
+.qingwu-editor .prose ul[data-type="taskList"] > li > div > p:last-child {
+  margin-block-end: 0;
+}
+
 /* 列表（Markdown 有序/无序）：青色徽标替代 typography 默认数字与圆点；任务列表除外 */
 .qingwu-editor .prose ol:not([data-type="taskList"]) {
   list-style: none;
