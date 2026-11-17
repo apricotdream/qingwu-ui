@@ -1,6 +1,6 @@
 {
   "name": "@qingwu-ui/ai-editor",
-  "version": "1.1.10",
+  "version": "1.2.0",
   "description": "青梧 AI 编辑器 —— 面向中文用户的智能富文本编辑器，基于 Tiptap + React 19",
   "type": "module",
   "license": "Apache-2.0",
@@ -88,6 +88,7 @@
     "@tiptap/starter-kit": "^3.32.0",
     "@tiptap/suggestion": "^3.32.0",
     "cmdk": "^1.1.1",
+    "dom-docx": "1.0.4",
     "dompurify": "^3.4.17",
     "highlight.js": "~11.11.0",
     "jszip": "3.10.2",

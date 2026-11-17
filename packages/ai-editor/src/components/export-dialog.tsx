@@ -2,12 +2,22 @@ import type { Editor } from "@tiptap/core";
 import { type FC, useCallback, useState } from "react";
 import { t } from "../editor/i18n";
 import {
+  createHtmlDownload,
+  createMarkdownArchiveDownload,
   createMarkdownDownload,
   createPrintHtml,
+  createWordDownload,
   type ExportFormat,
   getExportContent,
   waitForPrintImages,
 } from "../editor/utils/document-export";
+
+const fileDownloads = {
+  html: createHtmlDownload,
+  md: createMarkdownDownload,
+  zip: createMarkdownArchiveDownload,
+  docx: createWordDownload,
+};
 
 interface ExportDialogProps {
   open: boolean;
@@ -26,23 +36,19 @@ export const ExportDialog: FC<ExportDialogProps> = ({ open, onClose, editor }) =
   );
 
   const downloadFile = useCallback(
-    async (format: ExportFormat) => {
+    async (format: Exclude<ExportFormat, "pdf">) => {
       if (!editor) return;
       setBusy(format);
       setError("");
       try {
-        const mimeMap: Record<string, string> = {
-          html: "text/html",
-          json: "application/json",
-          text: "text/plain",
-        };
+        const mime = format === "json" ? "application/json" : "text/plain";
         const result =
-          format === "md"
-            ? await createMarkdownDownload(editor)
-            : {
-                blob: new Blob([getContent(format)], { type: `${mimeMap[format]};charset=utf-8` }),
+          format === "json" || format === "text"
+            ? {
+                blob: new Blob([getContent(format)], { type: `${mime};charset=utf-8` }),
                 filename: `qingwu-doc.${format === "text" ? "txt" : format}`,
-              };
+              }
+            : await fileDownloads[format](editor);
         const url = URL.createObjectURL(result.blob);
         const a = document.createElement("a");
         a.href = url;
@@ -116,6 +122,18 @@ export const ExportDialog: FC<ExportDialogProps> = ({ open, onClose, editor }) =
       icon: "📝",
     },
     {
+      key: "docx" as ExportFormat,
+      labelKey: "editor.export.docx",
+      descKey: "editor.export.docxDesc",
+      icon: "📄",
+    },
+    {
+      key: "zip" as ExportFormat,
+      labelKey: "editor.export.zip",
+      descKey: "editor.export.zipDesc",
+      icon: "📦",
+    },
+    {
       key: "json" as ExportFormat,
       labelKey: "editor.export.json",
       descKey: "editor.export.jsonDesc",
@@ -176,14 +194,16 @@ export const ExportDialog: FC<ExportDialogProps> = ({ open, onClose, editor }) =
                     >
                       {busy === key ? t("editor.export.preparing") : t("editor.export.download")}
                     </button>
-                    <button
-                      type="button"
-                      className="qed-btn qed-btn--ghost"
-                      disabled={busy !== null}
-                      onClick={() => handleCopy(key)}
-                    >
-                      {copied ? "✓" : t("editor.export.copy")}
-                    </button>
+                    {key !== "docx" && key !== "zip" && (
+                      <button
+                        type="button"
+                        className="qed-btn qed-btn--ghost"
+                        disabled={busy !== null}
+                        onClick={() => handleCopy(key)}
+                      >
+                        {copied ? "✓" : t("editor.export.copy")}
+                      </button>
+                    )}
                   </>
                 )}
               </div>

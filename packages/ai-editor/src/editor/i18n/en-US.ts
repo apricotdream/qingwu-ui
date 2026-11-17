@@ -144,11 +144,15 @@ export const enUS = {
     export: {
       title: "Export Document",
       html: "HTML",
-      htmlDesc: "Keep images and attachments as links",
+      htmlDesc: "Download a single web page with embedded images",
       json: "JSON (Tiptap)",
       jsonDesc: "Export as Tiptap JSON",
       md: "Markdown",
-      mdDesc: "Bundle Markdown and resources in a ZIP",
+      mdDesc: "Download a single Markdown file with embedded images",
+      docx: "Word",
+      docxDesc: "Download an editable Word document with embedded images",
+      zip: "Markdown resource bundle",
+      zipDesc: "Bundle Markdown, images, and attachments",
       plainText: "Plain Text",
       plainTextDesc: "Export as plain text",
       pdf: "PDF",
@@ -159,8 +163,7 @@ export const enUS = {
       preparing: "Preparing…",
       failed: "Export failed. Please try again.",
       popupBlocked: "Allow the print window and try again.",
-      footer:
-        "Markdown includes resources in a ZIP; PDF displays images; other formats keep resource URLs.",
+      footer: "Choose the Markdown resource bundle to save the original attachment files.",
     },
     image: {
       upload: "Upload image",

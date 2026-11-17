@@ -4,7 +4,7 @@ import JSZip from "jszip";
 import { signPreviewUrl, signPreviewUrlHeaders } from "../storage/signed-fetch";
 import { sanitizeHtml } from "./sanitize";
 
-export type ExportFormat = "html" | "json" | "md" | "text" | "pdf";
+export type ExportFormat = "html" | "json" | "md" | "text" | "pdf" | "docx" | "zip";
 
 interface Resource {
   src: string;
@@ -61,23 +61,22 @@ function exportDoc(
   const convert = (node: ProseMirrorNode): ProseMirrorNode => {
     const icon = RESOURCE_ICONS[node.type.name];
     if (icon) {
-      const src =
-        (format === "md" || node.type.name === "image" ? urls.get(node.attrs.src) : undefined) ??
-        node.attrs.src ??
-        "";
-      if (node.type.name === "image" && (format === "md" || format === "pdf")) {
+      const isImage = node.type.name === "image";
+      const exportedUrl = format === "zip" || isImage ? urls.get(node.attrs.src) : undefined;
+      const src = exportedUrl ?? node.attrs.src ?? "";
+      if (isImage && format !== "text" && (format !== "html" || exportedUrl)) {
         return node.type.create({ ...node.attrs, src }, node.content, node.marks);
       }
       const label = `${icon} ${resourceName(node)}`;
       const text = format === "text" && src ? `${label} (${src})` : label;
       const marks =
-        src && format !== "text"
+        src && format !== "text" && !(format === "docx" && /^(data|blob):/i.test(src))
           ? [schema.marks.link.create({ href: downloadLinks.get(src) ?? src })]
           : [];
       return schema.nodes.paragraph.create(null, schema.text(text, marks));
     }
     const marks = node.marks.map((mark) => {
-      const href = format === "md" ? urls.get(mark.attrs.href) : undefined;
+      const href = format === "zip" ? urls.get(mark.attrs.href) : undefined;
       return mark.type.name === "link" && href ? mark.type.create({ ...mark.attrs, href }) : mark;
     });
     if (node.isText) return node.mark(marks);
@@ -107,7 +106,7 @@ export function getExportContent(
   );
   const doc = exportDoc(editor, format, urls, source, downloadLinks);
   if (format === "text") return doc.textBetween(0, doc.content.size, "\n\n");
-  if (format === "md") {
+  if (format === "md" || format === "zip") {
     const markdown = (editor.storage as unknown as Record<string, unknown>).markdown as {
       serializer?: { serialize: (doc: ProseMirrorNode) => string };
     };
@@ -178,19 +177,11 @@ function assetName(name: string, mime: string, index: number): string {
   return `assets/${index + 1}-${filename}`;
 }
 
-export async function createMarkdownDownload(
+export async function createMarkdownArchiveDownload(
   editor: Editor,
 ): Promise<{ blob: Blob; filename: string }> {
   const source = editor.state.doc;
   const resources = resourcesIn(source);
-  if (resources.length === 0) {
-    return {
-      blob: new Blob([getExportContent(editor, "md", new Map(), source)], {
-        type: "text/markdown;charset=utf-8",
-      }),
-      filename: "qingwu-doc.md",
-    };
-  }
   const archive = new JSZip();
   const urls = new Map<string, string>();
   for (const [index, resource] of resources.entries()) {
@@ -202,7 +193,7 @@ export async function createMarkdownDownload(
       encodeURI(path).replace(/[()]/g, (c) => `%${c.charCodeAt(0).toString(16)}`),
     );
   }
-  archive.file("qingwu-doc.md", getExportContent(editor, "md", urls, source));
+  archive.file("qingwu-doc.md", getExportContent(editor, "zip", urls, source));
   // 图片和附件多数已经压缩，STORE 避免重复压缩大文件导致界面卡顿。
   const data = await archive.generateAsync({ type: "arraybuffer", compression: "STORE" });
   return { blob: new Blob([data], { type: "application/zip" }), filename: "qingwu-doc.zip" };
@@ -213,22 +204,85 @@ async function imageDataUrl(blob: Blob): Promise<string> {
   let binary = "";
   for (let i = 0; i < bytes.length; i += 32768)
     binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
-  return `data:${blob.type || "image/png"};base64,${btoa(binary)}`;
+  return `data:${blob.type.split(";")[0] || "image/png"};base64,${btoa(binary)}`;
 }
 
-export async function createPrintHtml(editor: Editor): Promise<string> {
-  const source = editor.state.doc;
+async function prepareImages(source: ProseMirrorNode, format: ExportFormat) {
   const urls = new Map<string, string>();
   for (const resource of resourcesIn(source)) {
     if (resource.kind !== "image") continue;
-    urls.set(
-      resource.src,
-      resource.src.startsWith("data:")
-        ? resource.src
-        : await imageDataUrl(await readResource(resource)),
-    );
+    const dataUrl = /^data:image\//i.test(resource.src)
+      ? resource.src
+      : await imageDataUrl(await readResource(resource));
+    // Markdown 的解析器和 Word 支持的图片类型不同，其余类型转为 PNG。
+    const supported =
+      format === "md"
+        ? /^data:image\/(png|jpeg|gif|webp);base64,/i
+        : /^data:image\/(png|jpeg|gif);base64,/i;
+    if ((format === "md" || format === "docx") && !supported.test(dataUrl)) {
+      try {
+        const image = new Image();
+        image.src = dataUrl;
+        await image.decode();
+        const canvas = document.createElement("canvas");
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Canvas 2D unavailable");
+        context.drawImage(image, 0, 0);
+        urls.set(resource.src, canvas.toDataURL("image/png"));
+      } catch {
+        throw new Error(`图片「${resource.name}」转换失败，请检查图片后重试。`);
+      }
+    } else {
+      urls.set(resource.src, dataUrl);
+    }
   }
-  const body = getExportContent(editor, "pdf", urls, source);
+  return urls;
+}
+
+export async function createMarkdownDownload(
+  editor: Editor,
+): Promise<{ blob: Blob; filename: string }> {
+  const source = editor.state.doc;
+  const urls = await prepareImages(source, "md");
+  return {
+    blob: new Blob([getExportContent(editor, "md", urls, source)], {
+      type: "text/markdown;charset=utf-8",
+    }),
+    filename: "qingwu-doc.md",
+  };
+}
+
+export async function createWordDownload(
+  editor: Editor,
+): Promise<{ blob: Blob; filename: string }> {
+  const source = editor.state.doc;
+  const urls = await prepareImages(source, "docx");
+  const { convertHtmlToDocx } = await import("dom-docx/browser");
+  return {
+    blob: await convertHtmlToDocx(getExportContent(editor, "docx", urls, source)),
+    filename: "qingwu-doc.docx",
+  };
+}
+
+export async function createHtmlDownload(
+  editor: Editor,
+): Promise<{ blob: Blob; filename: string }> {
+  return {
+    blob: new Blob([await createDocumentHtml(editor, "html")], { type: "text/html;charset=utf-8" }),
+    filename: "qingwu-doc.html",
+  };
+}
+
+export function createPrintHtml(editor: Editor): Promise<string> {
+  return createDocumentHtml(editor, "pdf");
+}
+
+async function createDocumentHtml(editor: Editor, format: "html" | "pdf"): Promise<string> {
+  const source = editor.state.doc;
+  const urls = await prepareImages(source, format);
+  const body = getExportContent(editor, format, urls, source);
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>青梧文档</title><style>
     @page { size: A4; margin: 16mm; }
     * { box-sizing: border-box; }

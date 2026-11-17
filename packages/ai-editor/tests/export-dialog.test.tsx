@@ -6,8 +6,11 @@ import * as exports from "../src/editor/utils/document-export";
 
 vi.mock("../src/editor/utils/document-export", () => ({
   getExportContent: vi.fn(() => "正文"),
+  createHtmlDownload: vi.fn(),
+  createMarkdownArchiveDownload: vi.fn(),
   createMarkdownDownload: vi.fn(),
   createPrintHtml: vi.fn(),
+  createWordDownload: vi.fn(),
   waitForPrintImages: vi.fn(),
 }));
 

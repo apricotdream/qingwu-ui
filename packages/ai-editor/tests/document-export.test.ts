@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getEditorExtensions } from "../src/editor/extensions";
 import * as signedFetch from "../src/editor/storage/signed-fetch";
 import {
+  createHtmlDownload,
+  createMarkdownArchiveDownload,
   createMarkdownDownload,
   createPrintHtml,
   getExportContent,
@@ -45,11 +47,12 @@ afterEach(() => {
 });
 
 describe("Markdown 资源打包", () => {
-  it("无资源时直接下载 Markdown", async () => {
+  it("无资源时仍下载一个 ZIP，包含 Markdown", async () => {
     createEditor("<h1>标题</h1><p>正文</p>");
-    const result = await createMarkdownDownload(editor);
-    expect(result.filename).toBe("qingwu-doc.md");
-    expect(await result.blob.text()).toContain("# 标题");
+    const result = await createMarkdownArchiveDownload(editor);
+    expect(result.filename).toBe("qingwu-doc.zip");
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+    expect(await zip.file("qingwu-doc.md")?.async("string")).toContain("# 标题");
     expect(fetchResource).not.toHaveBeenCalled();
   });
 
@@ -57,7 +60,7 @@ describe("Markdown 资源打包", () => {
     createEditor(mediaContent());
     editor.commands.setTextSelection(3);
     const before = editor.getJSON();
-    const result = await createMarkdownDownload(editor);
+    const result = await createMarkdownArchiveDownload(editor);
     expect(result.filename).toBe("qingwu-doc.zip");
     const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
     const markdown = await zip.file("qingwu-doc.md")!.async("string");
@@ -76,7 +79,7 @@ describe("Markdown 资源打包", () => {
     createEditor(
       `<img src="${IMAGE_URL}" alt="same.png"><img src="${IMAGE_URL}" alt="same.png"><img src="https://resources.example/other.png" alt="same.png">`,
     );
-    const result = await createMarkdownDownload(editor);
+    const result = await createMarkdownArchiveDownload(editor);
     const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
     expect(fetchResource).toHaveBeenCalledTimes(2);
     expect(zip.file("assets/1-same.png")).not.toBeNull();
@@ -85,7 +88,7 @@ describe("Markdown 资源打包", () => {
 
   it("Base64、Blob 资源写入真实文件，不保留临时地址", async () => {
     createEditor(mediaContent(DATA_IMAGE, "blob:http://localhost/file"));
-    const result = await createMarkdownDownload(editor);
+    const result = await createMarkdownArchiveDownload(editor);
     const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
     const markdown = await zip.file("qingwu-doc.md")!.async("string");
     expect(markdown).not.toMatch(/data:|blob:/);
@@ -96,13 +99,13 @@ describe("Markdown 资源打包", () => {
   it("资源读取失败时拒绝生成不完整的 ZIP", async () => {
     createEditor(mediaContent());
     fetchResource.mockResolvedValue(new Response("not found", { status: 404 }));
-    await expect(createMarkdownDownload(editor)).rejects.toThrow("示意图.png");
+    await expect(createMarkdownArchiveDownload(editor)).rejects.toThrow("示意图.png");
   });
 
   it("资源读取时优先使用私有存储签名地址", async () => {
     createEditor(`<img src="${IMAGE_URL}">`);
     vi.spyOn(signedFetch, "signPreviewUrl").mockResolvedValue("https://signed.example/image.png");
-    await createMarkdownDownload(editor);
+    await createMarkdownArchiveDownload(editor);
     expect(fetchResource).toHaveBeenCalledWith("https://signed.example/image.png");
   });
 
@@ -115,7 +118,7 @@ describe("Markdown 资源打包", () => {
           resolveFetch = resolve;
         }),
     );
-    const resultPromise = createMarkdownDownload(editor);
+    const resultPromise = createMarkdownArchiveDownload(editor);
     await vi.waitFor(() => expect(resolveFetch).toBeDefined());
     editor.commands.setContent("<p>下载过程中修改的正文</p>");
     resolveFetch(new Response("image", { headers: { "content-type": "image/png" } }));
@@ -124,6 +127,37 @@ describe("Markdown 资源打包", () => {
     const markdown = await zip.file("qingwu-doc.md")!.async("string");
     expect(markdown).toContain("下载前正文");
     expect(markdown).not.toContain("过程中修改");
+  });
+});
+
+describe("正文图片单文件导出", () => {
+  it("无图片时直接下载 Markdown", async () => {
+    createEditor("<h1>标题</h1><p>正文</p>");
+    const result = await createMarkdownDownload(editor);
+    expect(result.filename).toBe("qingwu-doc.md");
+    expect(await result.blob.text()).toContain("# 标题");
+    expect(fetchResource).not.toHaveBeenCalled();
+  });
+
+  it("Markdown 内嵌远程和 Base64 图片，附件保持链接", async () => {
+    createEditor(`${mediaContent()}<img src="${DATA_IMAGE}" alt="本地图">`);
+    const result = await createMarkdownDownload(editor);
+    expect(result.filename).toBe("qingwu-doc.md");
+    const markdown = await result.blob.text();
+    expect(markdown).toContain("![示意图.png](data:image/png;base64,aW1hZ2UtYnl0ZXM=)");
+    expect(markdown).toContain(`![本地图](${DATA_IMAGE})`);
+    expect(markdown).toContain(`[📎 报告.pdf](${FILE_URL})`);
+    expect(fetchResource).toHaveBeenCalledExactlyOnceWith(IMAGE_URL, undefined);
+  });
+
+  it("HTML 内嵌正文图片，共用地址的附件仍指向原地址", async () => {
+    createEditor(mediaContent(IMAGE_URL, IMAGE_URL));
+    const result = await createHtmlDownload(editor);
+    expect(result.filename).toBe("qingwu-doc.html");
+    const doc = new DOMParser().parseFromString(await result.blob.text(), "text/html");
+    expect(doc.images[0].src).toMatch(/^data:image\/png;base64,/);
+    expect(doc.querySelector("a")?.getAttribute("href")).toBe(IMAGE_URL);
+    expect(fetchResource).toHaveBeenCalledTimes(1);
   });
 });
 
