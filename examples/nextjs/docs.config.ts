@@ -671,7 +671,7 @@ export const COMPONENT_SECTIONS: DocSection[] = [
         href: "/demo/calendar-popup",
         title: "Calendar 日历",
         en: "Calendar",
-        desc: "弹出式日期选择：农历 / 节气 / 节日 / 黄历宜忌 / 休假表 / 禁用规则。",
+        desc: "中国农历与备忘日历：农历 / 节气 / 节日 / 黄历宜忌 / 日期范围标记 / 确认保存记事。",
         keywords: [
           "日历",
           "calendar",
@@ -681,8 +681,48 @@ export const COMPONENT_SECTIONS: DocSection[] = [
           "禁用规则",
           "date picker",
           "日期选择",
+          "备忘",
+          "记事",
+          "日期范围",
         ],
         icon: ICON_CALENDAR,
+        api: [
+          {
+            title: "备忘日历配置（CalendarUiOptions）",
+            props: [
+              {
+                name: "markedRanges",
+                desc: "含起止日期的背景范围；绿底，今天在范围内为红底，保留节假日标记",
+                type: "CalendarMarkedRange[]",
+                default: "[]",
+              },
+              {
+                name: "enableNotes",
+                desc: "在详情面板中启用记事，需开启 showDetailPanel",
+                type: "boolean",
+                default: "false",
+              },
+              {
+                name: "notes",
+                desc: "初始记事，日期键为 YYYY-MM-DD；持久化由调用方处理",
+                type: "Record<string, string>",
+                default: "{}",
+              },
+              {
+                name: "onNotesChange",
+                desc: "确认后回发实际修改的记事数组 { date, content }；content 为空表示删除，取消不回发",
+                type: "(changes: CalendarNoteChange[]) => void",
+                default: "-",
+              },
+              {
+                name: "getNotes()",
+                desc: "获取已确认的记事副本，不包含草稿",
+                type: "() => CalendarNotes",
+                default: "-",
+              },
+            ],
+          },
+        ],
       },
       {
         href: "/demo/skeleton",

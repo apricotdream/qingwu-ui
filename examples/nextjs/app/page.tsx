@@ -56,7 +56,7 @@ const COMPONENTS = [
   {
     href: "/demo/calendar-popup",
     title: "Calendar 日历",
-    desc: "输入框弹出面板，农历 / 节气 / 节日 / 黄历宜忌",
+    desc: "中国农历与备忘日历，节气 / 节日 / 黄历 / 范围标记 / 日期记事",
     icon: "田",
     iconClass: "calendar",
     badge: "stable",

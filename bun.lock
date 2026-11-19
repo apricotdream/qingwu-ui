@@ -176,7 +176,7 @@
     },
     "packages/calendar/ui": {
       "name": "@qingwu-ui/calendar",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "devDependencies": {
         "@qingwu-ui/tsconfig": "workspace:*",
         "@size-limit/preset-small-lib": "^13.0.1",
@@ -187,7 +187,7 @@
         "vitest": "^4.1.12",
       },
       "optionalDependencies": {
-        "@qingwu-ui/holiday-data": "^1.0.0",
+        "@qingwu-ui/holiday-data": "^1.1.0",
       },
     },
     "packages/carousel": {
@@ -218,7 +218,7 @@
     },
     "packages/holiday-data": {
       "name": "@qingwu-ui/holiday-data",
-      "version": "1.1.0",
+      "version": "1.1.2",
       "devDependencies": {
         "@qingwu-ui/tsconfig": "workspace:*",
         "@types/node": "^22.15.3",

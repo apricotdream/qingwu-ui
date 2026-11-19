@@ -3,6 +3,17 @@ import Link from "next/link";
 /* 版本数据：新版本在上 */
 const VERSIONS = [
   {
+    version: "1.3.0",
+    date: "2026-11-19",
+    tag: "calendar",
+    changes: [
+      {
+        type: "improve",
+        text: "日历新增范围背景标记与日期记事，保留节日名称和休／工角标。记事在确认时统一提交并触发回调，取消时丢弃草稿；同月选择和编辑只更新相关日期格。",
+      },
+    ],
+  },
+  {
     version: "1.2.0",
     date: "2026-10-25",
     tag: "calendar · holiday-data",

@@ -18,6 +18,7 @@
   --qw-teal-light: rgba(10, 127, 134, 0.04);
   --qw-vermilion: #c8402f;
   --qw-vermilion-bg: rgba(200, 64, 47, 0.08);
+  --qw-cal-range-bg: #e5f2e7;
   --qw-amber: #a86e23;
   --qw-amber-bg: rgba(168, 110, 35, 0.08);
   --qw-shadow: 0 1px 2px rgba(29, 43, 44, 0.05);
@@ -44,6 +45,7 @@
   --qw-teal-light: rgba(82, 168, 176, 0.06);
   --qw-vermilion: #e2695a;
   --qw-vermilion-bg: rgba(226, 105, 90, 0.12);
+  --qw-cal-range-bg: #203c2a;
   --qw-amber: #d29a4d;
   --qw-amber-bg: rgba(210, 154, 77, 0.12);
   --qw-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -427,7 +429,7 @@
   color: var(--qw-ink);
 }
 
-.qw-cal-cell.is-selected .qw-cal-cell-sub {
+.qw-cal-overlay:not(.is-memo-calendar) .qw-cal-cell.is-selected .qw-cal-cell-sub {
   color: color-mix(in srgb, var(--qw-ink) 85%, transparent);
 }
 
@@ -1100,15 +1102,112 @@
   }
 }
 
-/* 选中态统一优先于今天、周末和节日文字颜色。 */
-.qw-cal-cell.is-selected,
+/* 普通日期选择保持原有实底选中态；备忘日历使用描边保留节日语义。 */
+.qw-cal-overlay:not(.is-memo-calendar) .qw-cal-cell.is-selected,
 .qw-cal-confirm-btn {
   background: var(--qw-teal);
   color: var(--qw-cal-on-accent);
 }
 
-.qw-cal-cell.is-selected :is(.qw-cal-cell-num, .qw-cal-cell-sub) {
+.qw-cal-overlay:not(.is-memo-calendar)
+  .qw-cal-cell.is-selected
+  :is(.qw-cal-cell-num, .qw-cal-cell-sub) {
   color: var(--qw-cal-on-accent);
+}
+
+.is-memo-calendar .qw-cal-cell.is-selected {
+  background: var(--qw-teal-bg);
+  box-shadow: inset 0 0 0 2px var(--qw-teal);
+}
+
+/* 范围只占用背景，不改写 provider 提供的节日名称和休/工角标。 */
+.qw-cal-cell.is-marked-range {
+  background: var(--qw-cal-range-bg);
+}
+
+.qw-cal-cell.is-marked-range.is-selected {
+  background: var(--qw-cal-range-bg);
+}
+
+.qw-cal-cell.is-marked-range.is-today {
+  background: color-mix(in srgb, var(--qw-vermilion) 16%, var(--qw-card));
+  box-shadow: inset 0 0 0 1px var(--qw-vermilion);
+}
+
+.qw-cal-cell.is-marked-range.is-today.is-selected {
+  box-shadow: inset 0 0 0 2px var(--qw-vermilion);
+}
+
+.qw-cal-cell.is-marked-range.is-today .qw-cal-cell-num {
+  color: var(--qw-vermilion);
+}
+
+.qw-cal-note-dot {
+  position: absolute;
+  bottom: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--qw-teal);
+}
+
+.qw-cal-note {
+  margin-bottom: 1rem;
+  border-top: 1px solid var(--qw-line);
+  padding-top: 0.875rem;
+}
+
+.qw-cal-note-field {
+  display: block;
+}
+
+.qw-cal-note-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+}
+
+.qw-cal-note-heading .qw-detail-label {
+  margin-bottom: 0;
+  color: var(--qw-ink);
+  font-size: 0.8125rem;
+  letter-spacing: normal;
+}
+
+.qw-cal-note-status,
+.qw-cal-note-hint {
+  color: var(--qw-ink-3);
+  font-size: 0.625rem;
+}
+
+.qw-cal-note-input {
+  display: block;
+  width: 100%;
+  min-height: 6.5rem;
+  border: 1px solid var(--qw-line);
+  border-radius: var(--qw-radius-md);
+  padding: 0.625rem;
+  resize: vertical;
+  background: var(--qw-card);
+  color: var(--qw-ink);
+  font: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+}
+
+.qw-cal-note-input::placeholder {
+  color: var(--qw-ink-3);
+}
+
+.qw-cal-note-input:focus-visible {
+  outline: 2px solid var(--qw-teal);
+  outline-offset: 2px;
+}
+
+.qw-cal-note-hint {
+  margin-top: 0.375rem;
 }
 
 .qw-cal-confirm-btn:hover {

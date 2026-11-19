@@ -30,4 +30,10 @@ export {
   type SolarTerm,
   solarToLunar,
 } from "./lunar";
-export type { CalendarUiOptions, HolidayConfig } from "./types";
+export type {
+  CalendarMarkedRange,
+  CalendarNoteChange,
+  CalendarNotes,
+  CalendarUiOptions,
+  HolidayConfig,
+} from "./types";

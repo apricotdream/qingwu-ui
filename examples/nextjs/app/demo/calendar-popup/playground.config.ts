@@ -18,6 +18,9 @@ export const CALENDAR_FIELDS: FieldDef[] = [
   { key: "selected", label: "默认选中日期", type: "text", defaultValue: "" },
   { key: "min", label: "最小日期", type: "text", defaultValue: "" },
   { key: "max", label: "最大日期", type: "text", defaultValue: "" },
+  { key: "markedRanges", label: "背景标记范围（JSON）", type: "text", defaultValue: "[]" },
+  { key: "enableNotes", label: "日期记事", type: "boolean", defaultValue: "false" },
+  { key: "notes", label: "初始记事（JSON）", type: "text", defaultValue: "{}" },
   {
     key: "inputName",
     label: "输入框 name",
@@ -70,6 +73,8 @@ export function createCalendar(
     detailPosition: (v.detailPosition as CalendarUiOptions["detailPosition"]) ?? "right",
     onChange: (date: string) => log(`onChange → ${date}`),
     onOpenChange: (open: boolean) => log(`面板 ${open ? "打开" : "关闭"}`),
+    enableNotes: v.enableNotes === true,
+    onNotesChange: (changes) => log(`onNotesChange → ${JSON.stringify(changes)}`),
   };
 
   const ph = String(v.placeholder ?? "").trim();
@@ -92,6 +97,12 @@ export function createCalendar(
     /* JSON 格式错误，忽略 */
   }
 
+  try {
+    opts.markedRanges = JSON.parse(String(v.markedRanges || "[]"));
+    opts.notes = JSON.parse(String(v.notes || "{}"));
+  } catch {
+    log("范围或记事 JSON 格式错误，使用默认配置");
+  }
   const cal = new Calendar(host, opts);
   log("Calendar 渲染完成");
 
@@ -104,6 +115,17 @@ export function calendarToCode(v: Record<string, unknown>): CodegenInput {
   const lines: string[] = [];
 
   if (v.mode === "modal") lines.push('  mode: "modal",');
+  if (v.enableNotes === true) {
+    lines.push("  enableNotes: true,", "  onNotesChange: (changes) => console.log(changes),");
+  }
+  for (const key of ["markedRanges", "notes"]) {
+    try {
+      const value = JSON.parse(String(v[key] || (key === "notes" ? "{}" : "[]")));
+      if (Object.keys(value).length) lines.push(`  ${key}: ${JSON.stringify(value)},`);
+    } catch {
+      /* 无效 JSON 不生成代码 */
+    }
+  }
 
   const ph = String(v.placeholder ?? "").trim();
   if (ph && ph !== "点击选择日期") lines.push(`  placeholder: "${ph}",`);

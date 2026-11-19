@@ -1,10 +1,18 @@
-/** 青梧UI 日历组件：输入框触发弹出面板，日期格含农历/节日/节气/休假标记，详情面板展示渊源/节气/黄历；纯 DOM+CSS */
+/** 青梧UI 农历与备忘日历：农历/节气/节日/休假、范围背景标记与确认保存的日期记事；纯 DOM+CSS */
 
 import { normalizeHolidayData } from "./holiday-data";
 import { getYearGanzhi } from "./lunar";
 import type { DayMetaProvider, PanelProvider } from "./providers";
 import { DetailPanelProvider, HolidayBadgeProvider, LunarDayMetaProvider } from "./providers";
-import type { CalendarMode, CalendarUiOptions, DetailPosition, HolidayConfig } from "./types";
+import type {
+  CalendarMarkedRange,
+  CalendarMode,
+  CalendarNoteChange,
+  CalendarNotes,
+  CalendarUiOptions,
+  DetailPosition,
+  HolidayConfig,
+} from "./types";
 
 type ViewMode = "day" | "month" | "year";
 
@@ -72,6 +80,11 @@ export class Calendar {
   private readonly inputName: string | undefined;
   private readonly onChangeCb?: (date: string) => void;
   private readonly onOpenChangeCb?: (open: boolean) => void;
+  private readonly markedRanges: CalendarMarkedRange[];
+  private readonly enableNotes: boolean;
+  private readonly onNotesChangeCb?: (changes: CalendarNoteChange[]) => void;
+  private notes: CalendarNotes;
+  private draftNotes: CalendarNotes;
   /** 控制点击日期后右侧详情面板的显示 */
   private readonly showDetailPanel: boolean;
   /** 详情面板悬浮方式：inside 内覆盖浮层（不改面板宽）/ left 左展开 / right 右展开 */
@@ -136,6 +149,11 @@ export class Calendar {
     this.inputName = opts.inputName;
     this.onChangeCb = opts.onChange;
     this.onOpenChangeCb = opts.onOpenChange;
+    this.markedRanges = (opts.markedRanges ?? []).map((range) => ({ ...range }));
+    this.enableNotes = opts.enableNotes ?? false;
+    this.notes = { ...opts.notes };
+    this.draftNotes = { ...this.notes };
+    this.onNotesChangeCb = opts.onNotesChange;
     this.showDetailPanel = opts.showDetailPanel ?? true;
     this.detailPosition = opts.detailPosition ?? "right";
     this.holidays = opts.holidays ?? {};
@@ -204,6 +222,10 @@ export class Calendar {
     this.overlay.hidden = true;
     /* 详情悬浮方向 class（is-detail-inside/left/right） */
     this.overlay.classList.add(`is-detail-${this.detailPosition}`);
+    this.overlay.classList.toggle(
+      "is-memo-calendar",
+      this.enableNotes || this.markedRanges.length > 0,
+    );
 
     this.panel = el("div", "qw-cal-panel");
     this.panel.setAttribute("role", "dialog");
@@ -380,7 +402,7 @@ export class Calendar {
         this.selectDate(date, true);
       } else {
         this.viewDate = new Date(date.getFullYear(), date.getMonth(), 1);
-        this.selectDate(date, false);
+        this.selectDate(date, true);
       }
     });
 
@@ -390,6 +412,8 @@ export class Calendar {
         e.preventDefault();
         this.cancel();
       }
+      // 记事编辑时保留换行、左右移动光标和输入法的默认行为。
+      if ((e.target as HTMLElement | null)?.tagName === "TEXTAREA") return;
       /* Enter=确认；焦点在按钮上时交给原生 click */
       if (e.key === "Enter" && (e.target as HTMLElement | null)?.tagName !== "BUTTON") {
         e.preventDefault();
@@ -421,6 +445,7 @@ export class Calendar {
   open(): void {
     if (this.isOpen) return;
     this.isOpen = true;
+    this.draftNotes = { ...this.notes };
 
     if (this.closeTimer !== null) {
       clearTimeout(this.closeTimer);
@@ -525,13 +550,25 @@ export class Calendar {
       );
     }
     this.syncInput();
+    const noteChanges: CalendarNoteChange[] = [];
+    if (this.enableNotes) {
+      const dates = new Set([...Object.keys(this.notes), ...Object.keys(this.draftNotes)]);
+      for (const date of dates) {
+        const content = this.draftNotes[date] ?? "";
+        if (content !== (this.notes[date] ?? "")) noteChanges.push({ date, content });
+      }
+      this.notes = { ...this.draftNotes };
+    }
+    this.snapshot = null;
     this.onChangeCb?.(this.getSelectedDate());
+    if (noteChanges.length) this.onNotesChangeCb?.(noteChanges);
     this.close();
   }
 
   /** 取消：回滚到打开前的已确认状态（不回发 onChange），再收起 */
   private cancel(): void {
     if (!this.isOpen) return;
+    this.draftNotes = { ...this.notes };
     if (this.snapshot) {
       this.selected = this.snapshot.selected ? new Date(this.snapshot.selected) : null;
       this.selectedTime = { ...this.snapshot.time };
@@ -552,6 +589,11 @@ export class Calendar {
     const { hour, minute, second } = this.selectedTime;
     const pad = (n: number) => String(n).padStart(2, "0");
     return `${formatDate(d)} ${pad(hour)}:${pad(minute)}:${pad(second)}`;
+  }
+
+  /** 获取已确认的记事副本，不包含尚未确认的草稿。 */
+  getNotes(): CalendarNotes {
+    return { ...this.notes };
   }
 
   /** 设置选中日期；空字符串、null 或 undefined 清空选中值 */
@@ -859,6 +901,9 @@ export class Calendar {
       if (isToday) cell.classList.add("is-today");
       if (isSelected) cell.classList.add("is-selected");
       if (isWeekend) cell.classList.add("is-weekend");
+      if (this.markedRanges.some((range) => iso >= range.start && iso <= range.end)) {
+        cell.classList.add("is-marked-range");
+      }
       if (this.isDisabled(date)) cell.classList.add("is-disabled");
 
       const dayNum = el("span", "qw-cal-cell-num", String(date.getDate()));
@@ -892,6 +937,12 @@ export class Calendar {
         label.textContent = badge;
         cell.append(label);
       }
+      if (this.enableNotes && this.draftNotes[iso]) {
+        const dot = el("span", "qw-cal-note-dot");
+        dot.setAttribute("aria-hidden", "true");
+        cell.append(dot);
+        cell.setAttribute("aria-label", `${iso}，有记事`);
+      }
 
       frag.append(cell);
     }
@@ -910,7 +961,19 @@ export class Calendar {
     );
 
     if (rerender) {
-      this.render();
+      const cell = this.grid.querySelector<HTMLElement>(`[data-date="${formatDate(date)}"]`);
+      if (this.viewMode === "day" && cell && !cell.classList.contains("is-other-month")) {
+        // 同月切换只更新选中态，避免重复计算整月农历及节假日。
+        for (const previous of this.grid.querySelectorAll("[data-selected]")) {
+          previous.classList.remove("is-selected");
+          previous.removeAttribute("data-selected");
+        }
+        cell.classList.add("is-selected");
+        cell.setAttribute("data-selected", "");
+        this.renderTime();
+      } else {
+        this.render();
+      }
     }
 
     this.syncInput();
@@ -929,6 +992,9 @@ export class Calendar {
     sideCloseBtn.addEventListener("click", () => this.hideDetail());
     this.detailContent.append(sideCloseBtn);
 
+    // 在内置日期概览后插入编辑区，原有节日、节气和黄历内容继续保留。
+    const noteSection = this.enableNotes ? this.createNoteEditor(date) : null;
+
     for (const p of this.panelProviders) {
       const out = p.render(date);
       if (out == null) continue;
@@ -938,9 +1004,58 @@ export class Calendar {
       } else {
         this.detailContent.append(out);
       }
+      if (p.id === "detail" && noteSection) {
+        const firstSection = this.detailContent.querySelector(".qw-detail-section");
+        if (firstSection) firstSection.before(noteSection);
+        else this.detailContent.append(noteSection);
+      }
     }
 
     this.detailPanel.classList.add("is-active");
+  }
+
+  private createNoteEditor(date: Date): HTMLElement {
+    const iso = formatDate(date);
+    const section = el("div", "qw-cal-note");
+    const heading = el("div", "qw-cal-note-heading");
+    const label = el("label", "qw-cal-note-field");
+    const status = el("span", "qw-cal-note-status");
+    const textarea = el("textarea", "qw-cal-note-input") as HTMLTextAreaElement;
+    textarea.rows = 4;
+    textarea.maxLength = 500;
+    textarea.placeholder = "写下这一天要记住的事…";
+    textarea.setAttribute("aria-label", "当日记事");
+    textarea.value = this.draftNotes[iso] ?? "";
+    label.append(heading, textarea);
+    const hint = el("div", "qw-cal-note-hint", "点击「确认」保存，取消则放弃本次修改");
+    const updateStatus = () => {
+      status.textContent =
+        (this.draftNotes[iso] ?? "") !== (this.notes[iso] ?? "")
+          ? "未保存"
+          : this.notes[iso]
+            ? "已保存"
+            : "暂无记事";
+    };
+    updateStatus();
+    textarea.addEventListener("input", () => {
+      if (textarea.value) this.draftNotes[iso] = textarea.value;
+      else delete this.draftNotes[iso];
+      updateStatus();
+      // 输入只更新当前日的圆点，保留整月 DOM、光标和输入法状态。
+      const cell = this.grid.querySelector<HTMLElement>(`[data-date="${iso}"]`);
+      if (cell) {
+        const dot = cell.querySelector(".qw-cal-note-dot");
+        if (textarea.value && !dot) {
+          const marker = el("span", "qw-cal-note-dot");
+          marker.setAttribute("aria-hidden", "true");
+          cell.append(marker);
+        } else if (!textarea.value) dot?.remove();
+        cell.setAttribute("aria-label", textarea.value ? `${iso}，有记事` : iso);
+      }
+    });
+    heading.append(el("span", "qw-detail-label", "当日记事"), status);
+    section.append(label, hint);
+    return section;
   }
 
   private hideDetail(): void {

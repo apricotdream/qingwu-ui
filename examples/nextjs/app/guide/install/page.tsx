@@ -5,7 +5,7 @@
 const PACKAGES = [
   {
     name: "@qingwu-ui/calendar",
-    desc: "日历 + 农历引擎：农历 / 节气 / 节日 / 黄历宜忌 / 休假表 / 禁用规则",
+    desc: "农历与备忘日历：农历 / 节气 / 节日 / 黄历宜忌 / 休假表 / 范围标记 / 日期记事",
   },
   { name: "@qingwu-ui/button", desc: "药丸风格按钮，四变体，零依赖" },
   { name: "@qingwu-ui/search", desc: "搜索框 / 命令面板：打字机占位、类别筛选、全键盘导航" },

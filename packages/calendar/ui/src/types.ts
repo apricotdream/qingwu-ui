@@ -17,6 +17,21 @@ export type CalendarMode = "modal" | "popover";
 /** 详情面板悬浮方式：right 右侧展开（默认）/ left 左展开 / inside 面板内覆盖浮层 */
 export type DetailPosition = "inside" | "left" | "right";
 
+/** 独立于节假日的背景标记，含起止日期，格式为 YYYY-MM-DD。 */
+export interface CalendarMarkedRange {
+  start: string;
+  end: string;
+}
+
+/** 按 YYYY-MM-DD 保存的日期记事。 */
+export type CalendarNotes = Record<string, string>;
+
+export interface CalendarNoteChange {
+  date: string;
+  /** 空字符串表示删除该日记事。 */
+  content: string;
+}
+
 /** 日历组件选项 */
 export interface CalendarUiOptions {
   /** 展示形态：modal（默认，全屏居中弹窗）/ popover（紧凑浮层，锚定输入框下方） */
@@ -37,6 +52,14 @@ export interface CalendarUiOptions {
   onChange?: (date: string) => void;
   /** 日历面板打开/关闭回调 */
   onOpenChange?: (open: boolean) => void;
+  /** 日期范围背景为绿色；只有今天在范围内时，该日背景为红色，不影响节日和休/工标记。 */
+  markedRanges?: CalendarMarkedRange[];
+  /** 在详情面板中启用日期记事（默认 false，需开启 showDetailPanel）。 */
+  enableNotes?: boolean;
+  /** 初始记事；组件内存中保存，持久化由调用方在 onNotesChange 中完成。 */
+  notes?: CalendarNotes;
+  /** 点击确认后回发所有实际修改的记事；取消或未修改均不回发。 */
+  onNotesChange?: (changes: CalendarNoteChange[]) => void;
   /** 是否开启日历详情面板（右侧农历/节气/节日/黄历信息；默认 true） */
   showDetailPanel?: boolean;
   /** 详情面板悬浮方式（默认 `right`：右侧展开、面板加宽；`left`：左侧展开、面板向左加宽；

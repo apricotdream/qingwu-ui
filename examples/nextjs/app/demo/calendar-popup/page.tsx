@@ -19,6 +19,7 @@ import Playground from "@/components/Playground";
 import { genAll } from "@/lib/codegen";
 import { PKG } from "@/lib/pkg-meta";
 import HolidayDataDemo from "./holiday-data-demo";
+import MemoDemo from "./memo-demo";
 import { CALENDAR_FIELDS, calendarToCode, createCalendar } from "./playground.config";
 
 /* ============================================================
@@ -281,7 +282,7 @@ export default function CalendarPopupPage() {
     <div className="demo-grid">
       <Playground
         title="Calendar 弹出选择"
-        desc="输入框 + 日历图标触发 → 弹出面板，农历/节气/节日/黄历宜忌详情侧栏，支持三种详情悬浮方式（inside 面板内覆盖 / left 左展开 / right 右展开），键盘导航。调整属性后点「应用」。"
+        desc="中国农历与备忘日历：农历/节气/节日/黄历宜忌，支持日期范围背景标记、详情记事及确认保存回调。范围配色与节假日角标独立。调整属性后点「应用」。"
         fields={CALENDAR_FIELDS}
         create={createCalendar}
         toCode={calendarToCode}
@@ -289,6 +290,7 @@ export default function CalendarPopupPage() {
       />
 
       <HolidayDataDemo />
+      <MemoDemo />
 
       {/* ---- 详情悬浮方式（detailPosition） ---- */}
       <DemoCard

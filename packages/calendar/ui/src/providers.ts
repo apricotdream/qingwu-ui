@@ -14,6 +14,7 @@ import {
   findFestivals,
   findHolidayDay,
   type HolidayData,
+  type HolidayDay,
 } from "./holiday-data";
 import {
   formatLunarDate,
@@ -96,11 +97,17 @@ export class LunarDayMetaProvider implements DayMetaProvider {
 /** 内置：休假 / 调休角标（日期格；依赖用户节假日配置） */
 export class HolidayBadgeProvider implements DayMetaProvider {
   readonly id = "holiday";
+  private readonly daysByDate: Map<string, HolidayDay>;
 
   constructor(
     private readonly holidays: HolidayConfig = {},
-    private readonly data: HolidayData | undefined = undefined,
-  ) {}
+    data: HolidayData | undefined = undefined,
+  ) {
+    // 后公告的年份覆盖同日记录；索引只建一次，日格查询无需反复扫描历史年份。
+    this.daysByDate = new Map(
+      (data?.years ?? []).flatMap((year) => year.days.map((day) => [day.date, day] as const)),
+    );
+  }
 
   getDayMeta(date: Date): DayMeta | null {
     const iso = formatDate(date);
@@ -109,7 +116,7 @@ export class HolidayBadgeProvider implements DayMetaProvider {
     if (workdays.includes(iso)) return { badge: "工", cellClass: "is-workday" };
     if (holidays.includes(iso)) return { badge: "休", cellClass: "is-holiday" };
 
-    const day = findHolidayDay(this.data, iso);
+    const day = this.daysByDate.get(iso);
     if (day)
       return day.isOffDay
         ? { badge: "休", cellClass: "is-holiday" }
