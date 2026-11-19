@@ -341,7 +341,15 @@
 
 /* 鍙偣鍑婚摼鎺ワ細榧犳爣鍙樻墜鍨?*/
 .qingwu-editor .ProseMirror a[href] {
+  color: var(--color-qingwu-700, #0e7490);
   cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.dark.qingwu-editor .ProseMirror a[href],
+.dark .qingwu-editor .ProseMirror a[href] {
+  color: var(--color-qingwu-300, #67e8f9);
 }
 
 /* 分隔线：深青色为主，明暗模式下都保持清晰可见 */

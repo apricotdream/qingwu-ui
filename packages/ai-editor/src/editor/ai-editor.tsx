@@ -708,7 +708,10 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   // 面板打开期间：滚动即关闭（气泡菜单与面板会随之错位），窗口缩放时重新定位
   useEffect(() => {
     if (subPanel === "none") return;
-    const close = () => setSubPanel("none");
+    const onScroll = (event: Event) => {
+      if (event.target instanceof Node && subPanelRef.current?.contains(event.target)) return;
+      setSubPanel("none");
+    };
     const onResize = () => {
       const panel = subPanelRef.current;
       setSubPanelStyle(
@@ -719,12 +722,12 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
       );
     };
     const viewport = window.visualViewport;
-    window.addEventListener("scroll", close, true);
+    window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", onResize);
     viewport?.addEventListener("resize", onResize);
     viewport?.addEventListener("scroll", onResize);
     return () => {
-      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", onResize);
       viewport?.removeEventListener("resize", onResize);
       viewport?.removeEventListener("scroll", onResize);

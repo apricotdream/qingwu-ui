@@ -64,7 +64,7 @@
     },
     "packages/ai-editor": {
       "name": "@qingwu-ui/ai-editor",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "bin": {
         "qingwu-ai-editor": "scripts/cli.mjs",
       },
