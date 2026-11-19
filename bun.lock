@@ -64,7 +64,7 @@
     },
     "packages/ai-editor": {
       "name": "@qingwu-ui/ai-editor",
-      "version": "1.2.1",
+      "version": "1.2.2",
       "bin": {
         "qingwu-ai-editor": "scripts/cli.mjs",
       },
@@ -81,6 +81,7 @@
         "@qingwu-ui/toast": "^1.0.0",
         "@tiptap/core": "^3.32.0",
         "@tiptap/extension-character-count": "^3.32.0",
+        "@tiptap/extension-code": "^3.32.0",
         "@tiptap/extension-code-block-lowlight": "^3.32.0",
         "@tiptap/extension-color": "^3.32.0",
         "@tiptap/extension-highlight": "^3.32.0",

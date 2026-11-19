@@ -1143,6 +1143,11 @@
   font-size: 0.88em;
 }
 
+.qingwu-editor .ProseMirror :not(pre) > code::before,
+.qingwu-editor .ProseMirror :not(pre) > code::after {
+  content: none;
+}
+
 .dark .qingwu-editor .ProseMirror :not(pre) > code {
   color: #fda4af;
   background: rgba(190, 18, 60, 0.16);
@@ -1172,7 +1177,8 @@
 
 /* highlight.js 绫诲悕楂樹寒 */
 /* highlight.js / lowlight 高亮配色（hljs-* 类名） */
-.hljs-comment {
+.hljs-comment,
+.hljs-quote {
   color: var(--hljs-comment);
   font-style: italic;
 }
@@ -1180,7 +1186,12 @@
   color: var(--hljs-keyword);
   font-weight: 500;
 }
-.hljs-string {
+.hljs-doctag,
+.hljs-formula {
+  color: var(--hljs-keyword);
+}
+.hljs-string,
+.hljs-code {
   color: var(--hljs-string);
 }
 .hljs-number {
@@ -1195,13 +1206,19 @@
 .hljs-type {
   color: var(--hljs-type);
 }
-.hljs-attr {
+.hljs-attr,
+.hljs-attribute,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
   color: var(--hljs-attr);
 }
-.hljs-symbol {
+.hljs-symbol,
+.hljs-bullet {
   color: var(--hljs-symbol);
 }
-.hljs-title {
+.hljs-title,
+.hljs-selector-id {
   color: var(--hljs-title);
 }
 .hljs-title.function_ {
@@ -1216,7 +1233,8 @@
 .hljs-regexp {
   color: var(--hljs-regexp);
 }
-.hljs-meta {
+.hljs-meta,
+.hljs-template-tag {
   color: var(--hljs-meta);
 }
 .hljs-variable {
@@ -1231,7 +1249,8 @@
 .hljs-tag {
   color: var(--hljs-tag);
 }
-.hljs-name {
+.hljs-name,
+.hljs-section {
   color: var(--hljs-name);
 }
 .hljs-deletion {
@@ -1240,7 +1259,8 @@
 .hljs-addition {
   color: var(--hljs-addition);
 }
-.hljs-selector {
+.hljs-selector,
+.hljs-selector-tag {
   color: var(--hljs-selector);
 }
 .hljs-operator {
@@ -1248,6 +1268,19 @@
 }
 .hljs-punctuation {
   color: var(--hljs-punctuation);
+}
+.hljs-subst {
+  color: var(--hljs-fg);
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: bold;
+}
+.hljs-link {
+  color: var(--hljs-title);
+  text-decoration: underline;
 }
 
 /* ============================================================
@@ -1467,6 +1500,7 @@
 .cb-lang-list {
   max-height: 13.75rem;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   padding: var(--qw-space-1);
 }
 

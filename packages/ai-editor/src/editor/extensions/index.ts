@@ -54,7 +54,7 @@ import { ChineseEmphasis } from "./chinese-emphasis";
 import { CodeBlock } from "./code-block";
 import { ImageUpload } from "./image-upload";
 import { ImeCommitSpaceGuard } from "./ime-commit-space-guard";
-import { InlineCodeEnd } from "./inline-code-end";
+import { InlineCode } from "./inline-code-end";
 import { ListQuoteHighlight } from "./list-quote-highlight";
 import { MathBlock, MathInline } from "./math";
 import { ObsidianMarkdown } from "./obsidian-markdown";
@@ -95,6 +95,7 @@ export interface EditorExtensionsConfig {
 export function getEditorExtensions(config: EditorExtensionsConfig = {}): AnyExtension[] {
   return [
     StarterKit.configure({
+      code: false,
       codeBlock: false,
       horizontalRule: false,
       underline: false,
@@ -113,7 +114,7 @@ export function getEditorExtensions(config: EditorExtensionsConfig = {}): AnyExt
     Color,
     CharacterCount.configure(config.maxLength ? { limit: config.maxLength } : {}),
     HorizontalRule,
-    InlineCodeEnd,
+    InlineCode,
     MathInline,
     MathBlock,
     CodeBlock,

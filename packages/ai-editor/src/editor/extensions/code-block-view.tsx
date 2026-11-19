@@ -588,7 +588,7 @@ export function CodeBlockView({
                   onKeyDown={(e) => e.stopPropagation()}
                 />
               </div>
-              <div className="cb-lang-list" style={{ maxHeight: listMaxHeight }}>
+              <div className="cb-lang-list" style={{ maxHeight: listMaxHeight }} data-lenis-prevent>
                 <button
                   type="button"
                   className={`cb-lang-option${!lang ? " cb-lang-option--active" : ""}`}
