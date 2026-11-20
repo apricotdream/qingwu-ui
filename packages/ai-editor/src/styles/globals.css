@@ -3,6 +3,7 @@
    导致「引入编辑器后消费方页面样式全变」。编辑器自身的重置见下方 scoped preflight。 */
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/utilities";
+@import "../editor/utils/text-note-preview.css";
 @plugin "@tailwindcss/typography";
 @custom-variant dark (&:is(.dark *));
 
@@ -772,6 +773,7 @@
 .qw-bubble .bubble-menu-items {
   position: relative;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.125rem;
 }
@@ -819,6 +821,72 @@
 .qw-bubble .qw-bubble-menu-item:hover,
 .qw-bubble-panel .qw-bubble-clear:hover {
   background: var(--qwb-hover);
+}
+
+.qw-bubble .qw-bubble-menu-item:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.qw-bubble-note {
+  padding: 0.5rem;
+}
+
+.qw-bubble-note label {
+  display: block;
+  font-weight: 600;
+}
+
+.qw-bubble-note textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 4.625rem;
+  margin-top: 0.375rem;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--qwb-border);
+  border-radius: 0.375rem;
+  background: var(--qwb-surface);
+  color: var(--qwb-text);
+  font: inherit;
+  font-weight: 400;
+  resize: vertical;
+}
+
+.qw-bubble-note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+.qw-bubble-note-actions button {
+  padding: 0.375rem 0.5rem;
+  border: 0;
+  border-radius: 0.375rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.qw-bubble-note-save {
+  margin-inline-start: auto;
+  background: #126454;
+  color: white;
+}
+
+.qw-bubble-note-save:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.qw-bubble-note-remove {
+  background: var(--qwb-hover);
+  color: #a72424;
+}
+
+:is(.dark, [data-theme="dark"]) .qw-bubble-note-remove {
+  color: #fca5a5;
 }
 
 .qw-bubble .qw-bubble-button--ai {

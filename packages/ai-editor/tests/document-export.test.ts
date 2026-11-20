@@ -46,6 +46,33 @@ afterEach(() => {
   fetchResource.mockReset();
 });
 
+describe("上标备注导出", () => {
+  const content =
+    '<p><span data-qw-note-id="motor" data-qw-text-note="三相 &lt;说明&gt;"><strong>交流</strong>电机</span>可连续运行。</p>';
+
+  it("跨越不同格式的备注只在原文末尾输出一次，源文档仍保留标记", () => {
+    createEditor(content);
+    expect(getExportContent(editor, "text")).toBe("交流电机（三相 <说明>）可连续运行。");
+    expect(getExportContent(editor, "md")).toBe("**交流**电机（三相 &lt;说明&gt;）可连续运行。");
+    for (const format of ["docx", "pdf"] as const) {
+      expect(getExportContent(editor, format)).toContain("电机（三相 &lt;说明&gt;）");
+    }
+    expect(getExportContent(editor, "json")).toContain('"type": "textNote"');
+    expect(editor.getText()).toBe("交流电机可连续运行。");
+  });
+
+  it("HTML 在备注原文之后输出一个上标，文字按原样保存为数据", async () => {
+    createEditor(content);
+    const result = await createHtmlDownload(editor);
+    const doc = new DOMParser().parseFromString(await result.blob.text(), "text/html");
+    expect(doc.querySelectorAll("sup")).toHaveLength(1);
+    const marker = doc.querySelector<HTMLButtonElement>("sup button");
+    expect(marker?.textContent).toBe("1");
+    expect(marker?.dataset.note).toBe("三相 <说明>");
+    expect(marker?.parentElement?.previousElementSibling?.textContent).toBe("交流电机");
+  });
+});
+
 describe("Markdown 资源打包", () => {
   it("无资源时仍下载一个 ZIP，包含 Markdown", async () => {
     createEditor("<h1>标题</h1><p>正文</p>");

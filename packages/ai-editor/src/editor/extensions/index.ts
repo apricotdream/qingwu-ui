@@ -62,6 +62,7 @@ import { QingwuUI } from "./qingwu-ui";
 import { RelativeMedia } from "./relative-media";
 import { SearchHighlight } from "./search-highlight";
 import { createSlashCommandExtension, getDefaultSlashCommands } from "./slash-command";
+import { TextNote } from "./text-note";
 
 export {
   AttachmentEmbed,
@@ -115,6 +116,7 @@ export function getEditorExtensions(config: EditorExtensionsConfig = {}): AnyExt
     CharacterCount.configure(config.maxLength ? { limit: config.maxLength } : {}),
     HorizontalRule,
     InlineCode,
+    TextNote,
     MathInline,
     MathBlock,
     CodeBlock,

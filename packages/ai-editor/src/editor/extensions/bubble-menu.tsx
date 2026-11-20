@@ -133,6 +133,18 @@ export function getBubbleMenuActions(t: (key: string) => string): BubbleMenuActi
       command: () => {},
     },
     {
+      key: "textNote",
+      label: t("editor.bubble.textNote"),
+      icon: (
+        <span aria-hidden="true">
+          x<sup>2</sup>
+        </span>
+      ),
+      more: true,
+      isActive: (editor) => editor.isActive("textNote"),
+      command: () => {},
+    },
+    {
       key: "copy",
       label: t("editor.bubble.copy"),
       icon: <CopyIcon />,

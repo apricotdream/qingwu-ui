@@ -1,8 +1,12 @@
 import type { Editor } from "@tiptap/core";
 import { DOMSerializer, Fragment, type Node as ProseMirrorNode } from "@tiptap/pm/model";
 import JSZip from "jszip";
+import { TEXT_NOTE } from "../extensions/text-note";
+import { t } from "../i18n";
 import { signPreviewUrl, signPreviewUrlHeaders } from "../storage/signed-fetch";
 import { sanitizeHtml } from "./sanitize";
+import { bindTextNotePreviews, createTextNoteMarker } from "./text-note-preview";
+import notePreviewCss from "./text-note-preview.css?raw";
 
 export type ExportFormat = "html" | "json" | "md" | "text" | "pdf" | "docx" | "zip";
 
@@ -75,13 +79,24 @@ function exportDoc(
           : [];
       return schema.nodes.paragraph.create(null, schema.text(text, marks));
     }
-    const marks = node.marks.map((mark) => {
-      const href = format === "zip" ? urls.get(mark.attrs.href) : undefined;
-      return mark.type.name === "link" && href ? mark.type.create({ ...mark.attrs, href }) : mark;
-    });
+    const marks = node.marks
+      .filter((mark) => format === "html" || mark.type.name !== TEXT_NOTE)
+      .map((mark) => {
+        const href = format === "zip" ? urls.get(mark.attrs.href) : undefined;
+        return mark.type.name === "link" && href ? mark.type.create({ ...mark.attrs, href }) : mark;
+      });
     if (node.isText) return node.mark(marks);
     const children: ProseMirrorNode[] = [];
-    node.forEach((child) => children.push(convert(child)));
+    node.forEach((child, _offset, index) => {
+      children.push(convert(child));
+      if (format === "html" || !child.isText) return;
+      const note = child.marks.find((mark) => mark.type.name === TEXT_NOTE);
+      if (!note?.attrs.text) return;
+      const next = node.maybeChild(index + 1);
+      if (!next?.isText || !note.isInSet(next.marks)) {
+        children.push(schema.text(`（${note.attrs.text}）`));
+      }
+    });
     return node.type.create(node.attrs, Fragment.from(children), marks);
   };
   return convert(source);
@@ -131,6 +146,14 @@ export function getExportContent(
     }
     link.removeAttribute("data-export-download");
   });
+  if (format === "html") {
+    let index = 0;
+    container.querySelectorAll<HTMLElement>("span[data-qw-text-note]").forEach((span) => {
+      const note = span.dataset.qwTextNote;
+      if (note)
+        span.after(createTextNoteMarker(document, note, ++index, t("editor.bubble.viewNote")));
+    });
+  }
   return container.innerHTML;
 }
 
@@ -283,6 +306,10 @@ async function createDocumentHtml(editor: Editor, format: "html" | "pdf"): Promi
   const source = editor.state.doc;
   const urls = await prepareImages(source, format);
   const body = getExportContent(editor, format, urls, source);
+  const hasNotes = format === "html" && body.includes('class="qw-text-note-marker"');
+  const noteScript = hasNotes
+    ? `<script>(${bindTextNotePreviews.toString()})(document.body, ${JSON.stringify(t("editor.bubble.noteTitle"))});</script>`
+    : "";
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>青梧文档</title><style>
     @page { size: A4; margin: 16mm; }
     * { box-sizing: border-box; }
@@ -295,7 +322,8 @@ async function createDocumentHtml(editor: Editor, format: "html" | "pdf"): Promi
     blockquote { margin: 16px 0; padding: 8px 16px; background: #f4f4f5; }
     @media (max-width: 480px) { body { padding: 16px; } }
     @media print { body { max-width: none; padding: 0; } }
-  </style></head><body>${body}</body></html>`;
+    ${hasNotes ? notePreviewCss : ""}
+  </style></head><body class="qw-export-document">${body}${noteScript}</body></html>`;
 }
 
 /** 图片已完整解码后才允许打印，避免定时器提前触发生成空白图片。 */

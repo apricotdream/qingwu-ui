@@ -29,12 +29,26 @@ import {
   looksLikeMath,
 } from "./extensions/bubble-menu";
 import { TableToolbar } from "./extensions/table-toolbar";
+import { getTextNoteSelection, TEXT_NOTE } from "./extensions/text-note";
 import { t } from "./i18n";
 import { MoreIcon, SparklesIcon } from "./icons";
 import { insertMedia } from "./utils/insert-media";
 import { sanitizeHtml } from "./utils/sanitize";
+import { bindTextNotePreviews } from "./utils/text-note-preview";
 
 type FloatingPoint = { top: number; left: number; width: number };
+type BubbleSubPanel = "none" | "highlight" | "link" | "textNote";
+
+function bubbleHorizontalBounds(container: HTMLElement | null) {
+  const viewport = window.visualViewport;
+  const left = viewport?.offsetLeft ?? 0;
+  const right = left + (viewport?.width ?? window.innerWidth);
+  const bounds = container?.getBoundingClientRect();
+  return {
+    left: Math.max(left, bounds?.left ?? left) + 8,
+    right: Math.min(right, bounds?.right ?? right) - 8,
+  };
+}
 /** 气泡菜单强调色预设 */
 const HIGHLIGHT_COLORS = [
   { color: "#fef08a", name: "黄" },
@@ -270,7 +284,8 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   const [showStorageSettings, setShowStorageSettings] = useState(false);
   const [showExport, setShowExport] = useState(false);
   // 气泡子面板（高亮色板 / 链接输入）独立浮层，不叠加进气泡内增高气泡
-  const [subPanel, setSubPanel] = useState<"none" | "highlight" | "link">("none");
+  const [subPanel, setSubPanel] = useState<BubbleSubPanel>("none");
+  const [noteDraft, setNoteDraft] = useState({ text: "", editing: false });
   const [subPanelStyle, setSubPanelStyle] = useState<React.CSSProperties>({});
   const subPanelRef = useRef<HTMLDivElement | null>(null);
   // 锚矩形存 ref：openSubPanel 记录，渲染后测量真实高度翻转 / 滚动关闭时重新定位
@@ -520,6 +535,12 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     (window as any).__editor = editor;
   }, [editor]);
 
+  useEffect(() => {
+    const container = editorContainerRef.current;
+    if (!editor || !container) return;
+    return bindTextNotePreviews(container, t("editor.bubble.noteTitle"));
+  }, [editor]);
+
   // 编辑器销毁时 flush 待删孤儿资源（替换产生的孤儿已不在文档中 → 立即删存储）
   useEffect(() => {
     if (!editor) return;
@@ -615,17 +636,14 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
   const computeSubPanelStyle = useCallback(
     (anchor: DOMRect | null, height: number | undefined): React.CSSProperties => {
       const viewport = window.visualViewport;
-      const viewportLeft = viewport?.offsetLeft ?? 0;
       const viewportTop = viewport?.offsetTop ?? 0;
-      const viewportWidth = viewport?.width ?? window.innerWidth;
       const viewportHeight = viewport?.height ?? window.innerHeight;
-      const panelWidth = Math.min(252, viewportWidth - 16);
-      const left = anchor
-        ? Math.max(
-            viewportLeft + 8,
-            Math.min(anchor.left, viewportLeft + viewportWidth - panelWidth - 8),
-          )
-        : viewportLeft + 8;
+      const edges = bubbleHorizontalBounds(editorContainerRef.current);
+      const panelWidth = Math.min(252, Math.max(0, edges.right - edges.left));
+      const left = Math.max(
+        edges.left,
+        Math.min(anchor?.left ?? edges.left, edges.right - panelWidth),
+      );
       let top: number;
       if (!anchor) {
         top = viewportTop + 8;
@@ -654,7 +672,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
 
   // 打开高亮色板 / 链接输入独立浮层：锚定气泡菜单当前矩形，浮层不叠进气泡内
   const openSubPanel = useCallback(
-    (panel: "highlight" | "link") => {
+    (panel: Exclude<BubbleSubPanel, "none">) => {
       const anchor = bubbleBoxRef.current?.getBoundingClientRect() ?? null;
       subPanelAnchorRef.current = anchor;
       setSubPanel(panel);
@@ -671,6 +689,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     setSubPanelStyle(
       computeSubPanelStyle(subPanelAnchorRef.current, panel?.offsetHeight || undefined),
     );
+    if (subPanel === "textNote") panel?.querySelector("textarea")?.focus({ preventScroll: true });
   }, [subPanel, computeSubPanelStyle]);
 
   const positionMoreMenu = useCallback(() => {
@@ -678,6 +697,7 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     const anchor = bubbleBoxRef.current;
     if (!menu || !anchor) return;
     const rect = anchor.getBoundingClientRect();
+    const edges = bubbleHorizontalBounds(editorContainerRef.current);
     const viewport = window.visualViewport;
     const viewportTop = viewport?.offsetTop ?? 0;
     const viewportHeight = viewport?.height ?? window.innerHeight;
@@ -686,6 +706,10 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     const openAbove = below < menu.scrollHeight + 2 && above > below;
     menu.dataset.placement = openAbove ? "above" : "below";
     menu.style.maxHeight = `${Math.max(40, Math.min(viewportHeight - 16, openAbove ? above : below))}px`;
+    menu.style.maxWidth = `${Math.max(0, edges.right - edges.left)}px`;
+    const left = Math.max(edges.left, Math.min(rect.right + 4, edges.right) - menu.offsetWidth);
+    menu.style.left = `${left - rect.left}px`;
+    menu.style.right = "auto";
   }, []);
 
   // 同时监听可视视口，手机软键盘弹起或横竖屏切换时重新避让。
@@ -714,9 +738,10 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
     };
     const onResize = () => {
       const panel = subPanelRef.current;
+      const anchor = bubbleBoxRef.current?.getBoundingClientRect();
       setSubPanelStyle(
         computeSubPanelStyle(
-          bubbleBoxRef.current?.getBoundingClientRect() ?? subPanelAnchorRef.current,
+          anchor?.width ? anchor : subPanelAnchorRef.current,
           panel?.offsetHeight || undefined,
         ),
       );
@@ -764,12 +789,35 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
       } else if (action.key === "highlight") {
         if (subPanel === "highlight") setSubPanel("none");
         else openSubPanel("highlight");
+      } else if (action.key === TEXT_NOTE) {
+        const range = getTextNoteSelection(editor.state.doc, editor.state.selection);
+        if (range) {
+          setNoteDraft({ text: String(range.mark?.attrs.text ?? ""), editing: !!range.mark });
+          openSubPanel(TEXT_NOTE);
+        }
       } else {
         action.command(editor);
       }
     },
     [editor, subPanel, openSubPanel],
   );
+
+  const saveTextNote = (remove = false) => {
+    if (!editor) return;
+    const range = getTextNoteSelection(editor.state.doc, editor.state.selection);
+    const text = noteDraft.text.trim();
+    if (!range || (remove ? !range.mark : !text)) return;
+    const { from, to, mark } = range;
+    const tr = editor.state.tr;
+    if (mark) tr.removeMark(from, to, mark);
+    if (!remove) {
+      const id = mark?.attrs.id ?? crypto.getRandomValues(new Uint32Array(2)).join("-");
+      tr.addMark(from, to, editor.schema.marks[TEXT_NOTE].create({ id, text }));
+    }
+    editor.view.dispatch(tr);
+    setSubPanel("none");
+    editor.commands.focus();
+  };
 
   const isMoreActionActive = useCallback(
     (action: BubbleMenuAction) => {
@@ -1236,12 +1284,13 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
             options={{
               placement: "bottom",
               offset: 8,
-              flip: { padding: 8 },
-              shift: { padding: 8 },
+              flip: { padding: 8, boundary: editorContainerRef.current ?? undefined },
+              shift: { padding: 8, boundary: editorContainerRef.current ?? undefined },
               size: {
                 padding: 8,
                 apply: ({ availableWidth, elements }) => {
-                  elements.floating.style.maxWidth = `${availableWidth}px`;
+                  const edges = bubbleHorizontalBounds(editorContainerRef.current);
+                  elements.floating.style.maxWidth = `${Math.max(0, Math.min(availableWidth, edges.right - edges.left))}px`;
                 },
               },
               onUpdate: positionMoreMenu,
@@ -1329,6 +1378,10 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                       role="menuitem"
                       className="qw-bubble-menu-item"
                       data-active={isMoreActionActive(action)}
+                      disabled={
+                        action.key === TEXT_NOTE &&
+                        !getTextNoteSelection(editor.state.doc, editor.state.selection)
+                      }
                       onClick={(event) => {
                         event.preventDefault();
                         handleBubbleAction(action);
@@ -1387,6 +1440,52 @@ export const QingWuAIEditor: FC<QingWuAIEditorProps> = ({
                       ✕{" "}
                     </button>
                   </div>
+                ) : subPanel === "textNote" ? (
+                  <form
+                    className="qw-bubble-note"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      saveTextNote();
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape") {
+                        event.stopPropagation();
+                        setSubPanel("none");
+                        editor.commands.focus();
+                      }
+                    }}
+                  >
+                    <label>
+                      {t(noteDraft.editing ? "editor.bubble.editNote" : "editor.bubble.addNote")}
+                      <textarea
+                        rows={3}
+                        maxLength={500}
+                        placeholder={t("editor.bubble.notePlaceholder")}
+                        value={noteDraft.text}
+                        onChange={(event) =>
+                          setNoteDraft({ ...noteDraft, text: event.target.value })
+                        }
+                      />
+                    </label>
+                    <div className="qw-bubble-note-actions">
+                      {noteDraft.editing && (
+                        <button
+                          className="qw-bubble-note-remove"
+                          type="button"
+                          onClick={() => saveTextNote(true)}
+                        >
+                          {t("editor.bubble.deleteNote")}
+                        </button>
+                      )}
+                      <button
+                        className="qw-bubble-note-save"
+                        type="submit"
+                        disabled={!noteDraft.text.trim()}
+                      >
+                        {t("editor.bubble.saveNote")}
+                      </button>
+                    </div>
+                  </form>
                 ) : (
                   <div className="qw-bubble-link">
                     <input
