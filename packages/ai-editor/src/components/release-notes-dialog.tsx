@@ -13,6 +13,15 @@ interface Note {
 
 const NOTES: Note[] = [
   {
+    version: "1.3.0",
+    date: "2026-11-20",
+    items: [
+      "选中文字后，可从气泡菜单的「更多 → 上标备注」添加、修改或删除备注。",
+      "悬停或轻触数字上标查看说明，气泡和菜单在编辑区边缘自动避让。",
+      "HTML 保留可离线查看的上标，Markdown、TXT、Word 和 PDF 使用括号说明，JSON 保留可重新编辑的备注。",
+    ],
+  },
+  {
     version: "1.1.7",
     date: "2026-10-24",
     items: [

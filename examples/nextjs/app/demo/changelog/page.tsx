@@ -4,6 +4,21 @@ import Link from "next/link";
 const VERSIONS = [
   {
     version: "1.3.0",
+    date: "2026-11-20",
+    tag: "ai-editor",
+    changes: [
+      {
+        type: "feat",
+        text: "AI 编辑器新增上标备注。选中文字后，从气泡菜单的「更多 → 上标备注」添加、修改或删除。悬停或轻触数字上标查看说明，浮层在编辑区边缘自动避让。",
+      },
+      {
+        type: "improve",
+        text: "HTML 导出保留可离线查看的上标；Markdown、TXT、Word 和 PDF 把备注写在原文后的括号里，JSON 保留备注结构供重新导入。",
+      },
+    ],
+  },
+  {
+    version: "1.3.0",
     date: "2026-11-19",
     tag: "calendar",
     changes: [
@@ -645,7 +660,7 @@ export default function ChangelogPage() {
       </section>
 
       {VERSIONS.map((v) => (
-        <section key={v.version} className="changelog-version">
+        <section key={`${v.version}-${v.date}-${v.tag}`} className="changelog-version">
           <div className="changelog-head">
             <h2 className="changelog-ver">
               v{v.version}
